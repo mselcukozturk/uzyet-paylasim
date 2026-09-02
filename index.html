@@ -699,6 +699,20 @@ setTimeout(function(){input.focus();},50);
     return STATE.practiceBank.filter(function (q) { return q.guid === guid; })[0];
   }
 
+  // "Karışık — Tüm Modüller" oturumunda hangi modülden kaç doğru/yanlış yapıldığını
+  // gösterir — tek modüllü oturumlarda tek satır çıkacağı için (zaten üstteki genel
+  // skorla aynı bilgi) çağrılmaz.
+  function pratikModulKirilimi(cp) {
+    var kirilim = {};
+    Object.keys(cp.cevaplar).forEach(function (guid) {
+      var q = pratikSoruBul(guid);
+      if (!q) return;
+      if (!kirilim[q.modul]) kirilim[q.modul] = { dogru: 0, yanlis: 0 };
+      if (cp.cevaplar[guid] === q.cevapIdx) kirilim[q.modul].dogru++; else kirilim[q.modul].yanlis++;
+    });
+    return kirilim;
+  }
+
   function pratikOturumSkoru(cp) {
     var dogru = 0, yanlis = 0;
     Object.keys(cp.cevaplar).forEach(function (guid) {
@@ -1962,10 +1976,24 @@ function pratikEnIyiHtml(konu, modulKey) {
           '<span class="pill bad">' + skor.yanlis + " yanlış</span></div>"
         : "";
       var sonrakiModul = pratikSonrakiModul(currentPratik.konu, currentPratik.modul);
+      var modulKirilimHtml = "";
+      if (currentPratik.modul === PRATIK_TUM_MODULLER && toplamCevaplanan) {
+        var kirilim = pratikModulKirilimi(currentPratik);
+        var modulSirasi = (MODUL_TANIMLARI[currentPratik.konu] || []).map(function (m) { return m.key; });
+        var kirilimAnahtarlari = Object.keys(kirilim).sort(function (a, b) { return modulSirasi.indexOf(a) - modulSirasi.indexOf(b); });
+        var kirilimRows = kirilimAnahtarlari.map(function (modulKey) {
+          var k = kirilim[modulKey], kToplam = k.dogru + k.yanlis;
+          return "<tr><td>" + escapeHtml(modulKey + " — " + modulAdi(currentPratik.konu, modulKey)) + '</td><td class="num">' + kToplam +
+            '</td><td class="num">' + flashYuzdeHtml(k.dogru, kToplam) +
+            '</td><td class="num">' + flashYuzdeHtml(k.yanlis, kToplam) + "</td></tr>";
+        }).join("");
+        modulKirilimHtml = '<table class="topic-table" style="margin-top:12px"><thead><tr><th>Modül</th><th class="num">Soru</th><th class="num">Doğru</th><th class="num">Yanlış</th></tr></thead><tbody>' +
+          kirilimRows + "</tbody></table>";
+      }
       return '<div class="card"><div class="section-title">Modül bitti 🎉</div>' +
         '<div class="muted">' + escapeHtml(currentPratik.konu) + " · " + escapeHtml(modulAdi(currentPratik.konu, currentPratik.modul)) +
         " — " + currentPratik.kuyruk.length + " soru tamamlandı.</div>" +
-        skorHtml +
+        skorHtml + modulKirilimHtml +
         '<div class="link-row" style="margin-top:14px">' +
         (sonrakiModul
           ? '<button class="btn primary" data-action="pratik-sonraki-modul">Sonraki Modül: ' + escapeHtml(sonrakiModul.key + " — " + sonrakiModul.ad) + " →</button>" +
