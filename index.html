@@ -1677,7 +1677,7 @@ setTimeout(function(){input.focus();},50);
       return '<button class="cp-list-item" data-action="open-checkpoint-detay" data-id="' + escapeHtml(c.id) + '">' +
         '<div class="title">' + escapeHtml(c.title) + '</div><div class="desc">' + escapeHtml(c.subtitle) + "</div></button>";
     }).join("");
-    return '<div class="link-row"><button class="btn ghost" data-action="checkpoint-konu-geri">← Konular</button></div>' +
+    return '<div class="link-row"><button class="btn ghost" data-action="open-checkpoint-liste">← Konular</button></div>' +
       '<div class="section-title">' + konuDotHtml(konu) + escapeHtml(konu) + "</div>" +
       rows;
   }
