@@ -1714,6 +1714,59 @@ setTimeout(function(){input.focus();},50);
       "</div>";
   }
 
+  // Soruyu (soru + şıklar, cevaplanmışsa doğru cevap + açıklama) düz metin olarak
+  // panoya kopyalar — WhatsApp/not uygulamasına yapıştırmak için. Gerçek zamanlı
+  // aktif soruyu ekran türüne (exam/flash/pratik) göre global state'ten okur.
+  function kopyalaSoruMetni(q, cevaplandi, secilenIdx) {
+    var harfler = ["A", "B", "C", "D"];
+    var satirlar = [q.soru, ""];
+    q.siklar.forEach(function (s, i) { if (s) satirlar.push(harfler[i] + ") " + s); });
+    if (cevaplandi) {
+      satirlar.push("");
+      satirlar.push("Doğru cevap: " + harfler[q.cevapIdx] + ") " + q.siklar[q.cevapIdx]);
+      if (q.aciklama) satirlar.push("Açıklama: " + q.aciklama);
+    }
+    if (q.kaynak) satirlar.push("Kaynak: " + q.kaynak);
+    return satirlar.join("\n");
+  }
+
+  function kopyalaPano(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(function () { showBanner("Soru panoya kopyalandı."); })
+        .catch(function () { showBanner("Kopyalama başarısız — tarayıcı izin vermedi.", true); });
+    } else {
+      showBanner("Bu tarayıcıda panoya kopyalama desteklenmiyor.", true);
+    }
+  }
+
+  function kopyalaAktifSoru(scope) {
+    var q, cevaplandi, secilen;
+    if (scope === "exam" && currentExam) {
+      var eguid = currentExam.sorular[currentExam.index];
+      q = STATE.bank.filter(function (b) { return b.guid === eguid; })[0];
+      secilen = currentExam.cevaplar[eguid];
+      cevaplandi = secilen !== undefined && secilen !== null;
+    } else if (scope === "flash" && currentFlash) {
+      q = flashSoruBul(currentFlash);
+      secilen = currentFlash.secilen;
+      cevaplandi = secilen !== null;
+    } else if (scope === "pratik" && currentPratik && !currentPratik.bitti) {
+      var pguid = currentPratik.kuyruk[currentPratik.index];
+      q = pratikSoruBul(pguid);
+      secilen = currentPratik.secilen;
+      cevaplandi = currentPratik.cevaplandi;
+    }
+    if (!q) { showBanner("Kopyalanacak soru bulunamadı.", true); return; }
+    kopyalaPano(kopyalaSoruMetni(q, cevaplandi, secilen));
+  }
+
+  function kopyalaButonHtml(scope) {
+    return '<div class="link-row" style="margin:-4px 0 8px">' +
+      '<button class="btn ghost" style="padding:3px 10px;font-size:0.78rem" data-action="copy-soru" data-scope="' + scope + '">📋 Soruyu Kopyala</button>' +
+      "</div>";
+  }
+
   function flagBarHtml(guid, showPratikExtras) {
     var f = STATE.flags[guid] || bosFlagKaydi();
     var pratikExtraBtns = showPratikExtras
@@ -1765,6 +1818,7 @@ setTimeout(function(){input.focus();},50);
       '<div class="card">' +
       '<div class="q-meta"><span>' + MOD_ADI[currentExam.tip] + " · " + (idx + 1) + " / " + currentExam.sorular.length + " · " + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span>" +
       '<span id="exam-timer" class="exam-timer" title="Geçen süre — resmi sınav 50 soru / 60 dk">⏱ ' + fmtSure(currentExam.gecenSaniye || 0) + "</span></div>" +
+      kopyalaButonHtml("exam") +
       '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
       optionsHtml +
       flagBarHtml(guid) +
@@ -1825,6 +1879,7 @@ setTimeout(function(){input.focus();},50);
         : "🎲 Rastgele Soru";
     return '<div class="card">' +
       '<div class="q-meta"><span>' + kaynakEtiket + " · bu oturumda " + (flashSayac + 1) + ". soru</span><span>" + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span></div>" +
+      kopyalaButonHtml("flash") +
       '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
       optionsHtml + sonucHtml +
       (answered ? flagBarHtml(q.guid, pratikMi) : "") +
@@ -2053,7 +2108,7 @@ function pratikEnIyiHtml(konu, modulKey) {
         "</div>";
     }
 
-    return '<div class="card">' + cikisRow + meta + '<div class="q-text">' + escapeHtml(q.soru) + "</div>" + body + kaynakHtml + altNav + "</div>";
+    return '<div class="card">' + cikisRow + meta + kopyalaButonHtml("pratik") + '<div class="q-text">' + escapeHtml(q.soru) + "</div>" + body + kaynakHtml + altNav + "</div>";
   }
 
   function renderResult() {
@@ -2268,6 +2323,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     var action = t.getAttribute("data-action");
     if (action === "open-menu-deneme") { VIEW = "menuDeneme"; render(); }
     else if (action === "open-menu-test") { VIEW = "menuTest"; render(); }
+    else if (action === "copy-soru") kopyalaAktifSoru(t.getAttribute("data-scope"));
     else if (action === "open-deneme-konu-sec") { VIEW = "denemeKonuSec"; render(); }
     else if (action === "start-deneme-konu-flash") startFlash("bank", t.getAttribute("data-konu"));
     else if (action === "start-exam") startExam(t.getAttribute("data-mode"));
