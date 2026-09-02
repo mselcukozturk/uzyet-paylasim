@@ -1904,7 +1904,7 @@ setTimeout(function(){input.focus();},50);
     var topicRows = konular.map(function (konu) {
       var k = kirilim[konu];
       var kToplam = k.dogru + k.yanlis;
-      return "<tr><td>" + konuDotHtml(konu) + escapeHtml(konu) + '</td><td class="num">' + kToplam +
+      return "<tr><td>" + basariNoktaHtml(k.dogru, kToplam) + konuDotHtml(konu) + escapeHtml(konu) + '</td><td class="num">' + kToplam +
         '</td><td class="num">' + flashYuzdeHtml(k.dogru, kToplam) +
         '</td><td class="num">' + flashYuzdeHtml(k.yanlis, kToplam) + "</td></tr>";
     }).join("");
@@ -1953,11 +1953,17 @@ function pratikEnIyiHtml(konu, modulKey) {
     return 'style="border-left:4px solid ' + renk + '"';
   }
 
-  function basariDotHtml(konu, modulKey) {
-    // pratikTileStil ile aynı eşiklere göre küçük bir nokta — konu-dot ile aynı
-    // görsel dil, ama konu kimliği değil başarı durumu gösterir.
-    var renk = pratikBasariRenk(konu, modulKey) || "var(--border)";
-    return '<span class="konu-dot" style="background:' + renk + '" title="En iyi sonuç durumu"></span>';
+  // Herhangi bir doğru/toplam çiftine göre küçük bir başarı noktası — konu-dot ile
+  // aynı görsel dil (pratikBasariRenk'teki eşiklerle uyumlu: yeşil ≥%80, sarı %60-79,
+  // kırmızı <%60), ama konu kimliği değil o anki sonucu gösterir. Rastgele Soru
+  // oturum özetindeki ders kırılımında kullanılır — modül kutucuklarında DEĞİL
+  // (kullanıcı isteği, 2 Eyl 2026: "modül kutusunda değil test bitiminde, rastgele
+  // soruda olsun").
+  function basariNoktaHtml(dogru, toplam) {
+    if (!toplam) return '<span class="konu-dot" style="background:var(--border)"></span>';
+    var pct = dogru / toplam;
+    var renk = pct >= 0.8 ? "var(--good)" : pct >= 0.6 ? "var(--warn)" : "var(--bad)";
+    return '<span class="konu-dot" style="background:' + renk + '" title="Bu oturumdaki sonuç"></span>';
   }
 
   function pratikDevamHtml(konu, modulKey) {
@@ -2002,7 +2008,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     var karisikHavuz = pratikHavuz(konu, PRATIK_TUM_MODULLER);
     var karisikSecili = pratikSeciliModul === PRATIK_TUM_MODULLER;
     var karisikTile = '<button class="mode-btn' + (karisikSecili ? " selected" : "") + '" ' + pratikTileStil(konu, PRATIK_TUM_MODULLER) + ' data-action="select-pratik-modul" data-modul="' + PRATIK_TUM_MODULLER + '">' +
-      '<div class="title">' + basariDotHtml(konu, PRATIK_TUM_MODULLER) + '🔀 Karışık — Tüm Modüller</div>' +
+      '<div class="title">🔀 Karışık — Tüm Modüller</div>' +
       '<div class="desc">' + karisikHavuz.length + " soruluk havuzdan oturum başına " + PRATIK_KARISIK_LIMIT + " soru" + pratikEnIyiHtml(konu, PRATIK_TUM_MODULLER) +
       "</div>" + pratikDevamHtml(konu, PRATIK_TUM_MODULLER) + "</button>" +
       (karisikSecili ? pratikAltSecimHtml(konu, PRATIK_TUM_MODULLER) : "");
@@ -2010,7 +2016,7 @@ function pratikEnIyiHtml(konu, modulKey) {
       var havuz = pratikHavuz(konu, m.key);
       var secili = pratikSeciliModul === m.key;
       return '<button class="mode-btn' + (secili ? " selected" : "") + '" ' + pratikTileStil(konu, m.key) + ' data-action="select-pratik-modul" data-modul="' + m.key + '">' +
-        '<div class="title">' + basariDotHtml(konu, m.key) + escapeHtml(m.key + " — " + m.ad) + "</div>" +
+        '<div class="title">' + escapeHtml(m.key + " — " + m.ad) + "</div>" +
         '<div class="desc">' + havuz.length + " soru" + pratikEnIyiHtml(konu, m.key) + "</div>" +
         pratikDevamHtml(konu, m.key) + "</button>" +
         (secili ? pratikAltSecimHtml(konu, m.key) : "");
