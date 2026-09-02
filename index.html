@@ -1714,19 +1714,14 @@ setTimeout(function(){input.focus();},50);
       "</div>";
   }
 
-  // Soruyu (soru + şıklar, cevaplanmışsa doğru cevap + açıklama) düz metin olarak
-  // panoya kopyalar — WhatsApp/not uygulamasına yapıştırmak için. Gerçek zamanlı
-  // aktif soruyu ekran türüne (exam/flash/pratik) göre global state'ten okur.
-  function kopyalaSoruMetni(q, cevaplandi, secilenIdx) {
+  // Soruyu (soru + şıklar + varsa kaynak) düz metin olarak panoya kopyalar —
+  // WhatsApp/not uygulamasına yapıştırmak için. Bilerek doğru cevap/açıklama
+  // içermez — amaç soruyu birine sorabilmek, cevabı ifşa etmemek.
+  function kopyalaSoruMetni(q) {
     var harfler = ["A", "B", "C", "D"];
     var satirlar = [q.soru, ""];
     q.siklar.forEach(function (s, i) { if (s) satirlar.push(harfler[i] + ") " + s); });
-    if (cevaplandi) {
-      satirlar.push("");
-      satirlar.push("Doğru cevap: " + harfler[q.cevapIdx] + ") " + q.siklar[q.cevapIdx]);
-      if (q.aciklama) satirlar.push("Açıklama: " + q.aciklama);
-    }
-    if (q.kaynak) satirlar.push("Kaynak: " + q.kaynak);
+    if (q.kaynak) { satirlar.push(""); satirlar.push("Kaynak: " + q.kaynak); }
     return satirlar.join("\n");
   }
 
@@ -1741,24 +1736,17 @@ setTimeout(function(){input.focus();},50);
   }
 
   function kopyalaAktifSoru(scope) {
-    var q, cevaplandi, secilen;
+    var q;
     if (scope === "exam" && currentExam) {
       var eguid = currentExam.sorular[currentExam.index];
       q = STATE.bank.filter(function (b) { return b.guid === eguid; })[0];
-      secilen = currentExam.cevaplar[eguid];
-      cevaplandi = secilen !== undefined && secilen !== null;
     } else if (scope === "flash" && currentFlash) {
       q = flashSoruBul(currentFlash);
-      secilen = currentFlash.secilen;
-      cevaplandi = secilen !== null;
     } else if (scope === "pratik" && currentPratik && !currentPratik.bitti) {
-      var pguid = currentPratik.kuyruk[currentPratik.index];
-      q = pratikSoruBul(pguid);
-      secilen = currentPratik.secilen;
-      cevaplandi = currentPratik.cevaplandi;
+      q = pratikSoruBul(currentPratik.kuyruk[currentPratik.index]);
     }
     if (!q) { showBanner("Kopyalanacak soru bulunamadı.", true); return; }
-    kopyalaPano(kopyalaSoruMetni(q, cevaplandi, secilen));
+    kopyalaPano(kopyalaSoruMetni(q));
   }
 
   function kopyalaButonHtml(scope) {
