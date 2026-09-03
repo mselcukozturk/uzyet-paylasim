@@ -1232,6 +1232,11 @@ setTimeout(function(){input.focus();},50);
     currentFlash = null;
     VIEW = "flashResult";
     render();
+    // Testi Bitir gerçek bir çıkış noktası — bu oturumdaki stats/pStats hemen yayınlansın,
+    // 3 dk'lık autosave'i veya sonraki "ana sayfaya dön" tıklamasını beklemesin.
+    if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
+    pendingSaveDirty = false;
+    saveAndPublish();
   }
 
   function backToMenu() {
