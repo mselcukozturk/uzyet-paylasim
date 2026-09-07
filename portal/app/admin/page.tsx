@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth/server';
 import { getDb, schema } from '@/lib/db';
-import { signInAction, signOutAction } from '@/app/actions/auth';
+import { requestPasswordResetAction, signInAction, signOutAction } from '@/app/actions/auth';
 import { approveUserAction } from '@/app/actions/admin';
 
 async function currentAdmin() {
@@ -22,6 +22,11 @@ export default async function AdminPage() {
       await signInAction(String(formData.get('identifier') ?? ''), String(formData.get('password') ?? ''));
     }
 
+    async function submitResetRequest(formData: FormData) {
+      'use server';
+      await requestPasswordResetAction(String(formData.get('identifier') ?? ''));
+    }
+
     return (
       <main style={{ maxWidth: 360, margin: '4rem auto', fontFamily: 'sans-serif' }}>
         <h1>Yönetici girişi</h1>
@@ -29,6 +34,11 @@ export default async function AdminPage() {
           <input name="identifier" placeholder="E-posta" required />
           <input name="password" type="password" placeholder="Parola" required />
           <button type="submit">Giriş yap</button>
+        </form>
+        <form action={submitResetRequest} style={{ display: 'grid', gap: '0.5rem', marginTop: '1.5rem' }}>
+          <p>Parolan yoksa veya unuttuysan:</p>
+          <input name="identifier" placeholder="E-posta" required />
+          <button type="submit">Parola belirleme bağlantısı gönder</button>
         </form>
       </main>
     );
