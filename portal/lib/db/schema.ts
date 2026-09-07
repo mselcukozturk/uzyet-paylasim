@@ -20,7 +20,7 @@ export const attemptStatus = pgEnum('attempt_status', ['active', 'paused', 'fini
 
 export const profiles = pgTable('profiles', {
   userId: text('user_id').primaryKey(),
-  email: text('email').notNull(),
+  email: text('email'),
   username: text('username').notNull(),
   displayName: text('display_name'),
   isActive: boolean('is_active').notNull().default(false),
@@ -126,3 +126,12 @@ export const questionFlags = pgTable('question_flags', {
   isReported: boolean('is_reported').notNull().default(true),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [unique('question_flags_user_guid_unique').on(table.userId, table.questionGuid)]);
+
+// Sıradan kullanıcılar için parolasız oturum: yalnız kullanıcı adı ile istek, yönetici onayı bekler.
+// Yönetici girişi ayrıca profiles.isAdmin + Neon Auth (e-posta/parola) ile yapılır.
+export const userSessions = pgTable('user_sessions', {
+  tokenHash: text('token_hash').primaryKey(),
+  userId: text('user_id').notNull().references(() => profiles.userId, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [index('user_sessions_user_idx').on(table.userId)]);

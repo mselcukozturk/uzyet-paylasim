@@ -1,5 +1,7 @@
 'use server';
 
+// Yalnız tek yönetici hesabı için (/admin girişi). Sıradan kullanıcılar /api/access ile
+// parolasız kullanıcı adı isteği yapar; bkz. lib/auth/session.ts.
 import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth/server';
 import { getDb, schema } from '@/lib/db';

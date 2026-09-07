@@ -1,3 +1,5 @@
+// Bu script yalnız tek yönetici hesabını (Neon Auth e-posta/parola) kurmak içindir.
+// Sıradan kullanıcılar kendi kullanıcı adını /api/access üzerinden ister; onayı /admin sayfasından yönetici verir.
 import postgres from 'postgres';
 
 const email = process.argv[2]?.trim().toLocaleLowerCase('tr-TR');

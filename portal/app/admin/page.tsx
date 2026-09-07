@@ -1,0 +1,79 @@
+import { eq } from 'drizzle-orm';
+import { auth } from '@/lib/auth/server';
+import { getDb, schema } from '@/lib/db';
+import { signInAction, signOutAction } from '@/app/actions/auth';
+import { approveUserAction } from '@/app/actions/admin';
+
+async function currentAdmin() {
+  const { data: session } = await auth.getSession();
+  const user = session?.user;
+  if (!user?.id) return null;
+  const db = getDb();
+  const [profile] = await db.select().from(schema.profiles).where(eq(schema.profiles.userId, user.id)).limit(1);
+  return profile?.isAdmin ? profile : null;
+}
+
+export default async function AdminPage() {
+  const admin = await currentAdmin();
+
+  if (!admin) {
+    async function submitSignIn(formData: FormData) {
+      'use server';
+      await signInAction(String(formData.get('identifier') ?? ''), String(formData.get('password') ?? ''));
+    }
+
+    return (
+      <main style={{ maxWidth: 360, margin: '4rem auto', fontFamily: 'sans-serif' }}>
+        <h1>Yönetici girişi</h1>
+        <form action={submitSignIn} style={{ display: 'grid', gap: '0.5rem' }}>
+          <input name="identifier" placeholder="E-posta" required />
+          <input name="password" type="password" placeholder="Parola" required />
+          <button type="submit">Giriş yap</button>
+        </form>
+      </main>
+    );
+  }
+
+  const db = getDb();
+  const pending = await db.select({
+    userId: schema.profiles.userId,
+    username: schema.profiles.username,
+    createdAt: schema.profiles.createdAt,
+  }).from(schema.profiles).where(eq(schema.profiles.isActive, false)).orderBy(schema.profiles.createdAt);
+
+  async function submitSignOut() {
+    'use server';
+    await signOutAction();
+  }
+
+  return (
+    <main style={{ maxWidth: 480, margin: '4rem auto', fontFamily: 'sans-serif' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <h1>Onay bekleyen kullanıcılar</h1>
+        <form action={submitSignOut}>
+          <button type="submit">Çıkış</button>
+        </form>
+      </div>
+      {pending.length === 0 && <p>Bekleyen kullanıcı yok.</p>}
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+        {pending.map((item) => {
+          async function submitApprove() {
+            'use server';
+            await approveUserAction(item.userId);
+          }
+          return (
+            <li key={item.userId} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '0.5rem 0', borderBottom: '1px solid #ddd',
+            }}>
+              <span>{item.username}</span>
+              <form action={submitApprove}>
+                <button type="submit">Onayla</button>
+              </form>
+            </li>
+          );
+        })}
+      </ul>
+    </main>
+  );
+}

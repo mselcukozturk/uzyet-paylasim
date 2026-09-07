@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
-import { auth } from '@/lib/auth/server';
+import { getSessionProfile } from '@/lib/auth/session';
 import { getDb, schema } from '@/lib/db';
 import {
   examCode,
@@ -79,7 +79,7 @@ async function loadAttempt(userId: string, attemptId: string) {
   };
 }
 
-async function dashboard(userId: string, email: string) {
+async function dashboard(userId: string) {
   const db = getDb();
   const [profileRows, bankRows, attempts, stats, completedRows] = await Promise.all([
     db.select().from(schema.profiles).where(eq(schema.profiles.userId, userId)).limit(1),
@@ -141,7 +141,7 @@ async function dashboard(userId: string, email: string) {
   }
 
   return {
-    displayName: profile?.displayName || profile?.username || email.split('@')[0] || 'Kullanıcı',
+    displayName: profile?.displayName || profile?.username || 'Kullanıcı',
     bankQuestionCount: bank?.questionCount ?? 0,
     completedCount: Number(completedRows[0]?.value ?? 0),
     overallPercent: scoredTotal ? Math.round(scoredCorrect / scoredTotal * 100) : null,
@@ -154,18 +154,15 @@ async function dashboard(userId: string, email: string) {
 
 export async function POST(request: Request) {
   try {
-    const { data: session } = await auth.getSession();
-    const user = session?.user;
-    if (!user?.id || !user.email) return fail('Giriş gerekli.', 401);
+    const profile = await getSessionProfile();
+    if (!profile) return fail('Giriş gerekli.', 401);
+    if (!profile.isActive) return fail('Bu hesabın erişimi kapalı; onay bekleniyor.', 403);
+    const user = { id: profile.userId };
 
     const db = getDb();
-    const [profile] = await db.select().from(schema.profiles)
-      .where(eq(schema.profiles.userId, user.id)).limit(1);
-    if (!profile?.isActive) return fail('Bu hesabın erişimi kapalı.', 403);
-
     const body = await request.json() as ExamApiRequest;
     if (body.action === 'dashboard' || body.action === 'history') {
-      return NextResponse.json(await dashboard(user.id, user.email));
+      return NextResponse.json(await dashboard(user.id));
     }
 
     if (body.action === 'start') {
