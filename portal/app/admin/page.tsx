@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth/server';
 import { getDb, schema } from '@/lib/db';
 import { requestPasswordResetAction, signInAction, signOutAction } from '@/app/actions/auth';
-import { approveUserAction } from '@/app/actions/admin';
+import { approveUserAction, rejectUserAction } from '@/app/actions/admin';
 
 async function currentAdmin() {
   const { data: session } = await auth.getSession();
@@ -71,15 +71,24 @@ export default async function AdminPage() {
             'use server';
             await approveUserAction(item.userId);
           }
+          async function submitReject() {
+            'use server';
+            await rejectUserAction(item.userId);
+          }
           return (
             <li key={item.userId} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               padding: '0.5rem 0', borderBottom: '1px solid #ddd',
             }}>
               <span>{item.username}</span>
-              <form action={submitApprove}>
-                <button type="submit">Onayla</button>
-              </form>
+              <span style={{ display: 'flex', gap: '0.4rem' }}>
+                <form action={submitApprove}>
+                  <button type="submit">Onayla</button>
+                </form>
+                <form action={submitReject}>
+                  <button type="submit">Reddet</button>
+                </form>
+              </span>
             </li>
           );
         })}

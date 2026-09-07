@@ -23,3 +23,12 @@ export async function approveUserAction(userId: string) {
   revalidatePath('/admin');
   return { ok: true };
 }
+
+export async function rejectUserAction(userId: string) {
+  const admin = await requireAdmin();
+  if (!admin) return { ok: false, message: 'Yönetici girişi gerekli.' };
+  const db = getDb();
+  await db.delete(schema.profiles).where(eq(schema.profiles.userId, userId));
+  revalidatePath('/admin');
+  return { ok: true };
+}
