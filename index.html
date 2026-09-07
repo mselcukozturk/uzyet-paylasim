@@ -1202,7 +1202,7 @@ setTimeout(function(){input.focus();},50);
       id: "h" + Date.now(), tarihISO: now, tip: currentExam.tip, seed: currentExam.seed,
       sorular: currentExam.sorular, cevaplar: currentExam.cevaplar,
       soruKayitlari: currentExam.soruKayitlari,
-      skor: res.skor, konuKirilim: res.konuKirilim
+      skor: res.skor, konuKirilim: res.konuKirilim, sureSaniye: currentExam.gecenSaniye || 0
     };
     STATE.history.unshift(entry);
     if (STATE.history.length > 100) STATE.history = STATE.history.slice(0, 100);
@@ -1238,6 +1238,15 @@ setTimeout(function(){input.focus();},50);
     (haric || []).forEach(function (g) { haricSet[g] = true; });
     var tazeHavuz = havuz.filter(function (q) { return !haricSet[q.guid]; });
     var aktifHavuz = tazeHavuz.length ? tazeHavuz : havuz;
+    // Havuz bu oturumda tamamen tükendiyse (tazeHavuz boş) tekrara izin verilir, AMA
+    // az önce gösterilen TEK soru (haric'in son elemanı) yine de mümkünse hemen bir
+    // sonraki soru olarak önerilmez — "doğru işaretlediğim soru hemen tekrar karşıma
+    // çıkıyor" şikayeti buradan kaynaklanıyordu (7 Eyl 2026).
+    if (!tazeHavuz.length && haric && haric.length && havuz.length > 1) {
+      var sonGosterilen = haric[haric.length - 1];
+      var sonHaricYok = aktifHavuz.filter(function (q) { return q.guid !== sonGosterilen; });
+      if (sonHaricYok.length) aktifHavuz = sonHaricYok;
+    }
     var yanlisHavuz = aktifHavuz.filter(function (q) { return statlar[q.guid] && statlar[q.guid].sonSonucDogruMu === false; });
     if (yanlisHavuz.length) return sampleRandom(yanlisHavuz, 1)[0];
     var denenmemis = aktifHavuz.filter(function (q) { return !statlar[q.guid]; });
@@ -1277,28 +1286,46 @@ setTimeout(function(){input.focus();},50);
     shuffleSiklarInPlace(q0);
     // oturum: bu Rastgele Soru oturumunda cevaplanan her sorunun {konu, dogruMu} kaydı —
     // "Testi Bitir" ekranındaki ders bazlı dağılım buradan hesaplanır, kalıcı istatistikten değil.
-    // gorulenGuidler: bu oturumda zaten gösterilen guid'ler — flashSecimYap tekrarı engellemek için kullanır.
-    currentFlash = { guid: q0.guid, secilen: null, kaynak: kaynak, konuFiltre: konuFiltre, oturum: [], gorulenGuidler: [q0.guid] };
+    // gecmis/konum: bu oturumda gösterilen her sorunun {guid,secilen} kaydı ve şu an
+    // hangisinin ekranda olduğu — "Önceki/Sonraki Soru" ile geçmişte gezinmeyi sağlar.
+    currentFlash = {
+      guid: q0.guid, secilen: null, kaynak: kaynak, konuFiltre: konuFiltre, oturum: [],
+      gecmis: [{ guid: q0.guid, secilen: null }], konum: 0
+    };
     VIEW = "flash";
     render();
   }
   function nextFlash() {
     if (!currentFlash) { backToMenu(); return; }
-    var havuz = flashHavuzu(currentFlash.kaynak, currentFlash.konuFiltre);
-    if (havuz.length === 0) { backToMenu(); return; }
-    flashSayac++;
-    var secimHavuzu = currentFlash.konuFiltre ? havuz : (agirlikliHavuzSec(havuz) || havuz);
-    var q1 = flashSecimYap(secimHavuzu, currentFlash.kaynak, currentFlash.gorulenGuidler);
-    shuffleSiklarInPlace(q1);
-    currentFlash = {
-      guid: q1.guid, secilen: null, kaynak: currentFlash.kaynak, konuFiltre: currentFlash.konuFiltre,
-      oturum: currentFlash.oturum, gorulenGuidler: currentFlash.gorulenGuidler.concat([q1.guid])
-    };
+    if (currentFlash.konum < currentFlash.gecmis.length - 1) {
+      // Daha önce "Önceki Soru" ile geri gidilmiş — yeni soru üretmeden ileri sar.
+      currentFlash.konum++;
+    } else {
+      var havuz = flashHavuzu(currentFlash.kaynak, currentFlash.konuFiltre);
+      if (havuz.length === 0) { backToMenu(); return; }
+      flashSayac++;
+      var secimHavuzu = currentFlash.konuFiltre ? havuz : (agirlikliHavuzSec(havuz) || havuz);
+      var gorulmus = currentFlash.gecmis.map(function (x) { return x.guid; });
+      var q1 = flashSecimYap(secimHavuzu, currentFlash.kaynak, gorulmus);
+      shuffleSiklarInPlace(q1);
+      currentFlash.gecmis.push({ guid: q1.guid, secilen: null });
+      currentFlash.konum = currentFlash.gecmis.length - 1;
+    }
+    var guncel = currentFlash.gecmis[currentFlash.konum];
+    currentFlash.guid = guncel.guid; currentFlash.secilen = guncel.secilen;
+    render();
+  }
+  function prevFlash() {
+    if (!currentFlash || currentFlash.konum <= 0) return;
+    currentFlash.konum--;
+    var guncel = currentFlash.gecmis[currentFlash.konum];
+    currentFlash.guid = guncel.guid; currentFlash.secilen = guncel.secilen;
     render();
   }
   function selectFlashOption(idx) {
     if (!currentFlash || currentFlash.secilen !== null) return; // cevap zaten verildi, kilitli
     currentFlash.secilen = idx;
+    currentFlash.gecmis[currentFlash.konum].secilen = idx; // geri/ileri giderken cevap kaybolmasın
     var q = flashSoruBul(currentFlash);
     if (!q) { render(); return; }
     var flashDogruMu = idx === q.cevapIdx;
@@ -1988,14 +2015,16 @@ setTimeout(function(){input.focus();},50);
 
     var geriAction = pratikMi ? "open-menu-test" : (konuBakMi ? "open-deneme-konu-sec" : "back-menu");
     var geriEtiket = pratikMi ? "← Test Sayfası" : (konuBakMi ? "← Konu Seç" : "Ana Menüye Dön");
-    // Çıkış aksiyonları (Testi Bitir / Ana Sayfaya Dön) üstte, tek devam aksiyonu
-    // (Sonraki Soru) sticky alt barda yalnız başına — birbirine yakın, karışık
-    // bir buton kümesi yerine "devam et" ile "çık" görsel olarak ayrılıyor.
-    var cikisRow = '<div class="link-row" style="margin-bottom:10px">' +
-      (currentFlash.oturum.length ? '<button class="btn" data-action="finish-flash">✅ Testi Bitir (' + currentFlash.oturum.length + ")</button>" : "") +
+    // Çıkış aksiyonları üstte, sol/sağ ayrık (sol: sayfadan çık, sağ: testi bitir) —
+    // devam aksiyonları (Önceki/Sonraki Soru) sticky alt barda ayrı bir grup olarak
+    // duruyor; birbirine yakın, karışık bir buton kümesi yerine iki amaç görsel
+    // olarak ayrışıyor (7 Eyl 2026, kullanıcı isteği).
+    var cikisRow = '<div class="link-row" style="justify-content:space-between;margin-bottom:10px">' +
       '<button class="btn ghost" data-action="' + geriAction + '">' + geriEtiket + "</button>" +
+      (currentFlash.oturum.length ? '<button class="btn" data-action="finish-flash">✅ Testi Bitir (' + currentFlash.oturum.length + ")</button>" : "") +
       "</div>";
     var navHtml = '<div class="sticky-next-bar link-row">' +
+      '<button class="btn ghost" data-action="prev-flash"' + (currentFlash.konum <= 0 ? " disabled" : "") + ">← Önceki Soru</button>" +
       '<button class="btn' + (answered ? " primary" : "") + '" data-action="next-flash">Sonraki Soru →</button>' +
       "</div>";
 
@@ -2295,12 +2324,16 @@ function pratikEnIyiHtml(konu, modulKey) {
         '<button class="btn ghost" style="padding:2px 8px;font-size:0.76rem;margin-left:4px" data-action="copy-exam-code" data-kod="' + kod + '">📋 Kopyala</button>' +
         '<br>Bu kodu Deneme sayfasındaki "Kod ile Çöz" alanına girersen aynı soruları tekrar çözersin.</div>'
       : "";
+    var yuzde = toplam ? Math.round((r.skor.dogru / toplam) * 100) : null;
+    var yuzdeHtml = yuzde === null ? "" : '<span class="pill" style="background:var(--surface-2);color:' + renkEsigi(yuzde) + '">%' + yuzde + "</span>";
+    var sureHtml = typeof r.sureSaniye === "number" ? '<span class="muted" style="font-size:0.86rem">⏱ ' + fmtSure(r.sureSaniye) + " sürede bitti</span>" : "";
 
     return '<div class="card">' +
       '<div class="score-hero"><span class="big">' + r.skor.dogru + " / " + toplam + "</span>" +
       '<span class="pill good">' + r.skor.dogru + " doğru</span>" +
       '<span class="pill bad">' + r.skor.yanlis + " yanlış</span>" +
-      '<span class="pill warn">' + r.skor.bos + " boş</span></div>" +
+      '<span class="pill warn">' + r.skor.bos + " boş</span>" +
+      yuzdeHtml + sureHtml + "</div>" +
       '<table class="topic-table"><thead><tr><th>Konu</th><th class="num">Doğru</th><th class="num">Yanlış</th><th class="num">Boş</th></tr></thead><tbody>' +
       topicRows + "</tbody></table>" +
       '<button class="btn primary" data-action="back-menu">Ana Menüye Dön</button>' +
@@ -2511,6 +2544,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "start-flash") startFlash();
     else if (action === "start-flash-again") startFlash(t.getAttribute("data-kaynak"), t.getAttribute("data-konu"));
     else if (action === "next-flash") nextFlash();
+    else if (action === "prev-flash") prevFlash();
     else if (action === "finish-flash") finishFlash();
     else if (action === "select-flash-option") selectFlashOption(parseInt(t.getAttribute("data-idx"), 10));
     else if (action === "request-delete-history") requestDeleteHistory(t.getAttribute("data-id"));
@@ -2585,6 +2619,8 @@ function pratikEnIyiHtml(konu, modulKey) {
         if (fq && fq.siklar[fidx]) { e.preventDefault(); selectFlashOption(fidx); }
       } else if (e.key === "ArrowRight") {
         e.preventDefault(); nextFlash(); // cevaplanmamış olsa da atlanabilir
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault(); prevFlash();
       }
     } else if (VIEW === "pratikSoru" && currentPratik && !currentPratik.bitti) {
       var pq = pratikSoruBul(currentPratik.kuyruk[currentPratik.index]);
