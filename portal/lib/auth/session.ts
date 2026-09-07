@@ -15,6 +15,10 @@ export function newProfileId() {
   return randomUUID();
 }
 
+// index.html (GitHub Pages / Artifact) başka bir origin'den çağırdığı için çerez
+// güvenilmez (üçüncü taraf çerez engelleme). Token hem çereze yazılır (aynı origin'den
+// -admin gibi- test için) hem de çağırana JSON içinde döner; asıl istemci Authorization
+// header'ıyla gönderir.
 export async function createUserSession(userId: string) {
   const raw = randomBytes(32).toString('base64url');
   const db = getDb();
@@ -27,11 +31,18 @@ export async function createUserSession(userId: string) {
     path: '/',
     maxAge: COOKIE_MAX_AGE,
   });
+  return raw;
 }
 
-export async function getSessionProfile() {
+function bearerToken(request: Request) {
+  const header = request.headers.get('authorization') ?? '';
+  const match = /^Bearer\s+(.+)$/i.exec(header);
+  return match?.[1]?.trim() || null;
+}
+
+export async function getSessionProfile(request: Request) {
   const store = await cookies();
-  const raw = store.get(COOKIE_NAME)?.value;
+  const raw = bearerToken(request) ?? store.get(COOKIE_NAME)?.value;
   if (!raw) return null;
 
   const tokenHash = hashToken(raw);

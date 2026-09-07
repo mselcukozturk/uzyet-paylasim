@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { sql } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { createUserSession, getSessionProfile, newProfileId } from '@/lib/auth/session';
+import { corsPreflight, withCors } from '@/lib/cors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -9,19 +10,23 @@ export const dynamic = 'force-dynamic';
 const USERNAME_PATTERN = /^[a-z0-9._-]{3,40}$/;
 
 function fail(message: string, status: number) {
-  return NextResponse.json({ error: message }, { status });
+  return withCors(NextResponse.json({ error: message }, { status }));
 }
 
-export async function GET() {
-  const profile = await getSessionProfile();
-  if (!profile) return NextResponse.json({ authenticated: false });
-  return NextResponse.json({ authenticated: true, username: profile.username, isActive: profile.isActive });
+export async function OPTIONS() {
+  return corsPreflight();
+}
+
+export async function GET(request: Request) {
+  const profile = await getSessionProfile(request);
+  if (!profile) return withCors(NextResponse.json({ authenticated: false }));
+  return withCors(NextResponse.json({ authenticated: true, username: profile.username, isActive: profile.isActive }));
 }
 
 export async function POST(request: Request) {
-  const existing = await getSessionProfile();
+  const existing = await getSessionProfile(request);
   if (existing) {
-    return NextResponse.json({ authenticated: true, username: existing.username, isActive: existing.isActive });
+    return withCors(NextResponse.json({ authenticated: true, username: existing.username, isActive: existing.isActive }));
   }
 
   const body = await request.json().catch(() => null) as { username?: string } | null;
@@ -37,6 +42,6 @@ export async function POST(request: Request) {
 
   const userId = newProfileId();
   await db.insert(schema.profiles).values({ userId, username, isActive: false });
-  await createUserSession(userId);
-  return NextResponse.json({ authenticated: true, username, isActive: false });
+  const token = await createUserSession(userId);
+  return withCors(NextResponse.json({ authenticated: true, username, isActive: false, token }));
 }

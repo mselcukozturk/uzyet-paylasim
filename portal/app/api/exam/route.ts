@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { getSessionProfile } from '@/lib/auth/session';
+import { corsPreflight, withCors } from '@/lib/cors';
 import { getDb, schema } from '@/lib/db';
 import {
   examCode,
@@ -152,9 +153,17 @@ async function dashboard(userId: string) {
   };
 }
 
+export async function OPTIONS() {
+  return corsPreflight();
+}
+
 export async function POST(request: Request) {
+  return withCors(await handlePost(request));
+}
+
+async function handlePost(request: Request) {
   try {
-    const profile = await getSessionProfile();
+    const profile = await getSessionProfile(request);
     if (!profile) return fail('Giriş gerekli.', 401);
     if (!profile.isActive) return fail('Bu hesabın erişimi kapalı; onay bekleniyor.', 403);
     const user = { id: profile.userId };
