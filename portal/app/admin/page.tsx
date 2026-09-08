@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth/server';
 import { getDb, schema } from '@/lib/db';
 import { requestPasswordResetAction, signInAction, signOutAction } from '@/app/actions/auth';
@@ -51,6 +51,17 @@ export default async function AdminPage() {
     createdAt: schema.profiles.createdAt,
   }).from(schema.profiles).where(eq(schema.profiles.isActive, false)).orderBy(schema.profiles.createdAt);
 
+  const active = await db.select({
+    userId: schema.profiles.userId,
+    username: schema.profiles.username,
+    createdAt: schema.profiles.createdAt,
+    isAdmin: schema.profiles.isAdmin,
+  }).from(schema.profiles).where(eq(schema.profiles.isActive, true)).orderBy(desc(schema.profiles.createdAt));
+
+  function formatTarih(d: Date) {
+    return d.toLocaleString('tr-TR', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+
   async function submitSignOut() {
     'use server';
     await signOutAction();
@@ -93,6 +104,25 @@ export default async function AdminPage() {
           );
         })}
       </ul>
+
+      <h2 style={{ marginTop: '2rem' }}>Kullanıcılar ({active.length})</h2>
+      {active.length === 0 && <p>Henüz onaylı kullanıcı yok.</p>}
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr style={{ textAlign: 'left', borderBottom: '1px solid #ddd' }}>
+            <th style={{ padding: '0.4rem 0' }}>İsim</th>
+            <th style={{ padding: '0.4rem 0' }}>Kayıt tarihi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {active.map((item) => (
+            <tr key={item.userId} style={{ borderBottom: '1px solid #eee' }}>
+              <td style={{ padding: '0.4rem 0' }}>{item.username}{item.isAdmin ? ' (yönetici)' : ''}</td>
+              <td style={{ padding: '0.4rem 0', color: '#666' }}>{formatTarih(item.createdAt)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </main>
   );
 }
