@@ -1,0 +1,3161 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UZYET (Paylaşım)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style id="app-style">
+  :root {
+    --bg: #f6f3ec;
+    --surface: #ffffff;
+    --surface-2: #eeeadf;
+    --border: #ddd6c4;
+    --text: #23262d;
+    --text-muted: #62636c;
+    --accent: #2b3a67;
+    --accent-strong: #1f2a4a;
+    --accent-contrast: #ffffff;
+    --good: #2f7a4f;
+    --good-bg: #e4f2e9;
+    --bad: #b3423a;
+    --bad-bg: #f7e6e4;
+    --warn: #9a6b16;
+    --warn-bg: #f7ecd6;
+    --shadow: 0 1px 2px rgba(30, 30, 20, 0.06), 0 4px 14px rgba(30, 30, 20, 0.06);
+    --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --font-body: "Public Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
+    --radius: 10px;
+    --seri-1: #3b5b8c;
+    --seri-2: #3f8c6b;
+    --seri-3: #b4633b;
+    --seri-4: #7a5aa8;
+    --seri-5: #a8863b;
+    --seri-6: #4a8ca8;
+    --seri-7: #8c3b5b;
+    --seri-8: #5b7a3b;
+    --seri-9: #8c6b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161c;
+      --surface: #1b1e26;
+      --surface-2: #232733;
+      --border: #343947;
+      --text: #e9e7de;
+      --text-muted: #9a9dac;
+      --accent: #8493c9;
+      --accent-strong: #a9b5dd;
+      --accent-contrast: #12141b;
+      --good: #6cc492;
+      --good-bg: #1c3327;
+      --bad: #e18077;
+      --bad-bg: #3a231f;
+      --warn: #e0b559;
+      --warn-bg: #3a3120;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.35);
+      --seri-1: #93aee0;
+      --seri-2: #7ed4ae;
+      --seri-3: #e3a184;
+      --seri-4: #b6a0e0;
+      --seri-5: #e0bf7d;
+      --seri-6: #8cc7e0;
+      --seri-7: #e08cae;
+      --seri-8: #a9c47d;
+      --seri-9: #d0b17d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161c;
+    --surface: #1b1e26;
+    --surface-2: #232733;
+    --border: #343947;
+    --text: #e9e7de;
+    --text-muted: #9a9dac;
+    --accent: #8493c9;
+    --accent-strong: #a9b5dd;
+    --accent-contrast: #12141b;
+    --good: #6cc492;
+    --good-bg: #1c3327;
+    --bad: #e18077;
+    --bad-bg: #3a231f;
+    --warn: #e0b559;
+    --warn-bg: #3a3120;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.35);
+    --seri-1: #93aee0;
+    --seri-2: #7ed4ae;
+    --seri-3: #e3a184;
+    --seri-4: #b6a0e0;
+    --seri-5: #e0bf7d;
+    --seri-6: #8cc7e0;
+    --seri-7: #e08cae;
+    --seri-8: #a9c47d;
+    --seri-9: #d0b17d;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  button, input, textarea, select { color: inherit; font: inherit; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .card, .btn, .option-row { transition: background-color 120ms ease, border-color 120ms ease; }
+  }
+  .shell { max-width: 880px; margin: 0 auto; padding: 28px 20px 64px; }
+  .shell.narrow { max-width: 560px; }
+  .kicker { font-family: var(--font-body); font-weight: 700; font-size: 0.72rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); margin-bottom: 5px; }
+  .hero-band {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+    border-radius: var(--radius); padding: 24px 26px; margin-bottom: 22px; box-shadow: var(--shadow);
+  }
+  .hero-band .kicker { color: var(--accent-contrast); opacity: 0.72; }
+  .masthead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .masthead h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.85rem; margin: 0; text-wrap: balance; color: var(--accent-contrast); }
+  .masthead .sub { color: var(--accent-contrast); opacity: 0.82; font-size: 0.92rem; margin-top: 4px; }
+  .mode-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: middle; flex-shrink: 0; }
+  .konu-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: middle; flex-shrink: 0; }
+  .banner { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; font-size: 0.92rem; }
+  .banner.error { background: var(--bad-bg); color: var(--bad); border-color: var(--bad); }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+  }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 22px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .stat-card .num { font-family: var(--font-display); font-variant-numeric: tabular-nums; font-size: 1.6rem; font-weight: 700; }
+  .stat-card .lbl { color: var(--text-muted); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 2px; }
+  .mode-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 22px; }
+  .mode-btn {
+    display: block; text-align: left; width: 100%; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px 18px 16px 16px; box-shadow: var(--shadow); font-family: var(--font-body); color: var(--text);
+  }
+  .mode-btn:hover { border-color: var(--accent); box-shadow: 0 2px 4px rgba(30, 30, 20, 0.08), 0 8px 20px rgba(30, 30, 20, 0.1); }
+  .mode-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .mode-btn .title { display: flex; align-items: center; font-weight: 700; font-size: 1.08rem; margin-bottom: 4px; }
+  .mode-btn .desc { color: var(--text-muted); font-size: 0.86rem; }
+  .link-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .btn {
+    font-family: var(--font-body); font-weight: 600; font-size: 0.92rem;
+    padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text); cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn:focus-visible, .option-row:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+  .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+  .btn.ghost { background: transparent; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .progressbar { height: 6px; border-radius: 4px; background: var(--surface-2); overflow: hidden; margin-bottom: 18px; }
+  .progressbar > div { height: 100%; background: var(--accent); }
+  .q-meta { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.84rem; margin-bottom: 10px; font-variant-numeric: tabular-nums; }
+  .exam-timer { font-weight: 700; }
+  .q-text { font-family: var(--font-display); font-size: 1.22rem; font-weight: 600; margin-bottom: 18px; white-space: pre-wrap; text-wrap: balance; }
+  .option-row {
+    display: flex; gap: 10px; align-items: flex-start; width: 100%; text-align: left;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 14px; margin-bottom: 9px; cursor: pointer; font-family: var(--font-body); font-size: 0.98rem;
+  }
+  .option-row:hover { border-color: var(--accent); }
+  .option-row.selected { border-color: var(--accent); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--accent); }
+  .option-letter { font-weight: 700; color: var(--accent); flex-shrink: 0; }
+  .option-text { flex: 1; }
+  .kbd-hint { flex-shrink: 0; color: var(--text-muted); font-size: 0.76rem; font-variant-numeric: tabular-nums; border: 1px solid var(--border); border-radius: 4px; padding: 0 5px; align-self: center; }
+  .flag-bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 4px; }
+  .flag-btn { font-family: var(--font-body); font-size: 0.8rem; padding: 5px 10px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); cursor: pointer; }
+  .flag-btn:hover { border-color: var(--accent); color: var(--text); }
+  .flag-btn.active-bookmark { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
+  .flag-btn.active-report { background: var(--bad-bg); color: var(--bad); border-color: var(--bad); }
+  .flag-btn.active-star { background: var(--good-bg); color: var(--good); border-color: var(--good); }
+  .flag-btn.active-outofscope { background: var(--surface-2); color: var(--text-muted); border-color: var(--text-muted); text-decoration: line-through; }
+  .sticky-next-bar {
+    position: sticky; bottom: 0; z-index: 5;
+    margin: 14px -20px -20px; padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: var(--surface); border-top: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius);
+  }
+  .mode-btn.selected { border-color: var(--accent); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--accent); }
+  .hata-notu { width: 100%; min-height: 54px; margin-top: 6px; padding: 8px 10px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: var(--font-body); font-size: 0.86rem; resize: vertical; }
+  .resume-card { border-color: var(--accent); margin-bottom: 18px; }
+  .resume-card .title { font-weight: 700; margin-bottom: 4px; }
+  .resume-card .desc { color: var(--text-muted); font-size: 0.86rem; }
+  .option-row.correct { border-color: var(--good); background: var(--good-bg); }
+  .option-row.wrong { border-color: var(--bad); background: var(--bad-bg); }
+  .exam-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; gap: 10px; flex-wrap: wrap; }
+  .qgrid { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 4px; }
+  .qgrid button { width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); font-size: 0.78rem; font-variant-numeric: tabular-nums; cursor: pointer; }
+  .qgrid button.answered { background: var(--surface-2); border-color: var(--accent); }
+  .qgrid button.current { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .score-hero { display: flex; align-items: baseline; gap: 18px; margin-bottom: 18px; flex-wrap: wrap; }
+  .score-hero .big { font-family: var(--font-display); font-size: 2.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 0.82rem; font-weight: 600; }
+  .pill.good { background: var(--good-bg); color: var(--good); }
+  .pill.bad { background: var(--bad-bg); color: var(--bad); }
+  .pill.warn { background: var(--warn-bg); color: var(--warn); }
+  table.topic-table { width: 100%; border-collapse: collapse; margin: 14px 0 22px; font-size: 0.92rem; }
+  table.topic-table th, table.topic-table td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); }
+  table.topic-table td.num, table.topic-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .bar-track { background: var(--surface-2); border-radius: 4px; height: 8px; overflow: hidden; width: 100%; min-width: 80px; }
+  .bar-fill { height: 100%; background: var(--accent); }
+  .review-item { border-top: 1px solid var(--border); padding: 14px 0; }
+  .review-item:first-of-type { border-top: none; }
+  .review-q { font-weight: 600; margin-bottom: 8px; white-space: pre-wrap; }
+  .review-opt { padding: 6px 10px; border-radius: 6px; margin-bottom: 4px; font-size: 0.92rem; }
+  .review-opt.correct { background: var(--good-bg); color: var(--good); }
+  .review-opt.wrong { background: var(--bad-bg); color: var(--bad); }
+  .review-expl { font-size: 0.88rem; color: var(--text-muted); border-left: 2px solid var(--border); padding-left: 10px; margin-top: 8px; white-space: pre-wrap; }
+  .badge { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 2px 7px; border-radius: 5px; margin-left: 6px; vertical-align: middle; }
+  .badge.unverified { background: var(--warn-bg); color: var(--warn); }
+  .field-row { display: grid; grid-template-columns: 1fr 90px; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .field-row input[type="number"] {
+    width: 100%; padding: 7px 8px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text); font-family: var(--font-body); font-variant-numeric: tabular-nums;
+  }
+  .settings-total { display: flex; justify-content: space-between; padding: 12px 0; font-weight: 700; }
+  .settings-total.mismatch { color: var(--bad); }
+  .filepick {
+    display: block; border: 1.5px dashed var(--border); border-radius: var(--radius); padding: 28px 18px;
+    text-align: center; color: var(--text-muted); cursor: pointer; margin-bottom: 16px;
+  }
+  .filepick:hover { border-color: var(--accent); color: var(--text); }
+  .import-summary { display: flex; gap: 18px; flex-wrap: wrap; margin: 14px 0 20px; }
+  .import-summary .chip { background: var(--surface-2); border-radius: 8px; padding: 10px 14px; font-size: 0.9rem; }
+  .import-summary .chip b { font-variant-numeric: tabular-nums; font-size: 1.1rem; display: block; }
+  .section-title { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; margin: 0 0 12px; }
+  .muted { color: var(--text-muted); }
+  .history-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: center; font-size: 0.9rem; }
+  .history-row .when { color: var(--text-muted); }
+  .cp-list-item {
+    display: block; text-align: left; width: 100%; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; margin-bottom: 10px; font-family: var(--font-body); color: var(--text);
+  }
+  .cp-list-item:hover { border-color: var(--accent); }
+  .cp-list-item .title { font-weight: 700; font-size: 1rem; margin-bottom: 3px; }
+  .cp-list-item .desc { color: var(--text-muted); font-size: 0.84rem; }
+  .cp-konu-group { margin-bottom: 24px; }
+  .cp-konu-heading { display: flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; margin-bottom: 10px; }
+  .cp-content { font-size: 0.96rem; line-height: 1.6; }
+  .cp-content h2 { font-family: var(--font-display); font-size: 1.15rem; margin: 26px 0 10px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .cp-content h2:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+  .cp-content h3 { font-size: 0.98rem; color: var(--text-muted); font-weight: 700; margin: 0 0 14px; }
+  .cp-content p { margin: 0 0 12px; }
+  .cp-content ol { margin: 0 0 12px; padding-left: 22px; }
+  .cp-content li { margin-bottom: 10px; }
+  .cp-content strong { color: var(--accent-strong); }
+  .cp-content hr { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+  .cp-content em { color: var(--text-muted); font-style: italic; }
+  .cp-content ul { margin: 0 0 12px; padding-left: 22px; }
+  .cp-content table { width: 100%; border-collapse: collapse; margin: 8px 0 18px; font-size: 0.88rem; }
+  .cp-content th, .cp-content td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .cp-content thead th { color: var(--text-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .cp-content table { overflow-x: auto; display: block; }
+  .cp-content thead, .cp-content tbody { display: table; width: 100%; table-layout: fixed; }
+</style>
+</head>
+<body>
+<script id="app-state" type="application/json">{"schemaVersion":1,"bank":[],"stats":{},"arsivIstatistik":{},"practiceBank":[],"pStats":{},"arsivPratikIstatistik":{},"checkpoints":[],"settings":{"dagilim":{"Ürünler":8,"Hukuk":8,"Temel İşlemler":8,"Kredi":8,"Genel Ekonomi":5,"Mali Analiz":5,"Kambiyo":3,"Sermaye Piyasaları ve Hazine":3,"İK Politikaları":2}},"history":[],"meta":{"lastImportISO":null,"kaynakDosyaAdi":"UZYET Soru Bankası (Web Quiz).xlsx (ilk yükleme, dosya derleme sırasında gömüldü)"},"flags":{},"pausedExam":null,"pausedPratik":{},"duzeltmeler":[],"flashOzet":{"gosterim":0,"dogru":0},"pFlashOzet":{"gosterim":0,"dogru":0},"rev":0,"bankCorrections":[],"sadeceDeneme":true}</script>
+<div id="app"></div>
+<script id="app-script">
+(function () {
+  "use strict";
+
+  var RESMI_DAGILIM_DEFAULT = {
+    "Ürünler": 8, "Hukuk": 8, "Temel İşlemler": 8, "Kredi": 8, "Genel Ekonomi": 5,
+    "Mali Analiz": 5, "Kambiyo": 3, "Sermaye Piyasaları ve Hazine": 3, "İK Politikaları": 2,
+    // Ağırlık 0: resmi 50 soruluk test dağılımının parçası değil (yazılı sınav konusu),
+    // yalnızca "Konu Çalışma" (pratik) menüsünde ayrı bir ders kutusu açmak için burada.
+    "Finansal Sunum": 0
+  };
+  var MOD_ADI = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar" };
+  var MOD_RENK = { rastgele: "var(--seri-6)", azgorulen: "var(--seri-5)", yanlislar: "var(--seri-3)" };
+  var KONU_SIRA = Object.keys(RESMI_DAGILIM_DEFAULT);
+  function konuSeriIdx(konu) {
+    var i = KONU_SIRA.indexOf(konu);
+    return (i === -1 ? 0 : i) % 9 + 1;
+  }
+  function konuDotHtml(konu) {
+    return '<span class="konu-dot" style="background:var(--seri-' + konuSeriIdx(konu) + ')"></span>';
+  }
+
+  // "Konu Çalışma / Tekrar" modunun modül kırılımı — sınav bankasından (STATE.bank)
+  // tamamen ayrı bir havuzun (STATE.practiceBank) hangi Konu'da hangi modüllere
+  // ayrıldığını tanımlar. Yeni bir dersin pratik modunu açmak = buraya bir giriş +
+  // pratik_manifest.json'a karşılık gelen JSON dosyası eklemek — kod değişmez.
+  var MODUL_TANIMLARI = {
+    "Temel İşlemler": [
+      { key: "M1", ad: "Kambiyo Temelleri" },
+      { key: "M2", ad: "Mevduat / Zorunlu Karşılık / TMSF" },
+      { key: "M5", ad: "Kur Uygulamaları ve Efektif" },
+      { key: "M6", ad: "Mevduat Hesap Ürünleri" },
+      { key: "M7", ad: "Hesap İşlemleri ve Özel Durumlar" },
+      { key: "M8", ad: "Döviz Tevdiat Hesapları (DTH)" },
+      { key: "M3", ad: "Kimlik Tespiti / MASAK / Yaptırımlar" },
+      { key: "M9", ad: "Havale / EFT / FAST + SWIFT / WU" },
+      { key: "M10", ad: "Çek-Bono İşlemleri" },
+      { key: "M11", ad: "Yurt Dışı Örgütümüz" }
+      // Arkadaş seti sorusu (31 Ağu 2026) ve "ÇOK ZOR SEVİYE" gerekçeli test seti (31 Ağu
+      // 2026, ayrı kaynak: Temel İşlemler YYS 2026 · Bölüm 1-5) 2 Eyl 2026'da gerçek
+      // M1-M11 modüllerine dağıtıldı — ayrı "ARK"/"TZ1-TZ5" modülü kalmadı.
+    ],
+    "Ürünler": [
+      { key: "U1", ad: "Tüketici Kredisi Genel Çerçeve" },
+      { key: "U2", ad: "Faiz / Vergi / Fon ve Geri Ödeme" },
+      { key: "U3", ad: "Taşıt Kredisi" },
+      { key: "U4", ad: "Konut Finansmanı" },
+      { key: "U5", ad: "Anında Kredi / Hazır Limit / İş'te Limit" },
+      { key: "U6", ad: "Dijital Alışveriş Kredileri" },
+      { key: "U7", ad: "Ek Hesap ve Taksitli Ek Hesap" },
+      { key: "U8", ad: "Kredi Destek Sigortası (KDS)" },
+      { key: "U9", ad: "Cayma Hakkı" },
+      { key: "U10", ad: "Bireysel Emeklilik Sistemi (BES)" },
+      { key: "U11", ad: "Çocuğum İçin BES" },
+      { key: "U12", ad: "İş Black" },
+      { key: "U13", ad: "Fatura Tahsilatı" },
+      { key: "U14", ad: "SOS / Maksimum Hesap / Maksimum Vadeli Hesap" },
+      { key: "U15", ad: "Günlük Kazandıran ve Vade Bekleyen Hesap" },
+      { key: "U16", ad: "Emekli Maaş Ödemeleri ve Promosyon" },
+      { key: "U17", ad: "Dijital Bankacılık — Temel Kavramlar ve Şifre Uygulamaları" },
+      { key: "U18", ad: "Dijital Bankacılık Kanalları (Bankamatik/İşCep/Maximum Mobil)" },
+      { key: "U19", ad: "Banka Kartları ve Ön Ödemeli Kartlar" },
+      { key: "U20", ad: "Kredi Kartı Tipleri ve MaxiMil/MaxiPuan Sistemi" },
+      { key: "U21", ad: "Kredi Kartı Kullanımı ve Uygulamaları" },
+      { key: "U22", ad: "Üye İşyeri Anlaşmaları" },
+      { key: "U23", ad: "Sermaye Piyasası Araçları" },
+      { key: "U24", ad: "Yatırım Fonları ve Talimatlar" },
+      { key: "U25", ad: "Yatırım Hesapları, Kredili İşlemler ve Altın Bankacılığı" }
+      // Arkadaş seti sorusu (31 Ağu 2026) 2 Eyl 2026'da gerçek U1-U25 modüllerine dağıtıldı,
+      // ayrı "ARK" modülü kalmadı.
+    ],
+    "Kredi": [
+      { key: "K1", ad: "Kredinin Tanımı, Sınıflandırılması ve Kredi Açılabilecek Kişiler" },
+      { key: "K2", ad: "Bankacılık Kanunu, Kredi Sınırları ve Bankamız Politikaları" },
+      { key: "K3", ad: "Segment, Skorlama ve Kredi Karar Sistemleri" },
+      { key: "K4", ad: "Kredinin Tahsisi ve GNGKS" },
+      { key: "K5", ad: "Kredi Riski, Erken Uyarı ve Alacakların Sınıflandırılması" },
+      { key: "K6", ad: "Teminat Yönetimi, İpotek ve Taşınır Rehni" },
+      { key: "K7", ad: "Kefalet, Alacağın Devri ve Diğer Teminatlar" },
+      { key: "K8", ad: "KGF ve İGE Kefaleti" },
+      { key: "K9", ad: "BCH Türleri ve Diğer Ticari Krediler" },
+      { key: "K10", ad: "DBS, Çek, Fatura ve Alacak Finansmanı" },
+      { key: "K11", ad: "Tarım, Yenilenebilir Enerji ve Orta-Uzun Vadeli Krediler" },
+      { key: "K12", ad: "Dış Ticaretin Finansmanına Yönelik TL Krediler" },
+      { key: "K13", ad: "Teminat Mektuplarının Esasları ve Türleri" },
+      { key: "K14", ad: "Teminat Mektubunda Sona Erme, Tazmin ve Diğer Gayrinakdi Krediler" },
+      { key: "K15", ad: "Döviz Kredileri ve Döviz Geliri Esasları" },
+      { key: "K16", ad: "YP Gayrinakdi Krediler" }
+      // Arkadaş seti sorusu (31 Ağu 2026) 2 Eyl 2026'da gerçek K1-K16 modüllerine dağıtıldı,
+      // ayrı "ARK" modülü kalmadı.
+    ],
+    "Hukuk": [
+      { key: "H1", ad: "Gerçek Kişiler, Hak ve Fiil Ehliyeti" },
+      { key: "H2", ad: "Tüzel Kişiler, Ölüm, Gaiplik ve Miras" },
+      { key: "H3", ad: "Borcun Doğumu, Hukuki İşlemler ve Temsil" },
+      { key: "H4", ad: "Borcun Sona Ermesi ve Borç İlişkisinin Tarafları" },
+      { key: "H5", ad: "Bankacılık Sözleşmeleri, Rehin, Kefalet ve Teminatlar" },
+      { key: "H6", ad: "Tacir, Ticari İşletme ve Tacirin Temsili" },
+      { key: "H7", ad: "Şirketler, Cari Hesap ve Haksız Rekabet" },
+      { key: "H8", ad: "Kıymetli Evrak, Ciro ve Aval" },
+      { key: "H9", ad: "Poliçe ve Bono" },
+      { key: "H10", ad: "Çek" }
+      // Arkadaş seti sorusu (31 Ağu 2026) 2 Eyl 2026'da gerçek H1-H10 modüllerine dağıtıldı,
+      // ayrı "ARK" modülü kalmadı.
+    ],
+    "Finansal Sunum": [
+      // Yatırımcı Sunumu (2026/6) — yazılı sınav hazırlığı, resmi 50 soruluk teste dahil değil.
+      { key: "ARK", ad: "🤝 Arkadaş Seti — Yatırımcı Sunumu 2026/6" }
+    ]
+  };
+  var PRATIK_TUM_MODULLER = "__TUMU__"; // pseudo-modül: bir Konu'nun tüm modülleri karışık
+  function modulAdi(konu, modulKey) {
+    if (modulKey === PRATIK_TUM_MODULLER) return "Karışık — Tüm Modüller";
+    var liste = MODUL_TANIMLARI[konu] || [];
+    var bulunan = liste.filter(function (m) { return m.key === modulKey; })[0];
+    return bulunan ? bulunan.ad : modulKey;
+  }
+
+  // ---------------------------------------------------------------- state --
+  var STATE = JSON.parse(document.getElementById("app-state").textContent);
+  if (!STATE.settings) STATE.settings = {};
+  if (!STATE.settings.dagilim) STATE.settings.dagilim = JSON.parse(JSON.stringify(RESMI_DAGILIM_DEFAULT));
+  if (!STATE.stats) STATE.stats = {};
+  if (!STATE.arsivIstatistik) STATE.arsivIstatistik = {};
+  if (!STATE.history) STATE.history = [];
+  if (!STATE.bank) STATE.bank = [];
+  if (!STATE.practiceBank) STATE.practiceBank = [];        // "Konu Çalışma" havuzu — sınav bankasından izole
+  if (!STATE.pStats) STATE.pStats = {};                     // practiceBank'ın kendi istatistiği (STATE.stats'tan ayrı)
+  if (!STATE.pBest) STATE.pBest = {};                       // {[konu]: {[modul]: {dogru,yanlis,toplam,tarihISO}}} — modül seçim ekranında gösterilen "en iyi test sonucu"
+  if (!STATE.arsivPratikIstatistik) STATE.arsivPratikIstatistik = {};
+  if (!STATE.meta) STATE.meta = {};
+  if (!STATE.flags) STATE.flags = {};              // {[guid]: {hatirlatici, hatali, hataNotu, begenildi}}
+  if (!STATE.duzeltmeler) STATE.duzeltmeler = [];  // [{guid, konu, soru, not, tarihISO}] — Claude'un yaptığı veri düzeltmeleri
+  if (!STATE.flashOzet) STATE.flashOzet = { gosterim: 0, dogru: 0 }; // Rastgele Soru'nun kendi doğruluk oranı — sınav istatistiğinden ayrı
+  if (!STATE.pFlashOzet) STATE.pFlashOzet = { gosterim: 0, dogru: 0 }; // Test sayfasındaki Rastgele Soru (pratik havuzu) — flashOzet'ten ayrı
+  if (STATE.pausedExam === undefined) STATE.pausedExam = null;
+  if (!STATE.pausedPratik) STATE.pausedPratik = {};   // {"<konu>::<modul>": {mod, kuyruk, index, cevaplar, savedAtISO}} — yarım kalan konu çalışması, modül başına bir slot
+  if (typeof STATE.rev !== "number") STATE.rev = 0;   // her veri mutasyonunda artar; localStorage anlık görüntüsüyle hangisinin yeni olduğunu ayırt etmek için
+  if (STATE.sadeceDeneme === undefined) STATE.sadeceDeneme = false; // paylaşım derlemesi: Test/Checkpoint yok, doğrudan Deneme ekranı
+
+  var artifactNs;              // undefined = henüz sorulmadı, null = yok
+  var VIEW = STATE.sadeceDeneme ? "menuDeneme" : "menu";
+  var currentExam = null;      // {tip, sorular:[guid...], index, cevaplar:{guid:idx}, uyarilar}
+  var lastResult = null;
+  var importPreview = null;    // {stateKopya, sonuc, dosyaAdi, sheetName}
+  var draftSettings = null;
+  var bannerMsg = null;
+  var bannerIsError = false;
+  var pausedDeleteConfirm = false;   // "Sil" iki adımlı onay — window.confirm() Artifact sandbox'ında çalışmıyor
+  var currentFlash = null;     // {guid, secilen, kaynak, oturum:[{konu,dogru}...]} — Rastgele Soru modu: tek soru, anında cevap
+  var flashSayac = 0;          // bu oturumda kaç rastgele soru görüldü (kalıcı değil, sayfa yenilenince sıfırlanır)
+  var lastFlashResult = null;  // {kaynak, oturum} — "Testi Bitir" sonrası özet ekranı için
+  var currentPratik = null;    // {konu, modul, mod, kuyruk:[guid...], index, cevaplandi, secilen, bitti}
+  var pratikSeciliKonu = null; // pratikModul ekranında hangi Konu'nun modülleri gösteriliyor
+  var pratikSeciliModul = null; // seçili modül (alt-mod seçimi bu modül için gösterilir)
+  var checkpointSeciliKonu = null; // checkpointListe ekranında hangi Konu açık
+  var checkpointSeciliId = null;   // checkpointDetay ekranında gösterilen özet
+  var deletingHistoryId = null;   // Geçmiş ekranında iki adımlı sil onayı bekleyen kayıt
+  var pendingSaveDirty = false;   // publish() sayfayı yeniden yüklediği için, akış-içi tekrarlayan
+                                   // aksiyonlar (bayrak, hata notu, geçmiş silme, rastgele soru cevabı)
+                                   // anında kaydetmez — yalnız gerçek bir "çıkış" noktasında (menüye
+                                   // dön, sınavı bitir/duraklat, ayar/import kaydet) tek seferde kaydedilir
+
+  function $app() { return document.getElementById("app"); }
+
+  (function restorePending() {
+    try {
+      var raw = sessionStorage.getItem("uzyet_pending_view");
+      if (raw) {
+        sessionStorage.removeItem("uzyet_pending_view");
+        var p = JSON.parse(raw);
+        VIEW = p.view || (STATE.sadeceDeneme ? "menuDeneme" : "menu");
+        lastResult = p.lastResult || null;
+        currentExam = p.currentExam || null;
+        currentFlash = p.currentFlash || null;
+        lastFlashResult = p.lastFlashResult || null;
+        currentPratik = p.currentPratik || null;
+        pratikSeciliKonu = p.pratikSeciliKonu || null;
+        pratikSeciliModul = p.pratikSeciliModul || null;
+      }
+    } catch (e) { /* sessionStorage kullanılamıyor olabilir, sorun değil */ }
+  })();
+
+  // ------------------------------------------------- yerel otomatik kayıt --
+  // publish() sayfayı yeniden yüklediği için her cevapta yayınlamak akışı bozuyordu;
+  // bu yüzden eskiden istatistik yalnız "menüye dön / sınavı bitir" gibi çıkış
+  // noktalarında kaydediliyordu — sekmeyi kapatan kullanıcı o ana kadarki her şeyi
+  // kaybediyordu. Artık iki katman var:
+  //   1) localStorage — HER cevapta anında, reload yok. Sekme kapansa da durur.
+  //   2) artifact.publish — çıkış noktalarında + 25 sn işlemsizlikten sonra (debounce).
+  // Açılışta localStorage'ın rev'i gömülü STATE'inkinden büyükse kullanıcı verisi
+  // oradan alınır. Soru havuzları (bank/practiceBank/checkpoints) ASLA localStorage'dan
+  // gelmez — onlar hep yayınlanan HTML'den okunur, yoksa yeni yayınlanan sorular ezilirdi.
+  var LS_KEY = "uzyet_state_v1";
+  var LS_ALANLAR = ["stats", "pStats", "pBest", "arsivIstatistik", "arsivPratikIstatistik",
+    "flags", "history", "duzeltmeler", "appliedBankCorrections", "flashOzet", "pFlashOzet", "pausedExam", "pausedPratik", "settings", "meta"];
+  var autosaveTimer = null;
+
+  function bumpRev() { STATE.rev = (STATE.rev || 0) + 1; }
+
+  function lsKaydet() {
+    try {
+      var snap = { rev: STATE.rev, kayitISO: new Date().toISOString() };
+      LS_ALANLAR.forEach(function (k) { snap[k] = STATE[k]; });
+      localStorage.setItem(LS_KEY, JSON.stringify(snap));
+    } catch (e) { /* kota dolu ya da localStorage kapalı — publish yine de yedek */ }
+  }
+
+  function lsYukle() {
+    try {
+      var raw = localStorage.getItem(LS_KEY);
+      if (!raw) return;
+      var snap = JSON.parse(raw);
+      if (!snap || typeof snap.rev !== "number" || snap.rev <= (STATE.rev || 0)) return;
+      LS_ALANLAR.forEach(function (k) { if (snap[k] !== undefined) STATE[k] = snap[k]; });
+      STATE.rev = snap.rev;
+      yerelVeriDahaYeniydi = true;
+    } catch (e) { /* bozuk kayıt — gömülü STATE ile devam */ }
+  }
+  var yerelVeriDahaYeniydi = false;
+  lsYukle();
+
+  // İçerik düzeltmeleri yayınlanan bankayla gelir; yeni localStorage bunları ezemez.
+  // Her düzeltme yalnız bir kez, yalnız deneme istatistiğine uygulanır.
+  function bankaDuzeltmeleriniUygula() {
+    var applied = STATE.appliedBankCorrections || [];
+    var changed = false;
+    (STATE.bankCorrections || []).forEach(function (d) {
+      if (applied.indexOf(d.id) !== -1) return;
+      if (!STATE.bank.some(function (q) { return q.guid === d.guid; })) return;
+      delete STATE.stats[d.guid];
+      STATE.duzeltmeler = STATE.duzeltmeler || [];
+      STATE.duzeltmeler.push({ id: d.id, guid: d.guid, konu: d.konu,
+        soru: d.soru, not: d.not, tarihISO: d.tarihISO });
+      applied.push(d.id);
+      changed = true;
+    });
+    if (changed) {
+      STATE.appliedBankCorrections = applied;
+      bumpRev();
+      lsKaydet();
+      pendingSaveDirty = true;
+    }
+    return changed;
+  }
+  bankaDuzeltmeleriniUygula();
+
+  // Soru çözerken publish() reload'ı akışı böldüğü için, AKTİF ekranlarda otomatik
+  // yayın yapılmaz — veri zaten localStorage'da güvende. Yayın, kullanıcı bu
+  // ekranlardan çıkınca (Kaydet ve Çık / modül listesi / ana menü / sınav bitti)
+  // ya da aktif olmayan bir ekranda beklerken yapılır.
+  var AKTIF_EKRANLAR = { pratikSoru: true, exam: true, flash: true };
+  var AUTOSAVE_MS = 180000; // 3 dk
+
+  // Her veri değişikliğinde çağrılır: yerelde anında kaydeder, yayını erteler.
+  function veriDegisti(hemenYayinla) {
+    bumpRev();
+    lsKaydet();
+    if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
+    if (hemenYayinla) { pendingSaveDirty = false; saveAndPublish(); return; }
+    pendingSaveDirty = true;
+    autosaveTimer = setTimeout(function otoKaydet() {
+      autosaveTimer = null;
+      if (!pendingSaveDirty) return;
+      if (AKTIF_EKRANLAR[VIEW]) { autosaveTimer = setTimeout(otoKaydet, AUTOSAVE_MS); return; } // çözme akışını bölme, ertele
+      pendingSaveDirty = false;
+      saveAndPublish();
+    }, AUTOSAVE_MS);
+  }
+
+  // ------------------------------------------------------- saf mantık -----
+  // Deneme kodu: sınav seçimini (ve şık karıştırmasını) Math.random yerine bu
+  // seed'li üretece bağlayınca, aynı seed + aynı mod + aynı bankayla aynı deneme
+  // yeniden üretilebiliyor. mulberry32 — küçük, hızlı, tarayıcıda bağımlılıksız.
+  function mulberry32(seed) {
+    var s = seed >>> 0;
+    return function () {
+      s = (s + 0x6D2B79F5) | 0;
+      var t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function sampleRandom(arr, k, rnd) {
+    rnd = rnd || Math.random;
+    var copy = arr.slice();
+    for (var i = copy.length - 1; i > 0; i--) {
+      var j = Math.floor(rnd() * (i + 1));
+      var tmp = copy[i]; copy[i] = copy[j]; copy[j] = tmp;
+    }
+    return copy.slice(0, Math.min(k, copy.length));
+  }
+
+  function weightedSample(arr, k, weightFn, rnd) {
+    rnd = rnd || Math.random;
+    if (arr.length <= k) return arr.slice();
+    var withKeys = arr.map(function (item) {
+      var w = Math.max(weightFn(item), 1e-9);
+      return { item: item, key: Math.pow(rnd(), 1 / w) };
+    });
+    withKeys.sort(function (a, b) { return b.key - a.key; });
+    return withKeys.slice(0, k).map(function (x) { return x.item; });
+  }
+
+  function shuffleSiklarInPlace(q, rnd) {
+    // Ezber olmasın diye her oturumda soru şıklarını yeniden karıştırır — kalıcı
+    // guid-shuffle (data üretiminde yapılan) değil, o SORU BU OTURUMDA seçildiğinde
+    // taze bir sıra (rnd verilmezse Math.random). q, STATE.bank/STATE.practiceBank'taki
+    // gerçek objeye referans olduğu için doğrudan mutasyon yeterli: skorlama ve gözden
+    // geçirme ekranları hep aynı canlı objeyi okuyor, ekstra bir eşleme gerekmiyor.
+    rnd = rnd || Math.random;
+    var dogruMetin = q.siklar[q.cevapIdx];
+    var karisik = q.siklar.slice();
+    for (var i = karisik.length - 1; i > 0; i--) {
+      var j = Math.floor(rnd() * (i + 1));
+      var tmp = karisik[i]; karisik[i] = karisik[j]; karisik[j] = tmp;
+    }
+    q.siklar = karisik;
+    q.cevapIdx = karisik.indexOf(dogruMetin);
+    q.cevapHarf = ["A", "B", "C", "D"][q.cevapIdx];
+  }
+
+  function pickExamQuestions(state, mode, rnd) {
+    rnd = rnd || Math.random;
+    var dagilim = state.settings.dagilim;
+    var sorular = [];
+    var uyarilar = [];
+    Object.keys(dagilim).forEach(function (konu) {
+      var k = dagilim[konu];
+      if (!k) return;
+      var havuz = state.bank.filter(function (q) { return q.konu === konu; });
+      var secim = [];
+      if (mode === "rastgele") {
+        secim = sampleRandom(havuz, k, rnd);
+      } else if (mode === "azgorulen") {
+        secim = weightedSample(havuz, k, function (q) {
+          var g = (state.stats[q.guid] && state.stats[q.guid].gosterim) || 0;
+          return 1 / Math.pow(1 + g, 2);
+        }, rnd);
+      } else if (mode === "yanlislar") {
+        var yanlisHavuz = havuz.filter(function (q) {
+          return state.stats[q.guid] && state.stats[q.guid].sonSonucDogruMu === false;
+        });
+        secim = sampleRandom(yanlisHavuz, Math.min(k, yanlisHavuz.length), rnd);
+        if (secim.length < k) {
+          var secilen1 = {}; secim.forEach(function (q) { secilen1[q.guid] = true; });
+          var denenmemis = havuz.filter(function (q) { return !secilen1[q.guid] && !state.stats[q.guid]; });
+          secim = secim.concat(sampleRandom(denenmemis, k - secim.length, rnd));
+        }
+        if (secim.length < k) {
+          var secilen2 = {}; secim.forEach(function (q) { secilen2[q.guid] = true; });
+          var kalanHavuz = havuz.filter(function (q) { return !secilen2[q.guid]; });
+          secim = secim.concat(weightedSample(kalanHavuz, k - secim.length, function (q) {
+            var g = (state.stats[q.guid] && state.stats[q.guid].gosterim) || 0;
+            return 1 / Math.pow(1 + g, 2);
+          }, rnd));
+        }
+        if (secim.length < k) uyarilar.push(konu + ": havuzda yeterli soru yok (" + secim.length + "/" + k + ")");
+      }
+      sorular = sorular.concat(secim);
+    });
+    return { sorular: sorular, uyarilar: uyarilar };
+  }
+
+  // Deneme kodu ↔ {mode, seed} — kısa, elle yazılabilir bir kod. Kodun kendisi
+  // soru listesini TAŞIMAZ; aynı moddaki seçim algoritmasını aynı seed'le yeniden
+  // çalıştırır. Bu yüzden yalnız banka bu iki deneme arasında büyük ölçüde
+  // değişmediyse birebir aynı soruları garanti eder ("azgorulen"/"yanlislar"
+  // modlarında ayrıca kişisel istatistikler de değişmemiş olmalı).
+  var EXAM_MODE_KODU = { rastgele: "R", azgorulen: "A", yanlislar: "Y" };
+  var EXAM_KODU_MOD = { R: "rastgele", A: "azgorulen", Y: "yanlislar" };
+  function examKoduUret(mode, seed) {
+    if (typeof seed !== "number" || !isFinite(seed)) return null;
+    var harf = EXAM_MODE_KODU[mode] || "R";
+    return "UZY-" + harf + (seed >>> 0).toString(36).toUpperCase();
+  }
+  function examKoduCoz(kodHam) {
+    if (!kodHam) return null;
+    var temiz = kodHam.trim().toUpperCase().replace(/^UZY-?/, "");
+    var harf = temiz.charAt(0);
+    var mode = EXAM_KODU_MOD[harf];
+    var seedStr = temiz.slice(1);
+    if (!mode || !seedStr || !/^[0-9A-Z]+$/.test(seedStr)) return null;
+    var seed = parseInt(seedStr, 36);
+    if (!isFinite(seed) || seed < 0) return null;
+    return { mode: mode, seed: seed >>> 0 };
+  }
+
+  // Her oturum kendi soru/şık görüntüsünü korur; havuz güncellemeleri ve
+  // sonraki karıştırmalar geçmiş cevap indekslerini değiştiremez.
+  function soruKayitlari(bank, guids) {
+    var out = {};
+    bank.forEach(function (q) { if (guids.indexOf(q.guid) !== -1) out[q.guid] = JSON.parse(JSON.stringify(q)); });
+    return out;
+  }
+
+  function oturumSorusu(oturum, bank, guid) {
+    return (oturum && oturum.soruKayitlari && oturum.soruKayitlari[guid]) ||
+      bank.filter(function (q) { return q.guid === guid; })[0];
+  }
+
+  function scoreExam(bank, sorular, cevaplar, kayitlar) {
+    var konuKirilim = {};
+    var dogru = 0, yanlis = 0, bos = 0;
+    var bankByGuid = {};
+    bank.forEach(function (q) { bankByGuid[q.guid] = q; });
+    sorular.forEach(function (guid) {
+      var q = (kayitlar && kayitlar[guid]) || bankByGuid[guid];
+      if (!q) return;
+      var secilen = cevaplar[guid];
+      if (!konuKirilim[q.konu]) konuKirilim[q.konu] = { dogru: 0, yanlis: 0, bos: 0 };
+      if (secilen === undefined || secilen === null) { bos++; konuKirilim[q.konu].bos++; }
+      else if (secilen === q.cevapIdx) { dogru++; konuKirilim[q.konu].dogru++; }
+      else { yanlis++; konuKirilim[q.konu].yanlis++; }
+    });
+    return { skor: { dogru: dogru, yanlis: yanlis, bos: bos }, konuKirilim: konuKirilim };
+  }
+
+  function pratikKapsamDisiMi(q) {
+    return !!(STATE.flags[q.guid] && STATE.flags[q.guid].kapsamDisi);
+  }
+
+  function pratikHavuz(konu, modul) {
+    // Kapsam dışı işaretlenen sorular gerçek silme (kullanıcı onayı) gelene kadar
+    // havuzdan filtrelenir — tekrar karşısına çıkmasın, ama veri kaybolmasın.
+    var tumu = modul === PRATIK_TUM_MODULLER
+      ? STATE.practiceBank.filter(function (q) { return q.konu === konu; })
+      : STATE.practiceBank.filter(function (q) { return q.konu === konu && q.modul === modul; });
+    return tumu.filter(function (q) { return !pratikKapsamDisiMi(q); });
+  }
+
+  function azGorulenSirala(havuz) {
+    // ⚠ Önce GÖSTERİM SAYISINA göre sıralanmıştı (en az gösterim önce) — ama gerçek veride
+    // sayı TAM SAYI olduğu için sorular "tier" halinde kümeleniyor (ör. 6 tanesi gösterim=1,
+    // 9 tanesi gösterim=2 gibi). Bir oturumda seçilen sorular yalnız BİR ARTTIĞI için bir
+    // SONRAKİ tier'e düşüp o tier'deki hiç dokunulmamış sorularla YENİDEN eşit sıraya
+    // geliyordu — rastgele kırılan bu eşitlikte az önce cevaplanmış sorular yine seçilebiliyordu
+    // (M6'da 23 soru/cap 10 iken art arda iki oturum arası 5/10 çakışma ölçüldü, olması gereken
+    // sıfırdı). Çözüm: SÜREKLİ bir anahtar — sonGorulme (zaman damgası). Az önce cevaplanan
+    // bir sorunun sonGorulme'si "şimdi"ye atlar, yani havuzdaki HERKESTEN kesin olarak sonraya
+    // düşer; tam sayı gibi komşularıyla yeniden eşitlenmez. Havuz oturum boyutunun en az iki
+    // katıysa bu, art arda iki oturum arasında SIFIR çakışmayı garanti eder (kanıtlı, şansa
+    // bağlı değil) — havuz daha küçükse de mümkün olan en az çakışmayı verir. Hiç görülmemiş
+    // sorular (sonGorulme yok) en düşük anahtarla (0) en önde çıkar; eşitlik (yalnız
+    // "hiç görülmemiş" grubunda olur) rastgele kırılır.
+    var withKeys = havuz.map(function (q) {
+      var s = STATE.pStats[q.guid];
+      var t = (s && s.sonGorulme) ? Date.parse(s.sonGorulme) : 0;
+      return { q: q, t: t, r: Math.random() };
+    });
+    withKeys.sort(function (a, b) { return (a.t - b.t) || (a.r - b.r); });
+    return withKeys.map(function (x) { return x.q; });
+  }
+
+  var PRATIK_KARISIK_LIMIT = 20; // "Karışık — Tüm Modüller" her modda (Sırayla/Az Görülenler/Yanlışlar) 20 soruyla sınırlı
+  var PRATIK_AZ_GORULEN_TEK_MODUL_LIMIT = 10; // tek modülde 20, modülün neredeyse tamamı demekti —
+                                               // iki ardışık oturum gerçek anlamda dönsün diye küçültüldü
+
+  function pratikKuyrukOlustur(konu, modul, mod) {
+    var havuz = pratikHavuz(konu, modul);
+    var sirali;
+    if (mod === "az") {
+      sirali = azGorulenSirala(havuz);
+      if (modul !== PRATIK_TUM_MODULLER) sirali = sirali.slice(0, PRATIK_AZ_GORULEN_TEK_MODUL_LIMIT);
+      // Karışık ise burada KIRPILMAZ — aşağıdaki PRATIK_KARISIK_LIMIT zaten 20'ye kırpıyor;
+      // havuz (179/246) cap'in çok üstünde olduğu için deterministik sıralama tek başına
+      // art arda oturumlar arasında çakışmayı zaten pratikte sıfıra indiriyor.
+    } else if (mod === "yanlis") {
+      // Eriyen kuyruk: yalnız o an yanlış duran sorular. Doğru işaretlenen bir soru
+      // sonSonucDogruMu=true'ya döner ve bir SONRAKİ "Yanlışlar" oturumunda kendiliğinden
+      // düşer — dolgu/diğer sorularla tamamlanmaz. Havuz tükenince buton zaten disabled olur
+      // (bkz. renderPratikModul'daki yanlisSayisi), kullanıcı normal moda geçer.
+      var yanlisHavuz = havuz.filter(function (q) { return STATE.pStats[q.guid] && STATE.pStats[q.guid].sonSonucDogruMu === false; });
+      sirali = sampleRandom(yanlisHavuz, yanlisHavuz.length);
+    } else {
+      sirali = sampleRandom(havuz, havuz.length); // "siray" — artık kitaptaki üretim sırası değil, her oturumda karışık
+    }
+    if (modul === PRATIK_TUM_MODULLER) sirali = sirali.slice(0, PRATIK_KARISIK_LIMIT);
+    sirali.forEach(function (q) { shuffleSiklarInPlace(q); }); // şıklar da her oturumda yeniden karışsın
+    return sirali.map(function (q) { return q.guid; });
+  }
+
+  function pratikSoruBul(guid) {
+    return oturumSorusu(currentPratik, STATE.practiceBank, guid);
+  }
+
+  // "Karışık — Tüm Modüller" oturumunda hangi modülden kaç doğru/yanlış yapıldığını
+  // gösterir — tek modüllü oturumlarda tek satır çıkacağı için (zaten üstteki genel
+  // skorla aynı bilgi) çağrılmaz.
+  function pratikModulKirilimi(cp) {
+    var kirilim = {};
+    Object.keys(cp.cevaplar).forEach(function (guid) {
+      var q = pratikSoruBul(guid);
+      if (!q) return;
+      if (!kirilim[q.modul]) kirilim[q.modul] = { dogru: 0, yanlis: 0 };
+      if (cp.cevaplar[guid] === q.cevapIdx) kirilim[q.modul].dogru++; else kirilim[q.modul].yanlis++;
+    });
+    return kirilim;
+  }
+
+  function pratikOturumSkoru(cp) {
+    var dogru = 0, yanlis = 0;
+    Object.keys(cp.cevaplar).forEach(function (guid) {
+      var q = pratikSoruBul(guid);
+      if (!q) return;
+      if (cp.cevaplar[guid] === q.cevapIdx) dogru++; else yanlis++;
+    });
+    return { dogru: dogru, yanlis: yanlis };
+  }
+
+  function pratikBestGuncelle(cp) {
+    // Modül seçim ekranındaki özet artık KÜMÜLATİF değil (o hep büyüyordu, anlamlı bir
+    // "skor" değildi) — tamamlanan bir oturumun sonucu, o modülün şimdiye kadarki EN İYİ
+    // sonucuyla karşılaştırılıp gerekirse günceller. Karşılaştırma doğruluk yüzdesine göre;
+    // eşitlikte daha çok soru cevaplanan oturum tercih edilir.
+    var skor = pratikOturumSkoru(cp);
+    var toplam = skor.dogru + skor.yanlis;
+    if (toplam === 0) return;
+    if (!STATE.pBest[cp.konu]) STATE.pBest[cp.konu] = {};
+    var mevcut = STATE.pBest[cp.konu][cp.modul];
+    var yeniPct = skor.dogru / toplam;
+    var mevcutPct = mevcut ? mevcut.dogru / (mevcut.dogru + mevcut.yanlis) : -1;
+    if (!mevcut || yeniPct > mevcutPct || (yeniPct === mevcutPct && toplam > (mevcut.dogru + mevcut.yanlis))) {
+      STATE.pBest[cp.konu][cp.modul] = { dogru: skor.dogru, yanlis: skor.yanlis, toplam: toplam, tarihISO: new Date().toISOString() };
+    }
+  }
+
+  function mergeBankOnImport(state, yeniSatirlar) {
+    var eskiGuid = {}; state.bank.forEach(function (q) { eskiGuid[q.guid] = true; });
+    var yeniGuidSet = {}; yeniSatirlar.forEach(function (r) { yeniGuidSet[r.guid] = true; });
+    var eklendi = 0, guncellendi = 0;
+    yeniSatirlar.forEach(function (r) {
+      if (!state.stats[r.guid]) {
+        state.stats[r.guid] = { gosterim: 0, dogru: 0, yanlis: 0, sonSonucDogruMu: null, sonGorulme: null };
+        eklendi++;
+      } else if (eskiGuid[r.guid]) {
+        guncellendi++;
+      }
+    });
+    var kaldirildi = 0;
+    Object.keys(eskiGuid).forEach(function (guid) {
+      if (!yeniGuidSet[guid]) {
+        state.arsivIstatistik[guid] = state.stats[guid];
+        delete state.stats[guid];
+        kaldirildi++;
+      }
+    });
+    state.bank = yeniSatirlar;
+    Object.keys(dagilimKonulariniGuncelle(state, yeniSatirlar));
+    return { eklendi: eklendi, guncellendi: guncellendi, kaldirildi: kaldirildi };
+  }
+
+  function dagilimKonulariniGuncelle(state, rows) {
+    var gorulen = {};
+    rows.forEach(function (r) {
+      if (!(r.konu in state.settings.dagilim)) state.settings.dagilim[r.konu] = 0;
+      gorulen[r.konu] = true;
+    });
+    return gorulen;
+  }
+
+  // ------------------------------------------------------- xlsx okuyucu ---
+  function findEOCD(view, bytes) {
+    var sig = 0x06054b50;
+    var maxBack = Math.min(bytes.length, 65557);
+    for (var i = bytes.length - 22; i >= bytes.length - maxBack && i >= 0; i--) {
+      if (view.getUint32(i, true) === sig) return i;
+    }
+    throw new Error("EOCD bulunamadı — dosya bozuk veya .xlsx değil.");
+  }
+  function readCentralDirectory(view, bytes) {
+    var eocd = findEOCD(view, bytes);
+    var cdOffset = view.getUint32(eocd + 16, true);
+    var cdCount = view.getUint16(eocd + 10, true);
+    var entries = []; var p = cdOffset;
+    var dec = new TextDecoder("utf-8");
+    for (var i = 0; i < cdCount; i++) {
+      if (view.getUint32(p, true) !== 0x02014b50) throw new Error("Central directory kaydı bozuk.");
+      var compMethod = view.getUint16(p + 10, true);
+      var compSize = view.getUint32(p + 20, true);
+      var nameLen = view.getUint16(p + 28, true);
+      var extraLen = view.getUint16(p + 30, true);
+      var commentLen = view.getUint16(p + 32, true);
+      var localHeaderOffset = view.getUint32(p + 42, true);
+      var name = dec.decode(bytes.subarray(p + 46, p + 46 + nameLen));
+      entries.push({ name: name, compMethod: compMethod, compSize: compSize, localHeaderOffset: localHeaderOffset });
+      p += 46 + nameLen + extraLen + commentLen;
+    }
+    return entries;
+  }
+  function extractEntry(bytes, view, entry) {
+    var lh = entry.localHeaderOffset;
+    if (view.getUint32(lh, true) !== 0x04034b50) throw new Error("Local file header bozuk: " + entry.name);
+    var nameLen = view.getUint16(lh + 26, true);
+    var extraLen = view.getUint16(lh + 28, true);
+    var dataStart = lh + 30 + nameLen + extraLen;
+    var raw = bytes.subarray(dataStart, dataStart + entry.compSize);
+    if (entry.compMethod === 0) return Promise.resolve(raw);
+    if (entry.compMethod !== 8) return Promise.reject(new Error("Desteklenmeyen sıkıştırma: " + entry.name));
+    if (typeof DecompressionStream === "undefined") {
+      return Promise.reject(new Error("Bu tarayıcı .xlsx okumak için gereken DecompressionStream API'sini desteklemiyor. Güncel Chrome/Edge kullanın."));
+    }
+    var ds = new DecompressionStream("deflate-raw");
+    var writer = ds.writable.getWriter();
+    writer.write(raw); writer.close();
+    var chunks = [];
+    var reader = ds.readable.getReader();
+    function pump() {
+      return reader.read().then(function (res) {
+        if (res.done) return;
+        chunks.push(res.value);
+        return pump();
+      });
+    }
+    return pump().then(function () {
+      var total = chunks.reduce(function (n, c) { return n + c.length; }, 0);
+      var out = new Uint8Array(total);
+      var off = 0;
+      chunks.forEach(function (c) { out.set(c, off); off += c.length; });
+      return out;
+    });
+  }
+  function readXlsxFileMap(arrayBuffer) {
+    var bytes = new Uint8Array(arrayBuffer);
+    var view = new DataView(arrayBuffer);
+    var entries = readCentralDirectory(view, bytes);
+    var map = {};
+    var chain = Promise.resolve();
+    entries.forEach(function (e) {
+      if (e.name.slice(-1) === "/") return;
+      chain = chain.then(function () {
+        return extractEntry(bytes, view, e).then(function (data) { map[e.name] = data; });
+      });
+    });
+    return chain.then(function () { return map; });
+  }
+
+  function resolveRelsTarget(target) {
+    var t = target.replace(/^\//, "");
+    if (t.slice(0, 3) !== "xl/") t = "xl/" + t;
+    return t;
+  }
+
+  function parseSheetXmlToRows(xmlText, sharedStrings) {
+    var doc = new DOMParser().parseFromString(xmlText, "application/xml");
+    var rowEls = Array.prototype.slice.call(doc.getElementsByTagName("row"));
+    return rowEls.map(function (rowEl) {
+      var out = {};
+      var cells = Array.prototype.slice.call(rowEl.getElementsByTagName("c"));
+      cells.forEach(function (c) {
+        var ref = c.getAttribute("r") || "";
+        var m = ref.match(/^[A-Z]+/);
+        var colLetter = m ? m[0] : "";
+        if (!colLetter) return;
+        var type = c.getAttribute("t");
+        var value = "";
+        if (type === "s") {
+          var vEl = c.getElementsByTagName("v")[0];
+          var idx = vEl ? parseInt(vEl.textContent, 10) : -1;
+          value = sharedStrings[idx] || "";
+        } else if (type === "inlineStr") {
+          var isEl = c.getElementsByTagName("is")[0];
+          if (isEl) value = Array.prototype.slice.call(isEl.getElementsByTagName("t")).map(function (t) { return t.textContent; }).join("");
+        } else {
+          var v2 = c.getElementsByTagName("v")[0];
+          value = v2 ? v2.textContent : "";
+        }
+        out[colLetter] = value;
+      });
+      return out;
+    });
+  }
+
+  var REQUIRED_HEADERS = ["Konu", "Soru", "A", "B", "C", "D", "CevapHarf", "GUID"];
+
+  function parseWorkbook(arrayBuffer) {
+    return readXlsxFileMap(arrayBuffer).then(function (files) {
+      var dec = new TextDecoder("utf-8");
+      var parser = new DOMParser();
+
+      var sharedStrings = [];
+      if (files["xl/sharedStrings.xml"]) {
+        var ssDoc = parser.parseFromString(dec.decode(files["xl/sharedStrings.xml"]), "application/xml");
+        sharedStrings = Array.prototype.slice.call(ssDoc.getElementsByTagName("si")).map(function (si) {
+          return Array.prototype.slice.call(si.getElementsByTagName("t")).map(function (t) { return t.textContent; }).join("");
+        });
+      }
+
+      if (!files["xl/workbook.xml"]) throw new Error("Geçersiz .xlsx: xl/workbook.xml bulunamadı.");
+      var wbDoc = parser.parseFromString(dec.decode(files["xl/workbook.xml"]), "application/xml");
+      var relMap = {};
+      if (files["xl/_rels/workbook.xml.rels"]) {
+        var relsDoc = parser.parseFromString(dec.decode(files["xl/_rels/workbook.xml.rels"]), "application/xml");
+        Array.prototype.slice.call(relsDoc.getElementsByTagName("Relationship")).forEach(function (rel) {
+          relMap[rel.getAttribute("Id")] = resolveRelsTarget(rel.getAttribute("Target"));
+        });
+      }
+
+      var sheetEls = Array.prototype.slice.call(wbDoc.getElementsByTagName("sheet"));
+      var picked = null;
+      for (var i = 0; i < sheetEls.length; i++) {
+        var sheetEl = sheetEls[i];
+        var rId = sheetEl.getAttribute("r:id") ||
+          sheetEl.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id");
+        var path = relMap[rId];
+        if (!path || !files[path]) continue;
+        var xml = dec.decode(files[path]);
+        var rows = parseSheetXmlToRows(xml, sharedStrings);
+        if (rows.length === 0) continue;
+        var headerValues = Object.keys(rows[0]).map(function (k) { return rows[0][k]; });
+        var hasAll = REQUIRED_HEADERS.every(function (h) { return headerValues.indexOf(h) !== -1; });
+        if (hasAll) { picked = { name: sheetEl.getAttribute("name"), rows: rows }; break; }
+      }
+      if (!picked) throw new Error("Hiçbir sayfada beklenen sütun başlıkları bulunamadı (Konu, Soru, A, B, C, D, CevapHarf, GUID).");
+
+      var headerRow = picked.rows[0];
+      var colToName = {};
+      Object.keys(headerRow).forEach(function (colLetter) { colToName[colLetter] = headerRow[colLetter]; });
+      var dataRows = picked.rows.slice(1).map(function (r) {
+        var obj = {};
+        Object.keys(r).forEach(function (colLetter) {
+          var name = colToName[colLetter];
+          if (name) obj[name] = r[colLetter];
+        });
+        return obj;
+      }).filter(function (r) { return (r["Soru"] || "").trim() !== ""; });
+
+      return { rows: dataRows, sheetName: picked.name };
+    });
+  }
+
+  function rowsToBankFormat(rawRows) {
+    var HARF_IDX = { A: 0, B: 1, C: 2, D: 3 };
+    var out = [];
+    rawRows.forEach(function (r) {
+      var guid = ((r["GUID"] || "") + "").trim();
+      var soru = ((r["Soru"] || "") + "").trim();
+      var konu = ((r["Konu"] || "") + "").trim();
+      var harf = ((r["CevapHarf"] || "") + "").trim().toUpperCase();
+      if (!guid || !soru || !konu || !(harf in HARF_IDX)) return;
+      var siklar = [r["A"], r["B"], r["C"], r["D"]].map(function (v) { return ((v || "") + "").trim(); });
+      out.push({
+        guid: guid, konu: konu, soru: soru, siklar: siklar,
+        cevapIdx: HARF_IDX[harf], cevapHarf: harf,
+        cevapMetni: ((r["CevapMetni"] || siklar[HARF_IDX[harf]] || "") + "").trim(),
+        aciklama: ((r["Aciklama"] || "") + "").trim(),
+        kaynak: ((r["Kaynak"] || "") + "").trim(),
+        donem: ((r["Donem"] || "") + "").trim(),
+        dogrulanmis: ((r["Dogrulanmis"] || "") + "").trim().toLowerCase() === "evet"
+      });
+    });
+    return out;
+  }
+
+  // ------------------------------------------------------------ kalıcılık --
+  function ensureArtifact() {
+    if (artifactNs !== undefined) return Promise.resolve(artifactNs);
+    if (typeof window.claude === "undefined" || typeof window.claude.use !== "function") {
+      artifactNs = null; return Promise.resolve(null);
+    }
+    return window.claude.use("artifact").then(function (ns) { artifactNs = ns || null; return artifactNs; })
+      .catch(function () { artifactNs = null; return null; });
+  }
+
+  function buildFullHtml(state) {
+    var styleText = document.getElementById("app-style").textContent;
+    var scriptText = document.getElementById("app-script").textContent;
+    return "<!doctype html>\n<html lang=\"tr\">\n<head>\n<meta charset=\"utf-8\">\n" +
+      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>UZYET</title>\n" +
+      "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n" +
+      "<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n" +
+      "<link href=\"https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=Public+Sans:wght@400;500;600;700&display=swap\" rel=\"stylesheet\">\n" +
+      "<style id=\"app-style\">" + styleText + "</style>\n</head>\n<body>\n" +
+      "<script id=\"app-state\" type=\"application/json\">" + JSON.stringify(state) + "<\/script>\n" +
+      "<div id=\"app\"></div>\n" +
+      "<script id=\"app-script\">" + scriptText + "<\/script>\n</body>\n</html>";
+  }
+
+  function stashPendingView() {
+    // publish() sayfayı yeniden yüklüyor; bu olmazsa VIEW menüye sıfırlanır
+    // (sınav ortasında bayrak işaretlemek veya Rastgele Soru'da cevap vermek bile kullanıcıyı menüye fırlatırdı).
+    try {
+      sessionStorage.setItem("uzyet_pending_view", JSON.stringify({
+        view: VIEW, lastResult: lastResult, currentExam: currentExam, currentFlash: currentFlash,
+        lastFlashResult: lastFlashResult,
+        currentPratik: currentPratik, pratikSeciliKonu: pratikSeciliKonu, pratikSeciliModul: pratikSeciliModul
+      }));
+    } catch (e) { /* sessionStorage kullanılamıyor olabilir, sorun değil */ }
+  }
+
+  function saveAndPublish() {
+    // Yayınlanan HTML ile localStorage anlık görüntüsü hep AYNI rev'i taşısın — böylece
+    // reload sonrası "hangisi yeni" karşılaştırması (lsYukle) yanlış tarafa düşmez.
+    bumpRev();
+    lsKaydet();
+    return ensureArtifact().then(function (artifact) {
+      if (!artifact) {
+        // sadeceDeneme derlemesi (Vercel'de statik dosya) hiçbir zaman Artifact içinde
+        // çalışmaz — bu normal, kullanıcıyı alarma gerek yok (resmi deneme zaten sunucuda).
+        if (!STATE.sadeceDeneme) showBanner("Kaydetme kullanılamıyor — bu görünümde kayıt yetkisi yok. Değişiklikler yalnızca bu tarayıcıda saklanıyor.", true);
+        return false;
+      }
+      stashPendingView();
+      return artifact.publish(buildFullHtml(STATE)).then(function () { return true; }).catch(function (e) {
+        if (e && e.code === "conflict") return true; // sayfa zaten yeniden yükleniyor
+        showBanner("Kaydetme hatası: " + (e && e.message ? e.message : e), true);
+        return false;
+      });
+    });
+  }
+
+  // --------------------------------------------------------------- eylemler
+  function fmtSure(saniye) {
+    var dk = Math.floor(saniye / 60), sn = saniye % 60;
+    return (dk < 10 ? "0" : "") + dk + ":" + (sn < 10 ? "0" : "") + sn;
+  }
+  function tickExamTimer() {
+    if (VIEW !== "exam" || !currentExam) return;
+    currentExam.gecenSaniye = (currentExam.gecenSaniye || 0) + 1;
+    var el = document.getElementById("exam-timer");
+    if (!el) return;
+    el.textContent = "⏱ " + fmtSure(currentExam.gecenSaniye);
+    el.style.color = currentExam.gecenSaniye >= 3600 ? "var(--bad)" : currentExam.gecenSaniye >= 3000 ? "var(--warn)" : "";
+  }
+
+  // ---- Resmi Deneme portalı (Neon/Vercel) ---------------------------------
+  // Yalnız 50 soru/60 dk resmi deneme moduna (Yeni Sınav/Az Görülenler/Yanlışlar)
+  // dokunur. Rastgele Soru, Konu Konu Bak, Test/Checkpoint sayfaları tamamen
+  // yerel kalır — STATE.stats/STATE.history bu moddan hiç etkilenmez, resmi
+  // deneme istatistiği/geçmişi sunucuda (hesaba bağlı) tutulur.
+  var REMOTE_API = "https://uzyet-portal.vercel.app";
+  var REMOTE_TOKEN_KEY = "uzyet_portal_token";
+  // TODO: kullanıcı gerçek metni verince buraya yazılacak — şimdilik yer tutucu.
+  var DISCLAIMER_METNI = "Bu, gerçek sınavın simülasyonudur; sorular ve açıklamalar UZYET ekibi tarafından hazırlanmıştır, resmi kaynak yerine geçmez. Kendi sorumluluğunda kullan.";
+  var remoteAuth = { checked: false, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false };
+  var remoteDash = null;
+  var remoteBusy = false;
+  // Kayıt formu her render()'da sıfırdan kurulduğu için, hatalı gönderim sonrası
+  // yazılanların kaybolmaması için taslak burada tutulur (input dinleyicisi doldurur).
+  var denemeIsimTaslak = "";
+  var denemePinTaslak = "";
+  // "Yeni Sınav" vb. tıklandığında sınav hemen başlamaz — önce paylaşılabilir kod
+  // gösterilir, "Sınava Başla" ile aynı kod (dolayısıyla "rastgele" modda aynı 50
+  // soru) sunucuda oluşturulur. {mode, seed, kod} veya null.
+  var denemeKodOnizleme = null;
+
+  function remoteToken() { try { return localStorage.getItem(REMOTE_TOKEN_KEY); } catch (e) { return null; } }
+  function remoteSetToken(t) { try { if (t) localStorage.setItem(REMOTE_TOKEN_KEY, t); } catch (e) { /* localStorage kapalıysa oturum sekme kapanana kadar bellekte kalır */ } }
+
+  function remoteFetch(path, method, body) {
+    var headers = { "Content-Type": "application/json" };
+    var tok = remoteToken();
+    if (tok) headers["Authorization"] = "Bearer " + tok;
+    return fetch(REMOTE_API + path, { method: method || "GET", headers: headers, body: body ? JSON.stringify(body) : undefined })
+      .then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (data) { return { ok: res.ok, status: res.status, data: data }; });
+      });
+  }
+
+  function remoteRefreshDashboard(cb) {
+    remoteFetch("/api/exam", "POST", { action: "dashboard" }).then(function (r) {
+      remoteDash = r.ok ? r.data : null;
+    }).catch(function () { remoteDash = null; }).then(function () { if (cb) cb(); });
+  }
+
+  var remoteBankLoaded = false;
+  // sadeceDeneme derlemesi soru bankasını HTML'e hiç gömmez (bkz. build_quiz_dist.py
+  // --sadece-deneme) — Rastgele Soru/Konu Konu Bak'ın çalışması için giriş+onay+disclaimer
+  // tamamlanınca sunucudan (cevaplarıyla birlikte) çekilir. Onaysız/girişsiz ziyaretçi
+  // view-source yapsa bile STATE.bank boş kalır.
+  function remoteLoadBankIfNeeded(cb) {
+    if (!STATE.sadeceDeneme || remoteBankLoaded || !remoteGirisTamamMi()) { if (cb) cb(); return; }
+    remoteFetch("/api/exam", "POST", { action: "bank" }).then(function (r) {
+      if (r.ok && r.data && r.data.questions) { STATE.bank = r.data.questions; remoteBankLoaded = true; }
+    }).catch(function () {}).then(function () { if (cb) cb(); });
+  }
+
+  // Deneme dashboard'ı ve (giriş tamamsa) soru bankasını birlikte tazeler.
+  function afterAuthStateChange(cb) {
+    var pending = 0, done = false;
+    function finish() { pending--; if (pending <= 0 && !done) { done = true; if (cb) cb(); } }
+    if (remoteAuth.isActive) { pending++; remoteRefreshDashboard(finish); }
+    if (remoteGirisTamamMi() && !remoteBankLoaded) { pending++; remoteLoadBankIfNeeded(finish); }
+    if (pending === 0 && cb) cb();
+  }
+
+  function remoteCheckStatus(cb) {
+    if (!remoteToken()) {
+      remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false };
+      if (cb) cb();
+      return;
+    }
+    remoteAuth.checking = true;
+    remoteFetch("/api/access", "GET").then(function (r) {
+      if (r.ok && r.data && r.data.authenticated) {
+        remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, disclaimerAccepted: !!r.data.disclaimerAccepted };
+      } else {
+        remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false };
+      }
+    }).catch(function () {
+      remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false };
+    }).then(function () {
+      afterAuthStateChange(cb);
+    });
+  }
+
+  function openMenuDeneme() {
+    VIEW = "menuDeneme";
+    render();
+    if (!remoteAuth.checked) remoteCheckStatus(function () { if (VIEW === "menuDeneme") render(); });
+  }
+
+  function remoteRegisterSubmit() {
+    if (remoteBusy) return;
+    var username = denemeIsimTaslak.trim().toLocaleLowerCase("tr-TR");
+    var pin = denemePinTaslak.trim();
+    if (!username) { showBanner("İsim gerekli.", true); return; }
+    if (!/^[a-z0-9._-]{3,40}$/.test(username)) {
+      showBanner("İsim 3-40 karakter olmalı; yalnız küçük harf, rakam, nokta, tire, alt çizgi (boşluk/Türkçe karakter olmadan).", true);
+      return;
+    }
+    if (!/^\d{4}$/.test(pin)) { showBanner("PIN 4 haneli rakam olmalı.", true); return; }
+    remoteBusy = true; render();
+    remoteFetch("/api/access", "POST", { username: username, pin: pin }).then(function (r) {
+      remoteBusy = false;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Kayıt başarısız.", true); render(); return; }
+      denemeIsimTaslak = ""; denemePinTaslak = "";
+      if (r.data.token) remoteSetToken(r.data.token);
+      remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, disclaimerAccepted: !!r.data.disclaimerAccepted };
+      render();
+      afterAuthStateChange(render);
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası — internet bağlantını kontrol et.", true); render(); });
+  }
+
+  function remoteAcceptDisclaimer() {
+    if (remoteBusy) return;
+    remoteBusy = true; render();
+    remoteFetch("/api/access", "POST", { acceptDisclaimer: true }).then(function (r) {
+      remoteBusy = false;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Kaydedilemedi, tekrar dene.", true); render(); return; }
+      remoteAuth.disclaimerAccepted = !!r.data.disclaimerAccepted;
+      render();
+      afterAuthStateChange(render);
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+  }
+
+  function remoteRefreshStatus() {
+    remoteAuth.checked = false;
+    remoteCheckStatus(function () { render(); });
+    render();
+  }
+
+  // Uzak sınavın soru görüntüsünü yerel exam ekranıyla aynı şekle sokar. cevapIdx
+  // placeholder'dır (-1) — renderExam() sınav bitmeden cevapIdx'i hiç okumaz;
+  // gerçek değer yalnız finishExamRemote()'da, sunucu açıkladıktan sonra yazılır.
+  function uzakSoruKayitlariOlustur(questions) {
+    var out = {};
+    questions.forEach(function (q) {
+      out[q.guid] = {
+        guid: q.guid, konu: q.topic, soru: q.prompt, siklar: q.options,
+        cevapIdx: -1, cevapHarf: "", cevapMetni: "", aciklama: "", kaynak: "", donem: "", dogrulanmis: true,
+        _attemptQuestionId: q.id
+      };
+    });
+    return out;
+  }
+
+  function uzakExamKur(d) {
+    currentExam = {
+      tip: d.mode, uzak: true, uzakAttemptId: d.id, examCode: d.examCode,
+      sorular: d.questions.map(function (q) { return q.guid; }),
+      index: 0, cevaplar: d.answers || {}, uyarilar: [], gecenSaniye: d.elapsedSeconds || 0
+    };
+    currentExam.soruKayitlari = uzakSoruKayitlariOlustur(d.questions);
+    VIEW = "exam";
+  }
+
+  function startExamRemote(mode, examCodeRaw) {
+    if (remoteBusy) return;
+    remoteBusy = true;
+    var body = examCodeRaw ? { action: "start", mode: "rastgele", examCode: examCodeRaw } : { action: "start", mode: mode };
+    remoteFetch("/api/exam", "POST", body).then(function (r) {
+      remoteBusy = false;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav başlatılamadı.", true); render(); return; }
+      uzakExamKur(r.data);
+      render();
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+  }
+
+  function prepareExamRemote(mode) {
+    if (remoteBusy) return;
+    var seed = Math.floor(Math.random() * 0xFFFFFFFF) >>> 0;
+    denemeKodOnizleme = { mode: mode, seed: seed, kod: examKoduUret(mode, seed) };
+    render();
+  }
+  function cancelExamKodOnizleme() { denemeKodOnizleme = null; render(); }
+  function baslatExamKodOnizleme() {
+    if (!denemeKodOnizleme) return;
+    var d = denemeKodOnizleme;
+    denemeKodOnizleme = null;
+    startExamRemote(d.mode, d.kod);
+  }
+
+  function resumeExamRemote() {
+    if (!remoteDash || !remoteDash.activeAttempt || remoteBusy) return;
+    remoteBusy = true;
+    remoteFetch("/api/exam", "POST", { action: "resume", attemptId: remoteDash.activeAttempt.id }).then(function (r) {
+      remoteBusy = false;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav açılamadı.", true); render(); return; }
+      uzakExamKur(r.data);
+      render();
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+  }
+
+  var remoteDeleteConfirm = false;
+  function requestDiscardExamRemote() { remoteDeleteConfirm = true; render(); }
+  function cancelDiscardExamRemote() { remoteDeleteConfirm = false; render(); }
+  function discardExamRemote() {
+    if (!remoteDash || !remoteDash.activeAttempt || remoteBusy) return;
+    remoteBusy = true;
+    var attemptId = remoteDash.activeAttempt.id;
+    remoteFetch("/api/exam", "POST", { action: "cancel", attemptId: attemptId }).then(function (r) {
+      remoteBusy = false;
+      remoteDeleteConfirm = false;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav silinemedi.", true); render(); return; }
+      remoteDash = null;
+      remoteRefreshDashboard(render);
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+  }
+
+  function remoteAnswerSync(guid, idx) {
+    if (!currentExam || !currentExam.uzak) return;
+    var q = currentExam.soruKayitlari[guid];
+    if (!q) return;
+    remoteFetch("/api/exam", "POST", {
+      action: "answer", attemptId: currentExam.uzakAttemptId, questionId: q._attemptQuestionId, selectedIndex: idx
+    }).catch(function () { /* sessizce geçilir — arayüzü bloklamaz, sınav bitince sunucu son cevaplarla tamamlanır */ });
+  }
+
+  function pauseExamRemote() {
+    if (!currentExam || !currentExam.uzak) return;
+    var attemptId = currentExam.uzakAttemptId;
+    currentExam = null;
+    VIEW = "menuDeneme";
+    remoteDash = null;
+    render();
+    remoteFetch("/api/exam", "POST", { action: "pause", attemptId: attemptId }).then(function () {
+      remoteRefreshDashboard(function () { if (VIEW === "menuDeneme") render(); });
+    });
+  }
+
+  // 'finish' isteği zaten bitmiş bir denemede de idempotent çalışır (skor tekrar
+  // uygulanmaz, yalnız review yeniden hesaplanıp döner) — bu yüzden hem sınavı yeni
+  // bitirirken hem de geçmişten eski bir denemeyi tekrar açarken kullanılabilir.
+  function uzakSonucKur(d) {
+    var soruKayitlari = {};
+    var konuKirilim = {};
+    var cevaplar = {};
+    (d.review || []).forEach(function (item) {
+      soruKayitlari[item.guid] = {
+        guid: item.guid, konu: item.topic, soru: item.prompt, siklar: item.options,
+        cevapIdx: item.correctIndex, cevapHarf: ["A", "B", "C", "D"][item.correctIndex] || "",
+        cevapMetni: item.options[item.correctIndex] || "", aciklama: item.explanation || "",
+        kaynak: "", donem: "", dogrulanmis: true, _attemptQuestionId: item.id
+      };
+      if (item.selectedIndex !== null && item.selectedIndex !== undefined) cevaplar[item.guid] = item.selectedIndex;
+      var k = konuKirilim[item.topic] || (konuKirilim[item.topic] = { dogru: 0, yanlis: 0, bos: 0 });
+      if (item.isCorrect === true) k.dogru++; else if (item.isCorrect === false) k.yanlis++; else k.bos++;
+    });
+    lastResult = {
+      id: d.id, tarihISO: d.updatedAt || new Date().toISOString(), tip: d.mode, seed: null, examCode: d.examCode, uzak: true,
+      sorular: (d.review || []).map(function (item) { return item.guid; }),
+      cevaplar: cevaplar, soruKayitlari: soruKayitlari,
+      skor: { dogru: d.score.correct, yanlis: d.score.wrong, bos: d.score.blank },
+      konuKirilim: konuKirilim, sureSaniye: d.elapsedSeconds || 0
+    };
+  }
+
+  function finishExamRemote() {
+    if (!currentExam || !currentExam.uzak || remoteBusy) return;
+    remoteBusy = true;
+    var attemptId = currentExam.uzakAttemptId;
+    remoteFetch("/api/exam", "POST", { action: "finish", attemptId: attemptId }).then(function (r) {
+      remoteBusy = false;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav bitirilemedi.", true); render(); return; }
+      uzakSonucKur(r.data);
+      currentExam = null;
+      remoteDash = null;
+      VIEW = "result";
+      render();
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+  }
+
+  function openHistoryRemote() {
+    VIEW = "gecmisUzak";
+    render();
+    remoteRefreshDashboard(render);
+  }
+
+  function openGecmisDetay(attemptId) {
+    if (remoteBusy) return;
+    remoteBusy = true; render();
+    remoteFetch("/api/exam", "POST", { action: "finish", attemptId: attemptId }).then(function (r) {
+      remoteBusy = false;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav açılamadı.", true); render(); return; }
+      uzakSonucKur(r.data);
+      VIEW = "result";
+      render();
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+  }
+
+  var gecmisSilConfirmId = null;
+  function requestDeleteGecmis(id) { gecmisSilConfirmId = id; render(); }
+  function cancelDeleteGecmis() { gecmisSilConfirmId = null; render(); }
+  function confirmDeleteGecmis(id) {
+    if (remoteBusy) return;
+    remoteBusy = true; render();
+    remoteFetch("/api/exam", "POST", { action: "delete", attemptId: id }).then(function (r) {
+      remoteBusy = false;
+      gecmisSilConfirmId = null;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Silinemedi.", true); render(); return; }
+      remoteRefreshDashboard(render);
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+  }
+
+  function renderGecmisUzak() {
+    var list = (remoteDash && remoteDash.recentAttempts) || [];
+    var es = remoteDash && remoteDash.examStats;
+    var ozetHtml = es ? '<div class="stat-grid">' +
+      '<div class="stat-card"><div class="num">' + es.count + '</div><div class="lbl">Toplam deneme</div></div>' +
+      '<div class="stat-card"><div class="num">%' + es.avgPercent + '</div><div class="lbl">Ortalama puan</div></div>' +
+      '<div class="stat-card"><div class="num">' + fmtSure(es.avgSeconds) + '</div><div class="lbl">Ortalama süre</div></div>' +
+      "</div>" : "";
+    var rows = list.map(function (a) {
+      var toplam = a.score ? (a.score.correct + a.score.wrong + a.score.blank) : a.totalCount;
+      var skorTxt = a.score ? (a.score.correct + " / " + toplam + " · %" + a.score.percent) : "—";
+      var renk = MOD_RENK[a.mode] || "var(--seri-6)";
+      var silBlok = gecmisSilConfirmId === a.id
+        ? '<span style="display:flex;gap:4px;flex-shrink:0">' +
+          '<button class="btn primary" style="padding:2px 8px;font-size:0.78rem" data-action="confirm-delete-gecmis" data-id="' + a.id + '">Evet</button>' +
+          '<button class="btn ghost" style="padding:2px 8px;font-size:0.78rem" data-action="cancel-delete-gecmis">Vazgeç</button>' +
+          "</span>"
+        : '<button class="btn ghost" style="padding:2px 8px;font-size:0.78rem;flex-shrink:0" data-action="request-delete-gecmis" data-id="' + a.id + '">Sil</button>';
+      return '<div class="card" style="border-left:4px solid ' + renk + ';margin-bottom:10px;padding:14px 16px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">' +
+        '<div style="cursor:pointer;flex:1" data-action="open-gecmis-detay" data-id="' + a.id + '">' +
+        '<div class="title" style="font-weight:700">' + (MOD_ADI[a.mode] || a.mode) + '</div>' +
+        '<div class="desc" style="color:var(--text-muted);font-size:0.86rem">' + fmtTarih(a.updatedAt) + " · ⏱ " + fmtSure(a.elapsedSeconds || 0) + " · " + skorTxt + "</div></div>" +
+        silBlok +
+        "</div></div>";
+    }).join("");
+    return '<div class="link-row"><button class="btn ghost" data-action="open-menu-deneme">← Deneme Sınavı</button></div>' +
+      '<div class="section-title">📊 Deneme Geçmişi</div>' +
+      ozetHtml +
+      (list.length ? rows : '<div class="card">Henüz tamamlanmış resmi deneme yok.</div>');
+  }
+
+  // Yerel STATE.flags dual-write'ından sonra çağrılır; guid bir uzak deneme
+  // sorusuna aitse (aktif sınav veya az önce bitmiş sonuç) sunucuya da bildirir,
+  // değilse sessizce hiçbir şey yapmaz (yerel pratik/rastgele-soru bayrakları).
+  function remoteFlagSync(guid, note, kategori) {
+    var attemptQuestionId = null, attemptId = null;
+    if (currentExam && currentExam.uzak && currentExam.soruKayitlari[guid]) {
+      attemptQuestionId = currentExam.soruKayitlari[guid]._attemptQuestionId;
+      attemptId = currentExam.uzakAttemptId;
+    } else if (lastResult && lastResult.uzak && lastResult.soruKayitlari[guid]) {
+      attemptQuestionId = lastResult.soruKayitlari[guid]._attemptQuestionId;
+      attemptId = lastResult.id;
+    }
+    if (!attemptQuestionId || !attemptId) return;
+    remoteFetch("/api/exam", "POST", { action: "flag", attemptId: attemptId, questionId: attemptQuestionId, note: note || "", category: kategori || null }).catch(function () {});
+  }
+
+  // Sınav ekranındaki hata bildirimi: serbest "Hatırlatıcı" yıldızı yok, yalnız
+  // 🚩 + aşağıda sabit kategori seçenekleri — yönetici bunları kullanıcı+kategori
+  // bazında raporlanan şekilde takip edip yarı manuel işleyecek.
+  var HATA_KATEGORILERI = [
+    { key: "soru", etiket: "Soru hatalı/anlaşılmıyor/sayılar güncel değil" },
+    { key: "siklar", etiket: "Şıklar anlamsız/cevap şıklardan çıkıyor" },
+    { key: "kapsam", etiket: "Bu konu kitaptan çıktı" }
+  ];
+  function setFlagKategori(guid, kategori) {
+    if (!STATE.flags[guid]) STATE.flags[guid] = bosFlagKaydi();
+    STATE.flags[guid].kategori = kategori;
+    STATE.flags[guid].hatali = true;
+    veriDegisti();
+    render();
+    remoteFlagSync(guid, STATE.flags[guid].hataNotu, kategori);
+  }
+  function examFlagBarHtml(guid) {
+    var f = STATE.flags[guid] || bosFlagKaydi();
+    var toggleHtml = '<div class="flag-bar">' +
+      '<button class="flag-btn' + (f.hatali ? " active-report" : "") + '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="hatali">🚩 Bu soru hatalı/eksik</button>' +
+      "</div>";
+    if (!f.hatali) return toggleHtml;
+    var katHtml = '<div class="flag-bar" style="margin-top:6px">' +
+      HATA_KATEGORILERI.map(function (k) {
+        return '<button class="flag-btn' + (f.kategori === k.key ? " active-report" : "") + '" data-action="set-flag-kategori" data-guid="' + guid + '" data-kategori="' + k.key + '">' + escapeHtml(k.etiket) + "</button>";
+      }).join("") + "</div>";
+    var notuHtml = '<textarea class="hata-notu" placeholder="Ek not (opsiyonel)" data-note-guid="' + guid + '">' + escapeHtml(f.hataNotu) + "</textarea>";
+    return toggleHtml + katHtml + notuHtml;
+  }
+
+  // Kayıt/onay-bekleme/disclaimer adımları arkadaki içeriği (Rastgele Soru vb.)
+  // etkileşimden kilitleyen tam ekran bir popup içinde gösterilir — sırayla aynı
+  // görsel dilde ilerlesinler diye üçü de bu sarmalayıcıyı kullanır.
+  function remoteGirisTamamMi() {
+    return remoteAuth.checked && remoteAuth.authenticated && remoteAuth.isActive && remoteAuth.disclaimerAccepted;
+  }
+
+  function denemeModalSar(innerHtml) {
+    // Sayfanın üstündeki normal .banner bu modalın ARKASINDA kalır (z-index) — hata/uyarı
+    // mesajı modal açıkken görünmez olurdu, bu yüzden kart içine de ayrıca basılır.
+    var bannerHtml = bannerMsg ? '<div class="banner' + (bannerIsError ? " error" : "") + '" style="margin-bottom:14px">' + escapeHtml(bannerMsg) + "</div>" : "";
+    return '<div style="position:fixed;inset:0;z-index:9999;background:rgba(10,10,10,.62);display:flex;align-items:center;justify-content:center;padding:20px">' +
+      '<div class="card" style="max-width:420px;width:100%;max-height:88vh;overflow:auto">' + bannerHtml + innerHtml + "</div></div>";
+  }
+
+  function renderDenemeUzakBolum() {
+    if (!remoteAuth.checked || remoteAuth.checking) {
+      return denemeModalSar("Hesap durumu kontrol ediliyor…");
+    }
+    if (!remoteAuth.authenticated) {
+      var inputStil = "padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body)";
+      return denemeModalSar(
+        '<div class="section-title" style="font-size:1rem;margin-bottom:6px">Hoş geldin</div>' +
+        '<div class="muted" style="margin-bottom:10px">Devam etmek için kayıt olman gerekiyor — isminizi yazmanız ve 4 haneli bir PIN belirlemeniz yeterli (boşluksuz isim, örn. <i>mustafa</i>). Bu PIN\'i unutma: başka bir cihazdan aynı isim ve PIN ile tekrar girebilirsin. Yönetici onayından sonra kullanabilirsin.</div>' +
+        '<div class="link-row">' +
+        '<input type="text" id="deneme-username-input" placeholder="isminiz" value="' + escapeHtml(denemeIsimTaslak) + '" style="flex:1;min-width:160px;' + inputStil + '"' + (remoteBusy ? " disabled" : "") + '>' +
+        '<input type="text" inputmode="numeric" maxlength="4" id="deneme-pin-input" placeholder="PIN (4 hane)" value="' + escapeHtml(denemePinTaslak) + '" style="width:110px;' + inputStil + '"' + (remoteBusy ? " disabled" : "") + '>' +
+        '<button class="btn primary" data-action="deneme-register" ' + (remoteBusy ? "disabled" : "") + '>' + (remoteBusy ? "Gönderiliyor…" : "Kayıt Ol / Giriş Yap") + "</button>" +
+        "</div>");
+    }
+    if (!remoteAuth.isActive) {
+      return denemeModalSar(
+        '<div class="section-title" style="font-size:1rem;margin-bottom:6px">Onay bekleniyor</div>' +
+        '<div class="muted" style="margin-bottom:10px">İsmin: <b>' + escapeHtml(remoteAuth.username) + '</b> — yönetici onayladığında devam edebilirsin.</div>' +
+        '<button class="btn ghost" data-action="deneme-refresh">Durumu Yenile</button>');
+    }
+    if (!remoteAuth.disclaimerAccepted) {
+      return denemeModalSar(
+        '<div class="section-title" style="font-size:1rem;margin-bottom:6px">Önemli not</div>' +
+        '<div class="muted" style="margin-bottom:14px;white-space:pre-wrap">' + escapeHtml(DISCLAIMER_METNI) + '</div>' +
+        '<button class="btn primary" ' + (remoteBusy ? "disabled" : "") + ' data-action="deneme-accept-disclaimer">' + (remoteBusy ? "Kaydediliyor…" : "Anladım") + "</button>");
+    }
+    if (remoteDash && remoteDash.activeAttempt) {
+      var a = remoteDash.activeAttempt;
+      var aksiyonlar = remoteDeleteConfirm
+        ? '<div class="banner error" style="margin:10px 0">Bu sınav kalıcı olarak silinecek, emin misin?</div>' +
+          '<div class="link-row">' +
+          '<button class="btn primary" data-action="confirm-discard-exam-remote">Evet, sil</button>' +
+          '<button class="btn ghost" data-action="cancel-discard-exam-remote">Vazgeç</button>' +
+          "</div>"
+        : '<div class="link-row" style="margin-top:10px">' +
+          '<button class="btn primary" data-action="resume-exam-remote">Devam Et</button>' +
+          '<button class="btn ghost" data-action="discard-exam-remote">Sil</button>' +
+          "</div>";
+      return '<div class="card resume-card">' +
+        '<div class="title">Yarım kalan resmi deneme — ' + MOD_ADI[a.mode] + "</div>" +
+        '<div class="desc">' + a.answeredCount + " / " + a.totalCount + " soru cevaplanmış</div>" +
+        aksiyonlar +
+        "</div>";
+    }
+    if (denemeKodOnizleme) {
+      var dko = denemeKodOnizleme;
+      var farkliCikabilirNotu = dko.mode === "rastgele" ? "" :
+        " (Az Görülenler/Yanlışlar kişisel istatistiğine bağlı olduğu için başkasında tam olarak aynı soruları vermeyebilir)";
+      return '<div class="card">' +
+        '<div class="section-title" style="font-size:1rem;margin-bottom:6px">' + (MOD_ADI[dko.mode] || dko.mode) + " — kod hazır</div>" +
+        '<div class="muted" style="margin-bottom:10px">Sınava başlamadan önce bu kodu arkadaşınla paylaşabilirsin' + farkliCikabilirNotu + ". Başladığında 60 dakikalık süre işlemeye başlar." + "</div>" +
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">' +
+        '<b style="font-family:var(--font-display);font-size:1.3rem;letter-spacing:0.03em">' + dko.kod + '</b>' +
+        '<button class="btn ghost" data-action="copy-exam-code" data-kod="' + dko.kod + '">📋 Kopyala</button>' +
+        "</div>" +
+        '<div class="link-row">' +
+        '<button class="btn primary" data-action="baslat-exam-kod-onizleme">Sınava Başla</button>' +
+        '<button class="btn ghost" data-action="cancel-exam-kod-onizleme">Vazgeç</button>' +
+        "</div></div>";
+    }
+    var modes = ["rastgele", "azgorulen", "yanlislar"].map(function (mode) {
+      var titles = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar" };
+      var descs = {
+        rastgele: "Resmi dağılıma göre 50 soruluk rastgele deneme.",
+        azgorulen: "Aynı dağılım, öncelik en az karşılaştığın sorularda.",
+        yanlislar: "Aynı dağılım, öncelik son denemesinde yanlış yaptıkların."
+      };
+      var renk = MOD_RENK[mode];
+      return '<button class="mode-btn" style="border-left:4px solid ' + renk + '" data-action="prepare-exam-remote" data-mode="' + mode + '">' +
+        '<div class="title"><span class="mode-dot" style="background:' + renk + '"></span>' + titles[mode] + '</div><div class="desc">' + descs[mode] + "</div></button>";
+    }).join("");
+    var koduCardHtml = '<div class="card" style="margin-top:14px">' +
+      '<div class="section-title" style="font-size:1rem;margin-bottom:6px">🔑 Kod ile Çöz</div>' +
+      '<div class="muted" style="margin-bottom:10px">Bir denemenin sonuç ekranındaki kodu buraya girersen aynı soruları yeniden çözersin (Yeni Sınav kodları herkes için aynı soruları verir; Az Görülenler/Yanlışlar kişisel istatistiğe bağlıdır).</div>' +
+      '<div class="link-row">' +
+      '<input type="text" id="exam-code-input" placeholder="ör. UZY-R1K2M3P" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body)">' +
+      '<button class="btn primary" data-action="start-exam-code">Kodla Başla</button>' +
+      "</div></div>";
+    return '<div class="mode-grid">' + modes + "</div>" + koduCardHtml;
+  }
+
+  function startExam(mode, seedOverride) {
+    if (remoteAuth.isActive) { startExamRemote(mode); return; }
+    if (STATE.pausedExam) return; // menüde yarım kalan sınav varken mod butonları zaten disabled
+    var seed = (typeof seedOverride === "number" && isFinite(seedOverride))
+      ? (seedOverride >>> 0)
+      : (Math.floor(Math.random() * 0xFFFFFFFF) >>> 0);
+    var rnd = mulberry32(seed);
+    var res = pickExamQuestions(STATE, mode, rnd);
+    if (res.sorular.length === 0) { showBanner("Bu sınav için havuzda hiç soru yok.", true); return; }
+    res.sorular.forEach(function (q) { shuffleSiklarInPlace(q, rnd); }); // şıklar her sınavda yeniden karışsın — ezber olmasın
+    var karisikSirali = sampleRandom(res.sorular, res.sorular.length, rnd); // konu bloklarına göre sabit sırayı da kır
+    currentExam = { tip: mode, seed: seed, sorular: karisikSirali.map(function (q) { return q.guid; }), index: 0, cevaplar: {}, uyarilar: res.uyarilar, gecenSaniye: 0 };
+    currentExam.soruKayitlari = soruKayitlari(STATE.bank, currentExam.sorular);
+    VIEW = "exam";
+    examDegisti();
+    render();
+  }
+  function startExamWithCode() {
+    var el = document.getElementById("exam-code-input");
+    if (remoteAuth.isActive) { startExamRemote(null, el ? el.value : ""); return; }
+    var cozum = examKoduCoz(el ? el.value : "");
+    if (!cozum) { showBanner("Kod tanınmadı — sonuç ekranındaki kodu olduğu gibi kopyala.", true); return; }
+    startExam(cozum.mode, cozum.seed);
+  }
+  function examSlotYaz() {
+    if (!currentExam) return;
+    STATE.pausedExam = JSON.parse(JSON.stringify(currentExam));
+    STATE.pausedExam.savedAtISO = new Date().toISOString();
+  }
+  function examDegisti() { examSlotYaz(); veriDegisti(); }
+  function selectOption(guid, idx) {
+    currentExam.cevaplar[guid] = idx;
+    if (currentExam.uzak) { remoteAnswerSync(guid, idx); render(); return; }
+    examDegisti(); render();
+  }
+  function nextQuestion() {
+    if (currentExam.index < currentExam.sorular.length - 1) currentExam.index++;
+    if (currentExam.uzak) { render(); return; }
+    examDegisti(); render();
+  }
+  function prevQuestion() {
+    if (currentExam.index > 0) currentExam.index--;
+    if (currentExam.uzak) { render(); return; }
+    examDegisti(); render();
+  }
+  function gotoQuestion(idx) {
+    currentExam.index = idx;
+    if (currentExam.uzak) { render(); return; }
+    examDegisti(); render();
+  }
+
+  function pauseExam() {
+    if (currentExam && currentExam.uzak) { pauseExamRemote(); return; }
+    examSlotYaz();
+    currentExam = null;
+    VIEW = "menu";
+    pendingSaveDirty = false; // bu save zaten güncel STATE'in tamamını kaydediyor
+    render();
+    saveAndPublish();
+  }
+  function resumeExam() {
+    if (!STATE.pausedExam) return;
+    currentExam = {
+      tip: STATE.pausedExam.tip, seed: STATE.pausedExam.seed, sorular: STATE.pausedExam.sorular, cevaplar: STATE.pausedExam.cevaplar,
+      index: STATE.pausedExam.index, uyarilar: STATE.pausedExam.uyarilar || [],
+      gecenSaniye: STATE.pausedExam.gecenSaniye || 0
+    };
+    currentExam.soruKayitlari = STATE.pausedExam.soruKayitlari || soruKayitlari(STATE.bank, currentExam.sorular);
+    VIEW = "exam";
+    render();
+  }
+  function requestDiscardPausedExam() { pausedDeleteConfirm = true; render(); }
+  function cancelDiscardPausedExam() { pausedDeleteConfirm = false; render(); }
+  function discardPausedExam() {
+    STATE.pausedExam = null;
+    pausedDeleteConfirm = false;
+    pendingSaveDirty = false; // bu save zaten güncel STATE'in tamamını kaydediyor
+    render();
+    saveAndPublish();
+  }
+
+  function bosFlagKaydi() { return { hatirlatici: false, hatali: false, hataNotu: "", begenildi: false, kapsamDisi: false }; }
+
+  function toggleFlag(guid, kind) {
+    if (!STATE.flags[guid]) STATE.flags[guid] = bosFlagKaydi();
+    STATE.flags[guid][kind] = !STATE.flags[guid][kind];
+    veriDegisti(); // anında yayınlamıyoruz — sınav ortasında bayrak basmak reload'ı tetikleyip
+    render();      // hızlı ardından gelen cevap/sonraki-soru gibi aksiyonları geri sarıyordu
+    if (kind === "hatali") remoteFlagSync(guid, STATE.flags[guid].hataNotu, STATE.flags[guid].kategori); // guid uzak denemeye ait değilse sessizce no-op
+  }
+  function saveHataNotu(guid, text) {
+    if (!STATE.flags[guid]) STATE.flags[guid] = bosFlagKaydi();
+    STATE.flags[guid].hataNotu = text;
+    veriDegisti();
+    remoteFlagSync(guid, text, STATE.flags[guid].kategori);
+  }
+
+  function finishExam() {
+    if (currentExam && currentExam.uzak) { finishExamRemote(); return; }
+    var res = scoreExam(STATE.bank, currentExam.sorular, currentExam.cevaplar, currentExam.soruKayitlari);
+    var now = new Date().toISOString();
+    STATE.pausedExam = null;
+    var bankByGuid = {};
+    STATE.bank.forEach(function (q) { bankByGuid[q.guid] = q; });
+    currentExam.sorular.forEach(function (guid) {
+      if (!STATE.stats[guid]) STATE.stats[guid] = { gosterim: 0, dogru: 0, yanlis: 0, sonSonucDogruMu: null, sonGorulme: null };
+      var s = STATE.stats[guid];
+      s.gosterim++;
+      s.sonGorulme = now;
+      var secilen = currentExam.cevaplar[guid];
+      var q = oturumSorusu(currentExam, STATE.bank, guid);
+      if (secilen === undefined || secilen === null) { s.sonSonucDogruMu = null; }
+      else if (q && secilen === q.cevapIdx) { s.dogru++; s.sonSonucDogruMu = true; }
+      else { s.yanlis++; s.sonSonucDogruMu = false; }
+    });
+    var entry = {
+      id: "h" + Date.now(), tarihISO: now, tip: currentExam.tip, seed: currentExam.seed,
+      sorular: currentExam.sorular, cevaplar: currentExam.cevaplar,
+      soruKayitlari: currentExam.soruKayitlari,
+      skor: res.skor, konuKirilim: res.konuKirilim, sureSaniye: currentExam.gecenSaniye || 0
+    };
+    STATE.history.unshift(entry);
+    if (STATE.history.length > 100) STATE.history = STATE.history.slice(0, 100);
+    lastResult = entry;
+    VIEW = "result";
+    currentExam = null;
+    pendingSaveDirty = false; // bu save zaten güncel STATE'in tamamını kaydediyor
+    render();
+    saveAndPublish(); // saveAndPublish artık VIEW/lastResult'ı kendi stashPendingView()'ıyla saklıyor
+  }
+
+  // Rastgele Soru iki havuzdan da çalışır: "bank" (Deneme sayfası, sınav bankası) ve
+  // "practice" (Test sayfası, konu çalışma havuzu). Mantık birebir aynı; yalnız hangi
+  // dizinin örneklendiği ve istatistiğin hangi sözlüğe (stats / pStats) yazıldığı değişir.
+  function flashHavuzu(kaynak, konuFiltre) {
+    var havuz = kaynak === "practice" ? STATE.practiceBank.filter(function (q) { return !pratikKapsamDisiMi(q); }) : STATE.bank;
+    if (konuFiltre) havuz = havuz.filter(function (q) { return q.konu === konuFiltre; });
+    return havuz;
+  }
+  function flashSoruBul(f) {
+    return flashHavuzu(f.kaynak, f.konuFiltre).filter(function (b) { return b.guid === f.guid; })[0];
+  }
+
+  // Rastgele Soru artık kör rastgele değil: önce son denemesinde yanlış yapılan,
+  // sonra hiç görülmemiş sorular öncelikli gelir; ikisi de tükenirse düz rastgele
+  // seçilir. kaynak "practice" ise pStats, "bank" ise stats sözlüğü okunur.
+  // `haric`: bu OTURUMDA zaten gösterilmiş guid'ler — havuz onları çıkarınca
+  // tükeniyorsa (ör. konu çok küçük) tekrara izin verilir, aksi halde aynı soru
+  // art arda / aynı oturumda tekrar tekrar çıkmasın diye elenir.
+  function flashSecimYap(havuz, kaynak, haric) {
+    var statlar = kaynak === "practice" ? STATE.pStats : STATE.stats;
+    var haricSet = {};
+    (haric || []).forEach(function (g) { haricSet[g] = true; });
+    var tazeHavuz = havuz.filter(function (q) { return !haricSet[q.guid]; });
+    var aktifHavuz = tazeHavuz.length ? tazeHavuz : havuz;
+    // Havuz bu oturumda tamamen tükendiyse (tazeHavuz boş) tekrara izin verilir, AMA
+    // az önce gösterilen TEK soru (haric'in son elemanı) yine de mümkünse hemen bir
+    // sonraki soru olarak önerilmez — "doğru işaretlediğim soru hemen tekrar karşıma
+    // çıkıyor" şikayeti buradan kaynaklanıyordu (7 Eyl 2026).
+    if (!tazeHavuz.length && haric && haric.length && havuz.length > 1) {
+      var sonGosterilen = haric[haric.length - 1];
+      var sonHaricYok = aktifHavuz.filter(function (q) { return q.guid !== sonGosterilen; });
+      if (sonHaricYok.length) aktifHavuz = sonHaricYok;
+    }
+    var yanlisHavuz = aktifHavuz.filter(function (q) { return statlar[q.guid] && statlar[q.guid].sonSonucDogruMu === false; });
+    if (yanlisHavuz.length) return sampleRandom(yanlisHavuz, 1)[0];
+    var denenmemis = aktifHavuz.filter(function (q) { return !statlar[q.guid]; });
+    if (denenmemis.length) return sampleRandom(denenmemis, 1)[0];
+    return sampleRandom(aktifHavuz, 1)[0];
+  }
+
+  // Havuzun tamamından (konuFiltre yokken) çekerken hangi konudan geleceğini resmi
+  // sınav dağılımına (STATE.settings.dagilim) göre ağırlıklandırır — böylece Rastgele
+  // Soru, gerçek sınavın konu oranlarını taklit eden ufak bir simülasyon gibi çalışır.
+  // konuFiltre zaten TEK bir konuya daraltıyorsa (Konu Konu Bak) buna gerek yok, o
+  // zaman null döner ve çağıran taraf havuzu olduğu gibi kullanır.
+  function agirlikliHavuzSec(havuz) {
+    var dagilim = (STATE.settings && STATE.settings.dagilim) || {};
+    var mevcut = {};
+    havuz.forEach(function (q) { mevcut[q.konu] = true; });
+    var adaylar = Object.keys(dagilim).filter(function (k) { return dagilim[k] > 0 && mevcut[k]; });
+    if (!adaylar.length) return null;
+    var toplam = adaylar.reduce(function (s, k) { return s + dagilim[k]; }, 0);
+    var r = Math.random() * toplam;
+    var secilenKonu = adaylar[adaylar.length - 1];
+    for (var i = 0; i < adaylar.length; i++) {
+      r -= dagilim[adaylar[i]];
+      if (r <= 0) { secilenKonu = adaylar[i]; break; }
+    }
+    return havuz.filter(function (q) { return q.konu === secilenKonu; });
+  }
+
+  function startFlash(kaynak, konuFiltre) {
+    if (STATE.sadeceDeneme && !remoteGirisTamamMi()) return;
+    kaynak = kaynak === "practice" ? "practice" : "bank";
+    konuFiltre = konuFiltre || null;
+    var havuz = flashHavuzu(kaynak, konuFiltre);
+    if (havuz.length === 0) { showBanner("Havuzda hiç soru yok.", true); return; }
+    flashSayac = 0;
+    var secimHavuzu = konuFiltre ? havuz : (agirlikliHavuzSec(havuz) || havuz);
+    var q0 = flashSecimYap(secimHavuzu, kaynak, []);
+    shuffleSiklarInPlace(q0);
+    // oturum: bu Rastgele Soru oturumunda cevaplanan her sorunun {konu, dogruMu} kaydı —
+    // "Testi Bitir" ekranındaki ders bazlı dağılım buradan hesaplanır, kalıcı istatistikten değil.
+    // gecmis/konum: bu oturumda gösterilen her sorunun {guid,secilen} kaydı ve şu an
+    // hangisinin ekranda olduğu — "Önceki/Sonraki Soru" ile geçmişte gezinmeyi sağlar.
+    currentFlash = {
+      guid: q0.guid, secilen: null, kaynak: kaynak, konuFiltre: konuFiltre, oturum: [],
+      gecmis: [{ guid: q0.guid, secilen: null }], konum: 0
+    };
+    VIEW = "flash";
+    render();
+  }
+  function nextFlash() {
+    if (!currentFlash) { backToMenu(); return; }
+    if (currentFlash.konum < currentFlash.gecmis.length - 1) {
+      // Daha önce "Önceki Soru" ile geri gidilmiş — yeni soru üretmeden ileri sar.
+      currentFlash.konum++;
+    } else {
+      var havuz = flashHavuzu(currentFlash.kaynak, currentFlash.konuFiltre);
+      if (havuz.length === 0) { backToMenu(); return; }
+      flashSayac++;
+      var secimHavuzu = currentFlash.konuFiltre ? havuz : (agirlikliHavuzSec(havuz) || havuz);
+      var gorulmus = currentFlash.gecmis.map(function (x) { return x.guid; });
+      var q1 = flashSecimYap(secimHavuzu, currentFlash.kaynak, gorulmus);
+      shuffleSiklarInPlace(q1);
+      currentFlash.gecmis.push({ guid: q1.guid, secilen: null });
+      currentFlash.konum = currentFlash.gecmis.length - 1;
+    }
+    var guncel = currentFlash.gecmis[currentFlash.konum];
+    currentFlash.guid = guncel.guid; currentFlash.secilen = guncel.secilen;
+    render();
+  }
+  function prevFlash() {
+    if (!currentFlash || currentFlash.konum <= 0) return;
+    currentFlash.konum--;
+    var guncel = currentFlash.gecmis[currentFlash.konum];
+    currentFlash.guid = guncel.guid; currentFlash.secilen = guncel.secilen;
+    render();
+  }
+  function selectFlashOption(idx) {
+    if (!currentFlash || currentFlash.secilen !== null) return; // cevap zaten verildi, kilitli
+    currentFlash.secilen = idx;
+    currentFlash.gecmis[currentFlash.konum].secilen = idx; // geri/ileri giderken cevap kaybolmasın
+    var q = flashSoruBul(currentFlash);
+    if (!q) { render(); return; }
+    var flashDogruMu = idx === q.cevapIdx;
+    currentFlash.oturum.push({ konu: q.konu, dogru: flashDogruMu });
+    if (currentFlash.kaynak === "practice") {
+      recordPratikStat(q.guid, flashDogruMu); // pStats'e yazar + veriDegisti()
+      STATE.pFlashOzet.gosterim++;
+      if (flashDogruMu) STATE.pFlashOzet.dogru++;
+      lsKaydet();
+    } else {
+      if (!STATE.stats[q.guid]) STATE.stats[q.guid] = { gosterim: 0, dogru: 0, yanlis: 0, sonSonucDogruMu: null, sonGorulme: null };
+      var s = STATE.stats[q.guid];
+      s.gosterim++;
+      s.sonGorulme = new Date().toISOString();
+      if (flashDogruMu) { s.dogru++; s.sonSonucDogruMu = true; } else { s.yanlis++; s.sonSonucDogruMu = false; }
+      STATE.flashOzet.gosterim++;
+      if (flashDogruMu) STATE.flashOzet.dogru++;
+      veriDegisti();
+    }
+    render();
+  }
+
+  function finishFlash() {
+    if (!currentFlash) { backToMenu(); return; }
+    lastFlashResult = { kaynak: currentFlash.kaynak, konuFiltre: currentFlash.konuFiltre, oturum: currentFlash.oturum };
+    currentFlash = null;
+    VIEW = "flashResult";
+    render();
+    // Testi Bitir gerçek bir çıkış noktası — bu oturumdaki stats/pStats hemen yayınlansın,
+    // 3 dk'lık autosave'i veya sonraki "ana sayfaya dön" tıklamasını beklemesin.
+    if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
+    pendingSaveDirty = false;
+    saveAndPublish();
+  }
+
+  function backToMenu() {
+    if (currentPratik && !currentPratik.bitti) { pratikSlotYaz(); bumpRev(); lsKaydet(); pendingSaveDirty = true; }
+    VIEW = STATE.sadeceDeneme ? "menuDeneme" : "menu"; currentExam = null; lastResult = null; currentFlash = null; lastFlashResult = null;
+    currentPratik = null; pratikSeciliKonu = null; pratikSeciliModul = null;
+    checkpointSeciliKonu = null; checkpointSeciliId = null;
+    pausedDeleteConfirm = false; deletingHistoryId = null; denemeKodOnizleme = null;
+    render();
+    if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
+    if (pendingSaveDirty) { pendingSaveDirty = false; saveAndPublish(); }
+  }
+
+  // ------------------------------------------------- Konu Çalışma / Tekrar --
+  function recordPratikStat(guid, dogruMu) {
+    if (!STATE.pStats[guid]) STATE.pStats[guid] = { gosterim: 0, dogru: 0, yanlis: 0, sonSonucDogruMu: null, sonGorulme: null };
+    var s = STATE.pStats[guid];
+    s.gosterim++;
+    s.sonGorulme = new Date().toISOString();
+    if (dogruMu) { s.dogru++; s.sonSonucDogruMu = true; } else { s.yanlis++; s.sonSonucDogruMu = false; }
+    veriDegisti(); // localStorage'a anında yazar, yayını 25 sn'ye erteler — reload akışı bölmesin
+  }
+
+  // --- yarım kalan oturum (modül başına bir slot) ---
+  function pratikSlotKey(konu, modul) { return konu + "::" + modul; }
+
+  function pratikSlotOku(konu, modul) { return STATE.pausedPratik[pratikSlotKey(konu, modul)] || null; }
+
+  function pratikSlotYaz() {
+    // Her cevaptan sonra çağrılır: sekme kapansa bile kaldığı yerden devam edebilsin.
+    // Kuyruğun tamamı saklanır, yoksa dönüşte soru sırası değişir ve "34/290" anlamsızlaşır.
+    if (!currentPratik || currentPratik.bitti) return;
+    STATE.pausedPratik[pratikSlotKey(currentPratik.konu, currentPratik.modul)] = {
+      mod: currentPratik.mod, kuyruk: currentPratik.kuyruk, index: currentPratik.index,
+      soruKayitlari: currentPratik.soruKayitlari,
+      cevaplar: currentPratik.cevaplar, savedAtISO: new Date().toISOString()
+    };
+  }
+
+  function pratikSlotSil(konu, modul) { delete STATE.pausedPratik[pratikSlotKey(konu, modul)]; }
+
+  function startPratikOturum(konu, modul, mod) {
+    if (!konu || !modul) return;
+    var kuyruk = pratikKuyrukOlustur(konu, modul, mod);
+    if (kuyruk.length === 0) { showBanner("Bu modülde henüz soru yok.", true); return; }
+    pratikSlotSil(konu, modul); // yeni oturum yarım kalanın yerine geçer
+    currentPratik = { konu: konu, modul: modul, mod: mod, kuyruk: kuyruk, index: 0, cevaplandi: false, secilen: null, bitti: false, cevaplar: {} };
+    currentPratik.soruKayitlari = soruKayitlari(STATE.practiceBank, kuyruk);
+    pratikSlotYaz();
+    VIEW = "pratikSoru";
+    veriDegisti();
+    render();
+  }
+
+  function devamPratikOturum(konu, modul) {
+    var slot = pratikSlotOku(konu, modul);
+    if (!slot) return;
+    // Banka güncellenmiş olabilir: artık havuzda olmayan guid'leri kuyruktan düşür.
+    var gecerli = slot.kuyruk.filter(function (g) { return !!oturumSorusu(slot, STATE.practiceBank, g); });
+    if (gecerli.length === 0) { pratikSlotSil(konu, modul); showBanner("Yarım kalan oturumun soruları artık havuzda yok.", true); veriDegisti(); render(); return; }
+    var idx = Math.min(slot.index, gecerli.length - 1);
+    currentPratik = {
+      konu: konu, modul: modul, mod: slot.mod, kuyruk: gecerli, index: idx,
+      cevaplandi: false, secilen: null, bitti: false, cevaplar: slot.cevaplar || {}
+    };
+    currentPratik.soruKayitlari = slot.soruKayitlari || soruKayitlari(STATE.practiceBank, gecerli);
+    // Kaldığı soru zaten cevaplanmışsa (cevapladıktan hemen sonra çıkmışsa) bir sonrakine geç.
+    var guidSimdi = gecerli[idx];
+    if (currentPratik.cevaplar[guidSimdi] !== undefined) {
+      if (idx < gecerli.length - 1) currentPratik.index = idx + 1;
+      else { currentPratik.cevaplandi = true; currentPratik.secilen = currentPratik.cevaplar[guidSimdi]; }
+    }
+    VIEW = "pratikSoru";
+    render();
+  }
+
+  function pratikKaydetVeCik() {
+    // "Kaydet ve Çık" — yarım kalan oturumu slota yazar ve HEMEN yayınlar.
+    if (currentPratik && !currentPratik.bitti) pratikSlotYaz();
+    currentPratik = null;
+    VIEW = "pratikModul";
+    veriDegisti(true);
+    render();
+  }
+
+  function pratikSlotAt(konu, modul) {
+    pratikSlotSil(konu, modul);
+    veriDegisti();
+    render();
+  }
+
+  function selectPratikOption(idx) {
+    if (!currentPratik || currentPratik.cevaplandi) return;
+    var q = pratikSoruBul(currentPratik.kuyruk[currentPratik.index]);
+    if (!q) { render(); return; }
+    currentPratik.secilen = idx;
+    currentPratik.cevaplandi = true;
+    currentPratik.cevaplar[q.guid] = idx; // oturuma özel skor (Modül bitti ekranında x doğru/y yanlış için)
+    recordPratikStat(q.guid, idx === q.cevapIdx); // içinde veriDegisti() var
+    pratikSlotYaz();                              // ...ve konum da aynı yazımda kalıcı olsun
+    lsKaydet();
+    render();
+  }
+  function nextPratikSoru() {
+    if (!currentPratik) return;
+    if (currentPratik.index < currentPratik.kuyruk.length - 1) {
+      currentPratik.index++;
+      currentPratik.cevaplandi = false; currentPratik.secilen = null;
+      pratikSlotYaz();
+      veriDegisti();
+    } else {
+      currentPratik.bitti = true;
+      pratikBestGuncelle(currentPratik);
+      pratikSlotSil(currentPratik.konu, currentPratik.modul); // tamamlandı, yarım kalan yok
+      veriDegisti(true); // modül bitti — bu gerçek bir çıkış noktası, hemen yayınla
+    }
+    render();
+  }
+  function pratikTekrarBaslat() {
+    if (!currentPratik) return;
+    startPratikOturum(currentPratik.konu, currentPratik.modul, currentPratik.mod);
+  }
+  function pratikListeyeDon() {
+    // Oturum yarım kaldıysa kaybolmaz — slota yazılıp yayınlanır (bitmiş oturumda no-op).
+    if (currentPratik && !currentPratik.bitti) { pratikSlotYaz(); veriDegisti(true); }
+    currentPratik = null;
+    VIEW = "pratikModul";
+    render();
+  }
+  function pratikSonrakiModul(konu, modul) {
+    var modlar = MODUL_TANIMLARI[konu] || [];
+    for (var i = 0; i < modlar.length; i++) {
+      if (modlar[i].key === modul) return modlar[i + 1] || null;
+    }
+    return null;
+  }
+  function pratikSonrakiModuleBaslat() {
+    if (!currentPratik) return;
+    var sonraki = pratikSonrakiModul(currentPratik.konu, currentPratik.modul);
+    if (!sonraki) return;
+    startPratikOturum(currentPratik.konu, sonraki.key, "siray");
+  }
+
+  function requestDeleteHistory(id) { deletingHistoryId = id; render(); }
+  function cancelDeleteHistory() { deletingHistoryId = null; render(); }
+  function deleteHistoryEntry(id) {
+    var idx = -1;
+    for (var i = 0; i < STATE.history.length; i++) { if (STATE.history[i].id === id) { idx = i; break; } }
+    if (idx === -1) return;
+    var entry = STATE.history[idx];
+    STATE.history.splice(idx, 1);
+
+    var bankByGuid = {};
+    STATE.bank.forEach(function (q) { bankByGuid[q.guid] = q; });
+
+    entry.sorular.forEach(function (guid) {
+      var s = STATE.stats[guid];
+      if (!s) return;
+      var secilen = entry.cevaplar[guid];
+      var q = oturumSorusu(entry, STATE.bank, guid);
+      s.gosterim = Math.max(0, s.gosterim - 1);
+      if (secilen !== undefined && secilen !== null && q) {
+        if (secilen === q.cevapIdx) s.dogru = Math.max(0, s.dogru - 1);
+        else s.yanlis = Math.max(0, s.yanlis - 1);
+      }
+      // bu silinen deneme, bu sorunun bilinen en son görülme anıysa kalan geçmişten yeniden bul
+      if (s.sonGorulme === entry.tarihISO) {
+        var bulundu = null;
+        for (var j = 0; j < STATE.history.length; j++) {
+          if (STATE.history[j].sorular.indexOf(guid) !== -1) { bulundu = STATE.history[j]; break; }
+        }
+        if (bulundu) {
+          var sel = bulundu.cevaplar[guid];
+          s.sonGorulme = bulundu.tarihISO;
+          var oncekiSoru = oturumSorusu(bulundu, STATE.bank, guid);
+          s.sonSonucDogruMu = (sel === undefined || sel === null) ? null : !!(oncekiSoru && sel === oncekiSoru.cevapIdx);
+        } else if (s.gosterim === 0) {
+          s.sonGorulme = null; s.sonSonucDogruMu = null;
+        }
+        // gösterim>0 ama eşleşen geçmiş yoksa (ör. Rastgele Soru'dan geldiyse) dokunma —
+        // o kaydın ne zaman olduğunu ayrıca tutmuyoruz, olası son durumu bozmamak için elleme.
+      }
+    });
+
+    deletingHistoryId = null;
+    pendingSaveDirty = true; // ard arda birden çok kayıt silinebilir — her seferinde reload tetiklemesin
+    render();
+  }
+
+  function openSettings() { draftSettings = JSON.parse(JSON.stringify(STATE.settings)); VIEW = "settings"; render(); }
+  function updateDraftDagilim(konu, val) {
+    var n = parseInt(val, 10);
+    draftSettings.dagilim[konu] = isNaN(n) || n < 0 ? 0 : n;
+    render();
+  }
+  function saveSettings() {
+    STATE.settings = draftSettings;
+    VIEW = "menu"; pendingSaveDirty = false; render();
+    saveAndPublish();
+  }
+
+  function openImport() { importPreview = null; VIEW = "import"; render(); }
+  function handleFileSelect(file) {
+    file.arrayBuffer().then(function (buf) {
+      return parseWorkbook(buf);
+    }).then(function (res) {
+      var bankRows = rowsToBankFormat(res.rows);
+      if (bankRows.length === 0) throw new Error("Excel'de geçerli soru satırı bulunamadı.");
+      var stateKopya = JSON.parse(JSON.stringify(STATE));
+      var sonuc = mergeBankOnImport(stateKopya, bankRows);
+      importPreview = { stateKopya: stateKopya, sonuc: sonuc, dosyaAdi: file.name, sheetName: res.sheetName, toplamSatir: bankRows.length };
+      render();
+    }).catch(function (e) {
+      showBanner("Excel okunamadı: " + (e && e.message ? e.message : e), true);
+    });
+  }
+  function confirmImport() {
+    if (!importPreview) return;
+    STATE = importPreview.stateKopya;
+    STATE.meta.lastImportISO = new Date().toISOString();
+    STATE.meta.kaynakDosyaAdi = importPreview.dosyaAdi;
+    importPreview = null;
+    VIEW = "menu"; pendingSaveDirty = false; render();
+    saveAndPublish();
+  }
+
+  function showBanner(msg, isError) {
+    bannerMsg = msg; bannerIsError = !!isError; render();
+    setTimeout(function () { if (bannerMsg === msg) { bannerMsg = null; render(); } }, 7000);
+  }
+
+  // --------------------------------------------------------------- render --
+  function escapeHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function fmtTarih(iso) {
+    try { var d = new Date(iso); return d.toLocaleDateString("tr-TR") + " " + d.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }); }
+    catch (e) { return iso; }
+  }
+
+  function sinavDogruluk() {
+    var toplam = 0, dogru = 0;
+    STATE.history.forEach(function (h) {
+      dogru += h.skor.dogru;
+      toplam += h.skor.dogru + h.skor.yanlis + h.skor.bos;
+    });
+    if (toplam === 0) return null;
+    return Math.round((dogru / toplam) * 100);
+  }
+  function flashDogruluk() {
+    if (!STATE.flashOzet || STATE.flashOzet.gosterim === 0) return null;
+    return Math.round((STATE.flashOzet.dogru / STATE.flashOzet.gosterim) * 100);
+  }
+  function renkEsigi(yuzde) {
+    return yuzde === null ? "" : yuzde >= 70 ? "var(--good)" : yuzde >= 40 ? "var(--warn)" : "var(--bad)";
+  }
+
+  function renderMenu() {
+    var toplamSoru = STATE.bank.length;
+
+    var meta = STATE.meta.lastImportISO
+      ? "Soru bankası son güncelleme: " + fmtTarih(STATE.meta.lastImportISO) + (STATE.meta.kaynakDosyaAdi ? " (" + escapeHtml(STATE.meta.kaynakDosyaAdi) + ")" : "")
+      : "Soru bankası henüz yüklenmedi.";
+
+    var pausedCard = "";
+    if (STATE.pausedExam) {
+      var pe = STATE.pausedExam;
+      var cevaplanan = Object.keys(pe.cevaplar).length;
+      var pausedActions = pausedDeleteConfirm
+        ? '<div class="banner error" style="margin:10px 0">Bu sınav kalıcı olarak silinecek, emin misin?</div>' +
+          '<div class="link-row">' +
+          '<button class="btn primary" data-action="confirm-discard-paused">Evet, sil</button>' +
+          '<button class="btn ghost" data-action="cancel-discard-paused">Vazgeç</button>' +
+          "</div>"
+        : '<div class="link-row" style="margin-top:10px">' +
+          '<button class="btn primary" data-action="resume-exam">Devam Et</button>' +
+          '<button class="btn ghost" data-action="discard-paused">Sil</button>' +
+          "</div>";
+      pausedCard = '<div class="card resume-card">' +
+        '<div class="title">Yarım kalan sınav — ' + MOD_ADI[pe.tip] + "</div>" +
+        '<div class="desc">' + cevaplanan + " / " + pe.sorular.length + " soru cevaplanmış · " + fmtTarih(pe.savedAtISO) + "</div>" +
+        pausedActions + "</div>";
+    }
+
+    var hatirlaticiSayisi = Object.keys(STATE.flags).filter(function (g) { return STATE.flags[g].hatirlatici; }).length;
+    var hataSayisi = Object.keys(STATE.flags).filter(function (g) { return STATE.flags[g].hatali; }).length;
+
+    var navCards = '<div class="mode-grid">' +
+      '<button class="mode-btn" style="border-left:4px solid var(--seri-6)" data-action="open-menu-deneme">' +
+      '<div class="title">📝 Deneme</div><div class="desc">Resmi dağılıma göre tam sınav simülasyonu — Yeni Sınav, Az Görülenler, Yanlışlar.</div></button>' +
+      '<button class="mode-btn" style="border-left:4px solid var(--seri-2)" data-action="open-menu-test">' +
+      '<div class="title">📚 Test</div><div class="desc">Modül modül konu çalışması ve rastgele tek soru pratiği.</div></button>' +
+      '<button class="mode-btn" style="border-left:4px solid var(--seri-4)" data-action="open-checkpoint-liste">' +
+      '<div class="title">📌 Checkpoint</div><div class="desc">Bölüm özetleri — numaralı, kaynak sayfalı checkpoint listeleriyle ufak ufak ezber.</div></button>' +
+      "</div>";
+
+    return '<div class="hero-band"><div class="masthead"><div><h1>UZYET</h1><div class="sub">' + meta + '</div></div></div></div>' +
+      (toplamSoru === 0 ? '<div class="banner">Önce bir soru bankası içe aktarmalısın. Aşağıdan "Soru Bankasını Güncelle"yi kullan.</div>' : "") +
+      pausedCard +
+      navCards +
+      '<div class="link-row">' +
+      '<button class="btn" data-action="open-settings">Ayarlar</button>' +
+      '<button class="btn" data-action="open-import">Soru Bankasını Güncelle</button>' +
+      '<button class="btn" data-action="open-flags">İşaretliler (' + hatirlaticiSayisi + " 🔖 · " + hataSayisi + " 🚩)</button>" +
+      '<button class="btn" data-action="open-duzeltmeler">✅ Düzeltilenler (' + STATE.duzeltmeler.length + ")</button>" +
+      "</div>";
+  }
+
+  function renderMenuDeneme() {
+    var toplamSoru = STATE.bank.length;
+    var sinavYuzde = sinavDogruluk();
+    var flashYuzde = flashDogruluk();
+    var sonSkor = STATE.history[0] ? STATE.history[0].skor : null;
+    var flashDisabled = (toplamSoru === 0 || (STATE.sadeceDeneme && !remoteGirisTamamMi())) ? "disabled" : "";
+    var dogruHavuz = Object.keys(STATE.stats).filter(function (g) { return STATE.stats[g].sonSonucDogruMu === true; }).length;
+    var yanlisHavuz = Object.keys(STATE.stats).filter(function (g) { return STATE.stats[g].sonSonucDogruMu === false; }).length;
+
+    var statCards = [
+      { num: toplamSoru, lbl: "Havuzdaki soru" },
+      { num: dogruHavuz, lbl: "Doğru çözülen soru" },
+      { num: yanlisHavuz, lbl: "Yanlış geçmişli soru" },
+      { num: sinavYuzde === null ? "—" : sinavYuzde + "%", lbl: "Sınav Doğruluğu", renk: renkEsigi(sinavYuzde) },
+      { num: flashYuzde === null ? "—" : flashYuzde + "%", lbl: "Rastgele Soru Doğruluğu", renk: renkEsigi(flashYuzde) },
+      { num: sonSkor ? (sonSkor.dogru + "/" + (sonSkor.dogru + sonSkor.yanlis + sonSkor.bos)) : "—", lbl: "Son sınav" }
+    ].map(function (c) {
+      var stil = c.renk ? ' style="color:' + c.renk + '"' : "";
+      return '<div class="stat-card"><div class="num"' + stil + '>' + escapeHtml(c.num) + '</div><div class="lbl">' + c.lbl + "</div></div>";
+    }).join("");
+
+    var flashCards =
+      '<button class="mode-btn" style="border-left:4px solid var(--seri-7)" ' + flashDisabled + ' data-action="start-flash">' +
+      '<div class="title">🎲 Rastgele Soru</div><div class="desc">Tek soru, anında cevap — hızlı pratik veya keyfine bakmak için.</div></button>' +
+      '<button class="mode-btn" style="border-left:4px solid var(--seri-8)" ' + flashDisabled + ' data-action="open-deneme-konu-sec">' +
+      '<div class="title">📖 Konu Konu Bak</div><div class="desc">Sınav dışında, seçtiğin konudaki sorulara tek tek bak.</div></button>';
+
+    return (STATE.sadeceDeneme
+      ? (remoteGirisTamamMi() ? '<div class="link-row"><button class="btn ghost" data-action="open-history-remote">Geçmiş</button></div>' : "")
+      : '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button>' +
+        '<button class="btn" data-action="open-history">Geçmiş</button></div>') +
+      '<div class="section-title">📝 Deneme Sınavı</div>' +
+      '<div class="stat-grid">' + statCards + "</div>" +
+      renderDenemeUzakBolum() +
+      '<div class="mode-grid" style="margin-top:14px">' + flashCards + "</div>";
+  }
+
+  function renderDenemeKonuSec() {
+    var tiles = KONU_SIRA.map(function (konu) {
+      var havuz = STATE.bank.filter(function (q) { return q.konu === konu; });
+      var yanlis = havuz.filter(function (q) { return STATE.stats[q.guid] && STATE.stats[q.guid].sonSonucDogruMu === false; }).length;
+      var aktif = havuz.length > 0;
+      var renk = "var(--seri-" + konuSeriIdx(konu) + ")";
+      return '<button class="mode-btn" style="border-left:4px solid ' + renk + '" ' + (aktif ? "" : "disabled") +
+        ' data-action="start-deneme-konu-flash" data-konu="' + escapeHtml(konu) + '">' +
+        '<div class="title">' + konuDotHtml(konu) + escapeHtml(konu) + "</div>" +
+        '<div class="desc">' + (aktif ? havuz.length + " soru" + (yanlis ? " · " + yanlis + " yanlış geçmişli" : "") : "Havuzda soru yok") + "</div></button>";
+    }).join("");
+
+    return '<div class="link-row"><button class="btn ghost" data-action="open-menu-deneme">← Deneme Sınavı</button></div>' +
+      '<div class="section-title">📖 Konu Konu Bak</div>' +
+      '<div class="desc" style="margin-bottom:12px">Sınav dışında, seçtiğin konudaki sorulara tek tek bakıp anında cevap görürsün. Cevapların Rastgele Soru gibi sınav istatistiğine (doğruluk, az görülen/yanlış önceliği) yazılır — ayrı bir sınav denemesi veya geçmiş kaydı oluşmaz.</div>' +
+      '<div class="mode-grid">' + tiles + "</div>";
+  }
+
+  function renderMenuTest() {
+    var pratikHavuzToplam = STATE.practiceBank.length;
+    var pDogru = Object.keys(STATE.pStats).filter(function (g) { return STATE.pStats[g].sonSonucDogruMu === true; }).length;
+    var pYanlis = Object.keys(STATE.pStats).filter(function (g) { return STATE.pStats[g].sonSonucDogruMu === false; }).length;
+    var pFlashYuzde = STATE.pFlashOzet.gosterim ? Math.round((STATE.pFlashOzet.dogru / STATE.pFlashOzet.gosterim) * 100) : null;
+
+    var statCards = [
+      { num: pratikHavuzToplam, lbl: "Pratik havuzu" },
+      { num: pDogru, lbl: "Doğru çözülen soru" },
+      { num: pYanlis, lbl: "Yanlış geçmişli soru" },
+      { num: pFlashYuzde === null ? "—" : pFlashYuzde + "%", lbl: "Rastgele Soru Doğruluğu", renk: renkEsigi(pFlashYuzde) }
+    ].map(function (c) {
+      var stil = c.renk ? ' style="color:' + c.renk + '"' : "";
+      return '<div class="stat-card"><div class="num"' + stil + '>' + escapeHtml(c.num) + '</div><div class="lbl">' + c.lbl + "</div></div>";
+    }).join("");
+
+    // Yarım kalan konu çalışmaları — en son kaydedilen üstte.
+    var slotKeys = Object.keys(STATE.pausedPratik).sort(function (a, b) {
+      return (STATE.pausedPratik[b].savedAtISO || "").localeCompare(STATE.pausedPratik[a].savedAtISO || "");
+    });
+    var yarimKalanHtml = "";
+    if (slotKeys.length) {
+      yarimKalanHtml = '<div class="section-title">▶ Yarım kalan çalışmalar</div><div class="mode-grid">' +
+        slotKeys.map(function (key) {
+          var s = STATE.pausedPratik[key];
+          var parts = key.split("::"), konu = parts[0], modul = parts[1];
+          var cevaplanan = Object.keys(s.cevaplar || {}).length;
+          var toplam = s.kuyruk.length;
+          var yuzde = Math.round((cevaplanan / toplam) * 100);
+          return '<div class="card resume-card" style="border-left:4px solid var(--seri-' + konuSeriIdx(konu) + ')">' +
+            '<div class="title">' + konuDotHtml(konu) + escapeHtml(konu) + " · " + escapeHtml(modulAdi(konu, modul)) + "</div>" +
+            '<div class="desc">' + cevaplanan + " / " + toplam + " soru cevaplanmış (%" + yuzde + ") · " + fmtTarih(s.savedAtISO) + "</div>" +
+            '<div class="link-row" style="margin-top:10px">' +
+            '<button class="btn primary" data-action="devam-pratik" data-konu="' + escapeHtml(konu) + '" data-modul="' + escapeHtml(modul) + '">Devam Et</button>' +
+            '<button class="btn ghost" data-action="pratik-slot-at" data-konu="' + escapeHtml(konu) + '" data-modul="' + escapeHtml(modul) + '">Sil</button>' +
+            "</div></div>";
+        }).join("") + "</div>";
+    }
+
+    var flashDisabled = pratikHavuzToplam === 0 ? "disabled" : "";
+    var flashCard = '<div class="mode-grid"><button class="mode-btn" style="border-left:4px solid var(--seri-7)" ' + flashDisabled +
+      ' data-action="start-pratik-flash">' +
+      '<div class="title">🎲 Rastgele Soru</div><div class="desc">Pratik havuzunun tamamından tek soru, anında cevap — konu/modül seçmeden hızlı pratik.</div></button></div>';
+
+    // Konu (ders) kutuları doğrudan bu ekranda — ayrı bir "Konu Çalışma" giriş ekranı/tıklaması yok.
+    var tiles = KONU_SIRA.map(function (konu) {
+      var modlar = MODUL_TANIMLARI[konu];
+      var soruSayisi = modlar ? STATE.practiceBank.filter(function (q) { return q.konu === konu; }).length : 0;
+      var aktif = modlar && soruSayisi > 0;
+      var renk = "var(--seri-" + konuSeriIdx(konu) + ")";
+      return '<button class="mode-btn" style="border-left:4px solid ' + renk + '" ' + (aktif ? "" : "disabled") +
+        ' data-action="select-pratik-konu" data-konu="' + escapeHtml(konu) + '">' +
+        '<div class="title">' + konuDotHtml(konu) + escapeHtml(konu) + "</div>" +
+        '<div class="desc">' + (aktif ? soruSayisi + " soru · " + modlar.length + " modül" : "Henüz hazır değil") + "</div></button>";
+    }).join("");
+
+    return '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button></div>' +
+      '<div class="section-title">📚 Test</div>' +
+      '<div class="stat-grid">' + statCards + "</div>" +
+      yarimKalanHtml +
+      flashCard +
+      '<div class="section-title">Hangi dersle çalışmak istersin?</div>' +
+      '<div class="mode-grid">' + tiles + "</div>";
+  }
+
+  // ------------------------------------------------------------ Checkpoint --
+  // Bölüm özetleri (numaralı checkpoint listeleri) — sınav bankasından ve
+  // pratik havuzundan tamamen ayrı, salt-okunur bir referans alanı.
+  // İstatistik tutulmaz. Kaynağı checkpoints.json (bkz. build_quiz_dist.py).
+  function checkpointKonular() {
+    var konular = [];
+    STATE.checkpoints.forEach(function (c) {
+      if (konular.indexOf(c.konu) === -1) konular.push(c.konu);
+    });
+    konular.sort(function (a, b) {
+      var ia = KONU_SIRA.indexOf(a), ib = KONU_SIRA.indexOf(b);
+      if (ia === -1) ia = 999; if (ib === -1) ib = 999;
+      return ia - ib || a.localeCompare(b, "tr");
+    });
+    return konular;
+  }
+
+  function renderCheckpointListe() {
+    if (STATE.checkpoints.length === 0) {
+      return '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button></div>' +
+        '<div class="section-title">📌 Checkpoint</div>' +
+        '<div class="banner">Henüz checkpoint özeti eklenmemiş.</div>';
+    }
+    if (!checkpointSeciliKonu) {
+      var konular = checkpointKonular();
+      var tiles = konular.map(function (konu) {
+        var liste = STATE.checkpoints.filter(function (c) { return c.konu === konu; });
+        var toplamMadde = liste.reduce(function (s, c) {
+          var m = (c.subtitle || "").match(/(\d+)\s*checkpoint/i);
+          return s + (m ? parseInt(m[1], 10) : 0);
+        }, 0);
+        var renk = "var(--seri-" + konuSeriIdx(konu) + ")";
+        return '<button class="mode-btn" style="border-left:4px solid ' + renk + '" data-action="select-checkpoint-konu" data-konu="' + escapeHtml(konu) + '">' +
+          '<div class="title">' + konuDotHtml(konu) + escapeHtml(konu) + "</div>" +
+          '<div class="desc">' + liste.length + " bölüm özeti" + (toplamMadde ? " · ~" + toplamMadde + " checkpoint" : "") + "</div></button>";
+      }).join("");
+      return '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button></div>' +
+        '<div class="section-title">📌 Checkpoint</div>' +
+        '<div class="muted" style="margin-bottom:16px">Bölümün tamamını numaralı checkpoint\'ler hâlinde tarayan özetler. Hangi dersle çalışmak istersin?</div>' +
+        '<div class="mode-grid">' + tiles + "</div>";
+    }
+    var konu = checkpointSeciliKonu;
+    var items = STATE.checkpoints.filter(function (c) { return c.konu === konu; });
+    var rows = items.map(function (c) {
+      return '<button class="cp-list-item" data-action="open-checkpoint-detay" data-id="' + escapeHtml(c.id) + '">' +
+        '<div class="title">' + escapeHtml(c.title) + '</div><div class="desc">' + escapeHtml(c.subtitle) + "</div></button>";
+    }).join("");
+    return '<div class="link-row"><button class="btn ghost" data-action="open-checkpoint-liste">← Konular</button></div>' +
+      '<div class="section-title">' + konuDotHtml(konu) + escapeHtml(konu) + "</div>" +
+      rows;
+  }
+
+  function renderCheckpointDetay() {
+    var c = STATE.checkpoints.filter(function (x) { return x.id === checkpointSeciliId; })[0];
+    if (!c) { checkpointSeciliId = null; return renderCheckpointListe(); }
+    var items = STATE.checkpoints.filter(function (x) { return x.konu === c.konu; });
+    var idx = items.indexOf(c);
+    var prevBtn = items[idx - 1]
+      ? '<button class="btn" data-action="open-checkpoint-detay" data-id="' + escapeHtml(items[idx - 1].id) + '">← Önceki</button>' : "";
+    var nextBtn = items[idx + 1]
+      ? '<button class="btn" data-action="open-checkpoint-detay" data-id="' + escapeHtml(items[idx + 1].id) + '">Sonraki →</button>' : "";
+    return '<div class="link-row"><button class="btn ghost" data-action="checkpoint-konu-geri">← ' + escapeHtml(c.konu) + " Özetleri</button></div>" +
+      '<div class="card">' +
+      '<div class="section-title" style="margin-bottom:2px">' + escapeHtml(c.title) + "</div>" +
+      '<div class="muted" style="margin-bottom:18px">' + escapeHtml(c.subtitle) + "</div>" +
+      '<div class="cp-content">' + c.html + "</div>" +
+      '<div class="link-row" style="margin-top:20px">' + prevBtn + nextBtn + "</div>" +
+      "</div>";
+  }
+
+  // Soruyu (soru + şıklar + varsa kaynak) düz metin olarak panoya kopyalar —
+  // WhatsApp/not uygulamasına yapıştırmak için. Bilerek doğru cevap/açıklama
+  // içermez — amaç soruyu birine sorabilmek, cevabı ifşa etmemek.
+  function kopyalaSoruMetni(q) {
+    var harfler = ["A", "B", "C", "D"];
+    var satirlar = [q.soru, ""];
+    q.siklar.forEach(function (s, i) { if (s) satirlar.push(harfler[i] + ") " + s); });
+    if (q.kaynak) { satirlar.push(""); satirlar.push("Kaynak: " + q.kaynak); }
+    return satirlar.join("\n");
+  }
+
+  function kopyalaPano(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(function () { showBanner("Soru panoya kopyalandı."); })
+        .catch(function () { showBanner("Kopyalama başarısız — tarayıcı izin vermedi.", true); });
+    } else {
+      showBanner("Bu tarayıcıda panoya kopyalama desteklenmiyor.", true);
+    }
+  }
+
+  function kopyalaAktifSoru(scope) {
+    var q;
+    if (scope === "exam" && currentExam) {
+      var eguid = currentExam.sorular[currentExam.index];
+      q = oturumSorusu(currentExam, STATE.bank, eguid);
+    } else if (scope === "flash" && currentFlash) {
+      q = flashSoruBul(currentFlash);
+    } else if (scope === "pratik" && currentPratik && !currentPratik.bitti) {
+      q = pratikSoruBul(currentPratik.kuyruk[currentPratik.index]);
+    }
+    if (!q) { showBanner("Kopyalanacak soru bulunamadı.", true); return; }
+    kopyalaPano(kopyalaSoruMetni(q));
+  }
+
+  function kopyalaButonHtml(scope) {
+    return '<div class="link-row" style="margin:-4px 0 8px">' +
+      '<button class="btn ghost" style="padding:3px 10px;font-size:0.78rem" data-action="copy-soru" data-scope="' + scope + '">📋 Soruyu Kopyala</button>' +
+      "</div>";
+  }
+
+  function flagBarHtml(guid, showPratikExtras) {
+    var f = STATE.flags[guid] || bosFlagKaydi();
+    var pratikExtraBtns = showPratikExtras
+      ? '<button class="flag-btn' + (f.begenildi ? " active-star" : "") + '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="begenildi">⭐ Beğendim — sınav bankasına aday</button>' +
+        '<button class="flag-btn' + (f.kapsamDisi ? " active-outofscope" : "") + '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="kapsamDisi">🗑️ Kapsam dışı</button>'
+      : "";
+    var html = '<div class="flag-bar">' +
+      '<button class="flag-btn' + (f.hatirlatici ? " active-bookmark" : "") + '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="hatirlatici">🔖 Hatırlatıcı</button>' +
+      '<button class="flag-btn' + (f.hatali ? " active-report" : "") + '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="hatali">🚩 Bu soru hatalı/eksik</button>' +
+      pratikExtraBtns +
+      "</div>";
+    if (f.hatali) {
+      html += '<textarea class="hata-notu" placeholder="Ne sorun var? (opsiyonel — eksik şık, güncel olmayan bilgi, teyit gerekiyor…)" data-note-guid="' + guid + '">' + escapeHtml(f.hataNotu) + "</textarea>";
+    }
+    return html;
+  }
+
+  function renderExam() {
+    var idx = currentExam.index;
+    var guid = currentExam.sorular[idx];
+    var q = oturumSorusu(currentExam, STATE.bank, guid);
+    if (!q) return '<div class="card">Bu soru artık havuzda yok (banka güncellendi). <button class="btn" data-action="back-menu">Ana Menü</button></div>';
+    var secilen = currentExam.cevaplar[guid];
+    var harfler = ["A", "B", "C", "D"];
+
+    var uyariHtml = currentExam.uyarilar.length
+      ? '<div class="banner">' + currentExam.uyarilar.map(escapeHtml).join(" · ") + "</div>" : "";
+
+    var optionsHtml = q.siklar.map(function (s, i) {
+      if (!s) return "";
+      var cls = "option-row" + (secilen === i ? " selected" : "");
+      return '<div class="' + cls + '" data-action="select-option" data-guid="' + guid + '" data-idx="' + i + '">' +
+        '<span class="option-letter">' + harfler[i] + '</span><span class="option-text">' + escapeHtml(s) +
+        '</span><span class="kbd-hint">' + (i + 1) + "</span></div>";
+    }).join("");
+
+    var qgrid = currentExam.sorular.map(function (g, i) {
+      var answered = currentExam.cevaplar[g] !== undefined;
+      var cls = (answered ? "answered " : "") + (i === idx ? "current" : "");
+      return '<button data-action="goto-q" data-idx="' + i + '" class="' + cls.trim() + '">' + (i + 1) + "</button>";
+    }).join("");
+
+    var progress = Math.round(((idx + 1) / currentExam.sorular.length) * 100);
+    var isLast = idx === currentExam.sorular.length - 1;
+    var cevapsizSayisi = currentExam.sorular.length - Object.keys(currentExam.cevaplar).length;
+
+    return uyariHtml +
+      '<div class="progressbar"><div style="width:' + progress + '%"></div></div>' +
+      '<div class="card">' +
+      '<div class="q-meta"><span>' + MOD_ADI[currentExam.tip] + " · " + (idx + 1) + " / " + currentExam.sorular.length + " · " + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span>" +
+      '<span id="exam-timer" class="exam-timer" title="Geçen süre — resmi sınav 50 soru / 60 dk">⏱ ' + fmtSure(currentExam.gecenSaniye || 0) + "</span></div>" +
+      kopyalaButonHtml("exam") +
+      '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
+      optionsHtml +
+      examFlagBarHtml(guid) +
+      '<div class="qgrid">' + qgrid + "</div>" +
+      '<div class="exam-nav">' +
+      '<div class="link-row">' +
+      '<button class="btn" data-action="prev-q" ' + (idx === 0 ? "disabled" : "") + ">← Önceki</button>" +
+      (isLast ? "" : '<button class="btn" data-action="next-q">Sonraki →</button>') +
+      "</div>" +
+      '<div class="link-row">' +
+      '<button class="btn ghost" data-action="pause-exam">Kaydet ve Çık</button>' +
+      '<button class="btn primary" data-action="finish-exam">' + (isLast ? "Sınavı Bitir" : "Erken Bitir") +
+      (cevapsizSayisi ? " (" + cevapsizSayisi + " boş)" : "") + "</button>" +
+      "</div></div></div>";
+  }
+
+  function renderFlash() {
+    var q = flashSoruBul(currentFlash);
+    if (!q) return '<div class="card">Bu soru artık havuzda yok. <button class="btn" data-action="next-flash">Sonraki Soru</button></div>';
+    var pratikMi = currentFlash.kaynak === "practice";
+    var konuBakMi = !pratikMi && !!currentFlash.konuFiltre;
+    var secilen = currentFlash.secilen;
+    var answered = secilen !== null;
+    var harfler = ["A", "B", "C", "D"];
+
+    var optionsHtml = q.siklar.map(function (s, i) {
+      if (!s) return "";
+      var cls = "option-row";
+      if (answered) {
+        if (i === q.cevapIdx) cls += " correct";
+        else if (i === secilen) cls += " wrong";
+      } else if (secilen === i) cls += " selected";
+      var action = answered ? "" : ' data-action="select-flash-option" data-idx="' + i + '"';
+      return '<div class="' + cls + '"' + action + '>' +
+        '<span class="option-letter">' + harfler[i] + '</span><span class="option-text">' + escapeHtml(s) +
+        '</span>' + (answered ? "" : '<span class="kbd-hint">' + (i + 1) + "</span>") + "</div>";
+    }).join("");
+
+    var sonucHtml = "";
+    if (answered) {
+      var dogruMu = secilen === q.cevapIdx;
+      sonucHtml = '<div class="pill ' + (dogruMu ? "good" : "bad") + '" style="margin:10px 0">' + (dogruMu ? "Doğru!" : "Yanlış — doğrusu " + harfler[q.cevapIdx]) + "</div>" +
+        (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + (q.kaynak ? " — " + escapeHtml(q.kaynak) : "") + "</div>" : "");
+    }
+
+    var geriAction = pratikMi ? "open-menu-test" : (konuBakMi ? "open-deneme-konu-sec" : "back-menu");
+    var geriEtiket = pratikMi ? "← Test Sayfası" : (konuBakMi ? "← Konu Seç" : "Ana Menüye Dön");
+    // Çıkış aksiyonları üstte, sol/sağ ayrık (sol: sayfadan çık, sağ: testi bitir) —
+    // devam aksiyonları (Önceki/Sonraki Soru) sticky alt barda ayrı bir grup olarak
+    // duruyor; birbirine yakın, karışık bir buton kümesi yerine iki amaç görsel
+    // olarak ayrışıyor (7 Eyl 2026, kullanıcı isteği).
+    var cikisRow = '<div class="link-row" style="justify-content:space-between;margin-bottom:10px">' +
+      '<button class="btn ghost" data-action="' + geriAction + '">' + geriEtiket + "</button>" +
+      (currentFlash.oturum.length ? '<button class="btn" data-action="finish-flash">✅ Testi Bitir (' + currentFlash.oturum.length + ")</button>" : "") +
+      "</div>";
+    var navHtml = '<div class="sticky-next-bar link-row">' +
+      '<button class="btn ghost" data-action="prev-flash"' + (currentFlash.konum <= 0 ? " disabled" : "") + ">← Önceki Soru</button>" +
+      '<button class="btn' + (answered ? " primary" : "") + '" data-action="next-flash">Sonraki Soru →</button>' +
+      "</div>";
+
+    var kaynakEtiket = pratikMi
+      ? "🎲 Rastgele Soru · pratik havuzu · " + escapeHtml(q.modul + " — " + modulAdi(q.konu, q.modul))
+      : konuBakMi
+        ? "📖 Konu Konu Bak · " + escapeHtml(currentFlash.konuFiltre)
+        : "🎲 Rastgele Soru";
+    return '<div class="card">' +
+      cikisRow +
+      '<div class="q-meta"><span>' + kaynakEtiket + " · bu oturumda " + (flashSayac + 1) + ". soru</span><span>" + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span></div>" +
+      kopyalaButonHtml("flash") +
+      '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
+      optionsHtml + sonucHtml +
+      (answered ? flagBarHtml(q.guid, pratikMi) : "") +
+      navHtml +
+      "</div>";
+  }
+
+  function flashSonucKirilimi(oturum) {
+    // {konu: {dogru, yanlis}} — bu oturumda konu bazında kaç doğru/yanlış yapıldı.
+    var kirilim = {};
+    oturum.forEach(function (kayit) {
+      if (!kirilim[kayit.konu]) kirilim[kayit.konu] = { dogru: 0, yanlis: 0 };
+      if (kayit.dogru) kirilim[kayit.konu].dogru++; else kirilim[kayit.konu].yanlis++;
+    });
+    return kirilim;
+  }
+
+  function flashYuzdeHtml(sayi, toplam) {
+    if (!toplam) return sayi + " (—)";
+    return sayi + " (%" + Math.round((sayi / toplam) * 100) + ")";
+  }
+
+  function renderFlashResult() {
+    var r = lastFlashResult;
+    var pratikMi = r.kaynak === "practice";
+    var konuBakMi = !pratikMi && !!r.konuFiltre;
+    var toplam = r.oturum.length;
+    var dogru = r.oturum.filter(function (k) { return k.dogru; }).length;
+    var yanlis = toplam - dogru;
+    var kirilim = flashSonucKirilimi(r.oturum);
+    var konular = Object.keys(kirilim).sort(function (a, b) {
+      return KONU_SIRA.indexOf(a) - KONU_SIRA.indexOf(b);
+    });
+    var topicRows = konular.map(function (konu) {
+      var k = kirilim[konu];
+      var kToplam = k.dogru + k.yanlis;
+      return "<tr><td>" + basariNoktaHtml(k.dogru, kToplam) + escapeHtml(konu) + '</td><td class="num">' + kToplam +
+        '</td><td class="num">' + flashYuzdeHtml(k.dogru, kToplam) +
+        '</td><td class="num">' + flashYuzdeHtml(k.yanlis, kToplam) + "</td></tr>";
+    }).join("");
+
+    var geriAction = pratikMi ? "open-menu-test" : (konuBakMi ? "open-deneme-konu-sec" : "back-menu");
+    var geriEtiket = pratikMi ? "← Test Sayfası" : (konuBakMi ? "← Konu Seç" : "Ana Menüye Dön");
+    var baslikEk = pratikMi ? " (pratik havuzu)" : (konuBakMi ? " (Konu Konu Bak — " + escapeHtml(r.konuFiltre) + ")" : "");
+    var yeniOturumEtiket = konuBakMi ? "Bu Konuda Yeni Oturum" : "Yeni Rastgele Soru Oturumu";
+
+    return '<div class="card">' +
+      '<div class="section-title">Rastgele Soru — oturum özeti' + baslikEk + "</div>" +
+      '<div class="score-hero"><span class="big">' + dogru + " / " + toplam + "</span>" +
+      '<span class="pill good">' + flashYuzdeHtml(dogru, toplam) + " doğru</span>" +
+      '<span class="pill bad">' + flashYuzdeHtml(yanlis, toplam) + " yanlış</span></div>" +
+      (toplam
+        ? '<table class="topic-table"><thead><tr><th>Ders</th><th class="num">Soru</th><th class="num">Doğru</th><th class="num">Yanlış</th></tr></thead><tbody>' +
+          topicRows + "</tbody></table>"
+        : '<div class="muted">Hiç soru cevaplanmadan bitirildi.</div>') +
+      '<div class="link-row" style="margin-top:14px">' +
+      '<button class="btn primary" data-action="start-flash-again" data-kaynak="' + r.kaynak + '" data-konu="' + escapeHtml(r.konuFiltre || "") + '">' + yeniOturumEtiket + "</button>" +
+      '<button class="btn ghost" data-action="' + geriAction + '">' + geriEtiket + "</button>" +
+      "</div></div>";
+  }
+
+function pratikEnIyiHtml(konu, modulKey) {
+    var b = STATE.pBest[konu] && STATE.pBest[konu][modulKey];
+    if (!b) return " · henüz denenmedi";
+    return " · en iyi: " + b.dogru + " doğru · " + b.yanlis + " yanlış";
+  }
+
+  // En iyi sonucun başarı yüzdesine göre renk döner (yeşil ≥%80, sarı %60-79,
+  // kırmızı <%60); hiç denenmemişse null — çağıran taraf nötr/soluk görünümü kendi karar verir.
+  function pratikBasariRenk(konu, modulKey) {
+    var b = STATE.pBest[konu] && STATE.pBest[konu][modulKey];
+    if (!b) return null;
+    var pct = b.dogru / (b.dogru + b.yanlis);
+    return pct >= 0.8 ? "var(--good)" : pct >= 0.6 ? "var(--warn)" : "var(--bad)";
+  }
+
+  function pratikTileStil(konu, modulKey) {
+    // Modül kartının çerçeve rengini en iyi sonuca göre boyar; hiç denenmemişse
+    // nötr çerçeve + soluk (faded) görünüm — kart yine tıklanabilir, yalnız
+    // görsel ağırlığı düşük.
+    var renk = pratikBasariRenk(konu, modulKey);
+    if (!renk) return 'style="border-left:4px solid var(--border);opacity:0.6"';
+    return 'style="border-left:4px solid ' + renk + '"';
+  }
+
+  // Herhangi bir doğru/toplam çiftine göre küçük bir başarı noktası — konu-dot ile
+  // aynı görsel dil (pratikBasariRenk'teki eşiklerle uyumlu: yeşil ≥%80, sarı %60-79,
+  // kırmızı <%60), ama konu kimliği değil o anki sonucu gösterir. Rastgele Soru
+  // oturum özetindeki ders kırılımında kullanılır — modül kutucuklarında DEĞİL
+  // (kullanıcı isteği, 2 Eyl 2026: "modül kutusunda değil test bitiminde, rastgele
+  // soruda olsun").
+  function basariNoktaHtml(dogru, toplam) {
+    if (!toplam) return '<span class="konu-dot" style="background:var(--border)"></span>';
+    var pct = dogru / toplam;
+    var renk = pct >= 0.8 ? "var(--good)" : pct >= 0.6 ? "var(--warn)" : "var(--bad)";
+    return '<span class="konu-dot" style="background:' + renk + '" title="Bu oturumdaki sonuç"></span>';
+  }
+
+  function pratikDevamHtml(konu, modulKey) {
+    // Modül kartında "yarım kaldı" rozeti — kaç soruda kalındığını gösterir.
+    var s = pratikSlotOku(konu, modulKey);
+    if (!s) return "";
+    return '<div class="desc" style="color:var(--accent-strong);font-weight:600">▶ yarım kaldı: ' +
+      Object.keys(s.cevaplar || {}).length + " / " + s.kuyruk.length + "</div>";
+  }
+
+  function pratikAltSecimHtml(konu, modulKey) {
+    // Seçilen modülün ALTINA (grid'in en sonuna değil) açılır — grid-column:1/-1 ile
+    // tam genişlikte kendi satırına düşer, sonraki tile'ları bir alt satıra iter.
+    // Amaç: uzun modül listelerinde "Nasıl çalışmak istersin?" için sayfanın en
+    // altına kadar kaydırma gerekmesin.
+    var havuz2 = pratikHavuz(konu, modulKey);
+    var yanlisSayisi = havuz2.filter(function (q) { return STATE.pStats[q.guid] && STATE.pStats[q.guid].sonSonucDogruMu === false; }).length;
+    var slot = pratikSlotOku(konu, modulKey);
+    var devamHtml = slot
+      ? '<div class="card" style="grid-column:1/-1;border-left:4px solid var(--accent)">' +
+        '<div class="title">▶ Yarım kalan oturum</div>' +
+        '<div class="desc">' + Object.keys(slot.cevaplar || {}).length + " / " + slot.kuyruk.length +
+          " soru cevaplanmış · " + fmtTarih(slot.savedAtISO) + "</div>" +
+        '<div class="link-row" style="margin-top:10px">' +
+        '<button class="btn primary" data-action="devam-pratik" data-konu="' + escapeHtml(konu) + '" data-modul="' + escapeHtml(modulKey) + '">Kaldığım Yerden Devam Et</button>' +
+        '<button class="btn ghost" data-action="pratik-slot-at" data-konu="' + escapeHtml(konu) + '" data-modul="' + escapeHtml(modulKey) + '">Sil</button>' +
+        "</div></div>"
+      : "";
+    return devamHtml + '<div class="card" style="grid-column:1/-1"><div class="section-title">' +
+      (slot ? "…ya da baştan başla" : "Nasıl çalışmak istersin?") + "</div>" +
+      '<div class="mode-grid">' +
+      '<button class="mode-btn" data-action="start-pratik" data-mod="siray"><div class="title">Sırayla</div><div class="desc">Tüm sorular, her seferinde karışık sırada.</div></button>' +
+      '<button class="mode-btn" data-action="start-pratik" data-mod="az"><div class="title">Az Görülenler</div><div class="desc">En az karşılaştıkların — oturum başına en fazla ' +
+        (modulKey === PRATIK_TUM_MODULLER ? PRATIK_KARISIK_LIMIT : PRATIK_AZ_GORULEN_TEK_MODUL_LIMIT) + " soru, her seferinde dönerek.</div></button>" +
+      '<button class="mode-btn" ' + (yanlisSayisi ? "" : "disabled") + ' data-action="start-pratik" data-mod="yanlis"><div class="title">Yanlışlar</div><div class="desc">Önce son denemesinde yanlış yaptıkların (' + yanlisSayisi + ").</div></button>" +
+      "</div></div>";
+  }
+
+  function renderPratikModul() {
+    var konu = pratikSeciliKonu;
+    var modlar = MODUL_TANIMLARI[konu] || [];
+    var karisikHavuz = pratikHavuz(konu, PRATIK_TUM_MODULLER);
+    var karisikSecili = pratikSeciliModul === PRATIK_TUM_MODULLER;
+    var karisikTile = '<button class="mode-btn' + (karisikSecili ? " selected" : "") + '" ' + pratikTileStil(konu, PRATIK_TUM_MODULLER) + ' data-action="select-pratik-modul" data-modul="' + PRATIK_TUM_MODULLER + '">' +
+      '<div class="title">🔀 Karışık — Tüm Modüller</div>' +
+      '<div class="desc">' + karisikHavuz.length + " soruluk havuzdan oturum başına " + PRATIK_KARISIK_LIMIT + " soru" + pratikEnIyiHtml(konu, PRATIK_TUM_MODULLER) +
+      "</div>" + pratikDevamHtml(konu, PRATIK_TUM_MODULLER) + "</button>" +
+      (karisikSecili ? pratikAltSecimHtml(konu, PRATIK_TUM_MODULLER) : "");
+    var tiles = karisikTile + modlar.map(function (m) {
+      var havuz = pratikHavuz(konu, m.key);
+      var secili = pratikSeciliModul === m.key;
+      return '<button class="mode-btn' + (secili ? " selected" : "") + '" ' + pratikTileStil(konu, m.key) + ' data-action="select-pratik-modul" data-modul="' + m.key + '">' +
+        '<div class="title">' + escapeHtml(m.key + " — " + m.ad) + "</div>" +
+        '<div class="desc">' + havuz.length + " soru" + pratikEnIyiHtml(konu, m.key) + "</div>" +
+        pratikDevamHtml(konu, m.key) + "</button>" +
+        (secili ? pratikAltSecimHtml(konu, m.key) : "");
+    }).join("");
+
+    return '<div class="link-row"><button class="btn" data-action="pratik-konu-geri">← Konulara Dön</button>' +
+      '<button class="btn ghost" data-action="back-menu">Ana Menü</button></div>' +
+      '<div class="section-title">' + konuDotHtml(konu) + escapeHtml(konu) + " — modül seç</div>" +
+      '<div class="mode-grid">' + tiles + "</div>";
+  }
+
+  function renderPratikSoru() {
+    if (!currentPratik) return '<div class="card">Oturum bulunamadı. <button class="btn" data-action="back-menu">Ana Menü</button></div>';
+
+    if (currentPratik.bitti) {
+      var skor = pratikOturumSkoru(currentPratik);
+      var toplamCevaplanan = skor.dogru + skor.yanlis;
+      var skorHtml = toplamCevaplanan
+        ? '<div class="score-hero"><span class="pill good">' + skor.dogru + " doğru</span>" +
+          '<span class="pill bad">' + skor.yanlis + " yanlış</span></div>"
+        : "";
+      var sonrakiModul = pratikSonrakiModul(currentPratik.konu, currentPratik.modul);
+      var modulKirilimHtml = "";
+      if (currentPratik.modul === PRATIK_TUM_MODULLER && toplamCevaplanan) {
+        var kirilim = pratikModulKirilimi(currentPratik);
+        var modulSirasi = (MODUL_TANIMLARI[currentPratik.konu] || []).map(function (m) { return m.key; });
+        var kirilimAnahtarlari = Object.keys(kirilim).sort(function (a, b) { return modulSirasi.indexOf(a) - modulSirasi.indexOf(b); });
+        var kirilimRows = kirilimAnahtarlari.map(function (modulKey) {
+          var k = kirilim[modulKey], kToplam = k.dogru + k.yanlis;
+          return "<tr><td>" + escapeHtml(modulKey + " — " + modulAdi(currentPratik.konu, modulKey)) + '</td><td class="num">' + kToplam +
+            '</td><td class="num">' + flashYuzdeHtml(k.dogru, kToplam) +
+            '</td><td class="num">' + flashYuzdeHtml(k.yanlis, kToplam) + "</td></tr>";
+        }).join("");
+        modulKirilimHtml = '<table class="topic-table" style="margin-top:12px"><thead><tr><th>Modül</th><th class="num">Soru</th><th class="num">Doğru</th><th class="num">Yanlış</th></tr></thead><tbody>' +
+          kirilimRows + "</tbody></table>";
+      }
+      return '<div class="card"><div class="section-title">Modül bitti 🎉</div>' +
+        '<div class="muted">' + escapeHtml(currentPratik.konu) + " · " + escapeHtml(modulAdi(currentPratik.konu, currentPratik.modul)) +
+        " — " + currentPratik.kuyruk.length + " soru tamamlandı.</div>" +
+        skorHtml + modulKirilimHtml +
+        '<div class="link-row" style="margin-top:14px">' +
+        (sonrakiModul
+          ? '<button class="btn primary" data-action="pratik-sonraki-modul">Sonraki Modül: ' + escapeHtml(sonrakiModul.key + " — " + sonrakiModul.ad) + " →</button>" +
+            '<button class="btn" data-action="pratik-tekrar">Aynı Şekilde Tekrar Başlat</button>'
+          : '<button class="btn primary" data-action="pratik-tekrar">Aynı Şekilde Tekrar Başlat</button>') +
+        '<button class="btn" data-action="pratik-listeye-don">Modül Listesine Dön</button>' +
+        '<button class="btn ghost" data-action="back-menu">Ana Menüye Dön</button>' +
+        "</div></div>";
+    }
+
+    var guid = currentPratik.kuyruk[currentPratik.index];
+    var q = pratikSoruBul(guid);
+    if (!q) return '<div class="card">Bu soru artık havuzda yok (banka güncellendi). <button class="btn" data-action="pratik-sonraki">Sonraki Soru</button></div>';
+
+    var cevaplananSayisi = Object.keys(currentPratik.cevaplar).length;
+    var cikisRow = '<div class="link-row" style="margin-bottom:10px">' +
+      '<button class="btn primary" data-action="pratik-kaydet-cik">💾 Kaydet ve Çık</button>' +
+      '<button class="btn ghost" data-action="pratik-listeye-don">← Modülden Çık</button>' +
+      '<span class="muted" style="font-size:0.82rem;align-self:center">' + cevaplananSayisi + " / " + currentPratik.kuyruk.length +
+      " cevaplandı · ilerleme her soruda otomatik kaydediliyor</span>" +
+      "</div>";
+
+    var karisikOnEki = currentPratik.modul === PRATIK_TUM_MODULLER ? "🔀 " : "";
+    var meta = '<div class="q-meta"><span>' + karisikOnEki + escapeHtml(q.modul + " — " + modulAdi(q.konu, q.modul)) + " · " +
+      (currentPratik.index + 1) + " / " + currentPratik.kuyruk.length + "</span><span>" + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span></div>";
+
+    var harfler = ["A", "B", "C", "D"];
+    var secilen = currentPratik.secilen;
+    var answered = currentPratik.cevaplandi;
+    var optionsHtml = q.siklar.map(function (s, i) {
+      if (!s) return "";
+      var cls = "option-row";
+      if (answered) {
+        if (i === q.cevapIdx) cls += " correct";
+        else if (i === secilen) cls += " wrong";
+      }
+      var action = answered ? "" : ' data-action="select-pratik-option" data-idx="' + i + '"';
+      return '<div class="' + cls + '"' + action + '>' +
+        '<span class="option-letter">' + harfler[i] + '</span><span class="option-text">' + escapeHtml(s) +
+        '</span>' + (answered ? "" : '<span class="kbd-hint">' + (i + 1) + "</span>") + "</div>";
+    }).join("");
+    var sonucHtml = "";
+    if (answered) {
+      var dogruMu = secilen === q.cevapIdx;
+      sonucHtml = '<div class="pill ' + (dogruMu ? "good" : "bad") + '" style="margin:10px 0">' +
+        (dogruMu ? "Doğru!" : "Yanlış — doğrusu " + harfler[q.cevapIdx]) + "</div>" +
+        (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + "</div>" : "");
+    }
+    var body = optionsHtml + sonucHtml;
+
+    var kaynakHtml = q.kaynak ? '<div class="muted" style="font-size:0.82rem;margin-top:8px">' + escapeHtml(q.kaynak) + "</div>" : "";
+    var altNav = "";
+    if (currentPratik.cevaplandi) {
+      altNav = flagBarHtml(guid, true) +
+        '<div class="sticky-next-bar link-row">' +
+        '<button class="btn primary" data-action="pratik-sonraki">Sonraki Soru →</button>' +
+        "</div>";
+    }
+
+    return '<div class="card">' + cikisRow + meta + kopyalaButonHtml("pratik") + '<div class="q-text">' + escapeHtml(q.soru) + "</div>" + body + kaynakHtml + altNav + "</div>";
+  }
+
+  function renderResult() {
+    var r = lastResult;
+    var toplam = r.skor.dogru + r.skor.yanlis + r.skor.bos;
+    var topicRows = Object.keys(r.konuKirilim).map(function (konu) {
+      var k = r.konuKirilim[konu];
+      return "<tr><td>" + konuDotHtml(konu) + escapeHtml(konu) + '</td><td class="num">' + k.dogru + '</td><td class="num">' + k.yanlis +
+        '</td><td class="num">' + k.bos + "</td></tr>";
+    }).join("");
+
+    var bankByGuid = {};
+    STATE.bank.forEach(function (q) { bankByGuid[q.guid] = q; });
+    var yanlisBosListesi = r.sorular.map(function (guid) {
+      var q = oturumSorusu(r, STATE.bank, guid);
+      if (!q) return "";
+      var secilen = r.cevaplar[guid];
+      if (secilen === q.cevapIdx) return "";
+      var harfler = ["A", "B", "C", "D"];
+      var optionsHtml = q.siklar.map(function (s, i) {
+        if (!s) return "";
+        var cls = "option-row";
+        if (i === q.cevapIdx) cls += " correct"; else if (i === secilen) cls += " wrong";
+        return '<div class="' + cls + '"><span class="option-letter">' + harfler[i] + '</span><span class="option-text">' + escapeHtml(s) + "</span></div>";
+      }).join("");
+      var bosHtml = (secilen === undefined || secilen === null) ? '<div class="review-opt wrong">Boş bırakıldı</div>' : "";
+      var badge = q.dogrulanmis === false ? '<span class="badge unverified">doğrulanmamış</span>' : "";
+      return '<div class="review-item"><div class="review-q">' + escapeHtml(q.soru) + badge + "</div>" +
+        bosHtml + optionsHtml +
+        (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + (q.kaynak ? " — " + escapeHtml(q.kaynak) : "") + "</div>" : "") +
+        examFlagBarHtml(guid) +
+        "</div>";
+    }).join("");
+
+    var kod = r.examCode || examKoduUret(r.tip, r.seed);
+    var koduAciklama = r.uzak
+      ? 'Bu kod bu resmi denemenin kaydıdır — "Kod ile Çöz" alanına girersen aynı soruları (Yeni Sınav modunda herkes için, diğerlerinde kişisel istatistiğe göre) yeniden çözersin.'
+      : 'Bu kodu Deneme sayfasındaki "Kod ile Çöz" alanına girersen aynı soruları tekrar çözersin.';
+    var koduHtml = kod
+      ? '<div class="muted" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">Deneme kodu: ' +
+        '<b style="font-family:var(--font-display);letter-spacing:0.03em">' + kod + '</b> ' +
+        '<button class="btn ghost" style="padding:2px 8px;font-size:0.76rem;margin-left:4px" data-action="copy-exam-code" data-kod="' + kod + '">📋 Kopyala</button>' +
+        '<br>' + koduAciklama + '</div>'
+      : "";
+    var yuzde = toplam ? Math.round((r.skor.dogru / toplam) * 100) : null;
+    var yuzdeHtml = yuzde === null ? "" : '<span class="pill" style="background:var(--surface-2);color:' + renkEsigi(yuzde) + '">%' + yuzde + "</span>";
+    var sureHtml = typeof r.sureSaniye === "number" ? '<span class="muted" style="font-size:0.86rem">⏱ ' + fmtSure(r.sureSaniye) + " sürede bitti</span>" : "";
+
+    return '<div class="card">' +
+      '<div class="score-hero"><span class="big">' + r.skor.dogru + " / " + toplam + "</span>" +
+      '<span class="pill good">' + r.skor.dogru + " doğru</span>" +
+      '<span class="pill bad">' + r.skor.yanlis + " yanlış</span>" +
+      '<span class="pill warn">' + r.skor.bos + " boş</span>" +
+      yuzdeHtml + sureHtml + "</div>" +
+      '<table class="topic-table"><thead><tr><th>Konu</th><th class="num">Doğru</th><th class="num">Yanlış</th><th class="num">Boş</th></tr></thead><tbody>' +
+      topicRows + "</tbody></table>" +
+      '<button class="btn primary" data-action="back-menu">' + (STATE.sadeceDeneme ? "Tamam" : "Ana Menüye Dön") + '</button>' +
+      koduHtml +
+      "</div>" +
+      (yanlisBosListesi ? '<div class="card" style="margin-top:16px"><div class="section-title">Gözden geçir</div>' + yanlisBosListesi + "</div>" : "");
+  }
+
+  function renderSettings() {
+    var toplam = 0;
+    var rows = Object.keys(draftSettings.dagilim).map(function (konu) {
+      var v = draftSettings.dagilim[konu];
+      toplam += v;
+      return '<div class="field-row"><span>' + escapeHtml(konu) + '</span><input type="number" min="0" value="' + v +
+        '" data-dagilim-konu="' + escapeHtml(konu) + '"></div>';
+    }).join("");
+    var mismatch = toplam !== 50;
+    return '<div class="card"><div class="section-title">Ayarlar — sınav başına konu dağılımı</div>' +
+      rows +
+      '<div class="settings-total' + (mismatch ? " mismatch" : "") + '">Toplam<span>' + toplam + " / 50</span></div>" +
+      (mismatch ? '<div class="banner">Toplam 50 değil — yine de kaydedebilirsin, ama resmi sınav dağılımıyla uyuşmaz.</div>' : "") +
+      '<div class="link-row" style="margin-top:14px">' +
+      '<button class="btn primary" data-action="save-settings">Kaydet</button>' +
+      '<button class="btn ghost" data-action="cancel-settings">Vazgeç</button>' +
+      "</div></div>";
+  }
+
+  function renderImport() {
+    var body;
+    if (!importPreview) {
+      body = '<label class="filepick" for="excel-file-input">Güncel .xlsx dosyasını seçmek için tıkla<br>' +
+        '<span class="muted">Sütun başlıklarına göre okunur: Konu, Soru, A, B, C, D, CevapHarf, GUID…</span></label>' +
+        '<input type="file" id="excel-file-input" accept=".xlsx" style="display:none">' +
+        '<div class="link-row"><button class="btn ghost" data-action="cancel-import">Vazgeç</button></div>';
+    } else {
+      var s = importPreview.sonuc;
+      body = '<div class="import-summary">' +
+        '<div class="chip"><b>+' + s.eklendi + "</b>yeni soru</div>" +
+        '<div class="chip"><b>' + s.guncellendi + "</b>güncellendi</div>" +
+        '<div class="chip"><b>-' + s.kaldirildi + "</b>kaldırıldı (istatistiği arşivlendi)</div>" +
+        '<div class="chip"><b>' + importPreview.toplamSatir + "</b>toplam soru</div>" +
+        "</div>" +
+        '<div class="muted" style="margin-bottom:14px">Kaynak: ' + escapeHtml(importPreview.dosyaAdi) + " · sayfa: " + escapeHtml(importPreview.sheetName) + "</div>" +
+        '<div class="link-row">' +
+        '<button class="btn primary" data-action="confirm-import">Onayla ve Kaydet</button>' +
+        '<button class="btn ghost" data-action="cancel-import">Vazgeç</button>' +
+        "</div>";
+    }
+    return '<div class="card"><div class="section-title">Soru Bankasını Güncelle</div>' + body + "</div>";
+  }
+
+  function renderHistory() {
+    if (STATE.history.length === 0) {
+      return '<div class="card">Henüz sınav geçmişi yok. <button class="btn" data-action="back-menu">Ana Menü</button></div>';
+    }
+    var konuBasari = {};
+    STATE.bank.forEach(function (q) {
+      var s = STATE.stats[q.guid];
+      if (!s || s.gosterim === 0) return;
+      konuBasari[q.konu] = konuBasari[q.konu] || { dogru: 0, gosterim: 0 };
+      konuBasari[q.konu].dogru += s.dogru;
+      konuBasari[q.konu].gosterim += s.gosterim;
+    });
+    var barlar = Object.keys(konuBasari).map(function (konu) {
+      var pct = Math.round((konuBasari[konu].dogru / konuBasari[konu].gosterim) * 100);
+      return '<div class="history-row"><span>' + konuDotHtml(konu) + escapeHtml(konu) + '</span>' +
+        '<div class="bar-track" style="max-width:160px"><div class="bar-fill" style="width:' + pct + '%"></div></div>' +
+        '<span class="muted">' + pct + "%</span></div>";
+    }).join("");
+    var rows = STATE.history.slice(0, 30).map(function (h) {
+      var toplam = h.skor.dogru + h.skor.yanlis + h.skor.bos;
+      var silHtml = deletingHistoryId === h.id
+        ? '<span style="display:flex;gap:4px">' +
+          '<button class="btn primary" style="padding:2px 8px;font-size:0.78rem" data-action="confirm-delete-history" data-id="' + h.id + '">Evet</button>' +
+          '<button class="btn ghost" style="padding:2px 8px;font-size:0.78rem" data-action="cancel-delete-history">Vazgeç</button>' +
+          "</span>"
+        : '<button class="btn ghost" style="padding:2px 8px;font-size:0.78rem" data-action="request-delete-history" data-id="' + h.id + '">Sil</button>';
+      return '<div class="history-row"><span>' + MOD_ADI[h.tip] + '</span><span class="when">' + fmtTarih(h.tarihISO) + "</span>" +
+        "<span>" + h.skor.dogru + " / " + toplam + "</span>" + silHtml + "</div>";
+    }).join("");
+    return '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button></div>' +
+      '<div class="card"><div class="section-title">Konu bazlı başarı</div>' + (barlar || '<span class="muted">Henüz veri yok.</span>') + "</div>" +
+      '<div class="card" style="margin-top:16px"><div class="section-title">Sınav geçmişi</div>' + rows + "</div>";
+  }
+
+  function renderFlags() {
+    var bankByGuid = {};
+    STATE.bank.forEach(function (q) { bankByGuid[q.guid] = q; });
+    var practiceByGuid = {};
+    STATE.practiceBank.forEach(function (q) { practiceByGuid[q.guid] = q; });
+    function soruByGuid(g) { return bankByGuid[g] || practiceByGuid[g]; }
+    function konuEtiketi(g) {
+      var q = soruByGuid(g);
+      if (!q) return "";
+      return practiceByGuid[g] ? q.konu + " · " + q.modul : q.konu;
+    }
+
+    var guids = Object.keys(STATE.flags);
+    var hatirlaticilar = guids.filter(function (g) { return STATE.flags[g].hatirlatici && soruByGuid(g); });
+    var hatalilar = guids.filter(function (g) { return STATE.flags[g].hatali && soruByGuid(g); });
+    var begenilenler = guids.filter(function (g) { return STATE.flags[g].begenildi && practiceByGuid[g]; });
+    var kapsamDisilar = guids.filter(function (g) { return STATE.flags[g].kapsamDisi && practiceByGuid[g]; });
+
+    function listHtml(list, kind) {
+      if (list.length === 0) return '<span class="muted">Yok.</span>';
+      return list.map(function (g) {
+        var q = soruByGuid(g);
+        var f = STATE.flags[g];
+        return '<div class="review-item"><div class="review-q">' + escapeHtml(q.soru) +
+          '<span class="badge unverified">' + escapeHtml(konuEtiketi(g)) + "</span></div>" +
+          (kind === "hatali" && f.hataNotu ? '<div class="review-expl">' + escapeHtml(f.hataNotu) + "</div>" : "") +
+          '<div class="link-row" style="margin-top:8px">' +
+          '<button class="btn" data-action="toggle-flag" data-guid="' + g + '" data-kind="' + kind + '">Kaldır</button>' +
+          "</div></div>";
+      }).join("");
+    }
+
+    return '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button></div>' +
+      '<div class="card"><div class="section-title">🔖 Hatırlatıcılarım (' + hatirlaticilar.length + ")</div>" +
+      listHtml(hatirlaticilar, "hatirlatici") + "</div>" +
+      '<div class="card" style="margin-top:16px"><div class="section-title">🚩 Hata bildirdiklerim (' + hatalilar.length + ")</div>" +
+      listHtml(hatalilar, "hatali") + "</div>" +
+      '<div class="card" style="margin-top:16px"><div class="section-title">⭐ Aktarım Kuyruğu — Sınav Bankasına Aday (' + begenilenler.length + ")</div>" +
+      listHtml(begenilenler, "begenildi") + "</div>" +
+      '<div class="card" style="margin-top:16px"><div class="section-title">🗑️ Kapsam Dışı — Silinebilir (' + kapsamDisilar.length + ")</div>" +
+      listHtml(kapsamDisilar, "kapsamDisi") + "</div>";
+  }
+
+  function renderDuzeltmeler() {
+    if (STATE.duzeltmeler.length === 0) {
+      return '<div class="card">Henüz düzeltme kaydı yok. <button class="btn" data-action="back-menu">Ana Menü</button></div>';
+    }
+    var rows = STATE.duzeltmeler.map(function (d) {
+      return '<div class="review-item">' +
+        '<div class="review-q">' + (d.konu ? konuDotHtml(d.konu) : "") + escapeHtml(d.soru) + "</div>" +
+        '<div class="review-expl">' + escapeHtml(d.not) + "</div>" +
+        '<div class="muted" style="font-size:0.78rem;margin-top:4px">' + fmtTarih(d.tarihISO) + "</div>" +
+        "</div>";
+    }).join("");
+    return '<div class="link-row">' +
+      '<button class="btn ghost" data-action="back-menu">← Ana Menü</button>' +
+      '<button class="btn ghost" data-action="clear-duzeltmeler">Temizle</button>' +
+      "</div>" +
+      '<div class="card"><div class="section-title">✅ Düzeltilenler</div>' + rows + "</div>";
+  }
+
+  function render() {
+    var html = "";
+    if (STATE.sadeceDeneme && (VIEW === "menu" || VIEW === "menuTest" || VIEW === "pratikModul" || VIEW === "pratikSoru" ||
+      VIEW === "checkpointListe" || VIEW === "checkpointDetay" || VIEW === "settings" || VIEW === "import")) VIEW = "menuDeneme";
+    if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult" || VIEW === "gecmisUzak")) VIEW = "menuDeneme";
+    if (VIEW === "menu") html = renderMenu();
+    else if (VIEW === "menuDeneme") html = renderMenuDeneme();
+    else if (VIEW === "denemeKonuSec") html = renderDenemeKonuSec();
+    else if (VIEW === "menuTest") html = renderMenuTest();
+    else if (VIEW === "exam") html = renderExam();
+    else if (VIEW === "result") html = renderResult();
+    else if (VIEW === "settings") html = renderSettings();
+    else if (VIEW === "import") html = renderImport();
+    else if (VIEW === "history") html = renderHistory();
+    else if (VIEW === "flags") html = renderFlags();
+    else if (VIEW === "duzeltmeler") html = renderDuzeltmeler();
+    else if (VIEW === "flash") html = renderFlash();
+    else if (VIEW === "flashResult") html = renderFlashResult();
+    else if (VIEW === "pratikModul") html = renderPratikModul();
+    else if (VIEW === "pratikSoru") html = renderPratikSoru();
+    else if (VIEW === "checkpointListe") html = renderCheckpointListe();
+    else if (VIEW === "checkpointDetay") html = renderCheckpointDetay();
+    else if (VIEW === "gecmisUzak") html = renderGecmisUzak();
+    if (!html) { // eski bir sekmede kalkan artık var olmayan bir VIEW (ör. kaldırılmış "pratikKonu") gelirse boş ekran yerine ana ekrana düş
+      if (STATE.sadeceDeneme) { VIEW = "menuDeneme"; html = renderMenuDeneme(); }
+      else { VIEW = "menu"; html = renderMenu(); }
+    }
+    var bannerHtml = bannerMsg ? '<div class="banner' + (bannerIsError ? " error" : "") + '">' + escapeHtml(bannerMsg) + "</div>" : "";
+    var narrowViews = { settings: true, import: true };
+    var shellClass = "shell" + (narrowViews[VIEW] ? " narrow" : "");
+    $app().innerHTML = '<div class="' + shellClass + '">' + bannerHtml + html + "</div>";
+  }
+
+  // ------------------------------------------------------------- olaylar --
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest ? e.target.closest("[data-action]") : null;
+    if (!t) return;
+    var action = t.getAttribute("data-action");
+    if (action === "open-menu-deneme") { denemeKodOnizleme = null; openMenuDeneme(); }
+    else if (action === "open-menu-test") { VIEW = "menuTest"; render(); }
+    else if (action === "copy-soru") kopyalaAktifSoru(t.getAttribute("data-scope"));
+    else if (action === "open-deneme-konu-sec") { if (STATE.sadeceDeneme && !remoteGirisTamamMi()) return; VIEW = "denemeKonuSec"; render(); }
+    else if (action === "start-deneme-konu-flash") startFlash("bank", t.getAttribute("data-konu"));
+    else if (action === "start-exam") startExam(t.getAttribute("data-mode"));
+    else if (action === "start-exam-code") startExamWithCode();
+    else if (action === "prepare-exam-remote") prepareExamRemote(t.getAttribute("data-mode"));
+    else if (action === "baslat-exam-kod-onizleme") baslatExamKodOnizleme();
+    else if (action === "cancel-exam-kod-onizleme") cancelExamKodOnizleme();
+    else if (action === "deneme-register") remoteRegisterSubmit();
+    else if (action === "deneme-refresh") remoteRefreshStatus();
+    else if (action === "deneme-accept-disclaimer") remoteAcceptDisclaimer();
+    else if (action === "resume-exam-remote") resumeExamRemote();
+    else if (action === "discard-exam-remote") requestDiscardExamRemote();
+    else if (action === "confirm-discard-exam-remote") discardExamRemote();
+    else if (action === "cancel-discard-exam-remote") cancelDiscardExamRemote();
+    else if (action === "open-history-remote") openHistoryRemote();
+    else if (action === "open-gecmis-detay") openGecmisDetay(t.getAttribute("data-id"));
+    else if (action === "request-delete-gecmis") requestDeleteGecmis(t.getAttribute("data-id"));
+    else if (action === "confirm-delete-gecmis") confirmDeleteGecmis(t.getAttribute("data-id"));
+    else if (action === "cancel-delete-gecmis") cancelDeleteGecmis();
+    else if (action === "copy-exam-code") kopyalaPano(t.getAttribute("data-kod"));
+    else if (action === "select-option") selectOption(t.getAttribute("data-guid"), parseInt(t.getAttribute("data-idx"), 10));
+    else if (action === "next-q") nextQuestion();
+    else if (action === "prev-q") prevQuestion();
+    else if (action === "goto-q") gotoQuestion(parseInt(t.getAttribute("data-idx"), 10));
+    else if (action === "finish-exam") finishExam();
+    else if (action === "back-menu") backToMenu();
+    else if (action === "open-settings") openSettings();
+    else if (action === "save-settings") saveSettings();
+    else if (action === "cancel-settings") { VIEW = "menu"; render(); }
+    else if (action === "open-import") openImport();
+    else if (action === "confirm-import") confirmImport();
+    else if (action === "cancel-import") { importPreview = null; VIEW = "menu"; render(); }
+    else if (action === "open-history") { VIEW = "history"; render(); }
+    else if (action === "open-flags") { VIEW = "flags"; render(); }
+    else if (action === "open-duzeltmeler") { VIEW = "duzeltmeler"; render(); }
+    else if (action === "clear-duzeltmeler") { STATE.duzeltmeler = []; pendingSaveDirty = true; render(); }
+    else if (action === "toggle-flag") toggleFlag(t.getAttribute("data-guid"), t.getAttribute("data-kind"));
+    else if (action === "set-flag-kategori") setFlagKategori(t.getAttribute("data-guid"), t.getAttribute("data-kategori"));
+    else if (action === "pause-exam") pauseExam();
+    else if (action === "resume-exam") resumeExam();
+    else if (action === "discard-paused") requestDiscardPausedExam();
+    else if (action === "confirm-discard-paused") discardPausedExam();
+    else if (action === "cancel-discard-paused") cancelDiscardPausedExam();
+    else if (action === "start-flash") startFlash();
+    else if (action === "start-flash-again") startFlash(t.getAttribute("data-kaynak"), t.getAttribute("data-konu"));
+    else if (action === "next-flash") nextFlash();
+    else if (action === "prev-flash") prevFlash();
+    else if (action === "finish-flash") finishFlash();
+    else if (action === "select-flash-option") selectFlashOption(parseInt(t.getAttribute("data-idx"), 10));
+    else if (action === "request-delete-history") requestDeleteHistory(t.getAttribute("data-id"));
+    else if (action === "confirm-delete-history") deleteHistoryEntry(t.getAttribute("data-id"));
+    else if (action === "cancel-delete-history") cancelDeleteHistory();
+    else if (action === "select-pratik-konu") {
+      var pk = t.getAttribute("data-konu");
+      if (MODUL_TANIMLARI[pk]) { pratikSeciliKonu = pk; pratikSeciliModul = null; VIEW = "pratikModul"; render(); }
+    }
+    else if (action === "pratik-konu-geri") { VIEW = "menuTest"; pratikSeciliKonu = null; pratikSeciliModul = null; render(); }
+    else if (action === "open-checkpoint-liste") { checkpointSeciliKonu = null; checkpointSeciliId = null; VIEW = "checkpointListe"; render(); }
+    else if (action === "select-checkpoint-konu") { checkpointSeciliKonu = t.getAttribute("data-konu"); VIEW = "checkpointListe"; render(); }
+    else if (action === "checkpoint-konu-geri") { checkpointSeciliId = null; VIEW = "checkpointListe"; render(); }
+    else if (action === "open-checkpoint-detay") { checkpointSeciliId = t.getAttribute("data-id"); VIEW = "checkpointDetay"; render(); }
+    else if (action === "select-pratik-modul") {
+      var secilenModul = t.getAttribute("data-modul");
+      // Yarım kalan oturum varsa doğrudan başlatma — "Devam Et"i göstermek için modülü seç,
+      // yoksa eskisi gibi tek tıkla "Sırayla" başlar.
+      if (secilenModul === PRATIK_TUM_MODULLER || pratikSlotOku(pratikSeciliKonu, secilenModul)) {
+        pratikSeciliModul = (pratikSeciliModul === secilenModul) ? null : secilenModul; render();
+      } else startPratikOturum(pratikSeciliKonu, secilenModul, "siray");
+    }
+    else if (action === "devam-pratik") {
+      var dk = t.getAttribute("data-konu"), dm = t.getAttribute("data-modul");
+      pratikSeciliKonu = dk; pratikSeciliModul = dm;
+      devamPratikOturum(dk, dm);
+    }
+    else if (action === "pratik-slot-at") pratikSlotAt(t.getAttribute("data-konu"), t.getAttribute("data-modul"));
+    else if (action === "pratik-kaydet-cik") pratikKaydetVeCik();
+    else if (action === "start-pratik-flash") startFlash("practice");
+    else if (action === "start-pratik") startPratikOturum(pratikSeciliKonu, pratikSeciliModul, t.getAttribute("data-mod"));
+    else if (action === "select-pratik-option") selectPratikOption(parseInt(t.getAttribute("data-idx"), 10));
+    else if (action === "pratik-sonraki") nextPratikSoru();
+    else if (action === "pratik-tekrar") pratikTekrarBaslat();
+    else if (action === "pratik-sonraki-modul") pratikSonrakiModuleBaslat();
+    else if (action === "pratik-listeye-don") pratikListeyeDon();
+  });
+  document.addEventListener("input", function (e) {
+    if (e.target && e.target.matches && e.target.matches("[data-dagilim-konu]")) {
+      updateDraftDagilim(e.target.getAttribute("data-dagilim-konu"), e.target.value);
+    }
+    if (e.target && e.target.id === "deneme-username-input") denemeIsimTaslak = e.target.value;
+    if (e.target && e.target.id === "deneme-pin-input") denemePinTaslak = e.target.value;
+  });
+  document.addEventListener("change", function (e) {
+    if (e.target && e.target.id === "excel-file-input" && e.target.files && e.target.files[0]) {
+      handleFileSelect(e.target.files[0]);
+    }
+    if (e.target && e.target.matches && e.target.matches("[data-note-guid]")) {
+      saveHataNotu(e.target.getAttribute("data-note-guid"), e.target.value);
+    }
+  });
+  document.addEventListener("keydown", function (e) {
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA") {
+      if (e.key === "Enter" && document.activeElement.id === "exam-code-input") { e.preventDefault(); startExamWithCode(); }
+      return;
+    }
+    if (VIEW === "exam" && currentExam) {
+      if (e.key >= "1" && e.key <= "4") {
+        var idx = parseInt(e.key, 10) - 1;
+        var guid = currentExam.sorular[currentExam.index];
+        var q = oturumSorusu(currentExam, STATE.bank, guid);
+        if (q && q.siklar[idx]) { e.preventDefault(); selectOption(guid, idx); }
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault(); nextQuestion();
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault(); prevQuestion();
+      }
+    } else if (VIEW === "flash" && currentFlash) {
+      if (currentFlash.secilen === null && e.key >= "1" && e.key <= "4") {
+        var fidx = parseInt(e.key, 10) - 1;
+        var fq = flashSoruBul(currentFlash);
+        if (fq && fq.siklar[fidx]) { e.preventDefault(); selectFlashOption(fidx); }
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault(); nextFlash(); // cevaplanmamış olsa da atlanabilir
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault(); prevFlash();
+      }
+    } else if (VIEW === "pratikSoru" && currentPratik && !currentPratik.bitti) {
+      var pq = pratikSoruBul(currentPratik.kuyruk[currentPratik.index]);
+      if (pq && !currentPratik.cevaplandi && e.key >= "1" && e.key <= "4") {
+        var pidx = parseInt(e.key, 10) - 1;
+        if (pq.siklar[pidx]) { e.preventDefault(); selectPratikOption(pidx); }
+      } else if (e.key === "ArrowRight" && currentPratik.cevaplandi) {
+        e.preventDefault(); nextPratikSoru();
+      }
+    }
+  });
+
+  // Sekme kapanırken/gizlenirken son bir yerel yazım — publish'e zaman kalmasa da veri durur.
+  function sonOturumuKaydet() {
+    if (VIEW === "exam" && currentExam && !currentExam.uzak) { examSlotYaz(); bumpRev(); }
+    if (VIEW === "pratikSoru" && currentPratik && !currentPratik.bitti) { pratikSlotYaz(); bumpRev(); }
+    lsKaydet();
+  }
+  window.addEventListener("pagehide", sonOturumuKaydet);
+  document.addEventListener("visibilitychange", function () { if (document.hidden) sonOturumuKaydet(); });
+
+  ensureArtifact().then(function () {
+    render();
+    // Açılışta yerel kayıt gömülü STATE'ten yeniyse (ör. sekme yayın yapılmadan kapanmış),
+    // yayınlanan sürümü sessizce yerel veriye eşitle.
+    if (yerelVeriDahaYeniydi) {
+      showBanner("Kaydedilmemiş ilerleme bu tarayıcıdan geri yüklendi, kaydediliyor…", false);
+      saveAndPublish();
+    }
+    // sadeceDeneme derlemesinde açılış doğrudan menuDeneme'dir — normalde bu kontrolü
+    // tetikleyen "open-menu-deneme" tıklaması hiç olmaz, o yüzden burada da başlatılır.
+    if (STATE.sadeceDeneme && !remoteAuth.checked) {
+      remoteCheckStatus(function () { if (VIEW === "menuDeneme") render(); });
+    }
+  });
+  setInterval(tickExamTimer, 1000);
+})();
+</script>
+</body>
+</html>
