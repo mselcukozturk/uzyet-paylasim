@@ -1749,7 +1749,7 @@
     if (window.docx) { docxLibYuklendi = true; basarili(); return; }
     if (docxLibYuklendi) { basarili(); return; }
     var s = document.createElement("script");
-    s.src = "https://cdn.jsdelivr.net/npm/docx@9.7.1/dist/index.umd.cjs";
+    s.src = "https://cdn.jsdelivr.net/npm/docx@9.7.1/dist/index.iife.js";
     s.onload = function () { docxLibYuklendi = true; basarili(); };
     s.onerror = hata;
     document.head.appendChild(s);
