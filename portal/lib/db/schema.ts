@@ -69,7 +69,11 @@ export const examAttempts = pgTable('exam_attempts', {
   bankId: uuid('bank_id').notNull().references(() => questionBanks.id, { onDelete: 'restrict' }),
   mode: examMode('mode').notNull(),
   status: attemptStatus('status').notNull().default('active'),
-  examCode: text('exam_code').notNull().unique(),
+  // Bilerek UNIQUE değil: aynı kod (özellikle "rastgele" modda) farklı kullanıcılarca
+  // paylaşılıp aynı anda kullanılabilmeli — kod aramaya değil, yalnız görüntü/yeniden
+  // türetmeye yarar (bkz. /api/exam "start" examCode dalı). Eskiden UNIQUE'ti; ikinci
+  // kullanıcı aynı kodu girince INSERT çakışması 500 hatası veriyordu (8 Eyl 2026 bulundu).
+  examCode: text('exam_code').notNull(),
   startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
   lastResumedAt: timestamp('last_resumed_at', { withTimezone: true }).defaultNow(),
   elapsedSeconds: integer('elapsed_seconds').notNull().default(0),
