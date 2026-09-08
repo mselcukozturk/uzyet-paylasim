@@ -327,10 +327,19 @@ async function handlePost(request: Request) {
       const [resumed] = await db.update(schema.examAttempts).set({
         status: 'active', elapsedSeconds: currentElapsed(loaded.attempt), lastResumedAt: now, updatedAt: now,
       }).where(and(eq(schema.examAttempts.id, body.attemptId), eq(schema.examAttempts.userId, user.id))).returning();
+      // loaded.answers sunucu içi eşleşmeler için attemptQuestionId ile anahtarlanır
+      // (bkz. loadAttempt) — istemci ise seçili şıkkı (currentExam.cevaplar) baştan
+      // sona questionGuid ile anahtarlıyor. Bu farkı burada kapatmazsak "Kaydet ve
+      // Çık" sonrası devam edilince önceden işaretlenmiş şıklar hiç görünmüyordu
+      // (guid anahtarıyla arayınca bulunamıyordu) — kullanıcı bildirimi, 8 Eyl 2026.
+      const answersByGuid: Record<string, number> = {};
+      for (const q of loaded.questions) {
+        if (loaded.answers[q.id] !== undefined) answersByGuid[q.questionGuid] = loaded.answers[q.id];
+      }
       return NextResponse.json({
         ...summary(resumed, loaded.questions.length, Object.keys(loaded.answers).length),
         questions: loaded.questions.map(publicQuestion),
-        answers: loaded.answers,
+        answers: answersByGuid,
         resumedAt: resumed.lastResumedAt?.toISOString() ?? null,
       });
     }
