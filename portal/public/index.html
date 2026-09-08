@@ -1261,6 +1261,22 @@
     }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
   }
 
+  var remoteDeleteConfirm = false;
+  function requestDiscardExamRemote() { remoteDeleteConfirm = true; render(); }
+  function cancelDiscardExamRemote() { remoteDeleteConfirm = false; render(); }
+  function discardExamRemote() {
+    if (!remoteDash || !remoteDash.activeAttempt || remoteBusy) return;
+    remoteBusy = true;
+    var attemptId = remoteDash.activeAttempt.id;
+    remoteFetch("/api/exam", "POST", { action: "cancel", attemptId: attemptId }).then(function (r) {
+      remoteBusy = false;
+      remoteDeleteConfirm = false;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav silinemedi.", true); render(); return; }
+      remoteDash = null;
+      remoteRefreshDashboard(render);
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+  }
+
   function remoteAnswerSync(guid, idx) {
     if (!currentExam || !currentExam.uzak) return;
     var q = currentExam.soruKayitlari[guid];
@@ -1282,6 +1298,33 @@
     });
   }
 
+  // 'finish' isteği zaten bitmiş bir denemede de idempotent çalışır (skor tekrar
+  // uygulanmaz, yalnız review yeniden hesaplanıp döner) — bu yüzden hem sınavı yeni
+  // bitirirken hem de geçmişten eski bir denemeyi tekrar açarken kullanılabilir.
+  function uzakSonucKur(d) {
+    var soruKayitlari = {};
+    var konuKirilim = {};
+    var cevaplar = {};
+    (d.review || []).forEach(function (item) {
+      soruKayitlari[item.guid] = {
+        guid: item.guid, konu: item.topic, soru: item.prompt, siklar: item.options,
+        cevapIdx: item.correctIndex, cevapHarf: ["A", "B", "C", "D"][item.correctIndex] || "",
+        cevapMetni: item.options[item.correctIndex] || "", aciklama: item.explanation || "",
+        kaynak: "", donem: "", dogrulanmis: true, _attemptQuestionId: item.id
+      };
+      if (item.selectedIndex !== null && item.selectedIndex !== undefined) cevaplar[item.guid] = item.selectedIndex;
+      var k = konuKirilim[item.topic] || (konuKirilim[item.topic] = { dogru: 0, yanlis: 0, bos: 0 });
+      if (item.isCorrect === true) k.dogru++; else if (item.isCorrect === false) k.yanlis++; else k.bos++;
+    });
+    lastResult = {
+      id: d.id, tarihISO: d.updatedAt || new Date().toISOString(), tip: d.mode, seed: null, examCode: d.examCode, uzak: true,
+      sorular: (d.review || []).map(function (item) { return item.guid; }),
+      cevaplar: cevaplar, soruKayitlari: soruKayitlari,
+      skor: { dogru: d.score.correct, yanlis: d.score.wrong, bos: d.score.blank },
+      konuKirilim: konuKirilim, sureSaniye: d.elapsedSeconds || 0
+    };
+  }
+
   function finishExamRemote() {
     if (!currentExam || !currentExam.uzak || remoteBusy) return;
     remoteBusy = true;
@@ -1289,33 +1332,45 @@
     remoteFetch("/api/exam", "POST", { action: "finish", attemptId: attemptId }).then(function (r) {
       remoteBusy = false;
       if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav bitirilemedi.", true); render(); return; }
-      var d = r.data;
-      var soruKayitlari = {};
-      var konuKirilim = {};
-      var cevaplar = {};
-      (d.review || []).forEach(function (item) {
-        soruKayitlari[item.guid] = {
-          guid: item.guid, konu: item.topic, soru: item.prompt, siklar: item.options,
-          cevapIdx: item.correctIndex, cevapHarf: ["A", "B", "C", "D"][item.correctIndex] || "",
-          cevapMetni: item.options[item.correctIndex] || "", aciklama: item.explanation || "",
-          kaynak: "", donem: "", dogrulanmis: true, _attemptQuestionId: item.id
-        };
-        if (item.selectedIndex !== null && item.selectedIndex !== undefined) cevaplar[item.guid] = item.selectedIndex;
-        var k = konuKirilim[item.topic] || (konuKirilim[item.topic] = { dogru: 0, yanlis: 0, bos: 0 });
-        if (item.isCorrect === true) k.dogru++; else if (item.isCorrect === false) k.yanlis++; else k.bos++;
-      });
-      lastResult = {
-        id: d.id, tarihISO: new Date().toISOString(), tip: d.mode, seed: null, examCode: d.examCode, uzak: true,
-        sorular: (d.review || []).map(function (item) { return item.guid; }),
-        cevaplar: cevaplar, soruKayitlari: soruKayitlari,
-        skor: { dogru: d.score.correct, yanlis: d.score.wrong, bos: d.score.blank },
-        konuKirilim: konuKirilim, sureSaniye: d.elapsedSeconds || 0
-      };
+      uzakSonucKur(r.data);
       currentExam = null;
       remoteDash = null;
       VIEW = "result";
       render();
     }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+  }
+
+  function openHistoryRemote() {
+    VIEW = "gecmisUzak";
+    render();
+    remoteRefreshDashboard(render);
+  }
+
+  function openGecmisDetay(attemptId) {
+    if (remoteBusy) return;
+    remoteBusy = true; render();
+    remoteFetch("/api/exam", "POST", { action: "finish", attemptId: attemptId }).then(function (r) {
+      remoteBusy = false;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav açılamadı.", true); render(); return; }
+      uzakSonucKur(r.data);
+      VIEW = "result";
+      render();
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+  }
+
+  function renderGecmisUzak() {
+    var list = (remoteDash && remoteDash.recentAttempts) || [];
+    var rows = list.map(function (a) {
+      var toplam = a.score ? (a.score.correct + a.score.wrong + a.score.blank) : a.totalCount;
+      var skorTxt = a.score ? (a.score.correct + " / " + toplam + " · %" + a.score.percent) : "—";
+      var renk = MOD_RENK[a.mode] || "var(--seri-6)";
+      return '<button class="mode-btn" style="border-left:4px solid ' + renk + '" data-action="open-gecmis-detay" data-id="' + a.id + '">' +
+        '<div class="title">' + (MOD_ADI[a.mode] || a.mode) + '</div>' +
+        '<div class="desc">' + fmtTarih(a.updatedAt) + " · " + skorTxt + "</div></button>";
+    }).join("");
+    return '<div class="link-row"><button class="btn ghost" data-action="open-menu-deneme">← Deneme Sınavı</button></div>' +
+      '<div class="section-title">📊 Deneme Geçmişi</div>' +
+      (list.length ? '<div class="mode-grid">' + rows + "</div>" : '<div class="card">Henüz tamamlanmış resmi deneme yok.</div>');
   }
 
   // Yerel STATE.flags dual-write'ından sonra çağrılır; guid bir uzak deneme
@@ -1378,10 +1433,20 @@
     }
     if (remoteDash && remoteDash.activeAttempt) {
       var a = remoteDash.activeAttempt;
+      var aksiyonlar = remoteDeleteConfirm
+        ? '<div class="banner error" style="margin:10px 0">Bu sınav kalıcı olarak silinecek, emin misin?</div>' +
+          '<div class="link-row">' +
+          '<button class="btn primary" data-action="confirm-discard-exam-remote">Evet, sil</button>' +
+          '<button class="btn ghost" data-action="cancel-discard-exam-remote">Vazgeç</button>' +
+          "</div>"
+        : '<div class="link-row" style="margin-top:10px">' +
+          '<button class="btn primary" data-action="resume-exam-remote">Devam Et</button>' +
+          '<button class="btn ghost" data-action="discard-exam-remote">Sil</button>' +
+          "</div>";
       return '<div class="card resume-card">' +
         '<div class="title">Yarım kalan resmi deneme — ' + MOD_ADI[a.mode] + "</div>" +
         '<div class="desc">' + a.answeredCount + " / " + a.totalCount + " soru cevaplanmış</div>" +
-        '<div class="link-row" style="margin-top:10px"><button class="btn primary" data-action="resume-exam-remote">Devam Et</button></div>' +
+        aksiyonlar +
         "</div>";
     }
     var modes = ["rastgele", "azgorulen", "yanlislar"].map(function (mode) {
@@ -2019,9 +2084,10 @@
       '<button class="mode-btn" style="border-left:4px solid var(--seri-8)" ' + flashDisabled + ' data-action="open-deneme-konu-sec">' +
       '<div class="title">📖 Konu Konu Bak</div><div class="desc">Sınav dışında, seçtiğin konudaki sorulara tek tek bak.</div></button>';
 
-    return (STATE.sadeceDeneme ? "" :
-      '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button>' +
-      '<button class="btn" data-action="open-history">Geçmiş</button></div>') +
+    return (STATE.sadeceDeneme
+      ? (remoteGirisTamamMi() ? '<div class="link-row"><button class="btn ghost" data-action="open-history-remote">Geçmiş</button></div>' : "")
+      : '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button>' +
+        '<button class="btn" data-action="open-history">Geçmiş</button></div>') +
       '<div class="section-title">📝 Deneme Sınavı</div>' +
       '<div class="stat-grid">' + statCards + "</div>" +
       renderDenemeUzakBolum() +
@@ -2611,13 +2677,16 @@ function pratikEnIyiHtml(konu, modulKey) {
       var secilen = r.cevaplar[guid];
       if (secilen === q.cevapIdx) return "";
       var harfler = ["A", "B", "C", "D"];
-      var secilenHtml = secilen === undefined || secilen === null
-        ? '<div class="review-opt wrong">Boş bırakıldı</div>'
-        : '<div class="review-opt wrong">Senin cevabın: ' + harfler[secilen] + ") " + escapeHtml(q.siklar[secilen]) + "</div>";
-      var dogruHtml = '<div class="review-opt correct">Doğru cevap: ' + harfler[q.cevapIdx] + ") " + escapeHtml(q.cevapMetni) + "</div>";
+      var optionsHtml = q.siklar.map(function (s, i) {
+        if (!s) return "";
+        var cls = "option-row";
+        if (i === q.cevapIdx) cls += " correct"; else if (i === secilen) cls += " wrong";
+        return '<div class="' + cls + '"><span class="option-letter">' + harfler[i] + '</span><span class="option-text">' + escapeHtml(s) + "</span></div>";
+      }).join("");
+      var bosHtml = (secilen === undefined || secilen === null) ? '<div class="review-opt wrong">Boş bırakıldı</div>' : "";
       var badge = q.dogrulanmis === false ? '<span class="badge unverified">doğrulanmamış</span>' : "";
       return '<div class="review-item"><div class="review-q">' + escapeHtml(q.soru) + badge + "</div>" +
-        secilenHtml + dogruHtml +
+        bosHtml + optionsHtml +
         (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + (q.kaynak ? " — " + escapeHtml(q.kaynak) : "") + "</div>" : "") +
         flagBarHtml(guid) +
         "</div>";
@@ -2793,7 +2862,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     var html = "";
     if (STATE.sadeceDeneme && (VIEW === "menu" || VIEW === "menuTest" || VIEW === "pratikModul" || VIEW === "pratikSoru" ||
       VIEW === "checkpointListe" || VIEW === "checkpointDetay" || VIEW === "settings" || VIEW === "import")) VIEW = "menuDeneme";
-    if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult")) VIEW = "menuDeneme";
+    if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult" || VIEW === "gecmisUzak")) VIEW = "menuDeneme";
     if (VIEW === "menu") html = renderMenu();
     else if (VIEW === "menuDeneme") html = renderMenuDeneme();
     else if (VIEW === "denemeKonuSec") html = renderDenemeKonuSec();
@@ -2811,6 +2880,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (VIEW === "pratikSoru") html = renderPratikSoru();
     else if (VIEW === "checkpointListe") html = renderCheckpointListe();
     else if (VIEW === "checkpointDetay") html = renderCheckpointDetay();
+    else if (VIEW === "gecmisUzak") html = renderGecmisUzak();
     if (!html) { // eski bir sekmede kalkan artık var olmayan bir VIEW (ör. kaldırılmış "pratikKonu") gelirse boş ekran yerine ana ekrana düş
       if (STATE.sadeceDeneme) { VIEW = "menuDeneme"; html = renderMenuDeneme(); }
       else { VIEW = "menu"; html = renderMenu(); }
@@ -2837,6 +2907,11 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "deneme-refresh") remoteRefreshStatus();
     else if (action === "deneme-accept-disclaimer") remoteAcceptDisclaimer();
     else if (action === "resume-exam-remote") resumeExamRemote();
+    else if (action === "discard-exam-remote") requestDiscardExamRemote();
+    else if (action === "confirm-discard-exam-remote") discardExamRemote();
+    else if (action === "cancel-discard-exam-remote") cancelDiscardExamRemote();
+    else if (action === "open-history-remote") openHistoryRemote();
+    else if (action === "open-gecmis-detay") openGecmisDetay(t.getAttribute("data-id"));
     else if (action === "copy-exam-code") kopyalaPano(t.getAttribute("data-kod"));
     else if (action === "select-option") selectOption(t.getAttribute("data-guid"), parseInt(t.getAttribute("data-idx"), 10));
     else if (action === "next-q") nextQuestion();
