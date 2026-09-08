@@ -26,6 +26,7 @@ export const profiles = pgTable('profiles', {
   isActive: boolean('is_active').notNull().default(false),
   isAdmin: boolean('is_admin').notNull().default(false),
   disclaimerAcceptedAt: timestamp('disclaimer_accepted_at', { withTimezone: true }),
+  pinHash: text('pin_hash'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [

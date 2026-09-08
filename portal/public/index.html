@@ -1146,10 +1146,13 @@
   function remoteRegisterSubmit() {
     if (remoteBusy) return;
     var el = document.getElementById("deneme-username-input");
+    var pinEl = document.getElementById("deneme-pin-input");
     var username = el ? el.value.trim().toLocaleLowerCase("tr-TR") : "";
-    if (!username) { showBanner("Kullanıcı adı gerekli.", true); return; }
+    var pin = pinEl ? pinEl.value.trim() : "";
+    if (!username) { showBanner("İsim gerekli.", true); return; }
+    if (!/^\d{4}$/.test(pin)) { showBanner("PIN 4 haneli rakam olmalı.", true); return; }
     remoteBusy = true; render();
-    remoteFetch("/api/access", "POST", { username: username }).then(function (r) {
+    remoteFetch("/api/access", "POST", { username: username, pin: pin }).then(function (r) {
       remoteBusy = false;
       if (!r.ok) { showBanner((r.data && r.data.error) || "Kayıt başarısız.", true); render(); return; }
       if (r.data.token) remoteSetToken(r.data.token);
@@ -1303,12 +1306,14 @@
       return '<div class="card">Hesap durumu kontrol ediliyor…</div>';
     }
     if (!remoteAuth.authenticated) {
+      var inputStil = "padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body)";
       return '<div class="card">' +
         '<div class="section-title" style="font-size:1rem;margin-bottom:6px">Hoş geldin</div>' +
-        '<div class="muted" style="margin-bottom:10px">Devam etmek için kayıt olman gerekiyor — yalnız isminizi yazmanız yeterli (boşluksuz, örn. <i>mustafa</i>). Yönetici onayından sonra kullanabilirsin.</div>' +
+        '<div class="muted" style="margin-bottom:10px">Devam etmek için kayıt olman gerekiyor — isminizi yazmanız ve 4 haneli bir PIN belirlemeniz yeterli (boşluksuz isim, örn. <i>mustafa</i>). Bu PIN\'i unutma: başka bir cihazdan aynı isim ve PIN ile tekrar girebilirsin. Yönetici onayından sonra kullanabilirsin.</div>' +
         '<div class="link-row">' +
-        '<input type="text" id="deneme-username-input" placeholder="isminiz" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body)"' + (remoteBusy ? " disabled" : "") + '>' +
-        '<button class="btn primary" data-action="deneme-register" ' + (remoteBusy ? "disabled" : "") + '>' + (remoteBusy ? "Gönderiliyor…" : "Kayıt Ol") + "</button>" +
+        '<input type="text" id="deneme-username-input" placeholder="isminiz" style="flex:1;min-width:160px;' + inputStil + '"' + (remoteBusy ? " disabled" : "") + '>' +
+        '<input type="text" inputmode="numeric" maxlength="4" id="deneme-pin-input" placeholder="PIN (4 hane)" style="width:110px;' + inputStil + '"' + (remoteBusy ? " disabled" : "") + '>' +
+        '<button class="btn primary" data-action="deneme-register" ' + (remoteBusy ? "disabled" : "") + '>' + (remoteBusy ? "Gönderiliyor…" : "Kayıt Ol / Giriş Yap") + "</button>" +
         "</div></div>";
     }
     if (!remoteAuth.isActive) {

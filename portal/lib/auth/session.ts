@@ -15,6 +15,13 @@ export function newProfileId() {
   return randomUUID();
 }
 
+// Basit cihaz-değiştirme PIN'i — gerçek parola değil, düşük riskli arkadaş grubu
+// kullanımı için hafif bir kurtarma mekanizması. userId'yi tuz olarak katmak aynı
+// PIN'i seçen iki kullanıcının hash'inin çakışmasını önler.
+export function hashPin(pin: string, userId: string) {
+  return createHash('sha256').update(userId + ':' + pin).digest('hex');
+}
+
 // index.html (GitHub Pages / Artifact) başka bir origin'den çağırdığı için çerez
 // güvenilmez (üçüncü taraf çerez engelleme). Token hem çereze yazılır (aynı origin'den
 // -admin gibi- test için) hem de çağırana JSON içinde döner; asıl istemci Authorization

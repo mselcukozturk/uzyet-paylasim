@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { eq, sql } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
-import { createUserSession, getSessionProfile, newProfileId } from '@/lib/auth/session';
+import { createUserSession, getSessionProfile, hashPin, newProfileId } from '@/lib/auth/session';
 import { corsPreflight, withCors } from '@/lib/cors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const USERNAME_PATTERN = /^[a-z0-9._-]{3,40}$/;
+const PIN_PATTERN = /^\d{4}$/;
 
 function fail(message: string, status: number) {
   return withCors(NextResponse.json({ error: message }, { status }));
@@ -35,7 +36,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const existing = await getSessionProfile(request);
-  const body = await request.json().catch(() => null) as { username?: string; acceptDisclaimer?: boolean } | null;
+  const body = await request.json().catch(() => null) as
+    { username?: string; pin?: string; acceptDisclaimer?: boolean } | null;
 
   if (existing) {
     if (body?.acceptDisclaimer) {
@@ -48,17 +50,32 @@ export async function POST(request: Request) {
   }
 
   const username = body?.username?.trim().toLocaleLowerCase('tr-TR') ?? '';
+  const pin = (body?.pin ?? '').trim();
   if (!USERNAME_PATTERN.test(username)) {
     return fail('Kullanıcı adı 3-40 karakter olmalı; yalnız küçük harf, rakam, nokta, tire ve alt çizgi.', 400);
   }
+  if (!PIN_PATTERN.test(pin)) return fail('PIN 4 haneli rakam olmalı.', 400);
 
   const db = getDb();
-  const [taken] = await db.select({ userId: schema.profiles.userId }).from(schema.profiles)
-    .where(sql`lower(${schema.profiles.username}) = ${username}`).limit(1);
-  if (taken) return fail('Bu kullanıcı adı alınmış.', 409);
+  const [found] = await db.select({
+    userId: schema.profiles.userId,
+    username: schema.profiles.username,
+    isActive: schema.profiles.isActive,
+    disclaimerAcceptedAt: schema.profiles.disclaimerAcceptedAt,
+    pinHash: schema.profiles.pinHash,
+  }).from(schema.profiles).where(sql`lower(${schema.profiles.username}) = ${username}`).limit(1);
+
+  if (found) {
+    // Aynı isim var — başka cihazdan giriş denemesi. PIN doğrulanırsa bu cihaza
+    // yeni bir oturum tokenı verilir; hesap/ilerleme aynı kalır.
+    if (!found.pinHash) return fail('Bu hesapta PIN ayarlı değil; aynı cihazdan devam et.', 401);
+    if (hashPin(pin, found.userId) !== found.pinHash) return fail('İsim veya PIN hatalı.', 401);
+    const token = await createUserSession(found.userId);
+    return withCors(NextResponse.json(statusPayload(found, token)));
+  }
 
   const userId = newProfileId();
-  await db.insert(schema.profiles).values({ userId, username, isActive: false });
+  await db.insert(schema.profiles).values({ userId, username, isActive: false, pinHash: hashPin(pin, userId) });
   const token = await createUserSession(userId);
   return withCors(NextResponse.json(statusPayload({ username, isActive: false, disclaimerAcceptedAt: null }, token)));
 }
