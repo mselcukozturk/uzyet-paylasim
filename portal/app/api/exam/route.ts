@@ -443,12 +443,13 @@ async function handlePost(request: Request) {
       const question = loaded.questions.find((item) => item.id === body.questionId);
       if (!question) return fail('Soru bulunamadı.', 404);
       const note = body.note.trim().slice(0, 1000);
+      const category = body.category ? body.category.trim().slice(0, 40) : null;
       const now = new Date();
       await db.insert(schema.questionFlags).values({
-        userId: user.id, questionGuid: question.questionGuid, note, isReported: true, updatedAt: now,
+        userId: user.id, questionGuid: question.questionGuid, note, category, isReported: true, updatedAt: now,
       }).onConflictDoUpdate({
         target: [schema.questionFlags.userId, schema.questionFlags.questionGuid],
-        set: { note, isReported: true, updatedAt: now },
+        set: { note, category, isReported: true, updatedAt: now },
       });
       return NextResponse.json({ ok: true });
     }
