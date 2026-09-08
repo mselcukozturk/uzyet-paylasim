@@ -68,8 +68,15 @@ export async function POST(request: Request) {
   if (found) {
     // Aynı isim var — başka cihazdan giriş denemesi. PIN doğrulanırsa bu cihaza
     // yeni bir oturum tokenı verilir; hesap/ilerleme aynı kalır.
-    if (!found.pinHash) return fail('Bu hesapta PIN ayarlı değil; aynı cihazdan devam et.', 401);
-    if (hashPin(pin, found.userId) !== found.pinHash) return fail('İsim veya PIN hatalı.', 401);
+    if (!found.pinHash) {
+      // PIN özelliğinden önce oluşmuş hesap: girilen PIN artık bu hesabın PIN'i
+      // olarak kaydedilir (bir daha bu dala düşmez) — kimseyi kilitli bırakmaz.
+      const db2 = getDb();
+      await db2.update(schema.profiles).set({ pinHash: hashPin(pin, found.userId), updatedAt: new Date() })
+        .where(eq(schema.profiles.userId, found.userId));
+    } else if (hashPin(pin, found.userId) !== found.pinHash) {
+      return fail('İsim veya PIN hatalı.', 401);
+    }
     const token = await createUserSession(found.userId);
     return withCors(NextResponse.json(statusPayload(found, token)));
   }
