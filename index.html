@@ -1105,7 +1105,256 @@ setTimeout(function(){input.focus();},50);
     el.style.color = currentExam.gecenSaniye >= 3600 ? "var(--bad)" : currentExam.gecenSaniye >= 3000 ? "var(--warn)" : "";
   }
 
+  // ---- Resmi Deneme portalı (Neon/Vercel) ---------------------------------
+  // Yalnız 50 soru/60 dk resmi deneme moduna (Yeni Sınav/Az Görülenler/Yanlışlar)
+  // dokunur. Rastgele Soru, Konu Konu Bak, Test/Checkpoint sayfaları tamamen
+  // yerel kalır — STATE.stats/STATE.history bu moddan hiç etkilenmez, resmi
+  // deneme istatistiği/geçmişi sunucuda (hesaba bağlı) tutulur.
+  var REMOTE_API = "https://uzyet-portal.vercel.app";
+  var REMOTE_TOKEN_KEY = "uzyet_portal_token";
+  var remoteAuth = { checked: false, checking: false, authenticated: false, username: null, isActive: false };
+  var remoteDash = null;
+  var remoteBusy = false;
+
+  function remoteToken() { try { return localStorage.getItem(REMOTE_TOKEN_KEY); } catch (e) { return null; } }
+  function remoteSetToken(t) { try { if (t) localStorage.setItem(REMOTE_TOKEN_KEY, t); } catch (e) { /* localStorage kapalıysa oturum sekme kapanana kadar bellekte kalır */ } }
+
+  function remoteFetch(path, method, body) {
+    var headers = { "Content-Type": "application/json" };
+    var tok = remoteToken();
+    if (tok) headers["Authorization"] = "Bearer " + tok;
+    return fetch(REMOTE_API + path, { method: method || "GET", headers: headers, body: body ? JSON.stringify(body) : undefined })
+      .then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (data) { return { ok: res.ok, status: res.status, data: data }; });
+      });
+  }
+
+  function remoteRefreshDashboard(cb) {
+    remoteFetch("/api/exam", "POST", { action: "dashboard" }).then(function (r) {
+      remoteDash = r.ok ? r.data : null;
+    }).catch(function () { remoteDash = null; }).then(function () { if (cb) cb(); });
+  }
+
+  function remoteCheckStatus(cb) {
+    if (!remoteToken()) {
+      remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false };
+      if (cb) cb();
+      return;
+    }
+    remoteAuth.checking = true;
+    remoteFetch("/api/access", "GET").then(function (r) {
+      if (r.ok && r.data && r.data.authenticated) {
+        remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive };
+      } else {
+        remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false };
+      }
+    }).catch(function () {
+      remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false };
+    }).then(function () {
+      if (remoteAuth.isActive) remoteRefreshDashboard(cb); else if (cb) cb();
+    });
+  }
+
+  function openMenuDeneme() {
+    VIEW = "menuDeneme";
+    render();
+    if (!remoteAuth.checked) remoteCheckStatus(function () { if (VIEW === "menuDeneme") render(); });
+  }
+
+  function remoteRegisterSubmit() {
+    if (remoteBusy) return;
+    var el = document.getElementById("deneme-username-input");
+    var username = el ? el.value.trim().toLocaleLowerCase("tr-TR") : "";
+    if (!username) { showBanner("Kullanıcı adı gerekli.", true); return; }
+    remoteBusy = true; render();
+    remoteFetch("/api/access", "POST", { username: username }).then(function (r) {
+      remoteBusy = false;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Kayıt başarısız.", true); render(); return; }
+      if (r.data.token) remoteSetToken(r.data.token);
+      remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive };
+      render();
+      if (remoteAuth.isActive) remoteRefreshDashboard(render);
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası — internet bağlantını kontrol et.", true); render(); });
+  }
+
+  function remoteRefreshStatus() {
+    remoteAuth.checked = false;
+    remoteCheckStatus(function () { render(); });
+    render();
+  }
+
+  // Uzak sınavın soru görüntüsünü yerel exam ekranıyla aynı şekle sokar. cevapIdx
+  // placeholder'dır (-1) — renderExam() sınav bitmeden cevapIdx'i hiç okumaz;
+  // gerçek değer yalnız finishExamRemote()'da, sunucu açıkladıktan sonra yazılır.
+  function uzakSoruKayitlariOlustur(questions) {
+    var out = {};
+    questions.forEach(function (q) {
+      out[q.guid] = {
+        guid: q.guid, konu: q.topic, soru: q.prompt, siklar: q.options,
+        cevapIdx: -1, cevapHarf: "", cevapMetni: "", aciklama: "", kaynak: "", donem: "", dogrulanmis: true,
+        _attemptQuestionId: q.id
+      };
+    });
+    return out;
+  }
+
+  function uzakExamKur(d) {
+    currentExam = {
+      tip: d.mode, uzak: true, uzakAttemptId: d.id, examCode: d.examCode,
+      sorular: d.questions.map(function (q) { return q.guid; }),
+      index: 0, cevaplar: d.answers || {}, uyarilar: [], gecenSaniye: d.elapsedSeconds || 0
+    };
+    currentExam.soruKayitlari = uzakSoruKayitlariOlustur(d.questions);
+    VIEW = "exam";
+  }
+
+  function startExamRemote(mode, examCodeRaw) {
+    if (remoteBusy) return;
+    remoteBusy = true;
+    var body = examCodeRaw ? { action: "start", mode: "rastgele", examCode: examCodeRaw } : { action: "start", mode: mode };
+    remoteFetch("/api/exam", "POST", body).then(function (r) {
+      remoteBusy = false;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav başlatılamadı.", true); render(); return; }
+      uzakExamKur(r.data);
+      render();
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+  }
+
+  function resumeExamRemote() {
+    if (!remoteDash || !remoteDash.activeAttempt || remoteBusy) return;
+    remoteBusy = true;
+    remoteFetch("/api/exam", "POST", { action: "resume", attemptId: remoteDash.activeAttempt.id }).then(function (r) {
+      remoteBusy = false;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav açılamadı.", true); render(); return; }
+      uzakExamKur(r.data);
+      render();
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+  }
+
+  function remoteAnswerSync(guid, idx) {
+    if (!currentExam || !currentExam.uzak) return;
+    var q = currentExam.soruKayitlari[guid];
+    if (!q) return;
+    remoteFetch("/api/exam", "POST", {
+      action: "answer", attemptId: currentExam.uzakAttemptId, questionId: q._attemptQuestionId, selectedIndex: idx
+    }).catch(function () { /* sessizce geçilir — arayüzü bloklamaz, sınav bitince sunucu son cevaplarla tamamlanır */ });
+  }
+
+  function pauseExamRemote() {
+    if (!currentExam || !currentExam.uzak) return;
+    var attemptId = currentExam.uzakAttemptId;
+    currentExam = null;
+    VIEW = "menuDeneme";
+    remoteDash = null;
+    render();
+    remoteFetch("/api/exam", "POST", { action: "pause", attemptId: attemptId }).then(function () {
+      remoteRefreshDashboard(function () { if (VIEW === "menuDeneme") render(); });
+    });
+  }
+
+  function finishExamRemote() {
+    if (!currentExam || !currentExam.uzak || remoteBusy) return;
+    remoteBusy = true;
+    var attemptId = currentExam.uzakAttemptId;
+    remoteFetch("/api/exam", "POST", { action: "finish", attemptId: attemptId }).then(function (r) {
+      remoteBusy = false;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav bitirilemedi.", true); render(); return; }
+      var d = r.data;
+      var soruKayitlari = {};
+      var konuKirilim = {};
+      var cevaplar = {};
+      (d.review || []).forEach(function (item) {
+        soruKayitlari[item.guid] = {
+          guid: item.guid, konu: item.topic, soru: item.prompt, siklar: item.options,
+          cevapIdx: item.correctIndex, cevapHarf: ["A", "B", "C", "D"][item.correctIndex] || "",
+          cevapMetni: item.options[item.correctIndex] || "", aciklama: item.explanation || "",
+          kaynak: "", donem: "", dogrulanmis: true, _attemptQuestionId: item.id
+        };
+        if (item.selectedIndex !== null && item.selectedIndex !== undefined) cevaplar[item.guid] = item.selectedIndex;
+        var k = konuKirilim[item.topic] || (konuKirilim[item.topic] = { dogru: 0, yanlis: 0, bos: 0 });
+        if (item.isCorrect === true) k.dogru++; else if (item.isCorrect === false) k.yanlis++; else k.bos++;
+      });
+      lastResult = {
+        id: d.id, tarihISO: new Date().toISOString(), tip: d.mode, seed: null, examCode: d.examCode, uzak: true,
+        sorular: (d.review || []).map(function (item) { return item.guid; }),
+        cevaplar: cevaplar, soruKayitlari: soruKayitlari,
+        skor: { dogru: d.score.correct, yanlis: d.score.wrong, bos: d.score.blank },
+        konuKirilim: konuKirilim, sureSaniye: d.elapsedSeconds || 0
+      };
+      currentExam = null;
+      remoteDash = null;
+      VIEW = "result";
+      render();
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+  }
+
+  // Yerel STATE.flags dual-write'ından sonra çağrılır; guid bir uzak deneme
+  // sorusuna aitse (aktif sınav veya az önce bitmiş sonuç) sunucuya da bildirir,
+  // değilse sessizce hiçbir şey yapmaz (yerel pratik/rastgele-soru bayrakları).
+  function remoteFlagSync(guid, note) {
+    var attemptQuestionId = null, attemptId = null;
+    if (currentExam && currentExam.uzak && currentExam.soruKayitlari[guid]) {
+      attemptQuestionId = currentExam.soruKayitlari[guid]._attemptQuestionId;
+      attemptId = currentExam.uzakAttemptId;
+    } else if (lastResult && lastResult.uzak && lastResult.soruKayitlari[guid]) {
+      attemptQuestionId = lastResult.soruKayitlari[guid]._attemptQuestionId;
+      attemptId = lastResult.id;
+    }
+    if (!attemptQuestionId || !attemptId) return;
+    remoteFetch("/api/exam", "POST", { action: "flag", attemptId: attemptId, questionId: attemptQuestionId, note: note || "" }).catch(function () {});
+  }
+
+  function renderDenemeUzakBolum() {
+    if (!remoteAuth.checked || remoteAuth.checking) {
+      return '<div class="card">Hesap durumu kontrol ediliyor…</div>';
+    }
+    if (!remoteAuth.authenticated) {
+      return '<div class="card">' +
+        '<div class="section-title" style="font-size:1rem;margin-bottom:6px">Resmi Deneme — giriş gerekli</div>' +
+        '<div class="muted" style="margin-bottom:10px">Resmi 50 soru / 60 dk deneme artık hesaba bağlı: istatistiklerin ve geçmişin sende kalıcı olarak tutulur. Aşağıya bir kullanıcı adı yaz — yönetici onayından sonra kullanabilirsin.</div>' +
+        '<div class="link-row">' +
+        '<input type="text" id="deneme-username-input" placeholder="kullanici_adin" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body)"' + (remoteBusy ? " disabled" : "") + '>' +
+        '<button class="btn primary" data-action="deneme-register" ' + (remoteBusy ? "disabled" : "") + '>' + (remoteBusy ? "Gönderiliyor…" : "Kaydol") + "</button>" +
+        "</div></div>";
+    }
+    if (!remoteAuth.isActive) {
+      return '<div class="card">' +
+        '<div class="section-title" style="font-size:1rem;margin-bottom:6px">Onay bekleniyor</div>' +
+        '<div class="muted" style="margin-bottom:10px">Kullanıcı adın: <b>' + escapeHtml(remoteAuth.username) + '</b> — yönetici onayladığında resmi denemeyi başlatabilirsin.</div>' +
+        '<button class="btn ghost" data-action="deneme-refresh">Durumu Yenile</button>' +
+        "</div>";
+    }
+    if (remoteDash && remoteDash.activeAttempt) {
+      var a = remoteDash.activeAttempt;
+      return '<div class="card resume-card">' +
+        '<div class="title">Yarım kalan resmi deneme — ' + MOD_ADI[a.mode] + "</div>" +
+        '<div class="desc">' + a.answeredCount + " / " + a.totalCount + " soru cevaplanmış</div>" +
+        '<div class="link-row" style="margin-top:10px"><button class="btn primary" data-action="resume-exam-remote">Devam Et</button></div>' +
+        "</div>";
+    }
+    var modes = ["rastgele", "azgorulen", "yanlislar"].map(function (mode) {
+      var titles = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar" };
+      var descs = {
+        rastgele: "Resmi dağılıma göre 50 soruluk rastgele deneme.",
+        azgorulen: "Aynı dağılım, öncelik en az karşılaştığın sorularda.",
+        yanlislar: "Aynı dağılım, öncelik son denemesinde yanlış yaptıkların."
+      };
+      var renk = MOD_RENK[mode];
+      return '<button class="mode-btn" style="border-left:4px solid ' + renk + '" data-action="start-exam" data-mode="' + mode + '">' +
+        '<div class="title"><span class="mode-dot" style="background:' + renk + '"></span>' + titles[mode] + '</div><div class="desc">' + descs[mode] + "</div></button>";
+    }).join("");
+    var koduCardHtml = '<div class="card" style="margin-top:14px">' +
+      '<div class="section-title" style="font-size:1rem;margin-bottom:6px">🔑 Kod ile Çöz</div>' +
+      '<div class="muted" style="margin-bottom:10px">Bir denemenin sonuç ekranındaki kodu buraya girersen aynı soruları yeniden çözersin (Yeni Sınav kodları herkes için aynı soruları verir; Az Görülenler/Yanlışlar kişisel istatistiğe bağlıdır).</div>' +
+      '<div class="link-row">' +
+      '<input type="text" id="exam-code-input" placeholder="ör. UZY-R1K2M3P" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body)">' +
+      '<button class="btn primary" data-action="start-exam-code">Kodla Başla</button>' +
+      "</div></div>";
+    return '<div class="mode-grid">' + modes + "</div>" + koduCardHtml;
+  }
+
   function startExam(mode, seedOverride) {
+    if (remoteAuth.isActive) { startExamRemote(mode); return; }
     if (STATE.pausedExam) return; // menüde yarım kalan sınav varken mod butonları zaten disabled
     var seed = (typeof seedOverride === "number" && isFinite(seedOverride))
       ? (seedOverride >>> 0)
@@ -1123,6 +1372,7 @@ setTimeout(function(){input.focus();},50);
   }
   function startExamWithCode() {
     var el = document.getElementById("exam-code-input");
+    if (remoteAuth.isActive) { startExamRemote(null, el ? el.value : ""); return; }
     var cozum = examKoduCoz(el ? el.value : "");
     if (!cozum) { showBanner("Kod tanınmadı — sonuç ekranındaki kodu olduğu gibi kopyala.", true); return; }
     startExam(cozum.mode, cozum.seed);
@@ -1133,12 +1383,29 @@ setTimeout(function(){input.focus();},50);
     STATE.pausedExam.savedAtISO = new Date().toISOString();
   }
   function examDegisti() { examSlotYaz(); veriDegisti(); }
-  function selectOption(guid, idx) { currentExam.cevaplar[guid] = idx; examDegisti(); render(); }
-  function nextQuestion() { if (currentExam.index < currentExam.sorular.length - 1) currentExam.index++; examDegisti(); render(); }
-  function prevQuestion() { if (currentExam.index > 0) currentExam.index--; examDegisti(); render(); }
-  function gotoQuestion(idx) { currentExam.index = idx; examDegisti(); render(); }
+  function selectOption(guid, idx) {
+    currentExam.cevaplar[guid] = idx;
+    if (currentExam.uzak) { remoteAnswerSync(guid, idx); render(); return; }
+    examDegisti(); render();
+  }
+  function nextQuestion() {
+    if (currentExam.index < currentExam.sorular.length - 1) currentExam.index++;
+    if (currentExam.uzak) { render(); return; }
+    examDegisti(); render();
+  }
+  function prevQuestion() {
+    if (currentExam.index > 0) currentExam.index--;
+    if (currentExam.uzak) { render(); return; }
+    examDegisti(); render();
+  }
+  function gotoQuestion(idx) {
+    currentExam.index = idx;
+    if (currentExam.uzak) { render(); return; }
+    examDegisti(); render();
+  }
 
   function pauseExam() {
+    if (currentExam && currentExam.uzak) { pauseExamRemote(); return; }
     examSlotYaz();
     currentExam = null;
     VIEW = "menu";
@@ -1174,14 +1441,17 @@ setTimeout(function(){input.focus();},50);
     STATE.flags[guid][kind] = !STATE.flags[guid][kind];
     veriDegisti(); // anında yayınlamıyoruz — sınav ortasında bayrak basmak reload'ı tetikleyip
     render();      // hızlı ardından gelen cevap/sonraki-soru gibi aksiyonları geri sarıyordu
+    if (kind === "hatali") remoteFlagSync(guid, STATE.flags[guid].hataNotu); // guid uzak denemeye ait değilse sessizce no-op
   }
   function saveHataNotu(guid, text) {
     if (!STATE.flags[guid]) STATE.flags[guid] = bosFlagKaydi();
     STATE.flags[guid].hataNotu = text;
     veriDegisti();
+    remoteFlagSync(guid, text);
   }
 
   function finishExam() {
+    if (currentExam && currentExam.uzak) { finishExamRemote(); return; }
     var res = scoreExam(STATE.bank, currentExam.sorular, currentExam.cevaplar, currentExam.soruKayitlari);
     var now = new Date().toISOString();
     STATE.pausedExam = null;
@@ -1674,7 +1944,6 @@ setTimeout(function(){input.focus();},50);
     var sinavYuzde = sinavDogruluk();
     var flashYuzde = flashDogruluk();
     var sonSkor = STATE.history[0] ? STATE.history[0].skor : null;
-    var examDisabled = (toplamSoru === 0 || STATE.pausedExam) ? "disabled" : "";
     var flashDisabled = toplamSoru === 0 ? "disabled" : "";
     var dogruHavuz = Object.keys(STATE.stats).filter(function (g) { return STATE.stats[g].sonSonucDogruMu === true; }).length;
     var yanlisHavuz = Object.keys(STATE.stats).filter(function (g) { return STATE.stats[g].sonSonucDogruMu === false; }).length;
@@ -1691,35 +1960,18 @@ setTimeout(function(){input.focus();},50);
       return '<div class="stat-card"><div class="num"' + stil + '>' + escapeHtml(c.num) + '</div><div class="lbl">' + c.lbl + "</div></div>";
     }).join("");
 
-    var modes = [
-      { mode: "rastgele", title: "Yeni Sınav", desc: "Resmi dağılıma göre 50 soruluk rastgele deneme." },
-      { mode: "azgorulen", title: "Az Görülenler", desc: "Aynı dağılım, öncelik en az karşılaştığın sorularda." },
-      { mode: "yanlislar", title: "Yanlışlar", desc: "Aynı dağılım, öncelik son denemesinde yanlış yaptıkların." }
-    ].map(function (m) {
-      var renk = MOD_RENK[m.mode];
-      return '<button class="mode-btn" style="border-left:4px solid ' + renk + '" ' + examDisabled + ' data-action="start-exam" data-mode="' + m.mode + '">' +
-        '<div class="title"><span class="mode-dot" style="background:' + renk + '"></span>' + m.title + '</div><div class="desc">' + m.desc + "</div></button>";
-    }).join("") +
+    var flashCards =
       '<button class="mode-btn" style="border-left:4px solid var(--seri-7)" ' + flashDisabled + ' data-action="start-flash">' +
       '<div class="title">🎲 Rastgele Soru</div><div class="desc">Tek soru, anında cevap — hızlı pratik veya keyfine bakmak için.</div></button>' +
       '<button class="mode-btn" style="border-left:4px solid var(--seri-8)" ' + flashDisabled + ' data-action="open-deneme-konu-sec">' +
       '<div class="title">📖 Konu Konu Bak</div><div class="desc">Sınav dışında, seçtiğin konudaki sorulara tek tek bak.</div></button>';
 
-    var koduCardHtml = '<div class="card" style="margin-top:14px">' +
-      '<div class="section-title" style="font-size:1rem;margin-bottom:6px">🔑 Kod ile Çöz</div>' +
-      '<div class="muted" style="margin-bottom:10px">Bir denemenin sonuç ekranındaki kodu buraya girersen aynı soruları yeniden çözersin.</div>' +
-      '<div class="link-row">' +
-      '<input type="text" id="exam-code-input" placeholder="ör. UZY-R1K2M3P" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body)"' +
-      (examDisabled ? " disabled" : "") + '>' +
-      '<button class="btn primary" ' + examDisabled + ' data-action="start-exam-code">Kodla Başla</button>' +
-      "</div></div>";
-
     return '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button>' +
       '<button class="btn" data-action="open-history">Geçmiş</button></div>' +
       '<div class="section-title">📝 Deneme Sınavı</div>' +
       '<div class="stat-grid">' + statCards + "</div>" +
-      '<div class="mode-grid">' + modes + "</div>" +
-      koduCardHtml;
+      renderDenemeUzakBolum() +
+      '<div class="mode-grid" style="margin-top:14px">' + flashCards + "</div>";
   }
 
   function renderDenemeKonuSec() {
@@ -2317,12 +2569,15 @@ function pratikEnIyiHtml(konu, modulKey) {
         "</div>";
     }).join("");
 
-    var kod = examKoduUret(r.tip, r.seed);
+    var kod = r.examCode || examKoduUret(r.tip, r.seed);
+    var koduAciklama = r.uzak
+      ? 'Bu kod bu resmi denemenin kaydıdır — "Kod ile Çöz" alanına girersen aynı soruları (Yeni Sınav modunda herkes için, diğerlerinde kişisel istatistiğe göre) yeniden çözersin.'
+      : 'Bu kodu Deneme sayfasındaki "Kod ile Çöz" alanına girersen aynı soruları tekrar çözersin.';
     var koduHtml = kod
       ? '<div class="muted" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">Deneme kodu: ' +
         '<b style="font-family:var(--font-display);letter-spacing:0.03em">' + kod + '</b> ' +
         '<button class="btn ghost" style="padding:2px 8px;font-size:0.76rem;margin-left:4px" data-action="copy-exam-code" data-kod="' + kod + '">📋 Kopyala</button>' +
-        '<br>Bu kodu Deneme sayfasındaki "Kod ile Çöz" alanına girersen aynı soruları tekrar çözersin.</div>'
+        '<br>' + koduAciklama + '</div>'
       : "";
     var yuzde = toplam ? Math.round((r.skor.dogru / toplam) * 100) : null;
     var yuzdeHtml = yuzde === null ? "" : '<span class="pill" style="background:var(--surface-2);color:' + renkEsigi(yuzde) + '">%' + yuzde + "</span>";
@@ -2511,13 +2766,16 @@ function pratikEnIyiHtml(konu, modulKey) {
     var t = e.target.closest ? e.target.closest("[data-action]") : null;
     if (!t) return;
     var action = t.getAttribute("data-action");
-    if (action === "open-menu-deneme") { VIEW = "menuDeneme"; render(); }
+    if (action === "open-menu-deneme") { openMenuDeneme(); }
     else if (action === "open-menu-test") { VIEW = "menuTest"; render(); }
     else if (action === "copy-soru") kopyalaAktifSoru(t.getAttribute("data-scope"));
     else if (action === "open-deneme-konu-sec") { VIEW = "denemeKonuSec"; render(); }
     else if (action === "start-deneme-konu-flash") startFlash("bank", t.getAttribute("data-konu"));
     else if (action === "start-exam") startExam(t.getAttribute("data-mode"));
     else if (action === "start-exam-code") startExamWithCode();
+    else if (action === "deneme-register") remoteRegisterSubmit();
+    else if (action === "deneme-refresh") remoteRefreshStatus();
+    else if (action === "resume-exam-remote") resumeExamRemote();
     else if (action === "copy-exam-code") kopyalaPano(t.getAttribute("data-kod"));
     else if (action === "select-option") selectOption(t.getAttribute("data-guid"), parseInt(t.getAttribute("data-idx"), 10));
     else if (action === "next-q") nextQuestion();
@@ -2635,7 +2893,7 @@ function pratikEnIyiHtml(konu, modulKey) {
 
   // Sekme kapanırken/gizlenirken son bir yerel yazım — publish'e zaman kalmasa da veri durur.
   function sonOturumuKaydet() {
-    if (VIEW === "exam" && currentExam) { examSlotYaz(); bumpRev(); }
+    if (VIEW === "exam" && currentExam && !currentExam.uzak) { examSlotYaz(); bumpRev(); }
     if (VIEW === "pratikSoru" && currentPratik && !currentPratik.bitti) { pratikSlotYaz(); bumpRev(); }
     lsKaydet();
   }
