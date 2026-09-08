@@ -266,6 +266,13 @@ async function handlePost(request: Request) {
       });
     }
 
+    if (body.action === 'reminders') {
+      const rows = await db.select({ questionGuid: schema.questionFlags.questionGuid })
+        .from(schema.questionFlags)
+        .where(and(eq(schema.questionFlags.userId, user.id), eq(schema.questionFlags.isReminder, true)));
+      return NextResponse.json({ guids: rows.map((r) => r.questionGuid) });
+    }
+
     if (!('attemptId' in body) || !body.attemptId) return fail('Sınav kimliği eksik.', 400);
 
     if (body.action === 'resume') {
@@ -444,12 +451,16 @@ async function handlePost(request: Request) {
       if (!question) return fail('Soru bulunamadı.', 404);
       const note = body.note.trim().slice(0, 1000);
       const category = body.category ? body.category.trim().slice(0, 40) : null;
+      // reported: hata bayrağı (kategori seçimiyle birlikte gelir). reminder: kişisel
+      // "hatırlatıcı" işareti — hatalı olmadan da bağımsız açık/kapalı olabilir.
+      const isReported = body.reported !== undefined ? !!body.reported : true;
+      const isReminder = !!body.reminder;
       const now = new Date();
       await db.insert(schema.questionFlags).values({
-        userId: user.id, questionGuid: question.questionGuid, note, category, isReported: true, updatedAt: now,
+        userId: user.id, questionGuid: question.questionGuid, note, category, isReported, isReminder, updatedAt: now,
       }).onConflictDoUpdate({
         target: [schema.questionFlags.userId, schema.questionFlags.questionGuid],
-        set: { note, category, isReported: true, updatedAt: now },
+        set: { note, category, isReported, isReminder, updatedAt: now },
       });
       return NextResponse.json({ ok: true });
     }

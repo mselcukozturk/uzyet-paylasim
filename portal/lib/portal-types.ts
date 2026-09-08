@@ -62,5 +62,6 @@ export type ExamApiRequest =
   | { action: 'delete'; attemptId: string }
   | { action: 'finish'; attemptId: string }
   | { action: 'history' }
-  | { action: 'flag'; attemptId: string; questionId: string; note: string; category?: string | null }
+  | { action: 'flag'; attemptId: string; questionId: string; note: string; category?: string | null; reported?: boolean; reminder?: boolean }
+  | { action: 'reminders' }
   | { action: 'bank' };

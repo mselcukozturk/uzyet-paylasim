@@ -131,6 +131,7 @@ export const questionFlags = pgTable('question_flags', {
   note: text('note').notNull().default(''),
   category: text('category'),
   isReported: boolean('is_reported').notNull().default(true),
+  isReminder: boolean('is_reminder').notNull().default(false),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [unique('question_flags_user_guid_unique').on(table.userId, table.questionGuid)]);
 

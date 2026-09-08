@@ -1176,12 +1176,24 @@
     }).catch(function () {}).then(function () { if (cb) cb(); });
   }
 
-  // Deneme dashboard'ı ve (giriş tamamsa) soru bankasını birlikte tazeler.
+  // Hatırlatıcı olarak işaretlenmiş soruların guid listesi — cihazlar arası kalıcı
+  // olsun diye sunucudan çekilir (bkz. /api/exam {action:'reminders'}), STATE.flags
+  // gibi yalnız localStorage'a bağlı kalmaz.
+  var remoteReminderGuids = null;
+  function remoteLoadReminders(cb) {
+    if (!STATE.sadeceDeneme || !remoteGirisTamamMi()) { if (cb) cb(); return; }
+    remoteFetch("/api/exam", "POST", { action: "reminders" }).then(function (r) {
+      if (r.ok && r.data && r.data.guids) remoteReminderGuids = r.data.guids;
+    }).catch(function () {}).then(function () { if (cb) cb(); });
+  }
+
+  // Deneme dashboard'ı, (giriş tamamsa) soru bankasını ve hatırlatıcı listesini birlikte tazeler.
   function afterAuthStateChange(cb) {
     var pending = 0, done = false;
     function finish() { pending--; if (pending <= 0 && !done) { done = true; if (cb) cb(); } }
     if (remoteAuth.isActive) { pending++; remoteRefreshDashboard(finish); }
     if (remoteGirisTamamMi() && !remoteBankLoaded) { pending++; remoteLoadBankIfNeeded(finish); }
+    if (remoteGirisTamamMi() && remoteReminderGuids === null) { pending++; remoteLoadReminders(finish); }
     if (pending === 0 && cb) cb();
   }
 
@@ -1459,7 +1471,7 @@
   // Yerel STATE.flags dual-write'ından sonra çağrılır; guid bir uzak deneme
   // sorusuna aitse (aktif sınav veya az önce bitmiş sonuç) sunucuya da bildirir,
   // değilse sessizce hiçbir şey yapmaz (yerel pratik/rastgele-soru bayrakları).
-  function remoteFlagSync(guid, note, kategori) {
+  function remoteFlagSync(guid, note, kategori, hatali, hatirlatici) {
     var attemptQuestionId = null, attemptId = null;
     if (currentExam && currentExam.uzak && currentExam.soruKayitlari[guid]) {
       attemptQuestionId = currentExam.soruKayitlari[guid]._attemptQuestionId;
@@ -1469,7 +1481,15 @@
       attemptId = lastResult.id;
     }
     if (!attemptQuestionId || !attemptId) return;
-    remoteFetch("/api/exam", "POST", { action: "flag", attemptId: attemptId, questionId: attemptQuestionId, note: note || "", category: kategori || null }).catch(function () {});
+    remoteFetch("/api/exam", "POST", {
+      action: "flag", attemptId: attemptId, questionId: attemptQuestionId, note: note || "", category: kategori || null,
+      reported: !!hatali, reminder: !!hatirlatici
+    }).then(function (r) {
+      if (!r.ok || !remoteReminderGuids) return;
+      var idx = remoteReminderGuids.indexOf(guid);
+      if (hatirlatici && idx === -1) remoteReminderGuids.push(guid);
+      else if (!hatirlatici && idx !== -1) remoteReminderGuids.splice(idx, 1);
+    }).catch(function () {});
   }
 
   // Sınav ekranındaki hata bildirimi: serbest "Hatırlatıcı" yıldızı yok, yalnız
@@ -1486,11 +1506,12 @@
     STATE.flags[guid].hatali = true;
     veriDegisti();
     render();
-    remoteFlagSync(guid, STATE.flags[guid].hataNotu, kategori);
+    remoteFlagSync(guid, STATE.flags[guid].hataNotu, kategori, true, STATE.flags[guid].hatirlatici);
   }
   function examFlagBarHtml(guid) {
     var f = STATE.flags[guid] || bosFlagKaydi();
     var toggleHtml = '<div class="flag-bar">' +
+      '<button class="flag-btn' + (f.hatirlatici ? " active-bookmark" : "") + '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="hatirlatici">🔖 Hatırlatıcı</button>' +
       '<button class="flag-btn' + (f.hatali ? " active-report" : "") + '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="hatali">🚩 Bu soru hatalı/eksik</button>' +
       "</div>";
     if (!f.hatali) return toggleHtml;
@@ -1687,13 +1708,97 @@
     STATE.flags[guid][kind] = !STATE.flags[guid][kind];
     veriDegisti(); // anında yayınlamıyoruz — sınav ortasında bayrak basmak reload'ı tetikleyip
     render();      // hızlı ardından gelen cevap/sonraki-soru gibi aksiyonları geri sarıyordu
-    if (kind === "hatali") remoteFlagSync(guid, STATE.flags[guid].hataNotu, STATE.flags[guid].kategori); // guid uzak denemeye ait değilse sessizce no-op
+    if (kind === "hatali" || kind === "hatirlatici") { // guid uzak denemeye ait değilse remoteFlagSync sessizce no-op
+      remoteFlagSync(guid, STATE.flags[guid].hataNotu, STATE.flags[guid].kategori, STATE.flags[guid].hatali, STATE.flags[guid].hatirlatici);
+    }
   }
   function saveHataNotu(guid, text) {
     if (!STATE.flags[guid]) STATE.flags[guid] = bosFlagKaydi();
     STATE.flags[guid].hataNotu = text;
     veriDegisti();
-    remoteFlagSync(guid, text, STATE.flags[guid].kategori);
+    remoteFlagSync(guid, text, STATE.flags[guid].kategori, STATE.flags[guid].hatali, STATE.flags[guid].hatirlatici);
+  }
+
+  // ---------------------------------------------------- Hatırlatıcı testi --
+  // Deneme ana ekranındaki "🔖 hatırlatıcı içeren sorular" bölümü — kişisel
+  // istatistiğe/geçmişe yazmayan, sırf gözden geçirme amaçlı yerel bir tekrar
+  // oturumu. Soru içeriği STATE.bank'ten (giriş yapınca sunucudan çekilmiş
+  // olan tam banka) okunur, guid listesi remoteReminderGuids'ten gelir.
+  function hatirlaticiSoruBul(guid) {
+    return STATE.bank.filter(function (b) { return b.guid === guid; })[0];
+  }
+  var currentHatirlatici = null; // {kuyruk:[guid...], index, secilen, cevaplandi, bitti}
+  function startHatirlaticiTest() {
+    var guids = (remoteReminderGuids || []).filter(function (g) { return hatirlaticiSoruBul(g); });
+    if (!guids.length) { showBanner("İşaretli soru bulunamadı.", true); return; }
+    var kuyruk = sampleRandom(guids, guids.length);
+    kuyruk.forEach(function (g) { shuffleSiklarInPlace(hatirlaticiSoruBul(g)); });
+    currentHatirlatici = { kuyruk: kuyruk, index: 0, secilen: null, cevaplandi: false, bitti: false };
+    VIEW = "hatirlaticiTest";
+    render();
+  }
+  function selectHatirlaticiOption(idx) {
+    if (!currentHatirlatici || currentHatirlatici.cevaplandi) return;
+    currentHatirlatici.secilen = idx;
+    currentHatirlatici.cevaplandi = true;
+    render();
+  }
+  function nextHatirlaticiSoru() {
+    if (!currentHatirlatici) return;
+    if (currentHatirlatici.index < currentHatirlatici.kuyruk.length - 1) {
+      currentHatirlatici.index++;
+      currentHatirlatici.secilen = null;
+      currentHatirlatici.cevaplandi = false;
+    } else {
+      currentHatirlatici.bitti = true;
+    }
+    render();
+  }
+  function hatirlaticiCik() {
+    currentHatirlatici = null;
+    VIEW = "menuDeneme";
+    render();
+  }
+
+  // "Word ile uyumlu HTML" tekniği: mso ad alanlı düz bir HTML dosyasını
+  // application/msword mime tipiyle .doc olarak indirir — kütüphane gerekmez,
+  // Word dosyayı doğrudan açar.
+  function wordIndir(baslik, htmlBody, dosyaAdi) {
+    var doc = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
+      '<head><meta charset="utf-8"><title>' + escapeHtml(baslik) + '</title></head>' +
+      '<body style="font-family:Calibri,Arial,sans-serif;font-size:11pt">' + htmlBody + '</body></html>';
+    var blob = new Blob(["﻿" + doc], { type: "application/msword" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = dosyaAdi;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+
+  // Sorular önce, cevap+açıklamalar sonda ayrı bir bölümde — kullanıcı isteği:
+  // "Cevap ve açıklamalar sorulardan sonra olacak şekilde."
+  function exportHatirlaticiWord() {
+    var guids = (remoteReminderGuids || []).filter(function (g) { return hatirlaticiSoruBul(g); });
+    if (!guids.length) { showBanner("İşaretli soru bulunamadı.", true); return; }
+    var harfler = ["A", "B", "C", "D"];
+    var soruBlok = guids.map(function (g, i) {
+      var q = hatirlaticiSoruBul(g);
+      var siklarHtml = q.siklar.map(function (s, idx) {
+        return s ? "<p>" + harfler[idx] + ") " + escapeHtml(s) + "</p>" : "";
+      }).join("");
+      return "<p><b>" + (i + 1) + ". " + escapeHtml(q.konu) + "</b></p><p>" + escapeHtml(q.soru) + "</p>" + siklarHtml;
+    }).join("<p>&nbsp;</p>");
+    var cevapBlok = guids.map(function (g, i) {
+      var q = hatirlaticiSoruBul(g);
+      var dogruHarf = harfler[q.cevapIdx] || "";
+      var dogruMetin = q.cevapMetni || q.siklar[q.cevapIdx] || "";
+      return "<p><b>" + (i + 1) + ". " + dogruHarf + ")</b> " + escapeHtml(dogruMetin) + "</p>" +
+        (q.aciklama ? "<p>" + escapeHtml(q.aciklama) + "</p>" : "");
+    }).join("<p>&nbsp;</p>");
+    var body = "<h2>Hatırlatıcılarım — Sorular</h2>" + soruBlok +
+      "<br clear=all style='page-break-before:always'>" +
+      "<h2>Cevaplar ve Açıklamalar</h2>" + cevapBlok;
+    wordIndir("Hatırlatıcılarım", body, "hatirlaticilarim.doc");
   }
 
   function finishExam() {
@@ -2217,7 +2322,76 @@
       '<div class="section-title">📝 Deneme Sınavı</div>' +
       '<div class="stat-grid">' + statCards + "</div>" +
       renderDenemeUzakBolum() +
+      hatirlaticiBolumHtml() +
       '<div class="mode-grid" style="margin-top:14px">' + flashCards + "</div>";
+  }
+
+  // Ana ekrandaki "hatırlatıcı içeren sorular" kartı — yalnız giriş+onay+disclaimer
+  // tamamsa (bank ve reminder listesi sunucudan çekilmiş olur) gösterilir.
+  function hatirlaticiBolumHtml() {
+    if (!remoteGirisTamamMi() || remoteReminderGuids === null) return "";
+    var guids = remoteReminderGuids.filter(function (g) { return hatirlaticiSoruBul(g); });
+    return '<div class="card" style="margin-top:14px">' +
+      '<div class="section-title" style="font-size:1rem;margin-bottom:6px">🔖 Hatırlatıcı İşaretli Sorular (' + guids.length + ')</div>' +
+      (guids.length
+        ? '<div class="muted" style="margin-bottom:10px">Sınav sırasında 🔖 ile işaretlediğin sorular — buradan tekrar gözden geçirebilir veya Word\'e aktarabilirsin.</div>' +
+          '<div class="link-row">' +
+          '<button class="btn primary" data-action="start-hatirlatici-test">Test Başlat</button>' +
+          '<button class="btn ghost" data-action="export-hatirlatici-word">📄 Word\'e Aktar</button>' +
+          "</div>"
+        : '<div class="muted">Henüz hatırlatıcı olarak işaretlediğin bir soru yok — sınav sırasında bir sorunun altındaki 🔖 Hatırlatıcı butonuna basarak buraya ekleyebilirsin.</div>') +
+      "</div>";
+  }
+
+  function renderHatirlaticiTest() {
+    if (!currentHatirlatici) return '<div class="card">Oturum bulunamadı. <button class="btn" data-action="hatirlatici-cik">Ana Sayfa</button></div>';
+    if (currentHatirlatici.bitti) {
+      return '<div class="card"><div class="section-title">🔖 Hatırlatıcı testi bitti</div>' +
+        '<div class="desc">' + currentHatirlatici.kuyruk.length + ' soru gözden geçirildi.</div>' +
+        '<div class="link-row" style="margin-top:10px">' +
+        '<button class="btn primary" data-action="start-hatirlatici-test">Tekrar Başlat</button>' +
+        '<button class="btn ghost" data-action="hatirlatici-cik">Ana Sayfa</button></div></div>';
+    }
+    var guid = currentHatirlatici.kuyruk[currentHatirlatici.index];
+    var q = hatirlaticiSoruBul(guid);
+    if (!q) { currentHatirlatici.index++; return renderHatirlaticiTest(); }
+    var harfler = ["A", "B", "C", "D"];
+    var secilen = currentHatirlatici.secilen;
+    var answered = currentHatirlatici.cevaplandi;
+    var optionsHtml = q.siklar.map(function (s, i) {
+      if (!s) return "";
+      var cls = "option-row";
+      if (answered) {
+        if (i === q.cevapIdx) cls += " correct";
+        else if (i === secilen) cls += " wrong";
+      }
+      var action = answered ? "" : ' data-action="select-hatirlatici-option" data-idx="' + i + '"';
+      return '<div class="' + cls + '"' + action + '>' +
+        '<span class="option-letter">' + harfler[i] + '</span><span class="option-text">' + escapeHtml(s) +
+        '</span>' + (answered ? "" : '<span class="kbd-hint">' + (i + 1) + "</span>") + "</div>";
+    }).join("");
+    var sonucHtml = "";
+    if (answered) {
+      var dogruMu = secilen === q.cevapIdx;
+      sonucHtml = '<div class="pill ' + (dogruMu ? "good" : "bad") + '" style="margin:10px 0">' +
+        (dogruMu ? "Doğru!" : "Yanlış — doğrusu " + harfler[q.cevapIdx]) + "</div>" +
+        (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + "</div>" : "");
+    }
+    var isLast = currentHatirlatici.index === currentHatirlatici.kuyruk.length - 1;
+    var altNav = answered
+      ? '<div class="sticky-next-bar link-row">' +
+        '<button class="btn primary" data-action="next-hatirlatici-soru">' + (isLast ? "Bitir" : "Sonraki Soru →") + "</button>" +
+        "</div>"
+      : "";
+    return '<div class="link-row" style="margin-bottom:10px">' +
+      '<button class="btn ghost" data-action="hatirlatici-cik">← Çık</button>' +
+      '<span class="muted" style="font-size:0.82rem;align-self:center">' + (currentHatirlatici.index + 1) + " / " + currentHatirlatici.kuyruk.length + "</span>" +
+      "</div>" +
+      '<div class="card">' +
+      '<div class="q-meta"><span>🔖 Hatırlatıcı · ' + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span></div>" +
+      '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
+      optionsHtml + sonucHtml + altNav +
+      "</div>";
   }
 
   function renderDenemeKonuSec() {
@@ -3064,7 +3238,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     var html = "";
     if (STATE.sadeceDeneme && (VIEW === "menu" || VIEW === "menuTest" || VIEW === "pratikModul" || VIEW === "pratikSoru" ||
       VIEW === "checkpointListe" || VIEW === "checkpointDetay" || VIEW === "settings" || VIEW === "import")) VIEW = "menuDeneme";
-    if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult" || VIEW === "gecmisUzak")) VIEW = "menuDeneme";
+    if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult" || VIEW === "gecmisUzak" || VIEW === "hatirlaticiTest")) VIEW = "menuDeneme";
     if (VIEW === "menu") html = renderMenu();
     else if (VIEW === "menuDeneme") html = renderMenuDeneme();
     else if (VIEW === "denemeKonuSec") html = renderDenemeKonuSec();
@@ -3083,6 +3257,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (VIEW === "checkpointListe") html = renderCheckpointListe();
     else if (VIEW === "checkpointDetay") html = renderCheckpointDetay();
     else if (VIEW === "gecmisUzak") html = renderGecmisUzak();
+    else if (VIEW === "hatirlaticiTest") html = renderHatirlaticiTest();
     if (!html) { // eski bir sekmede kalkan artık var olmayan bir VIEW (ör. kaldırılmış "pratikKonu") gelirse boş ekran yerine ana ekrana düş
       if (STATE.sadeceDeneme) { VIEW = "menuDeneme"; html = renderMenuDeneme(); }
       else { VIEW = "menu"; html = renderMenu(); }
@@ -3140,6 +3315,11 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "clear-duzeltmeler") { STATE.duzeltmeler = []; pendingSaveDirty = true; render(); }
     else if (action === "toggle-flag") toggleFlag(t.getAttribute("data-guid"), t.getAttribute("data-kind"));
     else if (action === "set-flag-kategori") setFlagKategori(t.getAttribute("data-guid"), t.getAttribute("data-kategori"));
+    else if (action === "start-hatirlatici-test") startHatirlaticiTest();
+    else if (action === "select-hatirlatici-option") selectHatirlaticiOption(parseInt(t.getAttribute("data-idx"), 10));
+    else if (action === "next-hatirlatici-soru") nextHatirlaticiSoru();
+    else if (action === "hatirlatici-cik") hatirlaticiCik();
+    else if (action === "export-hatirlatici-word") exportHatirlaticiWord();
     else if (action === "pause-exam") pauseExam();
     else if (action === "resume-exam") resumeExam();
     else if (action === "discard-paused") requestDiscardPausedExam();
