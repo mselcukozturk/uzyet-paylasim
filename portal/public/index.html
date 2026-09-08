@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style id="app-style">
   :root {
     --bg: #f6f3ec;
@@ -569,6 +570,36 @@
     return withKeys.slice(0, k).map(function (x) { return x.item; });
   }
 
+  function weightedOrder(arr, weightFn, rnd) {
+    // weightedSample'ın "arr.length<=k ise sırasız döndür" kısayolunu atlayan tam
+    // sürümü — havuzun TAMAMINI ağırlığa göre rastgele sıralar (kuyruk kurarken kullanılır).
+    rnd = rnd || Math.random;
+    var withKeys = arr.map(function (item) {
+      var w = Math.max(weightFn(item), 1e-9);
+      return { item: item, key: Math.pow(rnd(), 1 / w) };
+    });
+    withKeys.sort(function (a, b) { return b.key - a.key; });
+    return withKeys.map(function (x) { return x.item; });
+  }
+
+  // Rastgele Soru (flashSecimYap) ve Sırayla kuyruğu (pratikKuyrukOlustur) ortak
+  // ağırlık kuralı: yanlış geçmişliler en sık, hiç denenmemiş/boş geçilenler orta
+  // sıklıkla, doğru geçmişliler en seyrek ama YİNE DE sıfır olmayan ihtimalle
+  // gelsin. Önceki sürüm KESİN gruplama yapıyordu (önce TÜM yanlışlar bitmeden
+  // denenmemişlere, o bitmeden doğrulara geçilmiyordu) — bu da yanlış/görmemiş
+  // havuzu büyük olan kullanıcılarda her session'ın (kısa sürdüğü için) hep aynı
+  // "bilmediklerim" bloğunda takılı kalmasına, "hep aynıları görüyorum, karışsın
+  // istiyorum" şikayetine yol açtı (kullanıcı geri bildirimi, 8 Eyl 2026). Ağırlıklı
+  // rastgelelik zayıf soruları öne çıkarmayı sürdürürken gerçek çeşitliliği de korur.
+  // Boş geçilen (hiç cevap seçilmemiş) sorular stats'a hiç yazılmadığından burada
+  // "hiç denenmemiş" ile aynı ağırlığa düşer — istenen davranış budur.
+  function soruAgirligi(guid, statlar) {
+    var s = statlar[guid];
+    if (s && s.sonSonucDogruMu === false) return 6;
+    if (s && s.sonSonucDogruMu === true) return 1;
+    return 3;
+  }
+
   function shuffleSiklarInPlace(q, rnd) {
     // Ezber olmasın diye her oturumda soru şıklarını yeniden karıştırır — kalıcı
     // guid-shuffle (data üretiminde yapılan) değil, o SORU BU OTURUMDA seçildiğinde
@@ -740,7 +771,9 @@
       var yanlisHavuz = havuz.filter(function (q) { return STATE.pStats[q.guid] && STATE.pStats[q.guid].sonSonucDogruMu === false; });
       sirali = sampleRandom(yanlisHavuz, yanlisHavuz.length);
     } else {
-      sirali = sampleRandom(havuz, havuz.length); // "siray" — artık kitaptaki üretim sırası değil, her oturumda karışık
+      // "siray" — ağırlıklı rastgele sıralama (bkz. soruAgirligi): yanlış
+      // geçmişliler öne eğilimli ama kesin blok değil, tüm havuz karışık kalır.
+      sirali = weightedOrder(havuz, function (q) { return soruAgirligi(q.guid, STATE.pStats); });
     }
     if (modul === PRATIK_TUM_MODULLER) sirali = sirali.slice(0, PRATIK_KARISIK_LIMIT);
     sirali.forEach(function (q) { shuffleSiklarInPlace(q); }); // şıklar da her oturumda yeniden karışsın
@@ -1037,6 +1070,7 @@
       "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n" +
       "<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n" +
       "<link href=\"https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=Public+Sans:wght@400;500;600;700&display=swap\" rel=\"stylesheet\">\n" +
+      "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js\"><\/script>\n" +
       "<style id=\"app-style\">" + styleText + "</style>\n</head>\n<body>\n" +
       "<script id=\"app-state\" type=\"application/json\">" + JSON.stringify(state) + "<\/script>\n" +
       "<div id=\"app\"></div>\n" +
@@ -1708,9 +1742,12 @@
     return flashHavuzu(f.kaynak, f.konuFiltre).filter(function (b) { return b.guid === f.guid; })[0];
   }
 
-  // Rastgele Soru artık kör rastgele değil: önce son denemesinde yanlış yapılan,
-  // sonra hiç görülmemiş sorular öncelikli gelir; ikisi de tükenirse düz rastgele
-  // seçilir. kaynak "practice" ise pStats, "bank" ise stats sözlüğü okunur.
+  // Rastgele Soru artık kör rastgele değil ama kesin gruplama da değil: her seçimde
+  // ağırlıklı rastgele (bkz. soruAgirligi) — yanlış geçmişliler daha sık, ama
+  // denenmemiş/doğru da her zaman bir ihtimalle gelebilir (kesin gruplama "her
+  // session'da hep aynı yanlış havuzuyla başlıyorum" şikayetine yol açmıştı,
+  // kullanıcı geri bildirimi 8 Eyl 2026). kaynak "practice" ise pStats, "bank"
+  // ise stats sözlüğü okunur.
   // `haric`: bu OTURUMDA zaten gösterilmiş guid'ler — havuz onları çıkarınca
   // tükeniyorsa (ör. konu çok küçük) tekrara izin verilir, aksi halde aynı soru
   // art arda / aynı oturumda tekrar tekrar çıkmasın diye elenir.
@@ -1729,11 +1766,7 @@
       var sonHaricYok = aktifHavuz.filter(function (q) { return q.guid !== sonGosterilen; });
       if (sonHaricYok.length) aktifHavuz = sonHaricYok;
     }
-    var yanlisHavuz = aktifHavuz.filter(function (q) { return statlar[q.guid] && statlar[q.guid].sonSonucDogruMu === false; });
-    if (yanlisHavuz.length) return sampleRandom(yanlisHavuz, 1)[0];
-    var denenmemis = aktifHavuz.filter(function (q) { return !statlar[q.guid]; });
-    if (denenmemis.length) return sampleRandom(denenmemis, 1)[0];
-    return sampleRandom(aktifHavuz, 1)[0];
+    return weightedOrder(aktifHavuz, function (q) { return soruAgirligi(q.guid, statlar); })[0];
   }
 
   // Havuzun tamamından (konuFiltre yokken) çekerken hangi konudan geleceğini resmi
@@ -2132,8 +2165,6 @@
     var hataSayisi = Object.keys(STATE.flags).filter(function (g) { return STATE.flags[g].hatali; }).length;
 
     var navCards = '<div class="mode-grid">' +
-      '<button class="mode-btn" style="border-left:4px solid var(--seri-6)" data-action="open-menu-deneme">' +
-      '<div class="title">📝 Deneme</div><div class="desc">Resmi dağılıma göre tam sınav simülasyonu — Yeni Sınav, Az Görülenler, Yanlışlar.</div></button>' +
       '<button class="mode-btn" style="border-left:4px solid var(--seri-2)" data-action="open-menu-test">' +
       '<div class="title">📚 Test</div><div class="desc">Modül modül konu çalışması ve rastgele tek soru pratiği.</div></button>' +
       '<button class="mode-btn" style="border-left:4px solid var(--seri-4)" data-action="open-checkpoint-liste">' +
@@ -2361,6 +2392,79 @@
     } else {
       showBanner("Bu tarayıcıda panoya kopyalama desteklenmiyor.", true);
     }
+  }
+
+  function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  // Sınav sonucu ekranındaki skor kartını (soru listesi/butonlar hariç) tek bir PNG
+  // görsele çevirip panoya kopyalar — WhatsApp vb.'de kolay paylaşım için. Deneme
+  // kodu görselin İÇİNE, en alta yazılır (ayrı bir metin kopyası panoyu ezip
+  // görselin üstüne geçmesin diye) — kullanıcı isteği, 8 Eyl 2026.
+  function sonucGorseliKopyala() {
+    var r = lastResult;
+    if (!r) return;
+    if (!window.html2canvas) { showBanner("Görsel oluşturma kütüphanesi yüklenemedi — internet bağlantısını kontrol et.", true); return; }
+    var toplam = r.skor.dogru + r.skor.yanlis + r.skor.bos;
+    var yuzde = toplam ? Math.round((r.skor.dogru / toplam) * 100) : null;
+    var kod = r.examCode || examKoduUret(r.tip, r.seed);
+
+    var bg = cssVar("--surface"), border = cssVar("--border"), text = cssVar("--text"),
+      muted = cssVar("--text-muted"), good = cssVar("--good"), goodBg = cssVar("--good-bg"),
+      bad = cssVar("--bad"), badBg = cssVar("--bad-bg"), warn = cssVar("--warn"), warnBg = cssVar("--warn-bg"),
+      accent = cssVar("--accent"), fontDisplay = cssVar("--font-display"), fontBody = cssVar("--font-body");
+    var yuzdeRenk = yuzde === null ? muted : renkEsigi(yuzde);
+    var hucreKenar = "padding:6px 8px;border-bottom:1px solid " + border;
+    var td = 'style="' + hucreKenar + '"';
+    var tdNum = 'style="' + hucreKenar + ';text-align:right;font-variant-numeric:tabular-nums"';
+    var thBaslik = function (align) { return 'style="text-align:' + align + ";" + hucreKenar + ";color:" + muted + ';font-size:0.7rem;text-transform:uppercase"'; };
+
+    var topicRows = Object.keys(r.konuKirilim).map(function (konu) {
+      var k = r.konuKirilim[konu];
+      return "<tr><td " + td + ">" + konuDotHtml(konu) + escapeHtml(konu) + "</td><td " + tdNum + ">" + k.dogru +
+        "</td><td " + tdNum + ">" + k.yanlis + "</td><td " + tdNum + ">" + k.bos + "</td></tr>";
+    }).join("");
+
+    var node = document.createElement("div");
+    node.style.cssText = "position:fixed;left:-99999px;top:0;width:480px;padding:24px;box-sizing:border-box;" +
+      "background:" + bg + ";color:" + text + ";font-family:" + fontBody + ";border:1px solid " + border + ";border-radius:10px;";
+    node.innerHTML =
+      '<div style="font-family:' + fontDisplay + ';font-weight:700;font-size:0.9rem;color:' + accent + ';margin-bottom:12px">UZYET — Deneme Sonucu</div>' +
+      '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:16px">' +
+      '<span style="font-family:' + fontDisplay + ';font-size:2.1rem;font-weight:700">' + r.skor.dogru + " / " + toplam + "</span>" +
+      '<span style="padding:3px 10px;border-radius:999px;font-size:0.8rem;font-weight:600;background:' + goodBg + ";color:" + good + '">' + r.skor.dogru + " doğru</span>" +
+      '<span style="padding:3px 10px;border-radius:999px;font-size:0.8rem;font-weight:600;background:' + badBg + ";color:" + bad + '">' + r.skor.yanlis + " yanlış</span>" +
+      '<span style="padding:3px 10px;border-radius:999px;font-size:0.8rem;font-weight:600;background:' + warnBg + ";color:" + warn + '">' + r.skor.bos + " boş</span>" +
+      (yuzde === null ? "" : '<span style="padding:3px 10px;border-radius:999px;font-size:0.8rem;font-weight:600;color:' + yuzdeRenk + '">%' + yuzde + "</span>") +
+      (typeof r.sureSaniye === "number" ? '<span style="color:' + muted + ';font-size:0.82rem">⏱ ' + fmtSure(r.sureSaniye) + " sürede bitti</span>" : "") +
+      "</div>" +
+      '<table style="width:100%;border-collapse:collapse;font-size:0.88rem"><thead><tr>' +
+      "<th " + thBaslik("left") + ">Konu</th>" +
+      "<th " + thBaslik("right") + ">Doğru</th>" +
+      "<th " + thBaslik("right") + ">Yanlış</th>" +
+      "<th " + thBaslik("right") + ">Boş</th>" +
+      "</tr></thead><tbody>" + topicRows + "</tbody></table>" +
+      (kod ? '<div style="margin-top:14px;padding-top:12px;border-top:1px solid ' + border + ";color:" + muted + ';font-size:0.8rem">Deneme kodu: <b style="font-family:' +
+        fontDisplay + ';letter-spacing:0.03em;color:' + text + '">' + escapeHtml(kod) + "</b></div>" : "");
+
+    document.body.appendChild(node);
+    html2canvas(node, { backgroundColor: bg, scale: 2 }).then(function (canvas) {
+      document.body.removeChild(node);
+      canvas.toBlob(function (blob) {
+        if (!blob) { showBanner("Görsel oluşturulamadı.", true); return; }
+        if (navigator.clipboard && window.ClipboardItem) {
+          navigator.clipboard.write([new ClipboardItem({ "image/png": blob })])
+            .then(function () { showBanner("Sonuç görseli panoya kopyalandı."); })
+            .catch(function () { showBanner("Kopyalama başarısız — tarayıcı izin vermedi.", true); });
+        } else {
+          showBanner("Bu tarayıcıda görsel kopyalama desteklenmiyor.", true);
+        }
+      });
+    }).catch(function () {
+      if (node.parentNode) document.body.removeChild(node);
+      showBanner("Görsel oluşturulamadı.", true);
+    });
   }
 
   function kopyalaAktifSoru(scope) {
@@ -2809,7 +2913,10 @@ function pratikEnIyiHtml(konu, modulKey) {
       yuzdeHtml + sureHtml + "</div>" +
       '<table class="topic-table"><thead><tr><th>Konu</th><th class="num">Doğru</th><th class="num">Yanlış</th><th class="num">Boş</th></tr></thead><tbody>' +
       topicRows + "</tbody></table>" +
+      '<div class="link-row" style="margin-top:14px">' +
       '<button class="btn primary" data-action="back-menu">' + (STATE.sadeceDeneme ? "Tamam" : "Ana Menüye Dön") + '</button>' +
+      '<button class="btn" data-action="copy-result-image">🖼 Sonucu Kopyala</button>' +
+      "</div>" +
       koduHtml +
       "</div>" +
       (yanlisBosListesi ? '<div class="card" style="margin-top:16px"><div class="section-title">Gözden geçir</div>' + yanlisBosListesi + "</div>" : "");
@@ -3014,6 +3121,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "confirm-delete-gecmis") confirmDeleteGecmis(t.getAttribute("data-id"));
     else if (action === "cancel-delete-gecmis") cancelDeleteGecmis();
     else if (action === "copy-exam-code") kopyalaPano(t.getAttribute("data-kod"));
+    else if (action === "copy-result-image") sonucGorseliKopyala();
     else if (action === "select-option") selectOption(t.getAttribute("data-guid"), parseInt(t.getAttribute("data-idx"), 10));
     else if (action === "next-q") nextQuestion();
     else if (action === "prev-q") prevQuestion();
