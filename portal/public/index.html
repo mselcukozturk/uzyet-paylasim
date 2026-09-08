@@ -1309,6 +1309,10 @@
   // Kayıt/onay-bekleme/disclaimer adımları arkadaki içeriği (Rastgele Soru vb.)
   // etkileşimden kilitleyen tam ekran bir popup içinde gösterilir — sırayla aynı
   // görsel dilde ilerlesinler diye üçü de bu sarmalayıcıyı kullanır.
+  function remoteGirisTamamMi() {
+    return remoteAuth.checked && remoteAuth.authenticated && remoteAuth.isActive && remoteAuth.disclaimerAccepted;
+  }
+
   function denemeModalSar(innerHtml) {
     return '<div style="position:fixed;inset:0;z-index:9999;background:rgba(10,10,10,.62);display:flex;align-items:center;justify-content:center;padding:20px">' +
       '<div class="card" style="max-width:420px;width:100%;max-height:88vh;overflow:auto">' + innerHtml + "</div></div>";
@@ -1563,6 +1567,7 @@
   }
 
   function startFlash(kaynak, konuFiltre) {
+    if (STATE.sadeceDeneme && !remoteGirisTamamMi()) return;
     kaynak = kaynak === "practice" ? "practice" : "bank";
     konuFiltre = konuFiltre || null;
     var havuz = flashHavuzu(kaynak, konuFiltre);
@@ -1961,7 +1966,7 @@
     var sinavYuzde = sinavDogruluk();
     var flashYuzde = flashDogruluk();
     var sonSkor = STATE.history[0] ? STATE.history[0].skor : null;
-    var flashDisabled = toplamSoru === 0 ? "disabled" : "";
+    var flashDisabled = (toplamSoru === 0 || (STATE.sadeceDeneme && !remoteGirisTamamMi())) ? "disabled" : "";
     var dogruHavuz = Object.keys(STATE.stats).filter(function (g) { return STATE.stats[g].sonSonucDogruMu === true; }).length;
     var yanlisHavuz = Object.keys(STATE.stats).filter(function (g) { return STATE.stats[g].sonSonucDogruMu === false; }).length;
 
@@ -2757,6 +2762,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     var html = "";
     if (STATE.sadeceDeneme && (VIEW === "menu" || VIEW === "menuTest" || VIEW === "pratikModul" || VIEW === "pratikSoru" ||
       VIEW === "checkpointListe" || VIEW === "checkpointDetay" || VIEW === "settings" || VIEW === "import")) VIEW = "menuDeneme";
+    if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult")) VIEW = "menuDeneme";
     if (VIEW === "menu") html = renderMenu();
     else if (VIEW === "menuDeneme") html = renderMenuDeneme();
     else if (VIEW === "denemeKonuSec") html = renderDenemeKonuSec();
@@ -2792,7 +2798,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     if (action === "open-menu-deneme") { openMenuDeneme(); }
     else if (action === "open-menu-test") { VIEW = "menuTest"; render(); }
     else if (action === "copy-soru") kopyalaAktifSoru(t.getAttribute("data-scope"));
-    else if (action === "open-deneme-konu-sec") { VIEW = "denemeKonuSec"; render(); }
+    else if (action === "open-deneme-konu-sec") { if (STATE.sadeceDeneme && !remoteGirisTamamMi()) return; VIEW = "denemeKonuSec"; render(); }
     else if (action === "start-deneme-konu-flash") startFlash("bank", t.getAttribute("data-konu"));
     else if (action === "start-exam") startExam(t.getAttribute("data-mode"));
     else if (action === "start-exam-code") startExamWithCode();
