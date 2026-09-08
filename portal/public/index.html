@@ -2916,6 +2916,11 @@ function pratikEnIyiHtml(konu, modulKey) {
       showBanner("Kaydedilmemiş ilerleme bu tarayıcıdan geri yüklendi, kaydediliyor…", false);
       saveAndPublish();
     }
+    // sadeceDeneme derlemesinde açılış doğrudan menuDeneme'dir — normalde bu kontrolü
+    // tetikleyen "open-menu-deneme" tıklaması hiç olmaz, o yüzden burada da başlatılır.
+    if (STATE.sadeceDeneme && !remoteAuth.checked) {
+      remoteCheckStatus(function () { if (VIEW === "menuDeneme") render(); });
+    }
   });
   setInterval(tickExamTimer, 1000);
 })();
