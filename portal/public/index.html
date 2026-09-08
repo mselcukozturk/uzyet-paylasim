@@ -1288,6 +1288,18 @@
     render();
   }
 
+  function denemeCikisYap() {
+    localStorage.removeItem(REMOTE_TOKEN_KEY);
+    remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false };
+    denemeIsimTaslak = "";
+    denemePinTaslak = "";
+    remoteDash = null;
+    remoteBankLoaded = false;
+    remoteReminderGuids = null;
+    remoteFlagsLoaded = false;
+    render();
+  }
+
   // Uzak sınavın soru görüntüsünü yerel exam ekranıyla aynı şekle sokar. cevapIdx
   // placeholder'dır (-1) — renderExam() sınav bitmeden cevapIdx'i hiç okumaz;
   // gerçek değer yalnız finishExamRemote()'da, sunucu açıkladıktan sonra yazılır.
@@ -1563,7 +1575,8 @@
       return denemeModalSar(
         '<div class="section-title" style="font-size:1rem;margin-bottom:6px">Onay bekleniyor</div>' +
         '<div class="muted" style="margin-bottom:10px">İsmin: <b>' + escapeHtml(remoteAuth.username) + '</b> — yönetici onayladığında devam edebilirsin.</div>' +
-        '<button class="btn ghost" data-action="deneme-refresh">Durumu Yenile</button>');
+        '<button class="btn ghost" data-action="deneme-refresh">Durumu Yenile</button> ' +
+        '<button class="btn ghost" data-action="deneme-cikis-yap">Vazgeç / Çıkış Yap</button>');
     }
     if (!remoteAuth.disclaimerAccepted) {
       return denemeModalSar(
@@ -3318,6 +3331,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "cancel-exam-kod-onizleme") cancelExamKodOnizleme();
     else if (action === "deneme-register") remoteRegisterSubmit();
     else if (action === "deneme-refresh") remoteRefreshStatus();
+    else if (action === "deneme-cikis-yap") denemeCikisYap();
     else if (action === "deneme-accept-disclaimer") remoteAcceptDisclaimer();
     else if (action === "resume-exam-remote") resumeExamRemote();
     else if (action === "discard-exam-remote") requestDiscardExamRemote();
