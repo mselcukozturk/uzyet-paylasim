@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, avg, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { getSessionProfile } from '@/lib/auth/session';
 import { corsPreflight, withCors } from '@/lib/cors';
 import { getDb, schema } from '@/lib/db';
@@ -82,12 +82,14 @@ async function loadAttempt(userId: string, attemptId: string) {
 
 async function dashboard(userId: string) {
   const db = getDb();
-  const [profileRows, bankRows, attempts, stats, completedRows] = await Promise.all([
+  const [profileRows, bankRows, attempts, stats, completedRows, avgRows] = await Promise.all([
     db.select().from(schema.profiles).where(eq(schema.profiles.userId, userId)).limit(1),
     db.select().from(schema.questionBanks).where(eq(schema.questionBanks.isActive, true)).limit(1),
     db.select().from(schema.examAttempts).where(eq(schema.examAttempts.userId, userId)).orderBy(desc(schema.examAttempts.updatedAt)).limit(12),
     db.select().from(schema.questionStats).where(eq(schema.questionStats.userId, userId)),
     db.select({ value: count() }).from(schema.examAttempts).where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.status, 'finished'))),
+    db.select({ avgPercent: avg(schema.examAttempts.scorePercent), avgSeconds: avg(schema.examAttempts.elapsedSeconds) })
+      .from(schema.examAttempts).where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.status, 'finished'))),
   ]);
   const profile = profileRows[0];
   const bank = bankRows[0];
@@ -141,15 +143,24 @@ async function dashboard(userId: string) {
     }));
   }
 
+  const completedCount = Number(completedRows[0]?.value ?? 0);
+  const avgPercentRaw = avgRows[0]?.avgPercent;
+  const avgSecondsRaw = avgRows[0]?.avgSeconds;
+
   return {
     displayName: profile?.displayName || profile?.username || 'Kullanıcı',
     bankQuestionCount: bank?.questionCount ?? 0,
-    completedCount: Number(completedRows[0]?.value ?? 0),
+    completedCount,
     overallPercent: scoredTotal ? Math.round(scoredCorrect / scoredTotal * 100) : null,
     lastScore: completed.length ? toSummary(completed[0]).score : null,
     activeAttempt: open ? toSummary(open) : null,
     recentAttempts: completed.slice(0, 6).map(toSummary),
     topicStats,
+    examStats: completedCount ? {
+      count: completedCount,
+      avgPercent: Math.round(Number(avgPercentRaw ?? 0)),
+      avgSeconds: Math.round(Number(avgSecondsRaw ?? 0)),
+    } : null,
   };
 }
 
@@ -304,6 +315,46 @@ async function handlePost(request: Request) {
         lastResumedAt: null,
         updatedAt: now,
       }).where(and(eq(schema.examAttempts.id, body.attemptId), eq(schema.examAttempts.userId, user.id)));
+      return NextResponse.json({ ok: true });
+    }
+
+    if (body.action === 'delete') {
+      // Geçmişten bir denemeyi kalıcı olarak siler; bu denemenin question_stats'a
+      // katkısı da (shownCount/correctCount/wrongCount) geri alınır — yerel uygulamanın
+      // deleteHistoryEntry()'sinin sunucu tarafındaki karşılığı.
+      const loaded = await loadAttempt(user.id, body.attemptId);
+      if (loaded.attempt.status !== 'finished') return fail('Yalnız tamamlanmış denemeler silinebilir.', 409);
+      await db.transaction(async (tx) => {
+        if (loaded.attempt.statsApplied) {
+          for (const q of loaded.questions) {
+            const selected = loaded.answers[q.id];
+            const wasCorrect = selected === undefined ? null : selected === q.correctIndex;
+            const where = and(eq(schema.questionStats.userId, user.id), eq(schema.questionStats.questionGuid, q.questionGuid));
+            if (wasCorrect === true) {
+              await tx.update(schema.questionStats).set({
+                shownCount: sql`greatest(${schema.questionStats.shownCount} - 1, 0)`,
+                correctCount: sql`greatest(${schema.questionStats.correctCount} - 1, 0)`,
+              }).where(where);
+            } else if (wasCorrect === false) {
+              await tx.update(schema.questionStats).set({
+                shownCount: sql`greatest(${schema.questionStats.shownCount} - 1, 0)`,
+                wrongCount: sql`greatest(${schema.questionStats.wrongCount} - 1, 0)`,
+              }).where(where);
+            } else {
+              await tx.update(schema.questionStats).set({
+                shownCount: sql`greatest(${schema.questionStats.shownCount} - 1, 0)`,
+              }).where(where);
+            }
+            const [row] = await tx.select({ shownCount: schema.questionStats.shownCount })
+              .from(schema.questionStats).where(where).limit(1);
+            if (row && row.shownCount === 0) {
+              await tx.update(schema.questionStats).set({ lastResult: null, lastSeenAt: null }).where(where);
+            }
+          }
+        }
+        await tx.delete(schema.examAttempts)
+          .where(and(eq(schema.examAttempts.id, loaded.attempt.id), eq(schema.examAttempts.userId, user.id)));
+      });
       return NextResponse.json({ ok: true });
     }
 
