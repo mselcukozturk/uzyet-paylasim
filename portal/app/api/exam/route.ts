@@ -273,6 +273,28 @@ async function handlePost(request: Request) {
       return NextResponse.json({ guids: rows.map((r) => r.questionGuid) });
     }
 
+    if (body.action === 'flags') {
+      // İşaretler yalnız tarayıcı localStorage'ında (STATE.flags) tutuluyordu —
+      // başka bir cihaz/tarayıcıdan devam edince sunucudaki kayıt hâlâ dururken
+      // yerelde hiç görünmüyordu ("işaretli sorular yok oluyor" — kullanıcı
+      // bildirimi, 8 Eyl 2026). Bu uç, girişte STATE.flags'i sunucudaki gerçek
+      // durumla eşitlemek için kullanıcının TÜM işaretlerini döner.
+      const rows = await db.select({
+        questionGuid: schema.questionFlags.questionGuid,
+        note: schema.questionFlags.note,
+        category: schema.questionFlags.category,
+        isReported: schema.questionFlags.isReported,
+        isReminder: schema.questionFlags.isReminder,
+      }).from(schema.questionFlags).where(eq(schema.questionFlags.userId, user.id));
+      const flags: Record<string, { hatali: boolean; kategori: string | null; hataNotu: string; hatirlatici: boolean }> = {};
+      for (const row of rows) {
+        flags[row.questionGuid] = {
+          hatali: row.isReported, kategori: row.category, hataNotu: row.note, hatirlatici: row.isReminder,
+        };
+      }
+      return NextResponse.json({ flags });
+    }
+
     if (body.action === 'flag') {
       // Doğrudan guid ile çalışır — bir attemptId/questionId'ye bağlı değil, çünkü
       // 🔖 Hatırlatıcı ve 🚩 hatalı bildirimi Deneme sınavı dışında Rastgele Soru/Konu

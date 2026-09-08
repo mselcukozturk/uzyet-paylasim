@@ -1187,13 +1187,38 @@
     }).catch(function () {}).then(function () { if (cb) cb(); });
   }
 
-  // Deneme dashboard'ı, (giriş tamamsa) soru bankasını ve hatırlatıcı listesini birlikte tazeler.
+  // STATE.flags (🔖 Hatırlatıcı, 🚩 hatalı+kategori, not) yalnız bu tarayıcının
+  // localStorage'ında tutuluyordu — başka bir cihaz/tarayıcıdan devam edilince
+  // sunucudaki kayıt dururken yerelde hiç görünmüyordu ("Denemeden çıkıp geri
+  // devam diyince işaretli sorular yok oluyor" — kullanıcı bildirimi, 8 Eyl 2026).
+  // Girişte bir kez sunucudaki gerçek durumu STATE.flags'e yazar (yalnız sunucunun
+  // bildiği alanları — begenildi/kapsamDisi gibi yerel-yalnız alanlara dokunmaz).
+  var remoteFlagsLoaded = false;
+  function remoteLoadFlagsIfNeeded(cb) {
+    if (!STATE.sadeceDeneme || remoteFlagsLoaded || !remoteGirisTamamMi()) { if (cb) cb(); return; }
+    remoteFetch("/api/exam", "POST", { action: "flags" }).then(function (r) {
+      if (r.ok && r.data && r.data.flags) {
+        Object.keys(r.data.flags).forEach(function (guid) {
+          var f = r.data.flags[guid];
+          var local = STATE.flags[guid] || bosFlagKaydi();
+          local.hatali = f.hatali; local.kategori = f.kategori; local.hataNotu = f.hataNotu; local.hatirlatici = f.hatirlatici;
+          STATE.flags[guid] = local;
+        });
+        remoteFlagsLoaded = true;
+        veriDegisti();
+      }
+    }).catch(function () {}).then(function () { if (cb) cb(); });
+  }
+
+  // Deneme dashboard'ı, (giriş tamamsa) soru bankasını, hatırlatıcı listesini ve
+  // gerçek işaret durumunu birlikte tazeler.
   function afterAuthStateChange(cb) {
     var pending = 0, done = false;
     function finish() { pending--; if (pending <= 0 && !done) { done = true; if (cb) cb(); } }
     if (remoteAuth.isActive) { pending++; remoteRefreshDashboard(finish); }
     if (remoteGirisTamamMi() && !remoteBankLoaded) { pending++; remoteLoadBankIfNeeded(finish); }
     if (remoteGirisTamamMi() && remoteReminderGuids === null) { pending++; remoteLoadReminders(finish); }
+    if (remoteGirisTamamMi() && !remoteFlagsLoaded) { pending++; remoteLoadFlagsIfNeeded(finish); }
     if (pending === 0 && cb) cb();
   }
 
