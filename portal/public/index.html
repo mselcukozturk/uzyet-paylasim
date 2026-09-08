@@ -1102,6 +1102,10 @@
   var remoteAuth = { checked: false, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false };
   var remoteDash = null;
   var remoteBusy = false;
+  // Kayıt formu her render()'da sıfırdan kurulduğu için, hatalı gönderim sonrası
+  // yazılanların kaybolmaması için taslak burada tutulur (input dinleyicisi doldurur).
+  var denemeIsimTaslak = "";
+  var denemePinTaslak = "";
 
   function remoteToken() { try { return localStorage.getItem(REMOTE_TOKEN_KEY); } catch (e) { return null; } }
   function remoteSetToken(t) { try { if (t) localStorage.setItem(REMOTE_TOKEN_KEY, t); } catch (e) { /* localStorage kapalıysa oturum sekme kapanana kadar bellekte kalır */ } }
@@ -1171,16 +1175,19 @@
 
   function remoteRegisterSubmit() {
     if (remoteBusy) return;
-    var el = document.getElementById("deneme-username-input");
-    var pinEl = document.getElementById("deneme-pin-input");
-    var username = el ? el.value.trim().toLocaleLowerCase("tr-TR") : "";
-    var pin = pinEl ? pinEl.value.trim() : "";
+    var username = denemeIsimTaslak.trim().toLocaleLowerCase("tr-TR");
+    var pin = denemePinTaslak.trim();
     if (!username) { showBanner("İsim gerekli.", true); return; }
+    if (!/^[a-z0-9._-]{3,40}$/.test(username)) {
+      showBanner("İsim 3-40 karakter olmalı; yalnız küçük harf, rakam, nokta, tire, alt çizgi (boşluk/Türkçe karakter olmadan).", true);
+      return;
+    }
     if (!/^\d{4}$/.test(pin)) { showBanner("PIN 4 haneli rakam olmalı.", true); return; }
     remoteBusy = true; render();
     remoteFetch("/api/access", "POST", { username: username, pin: pin }).then(function (r) {
       remoteBusy = false;
       if (!r.ok) { showBanner((r.data && r.data.error) || "Kayıt başarısız.", true); render(); return; }
+      denemeIsimTaslak = ""; denemePinTaslak = "";
       if (r.data.token) remoteSetToken(r.data.token);
       remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, disclaimerAccepted: !!r.data.disclaimerAccepted };
       render();
@@ -1335,8 +1342,11 @@
   }
 
   function denemeModalSar(innerHtml) {
+    // Sayfanın üstündeki normal .banner bu modalın ARKASINDA kalır (z-index) — hata/uyarı
+    // mesajı modal açıkken görünmez olurdu, bu yüzden kart içine de ayrıca basılır.
+    var bannerHtml = bannerMsg ? '<div class="banner' + (bannerIsError ? " error" : "") + '" style="margin-bottom:14px">' + escapeHtml(bannerMsg) + "</div>" : "";
     return '<div style="position:fixed;inset:0;z-index:9999;background:rgba(10,10,10,.62);display:flex;align-items:center;justify-content:center;padding:20px">' +
-      '<div class="card" style="max-width:420px;width:100%;max-height:88vh;overflow:auto">' + innerHtml + "</div></div>";
+      '<div class="card" style="max-width:420px;width:100%;max-height:88vh;overflow:auto">' + bannerHtml + innerHtml + "</div></div>";
   }
 
   function renderDenemeUzakBolum() {
@@ -1349,8 +1359,8 @@
         '<div class="section-title" style="font-size:1rem;margin-bottom:6px">Hoş geldin</div>' +
         '<div class="muted" style="margin-bottom:10px">Devam etmek için kayıt olman gerekiyor — isminizi yazmanız ve 4 haneli bir PIN belirlemeniz yeterli (boşluksuz isim, örn. <i>mustafa</i>). Bu PIN\'i unutma: başka bir cihazdan aynı isim ve PIN ile tekrar girebilirsin. Yönetici onayından sonra kullanabilirsin.</div>' +
         '<div class="link-row">' +
-        '<input type="text" id="deneme-username-input" placeholder="isminiz" style="flex:1;min-width:160px;' + inputStil + '"' + (remoteBusy ? " disabled" : "") + '>' +
-        '<input type="text" inputmode="numeric" maxlength="4" id="deneme-pin-input" placeholder="PIN (4 hane)" style="width:110px;' + inputStil + '"' + (remoteBusy ? " disabled" : "") + '>' +
+        '<input type="text" id="deneme-username-input" placeholder="isminiz" value="' + escapeHtml(denemeIsimTaslak) + '" style="flex:1;min-width:160px;' + inputStil + '"' + (remoteBusy ? " disabled" : "") + '>' +
+        '<input type="text" inputmode="numeric" maxlength="4" id="deneme-pin-input" placeholder="PIN (4 hane)" value="' + escapeHtml(denemePinTaslak) + '" style="width:110px;' + inputStil + '"' + (remoteBusy ? " disabled" : "") + '>' +
         '<button class="btn primary" data-action="deneme-register" ' + (remoteBusy ? "disabled" : "") + '>' + (remoteBusy ? "Gönderiliyor…" : "Kayıt Ol / Giriş Yap") + "</button>" +
         "</div>");
     }
@@ -2895,6 +2905,8 @@ function pratikEnIyiHtml(konu, modulKey) {
     if (e.target && e.target.matches && e.target.matches("[data-dagilim-konu]")) {
       updateDraftDagilim(e.target.getAttribute("data-dagilim-konu"), e.target.value);
     }
+    if (e.target && e.target.id === "deneme-username-input") denemeIsimTaslak = e.target.value;
+    if (e.target && e.target.id === "deneme-pin-input") denemePinTaslak = e.target.value;
   });
   document.addEventListener("change", function (e) {
     if (e.target && e.target.id === "excel-file-input" && e.target.files && e.target.files[0]) {
