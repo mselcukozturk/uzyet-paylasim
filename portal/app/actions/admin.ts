@@ -32,3 +32,18 @@ export async function rejectUserAction(userId: string) {
   revalidatePath('/admin');
   return { ok: true };
 }
+
+export async function deleteUserAction(userId: string) {
+  const admin = await requireAdmin();
+  if (!admin) return { ok: false, message: 'Yönetici girişi gerekli.' };
+  if (userId === admin.userId) return { ok: false, message: 'Kendi hesabını silemezsin.' };
+  const db = getDb();
+  await db.transaction(async (tx) => {
+    await tx.delete(schema.questionFlags).where(eq(schema.questionFlags.userId, userId));
+    await tx.delete(schema.questionStats).where(eq(schema.questionStats.userId, userId));
+    await tx.delete(schema.examAttempts).where(eq(schema.examAttempts.userId, userId));
+    await tx.delete(schema.profiles).where(eq(schema.profiles.userId, userId));
+  });
+  revalidatePath('/admin');
+  return { ok: true };
+}

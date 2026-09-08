@@ -3,7 +3,8 @@ import { auth } from '@/lib/auth/server';
 import { decryptPin } from '@/lib/auth/session';
 import { getDb, schema } from '@/lib/db';
 import { requestPasswordResetAction, signInAction, signOutAction } from '@/app/actions/auth';
-import { approveUserAction, rejectUserAction } from '@/app/actions/admin';
+import { approveUserAction, deleteUserAction, rejectUserAction } from '@/app/actions/admin';
+import KullaniciSilFormu from './kullanici-sil-formu';
 
 async function currentAdmin() {
   const { data: session } = await auth.getSession();
@@ -94,6 +95,10 @@ export default async function AdminPage() {
             'use server';
             await rejectUserAction(item.userId);
           }
+          async function submitDelete() {
+            'use server';
+            await deleteUserAction(item.userId);
+          }
           return (
             <li key={item.userId} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -107,6 +112,7 @@ export default async function AdminPage() {
                 <form action={submitReject}>
                   <button type="submit">Reddet</button>
                 </form>
+                {item.userId !== admin.userId && <KullaniciSilFormu action={submitDelete} kullaniciAdi={item.username} />}
               </span>
             </li>
           );
@@ -121,10 +127,16 @@ export default async function AdminPage() {
             <th style={{ padding: '0.4rem 0' }}>İsim</th>
             <th style={{ padding: '0.4rem 0' }}>PIN</th>
             <th style={{ padding: '0.4rem 0' }}>Kayıt tarihi</th>
+            <th style={{ padding: '0.4rem 0' }}>İşlem</th>
           </tr>
         </thead>
         <tbody>
-          {active.map((item) => (
+          {active.map((item) => {
+            async function submitDelete() {
+              'use server';
+              await deleteUserAction(item.userId);
+            }
+            return (
             <tr key={item.userId} style={{ borderBottom: '1px solid #eee' }}>
               <td style={{ padding: '0.4rem 0' }}>{item.username}{item.isAdmin ? ' (yönetici)' : ''}</td>
               <td style={{ padding: '0.4rem 0' }}>
@@ -136,8 +148,12 @@ export default async function AdminPage() {
                 ) : '—'}
               </td>
               <td style={{ padding: '0.4rem 0', color: '#666' }}>{formatTarih(item.createdAt)}</td>
+              <td style={{ padding: '0.4rem 0' }}>
+                {item.userId !== admin.userId && <KullaniciSilFormu action={submitDelete} kullaniciAdi={item.username} />}
+              </td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </main>
