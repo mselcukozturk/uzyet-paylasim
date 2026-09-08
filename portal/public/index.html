@@ -1471,18 +1471,14 @@
   // Yerel STATE.flags dual-write'ından sonra çağrılır; guid bir uzak deneme
   // sorusuna aitse (aktif sınav veya az önce bitmiş sonuç) sunucuya da bildirir,
   // değilse sessizce hiçbir şey yapmaz (yerel pratik/rastgele-soru bayrakları).
+  // guid, STATE.sadeceDeneme'de her yerde (Deneme sınavı, sonuç incelemesi, Rastgele
+  // Soru, Konu Konu Bak) aynı sunucu bankasına ait olduğundan sınıf/deneme bağlamına
+  // bakılmadan doğrudan guid ile senkronlanır — önceki sürüm yalnız açık/az önce bitmiş
+  // bir Deneme sınavı oturumunda çalışıyordu (kullanıcı isteği, 8 Eyl 2026).
   function remoteFlagSync(guid, note, kategori, hatali, hatirlatici) {
-    var attemptQuestionId = null, attemptId = null;
-    if (currentExam && currentExam.uzak && currentExam.soruKayitlari[guid]) {
-      attemptQuestionId = currentExam.soruKayitlari[guid]._attemptQuestionId;
-      attemptId = currentExam.uzakAttemptId;
-    } else if (lastResult && lastResult.uzak && lastResult.soruKayitlari[guid]) {
-      attemptQuestionId = lastResult.soruKayitlari[guid]._attemptQuestionId;
-      attemptId = lastResult.id;
-    }
-    if (!attemptQuestionId || !attemptId) return;
+    if (!STATE.sadeceDeneme || !remoteGirisTamamMi()) return;
     remoteFetch("/api/exam", "POST", {
-      action: "flag", attemptId: attemptId, questionId: attemptQuestionId, note: note || "", category: kategori || null,
+      action: "flag", questionGuid: guid, note: note || "", category: kategori || null,
       reported: !!hatali, reminder: !!hatirlatici
     }).then(function (r) {
       if (!r.ok || !remoteReminderGuids) return;
@@ -1508,21 +1504,6 @@
     render();
     remoteFlagSync(guid, STATE.flags[guid].hataNotu, kategori, true, STATE.flags[guid].hatirlatici);
   }
-  function examFlagBarHtml(guid) {
-    var f = STATE.flags[guid] || bosFlagKaydi();
-    var toggleHtml = '<div class="flag-bar">' +
-      '<button class="flag-btn' + (f.hatirlatici ? " active-bookmark" : "") + '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="hatirlatici">🔖 Hatırlatıcı</button>' +
-      '<button class="flag-btn' + (f.hatali ? " active-report" : "") + '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="hatali">🚩 Bu soru hatalı/eksik</button>' +
-      "</div>";
-    if (!f.hatali) return toggleHtml;
-    var katHtml = '<div class="flag-bar" style="margin-top:6px">' +
-      HATA_KATEGORILERI.map(function (k) {
-        return '<button class="flag-btn' + (f.kategori === k.key ? " active-report" : "") + '" data-action="set-flag-kategori" data-guid="' + guid + '" data-kategori="' + k.key + '">' + escapeHtml(k.etiket) + "</button>";
-      }).join("") + "</div>";
-    var notuHtml = '<textarea class="hata-notu" placeholder="Ek not (opsiyonel)" data-note-guid="' + guid + '">' + escapeHtml(f.hataNotu) + "</textarea>";
-    return toggleHtml + katHtml + notuHtml;
-  }
-
   // Kayıt/onay-bekleme/disclaimer adımları arkadaki içeriği (Rastgele Soru vb.)
   // etkileşimden kilitleyen tam ekran bir popup içinde gösterilir — sırayla aynı
   // görsel dilde ilerlesinler diye üçü de bu sarmalayıcıyı kullanır.
@@ -2661,6 +2642,11 @@
       "</div>";
   }
 
+  // Hatırlatıcı ve 🚩 hatalı bildirimi (kategori seçimiyle) her bağlamda aynı: Deneme
+  // sınavı, sınav sonucu incelemesi, Rastgele Soru, Konu Konu Bak — hepsi aynı guid'i
+  // paylaştığından (STATE.sadeceDeneme'de tek banka, sunucudan gelir) hepsi aynı şekilde
+  // sunucuya senkronlanır (bkz. remoteFlagSync). showPratikExtras yalnız Test sayfasının
+  // pratik havuzunda (kişisel Artifact, ayrı bir site) anlamlı.
   function flagBarHtml(guid, showPratikExtras) {
     var f = STATE.flags[guid] || bosFlagKaydi();
     var pratikExtraBtns = showPratikExtras
@@ -2672,10 +2658,13 @@
       '<button class="flag-btn' + (f.hatali ? " active-report" : "") + '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="hatali">🚩 Bu soru hatalı/eksik</button>' +
       pratikExtraBtns +
       "</div>";
-    if (f.hatali) {
-      html += '<textarea class="hata-notu" placeholder="Ne sorun var? (opsiyonel — eksik şık, güncel olmayan bilgi, teyit gerekiyor…)" data-note-guid="' + guid + '">' + escapeHtml(f.hataNotu) + "</textarea>";
-    }
-    return html;
+    if (!f.hatali) return html;
+    var katHtml = '<div class="flag-bar" style="margin-top:6px">' +
+      HATA_KATEGORILERI.map(function (k) {
+        return '<button class="flag-btn' + (f.kategori === k.key ? " active-report" : "") + '" data-action="set-flag-kategori" data-guid="' + guid + '" data-kategori="' + k.key + '">' + escapeHtml(k.etiket) + "</button>";
+      }).join("") + "</div>";
+    var notuHtml = '<textarea class="hata-notu" placeholder="Ek not (opsiyonel — eksik şık, güncel olmayan bilgi, teyit gerekiyor…)" data-note-guid="' + guid + '">' + escapeHtml(f.hataNotu) + "</textarea>";
+    return html + katHtml + notuHtml;
   }
 
   function renderExam() {
@@ -2715,7 +2704,7 @@
       kopyalaButonHtml("exam") +
       '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
       optionsHtml +
-      examFlagBarHtml(guid) +
+      flagBarHtml(guid) +
       '<div class="qgrid">' + qgrid + "</div>" +
       '<div class="exam-nav">' +
       '<div class="link-row">' +
@@ -3061,7 +3050,7 @@ function pratikEnIyiHtml(konu, modulKey) {
       return '<div class="review-item"><div class="review-q">' + escapeHtml(q.soru) + badge + "</div>" +
         bosHtml + optionsHtml +
         (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + (q.kaynak ? " — " + escapeHtml(q.kaynak) : "") + "</div>" : "") +
-        examFlagBarHtml(guid) +
+        flagBarHtml(guid) +
         "</div>";
     }).join("");
 

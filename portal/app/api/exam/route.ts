@@ -273,6 +273,29 @@ async function handlePost(request: Request) {
       return NextResponse.json({ guids: rows.map((r) => r.questionGuid) });
     }
 
+    if (body.action === 'flag') {
+      // Doğrudan guid ile çalışır — bir attemptId/questionId'ye bağlı değil, çünkü
+      // 🔖 Hatırlatıcı ve 🚩 hatalı bildirimi Deneme sınavı dışında Rastgele Soru/Konu
+      // Konu Bak'ta da kullanılır; hepsi aynı sunucu bankasının guid'ini paylaşır
+      // (kullanıcı isteği, 8 Eyl 2026 — önceki sürüm yalnız aktif/az önce bitmiş bir
+      // Deneme sınavı oturumunda çalışıyordu).
+      if (!body.questionGuid) return fail('Soru kimliği eksik.', 400);
+      const note = body.note.trim().slice(0, 1000);
+      const category = body.category ? body.category.trim().slice(0, 40) : null;
+      // reported: hata bayrağı (kategori seçimiyle birlikte gelir). reminder: kişisel
+      // "hatırlatıcı" işareti — hatalı olmadan da bağımsız açık/kapalı olabilir.
+      const isReported = body.reported !== undefined ? !!body.reported : true;
+      const isReminder = !!body.reminder;
+      const now = new Date();
+      await db.insert(schema.questionFlags).values({
+        userId: user.id, questionGuid: body.questionGuid, note, category, isReported, isReminder, updatedAt: now,
+      }).onConflictDoUpdate({
+        target: [schema.questionFlags.userId, schema.questionFlags.questionGuid],
+        set: { note, category, isReported, isReminder, updatedAt: now },
+      });
+      return NextResponse.json({ ok: true });
+    }
+
     if (!('attemptId' in body) || !body.attemptId) return fail('Sınav kimliği eksik.', 400);
 
     if (body.action === 'resume') {
@@ -443,26 +466,6 @@ async function handlePost(request: Request) {
         topicBreakdown,
         review,
       });
-    }
-
-    if (body.action === 'flag') {
-      const loaded = await loadAttempt(user.id, body.attemptId);
-      const question = loaded.questions.find((item) => item.id === body.questionId);
-      if (!question) return fail('Soru bulunamadı.', 404);
-      const note = body.note.trim().slice(0, 1000);
-      const category = body.category ? body.category.trim().slice(0, 40) : null;
-      // reported: hata bayrağı (kategori seçimiyle birlikte gelir). reminder: kişisel
-      // "hatırlatıcı" işareti — hatalı olmadan da bağımsız açık/kapalı olabilir.
-      const isReported = body.reported !== undefined ? !!body.reported : true;
-      const isReminder = !!body.reminder;
-      const now = new Date();
-      await db.insert(schema.questionFlags).values({
-        userId: user.id, questionGuid: question.questionGuid, note, category, isReported, isReminder, updatedAt: now,
-      }).onConflictDoUpdate({
-        target: [schema.questionFlags.userId, schema.questionFlags.questionGuid],
-        set: { note, category, isReported, isReminder, updatedAt: now },
-      });
-      return NextResponse.json({ ok: true });
     }
 
     return fail('İşlem tanınmadı.', 400);
