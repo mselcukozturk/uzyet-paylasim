@@ -61,4 +61,5 @@ export type ExamApiRequest =
   | { action: 'cancel'; attemptId: string }
   | { action: 'finish'; attemptId: string }
   | { action: 'history' }
-  | { action: 'flag'; attemptId: string; questionId: string; note: string };
+  | { action: 'flag'; attemptId: string; questionId: string; note: string }
+  | { action: 'bank' };

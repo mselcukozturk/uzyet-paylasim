@@ -174,6 +174,23 @@ async function handlePost(request: Request) {
       return NextResponse.json(await dashboard(user.id));
     }
 
+    if (body.action === 'bank') {
+      // Rastgele Soru / Konu Konu Bak — sadeceDeneme derlemesi soru havuzunu HTML'e
+      // gömmez; giriş yapmış+onaylı kullanıcı bunu burada, cevaplarıyla birlikte çeker.
+      const [activeBank] = await db.select().from(schema.questionBanks).where(eq(schema.questionBanks.isActive, true)).limit(1);
+      if (!activeBank) return fail('Aktif soru bankası bulunamadı.', 503);
+      const rows = await db.select().from(schema.questions).where(eq(schema.questions.bankId, activeBank.id));
+      const harfler = ['A', 'B', 'C', 'D'];
+      return NextResponse.json({
+        questions: rows.map((q) => ({
+          guid: q.guid, konu: q.topic, soru: q.prompt, siklar: q.options,
+          cevapIdx: q.correctIndex, cevapHarf: harfler[q.correctIndex] || '',
+          cevapMetni: q.options[q.correctIndex] || '', aciklama: q.explanation,
+          kaynak: q.source, donem: '', dogrulanmis: q.verified,
+        })),
+      });
+    }
+
     if (body.action === 'start') {
       const [open] = await db.select({ id: schema.examAttempts.id }).from(schema.examAttempts)
         .where(and(eq(schema.examAttempts.userId, user.id), inArray(schema.examAttempts.status, ['active', 'paused']))).limit(1);
