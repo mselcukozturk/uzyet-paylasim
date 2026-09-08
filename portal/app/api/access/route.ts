@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { eq, sql } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
-import { createUserSession, getSessionProfile, hashPin, newProfileId } from '@/lib/auth/session';
+import { createUserSession, decryptPin, encryptPin, getSessionProfile, newProfileId } from '@/lib/auth/session';
 import { corsPreflight, withCors } from '@/lib/cors';
 
 export const runtime = 'nodejs';
@@ -62,19 +62,22 @@ export async function POST(request: Request) {
     username: schema.profiles.username,
     isActive: schema.profiles.isActive,
     disclaimerAcceptedAt: schema.profiles.disclaimerAcceptedAt,
-    pinHash: schema.profiles.pinHash,
+    pinEncrypted: schema.profiles.pinEncrypted,
   }).from(schema.profiles).where(sql`lower(${schema.profiles.username}) = ${username}`).limit(1);
 
   if (found) {
     // Aynı isim var — başka cihazdan giriş denemesi. PIN doğrulanırsa bu cihaza
     // yeni bir oturum tokenı verilir; hesap/ilerleme aynı kalır.
-    if (!found.pinHash) {
-      // PIN özelliğinden önce oluşmuş hesap: girilen PIN artık bu hesabın PIN'i
-      // olarak kaydedilir (bir daha bu dala düşmez) — kimseyi kilitli bırakmaz.
-      const db2 = getDb();
-      await db2.update(schema.profiles).set({ pinHash: hashPin(pin, found.userId), updatedAt: new Date() })
+    let storedPin: string | null = null;
+    if (found.pinEncrypted) {
+      try { storedPin = decryptPin(found.pinEncrypted); } catch { storedPin = null; }
+    }
+    if (!storedPin) {
+      // PIN özelliğinden önce oluşmuş (veya çözülemeyen) hesap: girilen PIN artık bu
+      // hesabın PIN'i olarak kaydedilir — kimseyi kilitli bırakmaz.
+      await db.update(schema.profiles).set({ pinEncrypted: encryptPin(pin), updatedAt: new Date() })
         .where(eq(schema.profiles.userId, found.userId));
-    } else if (hashPin(pin, found.userId) !== found.pinHash) {
+    } else if (storedPin !== pin) {
       return fail('İsim veya PIN hatalı.', 401);
     }
     const token = await createUserSession(found.userId);
@@ -82,7 +85,7 @@ export async function POST(request: Request) {
   }
 
   const userId = newProfileId();
-  await db.insert(schema.profiles).values({ userId, username, isActive: false, pinHash: hashPin(pin, userId) });
+  await db.insert(schema.profiles).values({ userId, username, isActive: false, pinEncrypted: encryptPin(pin) });
   const token = await createUserSession(userId);
   return withCors(NextResponse.json(statusPayload({ username, isActive: false, disclaimerAcceptedAt: null }, token)));
 }

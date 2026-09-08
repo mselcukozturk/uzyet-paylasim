@@ -1,5 +1,6 @@
 import { desc, eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth/server';
+import { decryptPin } from '@/lib/auth/session';
 import { getDb, schema } from '@/lib/db';
 import { requestPasswordResetAction, signInAction, signOutAction } from '@/app/actions/auth';
 import { approveUserAction, rejectUserAction } from '@/app/actions/admin';
@@ -51,12 +52,19 @@ export default async function AdminPage() {
     createdAt: schema.profiles.createdAt,
   }).from(schema.profiles).where(eq(schema.profiles.isActive, false)).orderBy(schema.profiles.createdAt);
 
-  const active = await db.select({
+  const activeRows = await db.select({
     userId: schema.profiles.userId,
     username: schema.profiles.username,
     createdAt: schema.profiles.createdAt,
     isAdmin: schema.profiles.isAdmin,
+    pinEncrypted: schema.profiles.pinEncrypted,
   }).from(schema.profiles).where(eq(schema.profiles.isActive, true)).orderBy(desc(schema.profiles.createdAt));
+
+  const active = activeRows.map((item) => {
+    let pin: string | null = null;
+    if (item.pinEncrypted) { try { pin = decryptPin(item.pinEncrypted); } catch { pin = null; } }
+    return { ...item, pin };
+  });
 
   function formatTarih(d: Date) {
     return d.toLocaleString('tr-TR', { dateStyle: 'medium', timeStyle: 'short' });
@@ -111,6 +119,7 @@ export default async function AdminPage() {
         <thead>
           <tr style={{ textAlign: 'left', borderBottom: '1px solid #ddd' }}>
             <th style={{ padding: '0.4rem 0' }}>İsim</th>
+            <th style={{ padding: '0.4rem 0' }}>PIN</th>
             <th style={{ padding: '0.4rem 0' }}>Kayıt tarihi</th>
           </tr>
         </thead>
@@ -118,6 +127,14 @@ export default async function AdminPage() {
           {active.map((item) => (
             <tr key={item.userId} style={{ borderBottom: '1px solid #eee' }}>
               <td style={{ padding: '0.4rem 0' }}>{item.username}{item.isAdmin ? ' (yönetici)' : ''}</td>
+              <td style={{ padding: '0.4rem 0' }}>
+                {item.pin ? (
+                  <details>
+                    <summary style={{ cursor: 'pointer', display: 'inline' }}>Göster</summary>
+                    <span style={{ fontFamily: 'monospace', marginLeft: '0.5rem' }}>{item.pin}</span>
+                  </details>
+                ) : '—'}
+              </td>
               <td style={{ padding: '0.4rem 0', color: '#666' }}>{formatTarih(item.createdAt)}</td>
             </tr>
           ))}

@@ -1,6 +1,6 @@
 import 'server-only';
 import { cookies } from 'next/headers';
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { createCipheriv, createDecipheriv, createHash, randomBytes, randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 
@@ -16,10 +16,32 @@ export function newProfileId() {
 }
 
 // Basit cihaz-değiştirme PIN'i — gerçek parola değil, düşük riskli arkadaş grubu
-// kullanımı için hafif bir kurtarma mekanizması. userId'yi tuz olarak katmak aynı
-// PIN'i seçen iki kullanıcının hash'inin çakışmasını önler.
-export function hashPin(pin: string, userId: string) {
-  return createHash('sha256').update(userId + ':' + pin).digest('hex');
+// kullanımı için hafif bir kurtarma mekanizması. Yönetici sayfasında gösterilebilmesi
+// gerektiğinden (kullanıcı unuttuğunda telefonla söyleyebilmek için) hash değil,
+// PIN_ENCRYPTION_KEY ile AES-256-GCM şifrelenir — DB sızsa bile anahtar olmadan
+// çözülemez, ama sunucu (ve dolayısıyla /admin) anahtarı bildiği için gösterebilir.
+function pinKey() {
+  const raw = process.env.PIN_ENCRYPTION_KEY;
+  if (!raw) throw new Error('PIN_ENCRYPTION_KEY yapılandırılmamış.');
+  return createHash('sha256').update(raw).digest(); // 32 bayt anahtar
+}
+
+export function encryptPin(pin: string) {
+  const iv = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', pinKey(), iv);
+  const enc = Buffer.concat([cipher.update(pin, 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return Buffer.concat([iv, tag, enc]).toString('base64');
+}
+
+export function decryptPin(stored: string) {
+  const buf = Buffer.from(stored, 'base64');
+  const iv = buf.subarray(0, 12);
+  const tag = buf.subarray(12, 28);
+  const enc = buf.subarray(28);
+  const decipher = createDecipheriv('aes-256-gcm', pinKey(), iv);
+  decipher.setAuthTag(tag);
+  return Buffer.concat([decipher.update(enc), decipher.final()]).toString('utf8');
 }
 
 // index.html (GitHub Pages / Artifact) başka bir origin'den çağırdığı için çerez
