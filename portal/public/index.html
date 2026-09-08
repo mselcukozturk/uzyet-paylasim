@@ -1741,45 +1741,64 @@
     render();
   }
 
-  // "Word ile uyumlu HTML" tekniği: mso ad alanlı düz bir HTML dosyasını
-  // application/msword mime tipiyle .doc olarak indirir — kütüphane gerekmez,
-  // Word dosyayı doğrudan açar.
-  function wordIndir(baslik, htmlBody, dosyaAdi) {
-    var doc = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
-      '<head><meta charset="utf-8"><title>' + escapeHtml(baslik) + '</title></head>' +
-      '<body style="font-family:Calibri,Arial,sans-serif;font-size:11pt">' + htmlBody + '</body></html>';
-    var blob = new Blob(["﻿" + doc], { type: "application/msword" });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
-    a.href = url; a.download = dosyaAdi;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  // Gerçek .docx üretimi — "docx" kütüphanesi (OOXML) yalnız butona basılınca CDN'den
+  // yüklenir (1MB+, ana sayfa yükünü büyütmesin diye eager değil). Word/Google Docs/
+  // LibreOffice'in hepsi native açar; eski "Word'e uyumlu HTML/.doc" hilesine gerek yok.
+  var docxLibYuklendi = false;
+  function docxKutuphaneYukle(basarili, hata) {
+    if (window.docx) { docxLibYuklendi = true; basarili(); return; }
+    if (docxLibYuklendi) { basarili(); return; }
+    var s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/docx@9.7.1/dist/index.umd.cjs";
+    s.onload = function () { docxLibYuklendi = true; basarili(); };
+    s.onerror = hata;
+    document.head.appendChild(s);
   }
 
   // Sorular önce, cevap+açıklamalar sonda ayrı bir bölümde — kullanıcı isteği:
   // "Cevap ve açıklamalar sorulardan sonra olacak şekilde."
-  function exportHatirlaticiWord() {
-    var guids = (remoteReminderGuids || []).filter(function (g) { return hatirlaticiSoruBul(g); });
-    if (!guids.length) { showBanner("İşaretli soru bulunamadı.", true); return; }
+  function hatirlaticiDocxOlustur(guids) {
+    var d = window.docx;
     var harfler = ["A", "B", "C", "D"];
-    var soruBlok = guids.map(function (g, i) {
+    var children = [new d.Paragraph({ text: "Hatırlatıcılarım — Sorular", heading: d.HeadingLevel.HEADING_1 })];
+    guids.forEach(function (g, i) {
       var q = hatirlaticiSoruBul(g);
-      var siklarHtml = q.siklar.map(function (s, idx) {
-        return s ? "<p>" + harfler[idx] + ") " + escapeHtml(s) + "</p>" : "";
-      }).join("");
-      return "<p><b>" + (i + 1) + ". " + escapeHtml(q.konu) + "</b></p><p>" + escapeHtml(q.soru) + "</p>" + siklarHtml;
-    }).join("<p>&nbsp;</p>");
-    var cevapBlok = guids.map(function (g, i) {
+      children.push(new d.Paragraph({
+        spacing: { before: 240 },
+        children: [new d.TextRun({ text: (i + 1) + ". " + q.konu, bold: true })]
+      }));
+      children.push(new d.Paragraph({ text: q.soru, spacing: { after: 80 } }));
+      q.siklar.forEach(function (s, idx) {
+        if (s) children.push(new d.Paragraph({ text: harfler[idx] + ") " + s }));
+      });
+    });
+    children.push(new d.Paragraph({ text: "Cevaplar ve Açıklamalar", heading: d.HeadingLevel.HEADING_1, pageBreakBefore: true }));
+    guids.forEach(function (g, i) {
       var q = hatirlaticiSoruBul(g);
       var dogruHarf = harfler[q.cevapIdx] || "";
       var dogruMetin = q.cevapMetni || q.siklar[q.cevapIdx] || "";
-      return "<p><b>" + (i + 1) + ". " + dogruHarf + ")</b> " + escapeHtml(dogruMetin) + "</p>" +
-        (q.aciklama ? "<p>" + escapeHtml(q.aciklama) + "</p>" : "");
-    }).join("<p>&nbsp;</p>");
-    var body = "<h2>Hatırlatıcılarım — Sorular</h2>" + soruBlok +
-      "<br clear=all style='page-break-before:always'>" +
-      "<h2>Cevaplar ve Açıklamalar</h2>" + cevapBlok;
-    wordIndir("Hatırlatıcılarım", body, "hatirlaticilarim.doc");
+      children.push(new d.Paragraph({
+        spacing: { before: 240 },
+        children: [new d.TextRun({ text: (i + 1) + ". " + dogruHarf + ") " + dogruMetin, bold: true })]
+      }));
+      if (q.aciklama) children.push(new d.Paragraph({ text: q.aciklama, spacing: { after: 80 } }));
+    });
+    return new d.Document({ sections: [{ children: children }] });
+  }
+
+  function exportHatirlaticiWord() {
+    var guids = (remoteReminderGuids || []).filter(function (g) { return hatirlaticiSoruBul(g); });
+    if (!guids.length) { showBanner("İşaretli soru bulunamadı.", true); return; }
+    showBanner("Word belgesi hazırlanıyor…");
+    docxKutuphaneYukle(function () {
+      window.docx.Packer.toBlob(hatirlaticiDocxOlustur(guids)).then(function (blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = "hatirlaticilarim.docx";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      }).catch(function () { showBanner("Word belgesi oluşturulamadı.", true); });
+    }, function () { showBanner("Word kütüphanesi yüklenemedi — internet bağlantısını kontrol et.", true); });
   }
 
   function finishExam() {
