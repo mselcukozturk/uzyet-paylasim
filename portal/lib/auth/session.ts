@@ -52,6 +52,7 @@ export async function getSessionProfile(request: Request) {
     username: schema.profiles.username,
     displayName: schema.profiles.displayName,
     isActive: schema.profiles.isActive,
+    disclaimerAcceptedAt: schema.profiles.disclaimerAcceptedAt,
   }).from(schema.userSessions)
     .innerJoin(schema.profiles, eq(schema.userSessions.userId, schema.profiles.userId))
     .where(eq(schema.userSessions.tokenHash, tokenHash)).limit(1);
