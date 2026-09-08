@@ -1061,7 +1061,12 @@
     bumpRev();
     lsKaydet();
     return ensureArtifact().then(function (artifact) {
-      if (!artifact) { showBanner("Kaydetme kullanılamıyor — bu görünümde kayıt yetkisi yok. Değişiklikler yalnızca bu tarayıcıda saklanıyor.", true); return false; }
+      if (!artifact) {
+        // sadeceDeneme derlemesi (Vercel'de statik dosya) hiçbir zaman Artifact içinde
+        // çalışmaz — bu normal, kullanıcıyı alarma gerek yok (resmi deneme zaten sunucuda).
+        if (!STATE.sadeceDeneme) showBanner("Kaydetme kullanılamıyor — bu görünümde kayıt yetkisi yok. Değişiklikler yalnızca bu tarayıcıda saklanıyor.", true);
+        return false;
+      }
       stashPendingView();
       return artifact.publish(buildFullHtml(STATE)).then(function () { return true; }).catch(function (e) {
         if (e && e.code === "conflict") return true; // sayfa zaten yeniden yükleniyor
@@ -1301,34 +1306,40 @@
     remoteFetch("/api/exam", "POST", { action: "flag", attemptId: attemptId, questionId: attemptQuestionId, note: note || "" }).catch(function () {});
   }
 
+  // Kayıt/onay-bekleme/disclaimer adımları arkadaki içeriği (Rastgele Soru vb.)
+  // etkileşimden kilitleyen tam ekran bir popup içinde gösterilir — sırayla aynı
+  // görsel dilde ilerlesinler diye üçü de bu sarmalayıcıyı kullanır.
+  function denemeModalSar(innerHtml) {
+    return '<div style="position:fixed;inset:0;z-index:9999;background:rgba(10,10,10,.62);display:flex;align-items:center;justify-content:center;padding:20px">' +
+      '<div class="card" style="max-width:420px;width:100%;max-height:88vh;overflow:auto">' + innerHtml + "</div></div>";
+  }
+
   function renderDenemeUzakBolum() {
     if (!remoteAuth.checked || remoteAuth.checking) {
-      return '<div class="card">Hesap durumu kontrol ediliyor…</div>';
+      return denemeModalSar("Hesap durumu kontrol ediliyor…");
     }
     if (!remoteAuth.authenticated) {
       var inputStil = "padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body)";
-      return '<div class="card">' +
+      return denemeModalSar(
         '<div class="section-title" style="font-size:1rem;margin-bottom:6px">Hoş geldin</div>' +
         '<div class="muted" style="margin-bottom:10px">Devam etmek için kayıt olman gerekiyor — isminizi yazmanız ve 4 haneli bir PIN belirlemeniz yeterli (boşluksuz isim, örn. <i>mustafa</i>). Bu PIN\'i unutma: başka bir cihazdan aynı isim ve PIN ile tekrar girebilirsin. Yönetici onayından sonra kullanabilirsin.</div>' +
         '<div class="link-row">' +
         '<input type="text" id="deneme-username-input" placeholder="isminiz" style="flex:1;min-width:160px;' + inputStil + '"' + (remoteBusy ? " disabled" : "") + '>' +
         '<input type="text" inputmode="numeric" maxlength="4" id="deneme-pin-input" placeholder="PIN (4 hane)" style="width:110px;' + inputStil + '"' + (remoteBusy ? " disabled" : "") + '>' +
         '<button class="btn primary" data-action="deneme-register" ' + (remoteBusy ? "disabled" : "") + '>' + (remoteBusy ? "Gönderiliyor…" : "Kayıt Ol / Giriş Yap") + "</button>" +
-        "</div></div>";
+        "</div>");
     }
     if (!remoteAuth.isActive) {
-      return '<div class="card">' +
+      return denemeModalSar(
         '<div class="section-title" style="font-size:1rem;margin-bottom:6px">Onay bekleniyor</div>' +
         '<div class="muted" style="margin-bottom:10px">İsmin: <b>' + escapeHtml(remoteAuth.username) + '</b> — yönetici onayladığında devam edebilirsin.</div>' +
-        '<button class="btn ghost" data-action="deneme-refresh">Durumu Yenile</button>' +
-        "</div>";
+        '<button class="btn ghost" data-action="deneme-refresh">Durumu Yenile</button>');
     }
     if (!remoteAuth.disclaimerAccepted) {
-      return '<div class="card">' +
+      return denemeModalSar(
         '<div class="section-title" style="font-size:1rem;margin-bottom:6px">Önemli not</div>' +
         '<div class="muted" style="margin-bottom:14px;white-space:pre-wrap">' + escapeHtml(DISCLAIMER_METNI) + '</div>' +
-        '<button class="btn primary" ' + (remoteBusy ? "disabled" : "") + ' data-action="deneme-accept-disclaimer">' + (remoteBusy ? "Kaydediliyor…" : "Anladım") + "</button>" +
-        "</div>";
+        '<button class="btn primary" ' + (remoteBusy ? "disabled" : "") + ' data-action="deneme-accept-disclaimer">' + (remoteBusy ? "Kaydediliyor…" : "Anladım") + "</button>");
     }
     if (remoteDash && remoteDash.activeAttempt) {
       var a = remoteDash.activeAttempt;
