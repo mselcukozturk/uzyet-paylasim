@@ -1358,19 +1358,50 @@
     }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
   }
 
+  var gecmisSilConfirmId = null;
+  function requestDeleteGecmis(id) { gecmisSilConfirmId = id; render(); }
+  function cancelDeleteGecmis() { gecmisSilConfirmId = null; render(); }
+  function confirmDeleteGecmis(id) {
+    if (remoteBusy) return;
+    remoteBusy = true; render();
+    remoteFetch("/api/exam", "POST", { action: "delete", attemptId: id }).then(function (r) {
+      remoteBusy = false;
+      gecmisSilConfirmId = null;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Silinemedi.", true); render(); return; }
+      remoteRefreshDashboard(render);
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+  }
+
   function renderGecmisUzak() {
     var list = (remoteDash && remoteDash.recentAttempts) || [];
+    var es = remoteDash && remoteDash.examStats;
+    var ozetHtml = es ? '<div class="stat-grid">' +
+      '<div class="stat-card"><div class="num">' + es.count + '</div><div class="lbl">Toplam deneme</div></div>' +
+      '<div class="stat-card"><div class="num">%' + es.avgPercent + '</div><div class="lbl">Ortalama puan</div></div>' +
+      '<div class="stat-card"><div class="num">' + fmtSure(es.avgSeconds) + '</div><div class="lbl">Ortalama süre</div></div>' +
+      "</div>" : "";
     var rows = list.map(function (a) {
       var toplam = a.score ? (a.score.correct + a.score.wrong + a.score.blank) : a.totalCount;
       var skorTxt = a.score ? (a.score.correct + " / " + toplam + " · %" + a.score.percent) : "—";
       var renk = MOD_RENK[a.mode] || "var(--seri-6)";
-      return '<button class="mode-btn" style="border-left:4px solid ' + renk + '" data-action="open-gecmis-detay" data-id="' + a.id + '">' +
-        '<div class="title">' + (MOD_ADI[a.mode] || a.mode) + '</div>' +
-        '<div class="desc">' + fmtTarih(a.updatedAt) + " · " + skorTxt + "</div></button>";
+      var silBlok = gecmisSilConfirmId === a.id
+        ? '<span style="display:flex;gap:4px;flex-shrink:0">' +
+          '<button class="btn primary" style="padding:2px 8px;font-size:0.78rem" data-action="confirm-delete-gecmis" data-id="' + a.id + '">Evet</button>' +
+          '<button class="btn ghost" style="padding:2px 8px;font-size:0.78rem" data-action="cancel-delete-gecmis">Vazgeç</button>' +
+          "</span>"
+        : '<button class="btn ghost" style="padding:2px 8px;font-size:0.78rem;flex-shrink:0" data-action="request-delete-gecmis" data-id="' + a.id + '">Sil</button>';
+      return '<div class="card" style="border-left:4px solid ' + renk + ';margin-bottom:10px;padding:14px 16px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">' +
+        '<div style="cursor:pointer;flex:1" data-action="open-gecmis-detay" data-id="' + a.id + '">' +
+        '<div class="title" style="font-weight:700">' + (MOD_ADI[a.mode] || a.mode) + '</div>' +
+        '<div class="desc" style="color:var(--text-muted);font-size:0.86rem">' + fmtTarih(a.updatedAt) + " · ⏱ " + fmtSure(a.elapsedSeconds || 0) + " · " + skorTxt + "</div></div>" +
+        silBlok +
+        "</div></div>";
     }).join("");
     return '<div class="link-row"><button class="btn ghost" data-action="open-menu-deneme">← Deneme Sınavı</button></div>' +
       '<div class="section-title">📊 Deneme Geçmişi</div>' +
-      (list.length ? '<div class="mode-grid">' + rows + "</div>" : '<div class="card">Henüz tamamlanmış resmi deneme yok.</div>');
+      ozetHtml +
+      (list.length ? rows : '<div class="card">Henüz tamamlanmış resmi deneme yok.</div>');
   }
 
   // Yerel STATE.flags dual-write'ından sonra çağrılır; guid bir uzak deneme
@@ -2912,6 +2943,9 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "cancel-discard-exam-remote") cancelDiscardExamRemote();
     else if (action === "open-history-remote") openHistoryRemote();
     else if (action === "open-gecmis-detay") openGecmisDetay(t.getAttribute("data-id"));
+    else if (action === "request-delete-gecmis") requestDeleteGecmis(t.getAttribute("data-id"));
+    else if (action === "confirm-delete-gecmis") confirmDeleteGecmis(t.getAttribute("data-id"));
+    else if (action === "cancel-delete-gecmis") cancelDeleteGecmis();
     else if (action === "copy-exam-code") kopyalaPano(t.getAttribute("data-kod"));
     else if (action === "select-option") selectOption(t.getAttribute("data-guid"), parseInt(t.getAttribute("data-idx"), 10));
     else if (action === "next-q") nextQuestion();
