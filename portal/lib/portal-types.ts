@@ -65,4 +65,5 @@ export type ExamApiRequest =
   | { action: 'flag'; questionGuid: string; note: string; category?: string | null; reported?: boolean; reminder?: boolean }
   | { action: 'reminders' }
   | { action: 'flags' }
-  | { action: 'bank' };
+  | { action: 'bank' }
+  | { action: 'corrections' };
