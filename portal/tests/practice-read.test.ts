@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
+import { validatePracticeAnswer } from '../lib/practice-core.ts';
 
 // Run the real route with an in-memory query adapter: no live database or credentials.
 const source = readFileSync(new URL('../app/api/exam/route.ts', import.meta.url), 'utf8');
@@ -45,6 +46,7 @@ function route(profile: Row | null, data: Record<string, Row[]> = {}) {
     '@/lib/cors': { withCors: (response: Response) => response },
     '@/lib/db': { getDb: () => db, schema },
     '@/lib/exam-core': {},
+    '@/lib/practice-core': { validatePracticeAnswer },
     '@/data/bank-corrections.json': [],
   };
   const exports: { POST?: (request: Request) => Promise<Response> } = {};
@@ -63,7 +65,8 @@ function route(profile: Row | null, data: Record<string, Row[]> = {}) {
 }
 
 test('all practice reads enforce session, approval, AI permission and disclaimer before querying', async () => {
-  for (const action of ['practice-bank', 'checkpoints', 'practice-stats']) {
+  for (const action of ['practice-bank', 'checkpoints', 'practice-stats', 'practice-answer',
+    'practice-session-save', 'practice-session-load', 'practice-session-delete']) {
     for (const [profile, expected] of [
       [null, 401],
       [{ ...allowed, isActive: false }, 403],

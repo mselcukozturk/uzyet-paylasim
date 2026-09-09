@@ -14,6 +14,7 @@ import {
 } from '@/lib/exam-core';
 import type { ExamApiRequest, PracticeBankResponse, PracticeCheckpointsResponse, PracticeStatsResponse } from '@/lib/portal-types';
 import bankCorrections from '@/data/bank-corrections.json';
+import { validatePracticeAnswer } from '@/lib/practice-core';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -204,6 +205,60 @@ async function handlePost(request: Request) {
 
     const db = getDb();
     const body = await request.json() as ExamApiRequest;
+    if (body.action === 'practice-answer' || body.action === 'practice-session-save'
+      || body.action === 'practice-session-load' || body.action === 'practice-session-delete') {
+      const denied = requireAiSources(profile);
+      if (denied) return denied;
+      if (body.action === 'practice-answer') {
+        if (typeof body.questionGuid !== 'string' || !body.questionGuid.trim()) return fail('Soru kimliği eksik.', 400);
+        const [question] = await db.select({ options: schema.practiceQuestions.options, correctIndex: schema.practiceQuestions.correctIndex })
+          .from(schema.practiceQuestions).where(eq(schema.practiceQuestions.guid, body.questionGuid)).limit(1);
+        let correct: boolean;
+        try { correct = validatePracticeAnswer(question, body.selectedAnswer); }
+        catch { return fail('Soru veya cevap geçersiz.', 400); }
+        const now = new Date();
+        const [stat] = await db.insert(schema.practiceStats).values({
+          userId: user.id, questionGuid: body.questionGuid, shownCount: 1,
+          correctCount: correct ? 1 : 0, wrongCount: correct ? 0 : 1, lastResult: correct, lastSeenAt: now,
+        }).onConflictDoUpdate({
+          target: [schema.practiceStats.userId, schema.practiceStats.questionGuid],
+          set: {
+            shownCount: sql`${schema.practiceStats.shownCount} + 1`,
+            correctCount: sql`${schema.practiceStats.correctCount} + ${correct ? 1 : 0}`,
+            wrongCount: sql`${schema.practiceStats.wrongCount} + ${correct ? 0 : 1}`,
+            lastResult: correct, lastSeenAt: now,
+          },
+        }).returning();
+        return NextResponse.json({ ok: true, correct, stat: {
+          gosterim: stat.shownCount, dogru: stat.correctCount, yanlis: stat.wrongCount,
+          sonSonucDogruMu: stat.lastResult, sonGorulme: stat.lastSeenAt?.toISOString() ?? null,
+        } });
+      }
+
+      if (typeof body.konu !== 'string' || !body.konu.trim() || typeof body.modul !== 'string' || !body.modul.trim()) {
+        return fail('Konu ve modül gerekli.', 400);
+      }
+      const where = and(eq(schema.practiceSessions.userId, user.id),
+        eq(schema.practiceSessions.topic, body.konu), eq(schema.practiceSessions.modul, body.modul));
+      if (body.action === 'practice-session-save') {
+        if (body.payload === undefined || body.payload === null) return fail('Oturum verisi gerekli.', 400);
+        if (Buffer.byteLength(JSON.stringify(body.payload), 'utf8') > 256 * 1024) return fail('Oturum verisi 256 KB sınırını aşıyor.', 413);
+        await db.insert(schema.practiceSessions).values({
+          userId: user.id, topic: body.konu, modul: body.modul, payload: body.payload,
+        }).onConflictDoUpdate({
+          target: [schema.practiceSessions.userId, schema.practiceSessions.topic, schema.practiceSessions.modul],
+          set: { payload: body.payload, updatedAt: new Date() },
+        });
+        return NextResponse.json({ ok: true });
+      }
+      if (body.action === 'practice-session-load') {
+        const [session] = await db.select({ payload: schema.practiceSessions.payload })
+          .from(schema.practiceSessions).where(where).limit(1);
+        return NextResponse.json({ payload: session?.payload ?? null });
+      }
+      await db.delete(schema.practiceSessions).where(where);
+      return NextResponse.json({ ok: true });
+    }
     if (body.action === 'practice-bank' || body.action === 'checkpoints' || body.action === 'practice-stats') {
       const denied = requireAiSources(profile);
       if (denied) return denied;
