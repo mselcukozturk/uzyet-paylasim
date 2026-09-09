@@ -52,7 +52,46 @@ export type DashboardData = {
   topicStats: Array<{ topic: string; correct: number; total: number; percent: number }>;
 };
 
+export type PracticeQuestion = {
+  guid: string;
+  konu: string;
+  modul: string;
+  soru: string;
+  siklar: string[];
+  cevapIdx: number;
+  cevapHarf: string;
+  cevapMetni: string;
+  aciklama: string;
+  kaynak: string;
+};
+
+export type PracticeCheckpoint = {
+  id: string;
+  konu: string;
+  title: string;
+  subtitle: string;
+  html: string;
+};
+
+export type PracticeStat = {
+  gosterim: number;
+  dogru: number;
+  yanlis: number;
+  sonSonucDogruMu: boolean | null;
+  sonGorulme: string | null;
+};
+
+export type PracticeBankResponse = { questions: PracticeQuestion[] };
+export type PracticeCheckpointsResponse = { checkpoints: PracticeCheckpoint[] };
+export type PracticeStatsResponse = {
+  stats: Record<string, PracticeStat>;
+  sessions: Array<{ konu: string; modul: string; updatedAt: string }>;
+};
+
 export type ExamApiRequest =
+  | { action: 'practice-bank' }
+  | { action: 'checkpoints' }
+  | { action: 'practice-stats' }
   | { action: 'dashboard' }
   | { action: 'start'; mode: ExamMode; examCode?: string }
   | { action: 'resume'; attemptId: string }
