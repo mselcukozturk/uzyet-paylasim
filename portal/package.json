@@ -7,7 +7,9 @@
   },
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/gen-migrations.mjs",
     "build": "next build",
+    "db:gen": "node scripts/gen-migrations.mjs",
     "start": "next start",
     "test": "node --test tests/*.test.ts",
     "bank:check": "node scripts/sync-question-bank.mjs --check",
