@@ -82,6 +82,7 @@ export type PracticeStat = {
 };
 
 export type PracticeBankResponse = { questions: PracticeQuestion[] };
+export type PracticeAnswerResponse = { ok: true; correct: boolean; stat: PracticeStat };
 export type PracticeCheckpointsResponse = { checkpoints: PracticeCheckpoint[] };
 export type PracticeStatsResponse = {
   stats: Record<string, PracticeStat>;
@@ -89,6 +90,10 @@ export type PracticeStatsResponse = {
 };
 
 export type ExamApiRequest =
+  | { action: 'practice-answer'; questionGuid: string; selectedAnswer: string }
+  | { action: 'practice-session-save'; konu: string; modul: string; payload: unknown }
+  | { action: 'practice-session-load'; konu: string; modul: string }
+  | { action: 'practice-session-delete'; konu: string; modul: string }
   | { action: 'practice-bank' }
   | { action: 'checkpoints' }
   | { action: 'practice-stats' }
