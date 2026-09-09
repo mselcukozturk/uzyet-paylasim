@@ -25,6 +25,7 @@ export const profiles = pgTable('profiles', {
   displayName: text('display_name'),
   isActive: boolean('is_active').notNull().default(false),
   isAdmin: boolean('is_admin').notNull().default(false),
+  canSeeAiSources: boolean('can_see_ai_sources').notNull().default(false),
   disclaimerAcceptedAt: timestamp('disclaimer_accepted_at', { withTimezone: true }),
   pinEncrypted: text('pin_encrypted'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -62,6 +63,51 @@ export const questions = pgTable('questions', {
   check('questions_correct_index_check', sql`${table.correctIndex} between 0 and 3`),
   index('questions_bank_topic_idx').on(table.bankId, table.topic),
 ]);
+
+export const practiceQuestions = pgTable('practice_questions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  guid: text('guid').notNull().unique(),
+  topic: text('topic').notNull(),
+  modul: text('modul').notNull(),
+  prompt: text('prompt').notNull(),
+  options: jsonb('options').$type<string[]>().notNull(),
+  correctIndex: smallint('correct_index').notNull(),
+  explanation: text('explanation').notNull().default(''),
+  source: text('source').notNull().default(''),
+  version: text('version').notNull(),
+}, (table) => [
+  check('practice_questions_options_check', sql`jsonb_typeof(${table.options}) = 'array' and jsonb_array_length(${table.options}) between 2 and 4`),
+  check('practice_questions_correct_index_check', sql`${table.correctIndex} between 0 and 3`),
+  index('practice_questions_topic_modul_idx').on(table.topic, table.modul),
+]);
+
+export const practiceCheckpoints = pgTable('practice_checkpoints', {
+  id: text('id').primaryKey(),
+  topic: text('topic').notNull(),
+  title: text('title').notNull(),
+  subtitle: text('subtitle').notNull().default(''),
+  html: text('html').notNull(),
+  sira: integer('sira').notNull().default(0),
+  version: text('version').notNull(),
+});
+
+export const practiceStats = pgTable('practice_stats', {
+  userId: text('user_id').notNull(),
+  questionGuid: text('question_guid').notNull(),
+  shownCount: integer('shown_count').notNull().default(0),
+  correctCount: integer('correct_count').notNull().default(0),
+  wrongCount: integer('wrong_count').notNull().default(0),
+  lastResult: boolean('last_result'),
+  lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
+}, (table) => [unique('practice_stats_user_guid_unique').on(table.userId, table.questionGuid)]);
+
+export const practiceSessions = pgTable('practice_sessions', {
+  userId: text('user_id').notNull(),
+  topic: text('topic').notNull(),
+  modul: text('modul').notNull(),
+  payload: jsonb('payload').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [unique('practice_sessions_user_topic_modul_unique').on(table.userId, table.topic, table.modul)]);
 
 export const examAttempts = pgTable('exam_attempts', {
   id: uuid('id').primaryKey().defaultRandom(),
