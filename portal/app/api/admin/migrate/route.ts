@@ -74,6 +74,9 @@ export async function POST(req: Request) {
         {
           error: `Migration başarısız: ${migration.name}`,
           detay: err instanceof Error ? err.message : String(err),
+          // Drizzle sürücü hatasını sarmalıyor; asıl Postgres mesajı (ör. "column
+          // already exists") yalnız cause içinde oluyor, onsuz teşhis edilemiyor.
+          neden: err instanceof Error && err.cause instanceof Error ? err.cause.message : undefined,
           uygulandi,
         },
         { status: 500 },

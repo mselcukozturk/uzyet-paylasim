@@ -39,6 +39,6 @@ export const MIGRATIONS: readonly Migration[] = [
   },
   {
     name: "0008_flag_reminder.sql",
-    content: "ALTER TABLE \"question_flags\" ADD COLUMN \"is_reminder\" boolean NOT NULL DEFAULT false;\r\n",
+    content: "-- IF NOT EXISTS: bu sütun prod'a migrate.mjs dışında bir yolla eklenmişti, bu yüzden\n-- _migrations kaydı yokken sütun vardı ve migration tekrar çalıştırılamıyordu (9 Eyl 2026).\n-- Idempotent hâli, kayıt ile gerçek şemanın ayrıştığı ortamlarda da güvenle çalışır.\nALTER TABLE \"question_flags\" ADD COLUMN IF NOT EXISTS \"is_reminder\" boolean NOT NULL DEFAULT false;\n",
   },
 ];
