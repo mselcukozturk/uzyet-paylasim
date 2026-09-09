@@ -13,6 +13,7 @@ import {
   type ExamMode,
 } from '@/lib/exam-core';
 import type { ExamApiRequest } from '@/lib/portal-types';
+import bankCorrections from '@/data/bank-corrections.json';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -272,6 +273,24 @@ async function handlePost(request: Request) {
         .from(schema.questionFlags)
         .where(and(eq(schema.questionFlags.userId, user.id), eq(schema.questionFlags.isReminder, true)));
       return NextResponse.json({ guids: rows.map((r) => r.questionGuid) });
+    }
+
+    if (body.action === 'corrections') {
+      // Salt-okunur, herkese aynı görünen içerik düzeltme günlüğü (bkz. Test moddaki
+      // STATE.duzeltmeler ile aynı kaynak: 08 Sorular/birlestir/bank_corrections.json,
+      // portal/data/bank-corrections.json'a kopyalanır). Kullanıcıya özel takip veya
+      // istatistik sıfırlama YOK, bilinçli bir tasarım kararı — bkz. web-quiz.md.
+      const [activeBankForCorrections] = await db.select().from(schema.questionBanks)
+        .where(eq(schema.questionBanks.isActive, true)).limit(1);
+      if (!activeBankForCorrections) return NextResponse.json({ items: [] });
+      const activeGuids = await db.select({ guid: schema.questions.guid })
+        .from(schema.questions).where(eq(schema.questions.bankId, activeBankForCorrections.id));
+      const activeGuidSet = new Set(activeGuids.map((r) => r.guid));
+      const items = (bankCorrections as Array<{ guid: string; konu: string; soru: string; not: string; tarihISO: string }>)
+        .filter((d) => activeGuidSet.has(d.guid))
+        .sort((a, b) => (a.tarihISO < b.tarihISO ? 1 : a.tarihISO > b.tarihISO ? -1 : 0))
+        .map((d) => ({ guid: d.guid, konu: d.konu, soru: d.soru, not: d.not, tarihISO: d.tarihISO }));
+      return NextResponse.json({ items });
     }
 
     if (body.action === 'flags') {
