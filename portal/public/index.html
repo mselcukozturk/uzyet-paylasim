@@ -1753,113 +1753,122 @@
     remoteFlagSync(guid, text, STATE.flags[guid].kategori, STATE.flags[guid].hatali, STATE.flags[guid].hatirlatici);
   }
 
-  // ---------------------------------------------------- Hatırlatıcı testi --
-  // Deneme ana ekranındaki "🔖 hatırlatıcı içeren sorular" bölümü — kişisel
-  // istatistiğe/geçmişe yazmayan, sırf gözden geçirme amaçlı yerel bir tekrar
-  // oturumu. Soru içeriği STATE.bank'ten (giriş yapınca sunucudan çekilmiş
-  // olan tam banka) okunur, guid listesi remoteReminderGuids'ten gelir.
+  // ------------------------------------------------ Tekrar testleri (ortak) --
+  // İki tekrar oturumu — 🔖 Hatırlatıcı (elle işaretlenen sorular) ve ❌ Yanlış
+  // Sorular (tamamlanan denemelerde son cevabı yanlış olanlar) — aynı motoru
+  // paylaşır. Mekanik, Test sayfasındaki Rastgele Soru ile birebir aynıdır
+  // (9 Eyl 2026, kullanıcı isteği): cevap bir kez seçilir ve kilitlenir, üstte
+  // "✅ Testi Bitir", altta "← Önceki Soru / Sonraki Soru →" ile kuyrukta serbestçe
+  // gezilir (geri dönünce verilen cevap ve şık sırası korunur) ve oturum ders
+  // kırılımlı bir özet ekranıyla biter. Rastgele Soru'dan tek farkı kuyruğun sonlu
+  // olması (havuz kadar) ve yanlış turunda her cevabın sunucuya yazılması.
+  // Soru içeriği STATE.bank'ten (girişten sonra çekilen tam banka) okunur, guid
+  // listeleri remoteReminderGuids / remoteWrongGuids'ten gelir. İkisi de kişisel
+  // sınav istatistiğine veya deneme geçmişine yazmaz.
   function hatirlaticiSoruBul(guid) {
     return STATE.bank.filter(function (b) { return b.guid === guid; })[0];
   }
-  var currentHatirlatici = null; // {kuyruk:[guid...], index, secilen, cevaplandi, bitti}
-  function startHatirlaticiTest() {
-    var guids = (remoteReminderGuids || []).filter(function (g) { return hatirlaticiSoruBul(g); });
-    if (!guids.length) { showBanner("İşaretli soru bulunamadı.", true); return; }
-    var kuyruk = sampleRandom(guids, guids.length);
-    kuyruk.forEach(function (g) { shuffleSiklarInPlace(hatirlaticiSoruBul(g)); });
-    currentHatirlatici = { kuyruk: kuyruk, index: 0, secilen: null, cevaplandi: false, bitti: false };
-    VIEW = "hatirlaticiTest";
-    render();
-  }
-  function selectHatirlaticiOption(idx) {
-    if (!currentHatirlatici || currentHatirlatici.cevaplandi) return;
-    currentHatirlatici.secilen = idx;
-    currentHatirlatici.cevaplandi = true;
-    render();
-  }
-  function nextHatirlaticiSoru() {
-    if (!currentHatirlatici) return;
-    if (currentHatirlatici.index < currentHatirlatici.kuyruk.length - 1) {
-      currentHatirlatici.index++;
-      currentHatirlatici.secilen = null;
-      currentHatirlatici.cevaplandi = false;
-    } else {
-      currentHatirlatici.bitti = true;
+  var TEKRAR_TUR = {
+    hatirlatici: {
+      etiket: "🔖 Hatırlatıcı", ozetBaslik: "Hatırlatıcı testi", yeniOturum: "Yeni Hatırlatıcı Oturumu",
+      bosMesaj: "İşaretli soru bulunamadı.", kaydeder: false,
+      guidler: function () { return remoteReminderGuids || []; }
+    },
+    yanlis: {
+      etiket: "❌ Yanlış Soru", ozetBaslik: "Yanlış soru testi", yeniOturum: "Kalanları Çöz",
+      bosMesaj: "Tekrar edilecek yanlış soru bulunamadı.", kaydeder: true,
+      guidler: function () { return remoteWrongGuids || []; }
     }
-    render();
-  }
-  function hatirlaticiCik() {
-    currentHatirlatici = null;
-    VIEW = "menuDeneme";
-    render();
-  }
+  };
+  // {tur, kuyruk:[guid...], konum, kayitlar:[{guid,secilen,dogru,kayit,kayitHatasi}]}
+  // kayit: "" (gönderilmedi) | "bekliyor" | "tamam" | "hata" — yalnız kaydeden turda kullanılır.
+  var currentTekrar = null;
+  var lastTekrarSonuc = null; // {tur, oturum:[{konu,dogru}...], soruSayisi} — "Testi Bitir" özeti
 
-  // ---------------------------------------------------- Yanlış soru testi --
-  // Yalnız tamamlanan denemelerden gelen, son sonucu yanlış soruları karışık
-  // sırada çalıştırır. Doğru cevap sunucuya başarıyla kaydedilince soru havuzdan
-  // çıkar; yanlış cevapta kalır. Hatırlatıcı testi gibi sınav geçmişi oluşturmaz.
-  var currentYanlisTekrar = null; // {kuyruk,index,secilen,cevaplandi,bitti,kaydediliyor,kaydedildi,kayitHatasi}
-  function startYanlisTekrarTest() {
-    var guids = (remoteWrongGuids || []).filter(function (g) { return hatirlaticiSoruBul(g); });
-    if (!guids.length) { showBanner("Tekrar edilecek yanlış soru bulunamadı.", true); return; }
+  function startTekrarTest(tur) {
+    var cfg = TEKRAR_TUR[tur];
+    if (!cfg) return;
+    var guids = cfg.guidler().filter(function (g) { return hatirlaticiSoruBul(g); });
+    if (!guids.length) { showBanner(cfg.bosMesaj, true); return; }
     var kuyruk = sampleRandom(guids, guids.length);
     kuyruk.forEach(function (g) { shuffleSiklarInPlace(hatirlaticiSoruBul(g)); });
-    currentYanlisTekrar = {
-      kuyruk: kuyruk, index: 0, secilen: null, cevaplandi: false, bitti: false,
-      kaydediliyor: false, kaydedildi: false, kayitHatasi: ""
+    currentTekrar = {
+      tur: tur, kuyruk: kuyruk, konum: 0,
+      kayitlar: kuyruk.map(function (g) { return { guid: g, secilen: null, dogru: null, kayit: "", kayitHatasi: "" }; })
     };
-    VIEW = "yanlisTekrarTest";
+    lastTekrarSonuc = null;
+    VIEW = "tekrarTest";
     render();
   }
-  function yanlisTekrarCevapKaydet() {
-    if (!currentYanlisTekrar || !currentYanlisTekrar.cevaplandi || currentYanlisTekrar.kaydediliyor) return;
-    var guid = currentYanlisTekrar.kuyruk[currentYanlisTekrar.index];
-    var q = hatirlaticiSoruBul(guid);
-    if (!q || !q.siklar[currentYanlisTekrar.secilen]) return;
-    currentYanlisTekrar.kaydediliyor = true;
-    currentYanlisTekrar.kayitHatasi = "";
+  function tekrarAktifKayit() {
+    return currentTekrar ? currentTekrar.kayitlar[currentTekrar.konum] : null;
+  }
+  function selectTekrarOption(idx) {
+    var kayit = tekrarAktifKayit();
+    if (!kayit || kayit.secilen !== null) return; // cevap zaten verildi, kilitli
+    var q = hatirlaticiSoruBul(kayit.guid);
+    if (!q || !q.siklar[idx]) return;
+    kayit.secilen = idx;
+    kayit.dogru = idx === q.cevapIdx;
+    render();
+    if (TEKRAR_TUR[currentTekrar.tur].kaydeder) tekrarCevapKaydet(kayit);
+  }
+  // Kayıt asenkron: kullanıcı sonucu beklemeden ilerleyebilir. Hata olursa kayıt o
+  // sorunun kaydında durur, geri dönünce "Tekrar Dene" ile yeniden gönderilebilir.
+  function tekrarCevapKaydet(kayit) {
+    if (!kayit || kayit.secilen === null || kayit.kayit === "bekliyor" || kayit.kayit === "tamam") return;
+    var q = hatirlaticiSoruBul(kayit.guid);
+    if (!q || !q.siklar[kayit.secilen]) return;
+    kayit.kayit = "bekliyor";
+    kayit.kayitHatasi = "";
     render();
     remoteFetch("/api/exam", "POST", {
-      action: "wrong-question-answer", questionGuid: guid, selectedAnswer: q.siklar[currentYanlisTekrar.secilen]
+      action: "wrong-question-answer", questionGuid: kayit.guid, selectedAnswer: q.siklar[kayit.secilen]
     }).then(function (r) {
-      if (!currentYanlisTekrar) return;
-      currentYanlisTekrar.kaydediliyor = false;
       if (!r.ok) {
-        currentYanlisTekrar.kayitHatasi = (r.data && r.data.error) || "Cevap kaydedilemedi.";
+        kayit.kayit = "hata";
+        kayit.kayitHatasi = (r.data && r.data.error) || "Cevap kaydedilemedi.";
         render(); return;
       }
-      currentYanlisTekrar.kaydedildi = true;
+      kayit.kayit = "tamam";
       if (r.data && r.data.guids) remoteWrongGuids = r.data.guids;
       render();
     }).catch(function () {
-      if (!currentYanlisTekrar) return;
-      currentYanlisTekrar.kaydediliyor = false;
-      currentYanlisTekrar.kayitHatasi = "Bağlantı hatası — cevap kaydedilemedi.";
+      kayit.kayit = "hata";
+      kayit.kayitHatasi = "Bağlantı hatası — cevap kaydedilemedi.";
       render();
     });
   }
-  function selectYanlisTekrarOption(idx) {
-    if (!currentYanlisTekrar || currentYanlisTekrar.cevaplandi) return;
-    currentYanlisTekrar.secilen = idx;
-    currentYanlisTekrar.cevaplandi = true;
-    render();
-    yanlisTekrarCevapKaydet();
+  function retryTekrarKayit() {
+    var kayit = tekrarAktifKayit();
+    if (kayit && kayit.kayit === "hata") tekrarCevapKaydet(kayit);
   }
-  function nextYanlisTekrarSoru() {
-    if (!currentYanlisTekrar || !currentYanlisTekrar.kaydedildi) return;
-    if (currentYanlisTekrar.index < currentYanlisTekrar.kuyruk.length - 1) {
-      currentYanlisTekrar.index++;
-      currentYanlisTekrar.secilen = null;
-      currentYanlisTekrar.cevaplandi = false;
-      currentYanlisTekrar.kaydedildi = false;
-      currentYanlisTekrar.kayitHatasi = "";
-    } else {
-      currentYanlisTekrar.bitti = true;
-    }
+  function nextTekrarSoru() {
+    if (!currentTekrar || currentTekrar.konum >= currentTekrar.kuyruk.length - 1) return;
+    currentTekrar.konum++;
     render();
   }
-  function yanlisTekrarCik() {
-    currentYanlisTekrar = null;
+  function prevTekrarSoru() {
+    if (!currentTekrar || currentTekrar.konum <= 0) return;
+    currentTekrar.konum--;
+    render();
+  }
+  function finishTekrarTest() {
+    if (!currentTekrar) { VIEW = "menuDeneme"; render(); return; }
+    var oturum = [];
+    currentTekrar.kayitlar.forEach(function (k) {
+      if (k.secilen === null) return;
+      var q = hatirlaticiSoruBul(k.guid);
+      if (q) oturum.push({ konu: q.konu, dogru: !!k.dogru });
+    });
+    lastTekrarSonuc = { tur: currentTekrar.tur, oturum: oturum, soruSayisi: currentTekrar.kuyruk.length };
+    currentTekrar = null;
+    VIEW = "tekrarSonuc";
+    render();
+  }
+  function tekrarCik() {
+    currentTekrar = null;
+    lastTekrarSonuc = null;
     VIEW = "menuDeneme";
     render();
   }
@@ -2468,73 +2477,31 @@
       "</div>";
   }
 
-  function renderHatirlaticiTest() {
-    if (!currentHatirlatici) return '<div class="card">Oturum bulunamadı. <button class="btn" data-action="hatirlatici-cik">Ana Sayfa</button></div>';
-    if (currentHatirlatici.bitti) {
-      return '<div class="card"><div class="section-title">🔖 Hatırlatıcı testi bitti</div>' +
-        '<div class="desc">' + currentHatirlatici.kuyruk.length + ' soru gözden geçirildi.</div>' +
-        '<div class="link-row" style="margin-top:10px">' +
-        '<button class="btn primary" data-action="start-hatirlatici-test">Tekrar Başlat</button>' +
-        '<button class="btn ghost" data-action="hatirlatici-cik">Ana Sayfa</button></div></div>';
-    }
-    var guid = currentHatirlatici.kuyruk[currentHatirlatici.index];
-    var q = hatirlaticiSoruBul(guid);
-    if (!q) { currentHatirlatici.index++; return renderHatirlaticiTest(); }
-    var harfler = ["A", "B", "C", "D"];
-    var secilen = currentHatirlatici.secilen;
-    var answered = currentHatirlatici.cevaplandi;
-    var optionsHtml = q.siklar.map(function (s, i) {
-      if (!s) return "";
-      var cls = "option-row";
-      if (answered) {
-        if (i === q.cevapIdx) cls += " correct";
-        else if (i === secilen) cls += " wrong";
-      }
-      var action = answered ? "" : ' data-action="select-hatirlatici-option" data-idx="' + i + '"';
-      return '<div class="' + cls + '"' + action + '>' +
-        '<span class="option-letter">' + harfler[i] + '</span><span class="option-text">' + escapeHtml(s) +
-        '</span>' + (answered ? "" : '<span class="kbd-hint">' + (i + 1) + "</span>") + "</div>";
-    }).join("");
-    var sonucHtml = "";
-    if (answered) {
-      var dogruMu = secilen === q.cevapIdx;
-      sonucHtml = '<div class="pill ' + (dogruMu ? "good" : "bad") + '" style="margin:10px 0">' +
-        (dogruMu ? "Doğru!" : "Yanlış — doğrusu " + harfler[q.cevapIdx]) + "</div>" +
-        (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + "</div>" : "");
-    }
-    var isLast = currentHatirlatici.index === currentHatirlatici.kuyruk.length - 1;
-    var altNav = answered
-      ? '<div class="sticky-next-bar link-row">' +
-        '<button class="btn primary" data-action="next-hatirlatici-soru">' + (isLast ? "Bitir" : "Sonraki Soru →") + "</button>" +
-        "</div>"
-      : "";
-    return '<div class="link-row" style="margin-bottom:10px">' +
-      '<button class="btn ghost" data-action="hatirlatici-cik">← Çık</button>' +
-      '<span class="muted" style="font-size:0.82rem;align-self:center">' + (currentHatirlatici.index + 1) + " / " + currentHatirlatici.kuyruk.length + "</span>" +
-      "</div>" +
-      '<div class="card">' +
-      '<div class="q-meta"><span>🔖 Hatırlatıcı · ' + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span></div>" +
-      '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
-      optionsHtml + sonucHtml + altNav +
+  // Rastgele Soru ekranının düzeni birebir korunur: çıkış aksiyonları üstte
+  // sol/sağ ayrık (sol: sayfadan çık, sağ: testi bitir), devam aksiyonları
+  // (Önceki/Sonraki Soru) sticky alt barda ayrı bir grup olarak.
+  function renderTekrarTest() {
+    if (!currentTekrar) return '<div class="card">Oturum bulunamadı. <button class="btn" data-action="tekrar-cik">Ana Sayfa</button></div>';
+    var cfg = TEKRAR_TUR[currentTekrar.tur];
+    var kayit = tekrarAktifKayit();
+    var q = kayit && hatirlaticiSoruBul(kayit.guid);
+    var cevaplanan = currentTekrar.kayitlar.filter(function (k) { return k.secilen !== null; }).length;
+    var sonSoruda = currentTekrar.konum >= currentTekrar.kuyruk.length - 1;
+    var cikisRow = '<div class="link-row" style="justify-content:space-between;margin-bottom:10px">' +
+      '<button class="btn ghost" data-action="tekrar-cik">← Çık</button>' +
+      (cevaplanan ? '<button class="btn" data-action="finish-tekrar-test">✅ Testi Bitir (' + cevaplanan + ")</button>" : "") +
       "</div>";
-  }
-
-  function renderYanlisTekrarTest() {
-    if (!currentYanlisTekrar) return '<div class="card">Oturum bulunamadı. <button class="btn" data-action="yanlis-tekrar-cik">Ana Sayfa</button></div>';
-    if (currentYanlisTekrar.bitti) {
-      var kalan = (remoteWrongGuids || []).filter(function (g) { return hatirlaticiSoruBul(g); }).length;
-      return '<div class="card"><div class="section-title">❌ Yanlış soru testi bitti</div>' +
-        '<div class="desc">' + currentYanlisTekrar.kuyruk.length + ' soru çözüldü · havuzda ' + kalan + ' soru kaldı.</div>' +
-        '<div class="link-row" style="margin-top:10px">' +
-        (kalan ? '<button class="btn primary" data-action="start-yanlis-tekrar-test">Kalanları Çöz</button>' : '') +
-        '<button class="btn ghost" data-action="yanlis-tekrar-cik">Ana Sayfa</button></div></div>';
+    var navHtml = '<div class="sticky-next-bar link-row">' +
+      '<button class="btn ghost" data-action="prev-tekrar-soru"' + (currentTekrar.konum <= 0 ? " disabled" : "") + ">← Önceki Soru</button>" +
+      '<button class="btn' + (kayit && kayit.secilen !== null ? " primary" : "") + '" data-action="next-tekrar-soru"' +
+      (sonSoruda ? " disabled" : "") + ">Sonraki Soru →</button>" +
+      "</div>";
+    if (!q) {
+      return cikisRow + '<div class="card"><div class="muted">Bu soru artık bankada yok.</div>' + navHtml + "</div>";
     }
-    var guid = currentYanlisTekrar.kuyruk[currentYanlisTekrar.index];
-    var q = hatirlaticiSoruBul(guid);
-    if (!q) { currentYanlisTekrar.index++; return renderYanlisTekrarTest(); }
     var harfler = ["A", "B", "C", "D"];
-    var secilen = currentYanlisTekrar.secilen;
-    var answered = currentYanlisTekrar.cevaplandi;
+    var secilen = kayit.secilen;
+    var answered = secilen !== null;
     var optionsHtml = q.siklar.map(function (s, i) {
       if (!s) return "";
       var cls = "option-row";
@@ -2542,30 +2509,69 @@
         if (i === q.cevapIdx) cls += " correct";
         else if (i === secilen) cls += " wrong";
       }
-      var action = answered ? "" : ' data-action="select-yanlis-tekrar-option" data-idx="' + i + '"';
+      var action = answered ? "" : ' data-action="select-tekrar-option" data-idx="' + i + '"';
       return '<div class="' + cls + '"' + action + '><span class="option-letter">' + harfler[i] +
-        '</span><span class="option-text">' + escapeHtml(s) + '</span>' +
+        '</span><span class="option-text">' + escapeHtml(s) + "</span>" +
         (answered ? "" : '<span class="kbd-hint">' + (i + 1) + "</span>") + "</div>";
     }).join("");
     var sonucHtml = "";
     if (answered) {
       var dogruMu = secilen === q.cevapIdx;
-      sonucHtml = '<div class="pill ' + (dogruMu ? "good" : "bad") + '" style="margin:10px 0">' +
-        (dogruMu ? "Doğru — kaydedilince havuzdan çıkacak." : "Yanlış — doğrusu " + harfler[q.cevapIdx] + ". Soru havuzda kalacak.") + "</div>" +
+      var pillMetin = cfg.kaydeder
+        ? (dogruMu ? "Doğru — kaydedilince havuzdan çıkacak." : "Yanlış — doğrusu " + harfler[q.cevapIdx] + ". Soru havuzda kalacak.")
+        : (dogruMu ? "Doğru!" : "Yanlış — doğrusu " + harfler[q.cevapIdx]);
+      sonucHtml = '<div class="pill ' + (dogruMu ? "good" : "bad") + '" style="margin:10px 0">' + pillMetin + "</div>" +
         (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + "</div>" : "") +
-        (currentYanlisTekrar.kaydediliyor ? '<div class="muted" style="margin-top:8px">Cevap kaydediliyor…</div>' : "") +
-        (currentYanlisTekrar.kayitHatasi ? '<div class="banner error" style="margin-top:8px">' + escapeHtml(currentYanlisTekrar.kayitHatasi) +
-          ' <button class="btn ghost" data-action="retry-yanlis-tekrar-answer">Tekrar Dene</button></div>' : "");
+        (kayit.kayit === "bekliyor" ? '<div class="muted" style="margin-top:8px">Cevap kaydediliyor…</div>' : "") +
+        (kayit.kayit === "hata" ? '<div class="banner error" style="margin-top:8px">' + escapeHtml(kayit.kayitHatasi) +
+          ' <button class="btn ghost" data-action="retry-tekrar-kayit">Tekrar Dene</button></div>' : "");
     }
-    var isLast = currentYanlisTekrar.index === currentYanlisTekrar.kuyruk.length - 1;
-    var altNav = answered && currentYanlisTekrar.kaydedildi
-      ? '<div class="sticky-next-bar link-row"><button class="btn primary" data-action="next-yanlis-tekrar-soru">' +
-        (isLast ? "Bitir" : "Sonraki Soru →") + "</button></div>"
-      : "";
-    return '<div class="link-row" style="margin-bottom:10px"><button class="btn ghost" data-action="yanlis-tekrar-cik">← Çık</button>' +
-      '<span class="muted" style="font-size:0.82rem;align-self:center">' + (currentYanlisTekrar.index + 1) + " / " + currentYanlisTekrar.kuyruk.length + "</span></div>" +
-      '<div class="card"><div class="q-meta"><span>❌ Yanlış Soru · ' + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span></div>" +
-      '<div class="q-text">' + escapeHtml(q.soru) + "</div>" + optionsHtml + sonucHtml + altNav + "</div>";
+    return cikisRow +
+      '<div class="card">' +
+      '<div class="q-meta"><span>' + cfg.etiket + " · " + (currentTekrar.konum + 1) + " / " + currentTekrar.kuyruk.length +
+      ". soru</span><span>" + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span></div>" +
+      '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
+      optionsHtml + sonucHtml + navHtml +
+      "</div>";
+  }
+
+  // Oturum özeti Rastgele Soru'nunkiyle aynı: skor + ders kırılımı tablosu.
+  function renderTekrarSonuc() {
+    if (!lastTekrarSonuc) { VIEW = "menuDeneme"; return renderMenuDeneme(); }
+    var cfg = TEKRAR_TUR[lastTekrarSonuc.tur];
+    var oturum = lastTekrarSonuc.oturum;
+    var toplam = oturum.length;
+    var dogru = oturum.filter(function (k) { return k.dogru; }).length;
+    var yanlis = toplam - dogru;
+    var kirilim = flashSonucKirilimi(oturum);
+    var konular = Object.keys(kirilim).sort(function (a, b) {
+      return KONU_SIRA.indexOf(a) - KONU_SIRA.indexOf(b);
+    });
+    var topicRows = konular.map(function (konu) {
+      var k = kirilim[konu];
+      var kToplam = k.dogru + k.yanlis;
+      return "<tr><td>" + basariNoktaHtml(k.dogru, kToplam) + escapeHtml(konu) + '</td><td class="num">' + kToplam +
+        '</td><td class="num">' + flashYuzdeHtml(k.dogru, kToplam) +
+        '</td><td class="num">' + flashYuzdeHtml(k.yanlis, kToplam) + "</td></tr>";
+    }).join("");
+    var kalan = cfg.guidler().filter(function (g) { return hatirlaticiSoruBul(g); }).length;
+    var kalanEtiket = lastTekrarSonuc.tur === "yanlis"
+      ? "Havuzda " + kalan + " yanlış soru kaldı."
+      : "İşaretli " + kalan + " soru var.";
+    return '<div class="card">' +
+      '<div class="section-title">' + cfg.etiket + " — oturum özeti</div>" +
+      '<div class="score-hero"><span class="big">' + dogru + " / " + toplam + "</span>" +
+      '<span class="pill good">' + flashYuzdeHtml(dogru, toplam) + " doğru</span>" +
+      '<span class="pill bad">' + flashYuzdeHtml(yanlis, toplam) + " yanlış</span></div>" +
+      (toplam
+        ? '<table class="topic-table"><thead><tr><th>Ders</th><th class="num">Soru</th><th class="num">Doğru</th><th class="num">Yanlış</th></tr></thead><tbody>' +
+          topicRows + "</tbody></table>"
+        : '<div class="muted">Hiç soru cevaplanmadan bitirildi.</div>') +
+      '<div class="muted" style="margin-top:10px">' + lastTekrarSonuc.soruSayisi + " soruluk oturum · " + kalanEtiket + "</div>" +
+      '<div class="link-row" style="margin-top:14px">' +
+      (kalan ? '<button class="btn primary" data-action="start-tekrar-again" data-tur="' + lastTekrarSonuc.tur + '">' + cfg.yeniOturum + "</button>" : "") +
+      '<button class="btn ghost" data-action="tekrar-cik">Ana Sayfa</button>' +
+      "</div></div>";
   }
 
   function renderDenemeKonuSec() {
@@ -3420,7 +3426,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     var html = "";
     if (STATE.sadeceDeneme && (VIEW === "menu" || VIEW === "menuTest" || VIEW === "pratikModul" || VIEW === "pratikSoru" ||
       VIEW === "checkpointListe" || VIEW === "checkpointDetay" || VIEW === "settings" || VIEW === "import")) VIEW = "menuDeneme";
-    if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult" || VIEW === "gecmisUzak" || VIEW === "hatirlaticiTest" || VIEW === "yanlisTekrarTest")) VIEW = "menuDeneme";
+    if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult" || VIEW === "gecmisUzak" || VIEW === "tekrarTest" || VIEW === "tekrarSonuc")) VIEW = "menuDeneme";
     if (VIEW === "menu") html = renderMenu();
     else if (VIEW === "menuDeneme") html = renderMenuDeneme();
     else if (VIEW === "denemeKonuSec") html = renderDenemeKonuSec();
@@ -3439,8 +3445,8 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (VIEW === "checkpointListe") html = renderCheckpointListe();
     else if (VIEW === "checkpointDetay") html = renderCheckpointDetay();
     else if (VIEW === "gecmisUzak") html = renderGecmisUzak();
-    else if (VIEW === "hatirlaticiTest") html = renderHatirlaticiTest();
-    else if (VIEW === "yanlisTekrarTest") html = renderYanlisTekrarTest();
+    else if (VIEW === "tekrarTest") html = renderTekrarTest();
+    else if (VIEW === "tekrarSonuc") html = renderTekrarSonuc();
     if (!html) { // eski bir sekmede kalkan artık var olmayan bir VIEW (ör. kaldırılmış "pratikKonu") gelirse boş ekran yerine ana ekrana düş
       if (STATE.sadeceDeneme) { VIEW = "menuDeneme"; html = renderMenuDeneme(); }
       else { VIEW = "menu"; html = renderMenu(); }
@@ -3499,16 +3505,16 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "clear-duzeltmeler") { STATE.duzeltmeler = []; pendingSaveDirty = true; render(); }
     else if (action === "toggle-flag") toggleFlag(t.getAttribute("data-guid"), t.getAttribute("data-kind"));
     else if (action === "set-flag-kategori") setFlagKategori(t.getAttribute("data-guid"), t.getAttribute("data-kategori"));
-    else if (action === "start-hatirlatici-test") startHatirlaticiTest();
-    else if (action === "select-hatirlatici-option") selectHatirlaticiOption(parseInt(t.getAttribute("data-idx"), 10));
-    else if (action === "next-hatirlatici-soru") nextHatirlaticiSoru();
-    else if (action === "hatirlatici-cik") hatirlaticiCik();
+    else if (action === "start-hatirlatici-test") startTekrarTest("hatirlatici");
+    else if (action === "start-yanlis-tekrar-test") startTekrarTest("yanlis");
+    else if (action === "start-tekrar-again") startTekrarTest(t.getAttribute("data-tur"));
+    else if (action === "select-tekrar-option") selectTekrarOption(parseInt(t.getAttribute("data-idx"), 10));
+    else if (action === "next-tekrar-soru") nextTekrarSoru();
+    else if (action === "prev-tekrar-soru") prevTekrarSoru();
+    else if (action === "finish-tekrar-test") finishTekrarTest();
+    else if (action === "retry-tekrar-kayit") retryTekrarKayit();
+    else if (action === "tekrar-cik") tekrarCik();
     else if (action === "export-hatirlatici-word") exportHatirlaticiWord();
-    else if (action === "start-yanlis-tekrar-test") startYanlisTekrarTest();
-    else if (action === "select-yanlis-tekrar-option") selectYanlisTekrarOption(parseInt(t.getAttribute("data-idx"), 10));
-    else if (action === "retry-yanlis-tekrar-answer") yanlisTekrarCevapKaydet();
-    else if (action === "next-yanlis-tekrar-soru") nextYanlisTekrarSoru();
-    else if (action === "yanlis-tekrar-cik") yanlisTekrarCik();
     else if (action === "pause-exam") pauseExam();
     else if (action === "resume-exam") resumeExam();
     else if (action === "discard-paused") requestDiscardPausedExam();
@@ -3605,21 +3611,18 @@ function pratikEnIyiHtml(konu, modulKey) {
       } else if (e.key === "ArrowRight" && currentPratik.cevaplandi) {
         e.preventDefault(); nextPratikSoru();
       }
-    } else if (VIEW === "hatirlaticiTest" && currentHatirlatici && !currentHatirlatici.bitti) {
-      var hq = hatirlaticiSoruBul(currentHatirlatici.kuyruk[currentHatirlatici.index]);
-      if (hq && !currentHatirlatici.cevaplandi && e.key >= "1" && e.key <= "4") {
-        var hidx = parseInt(e.key, 10) - 1;
-        if (hq.siklar[hidx]) { e.preventDefault(); selectHatirlaticiOption(hidx); }
-      } else if (e.key === "ArrowRight" && currentHatirlatici.cevaplandi) {
-        e.preventDefault(); nextHatirlaticiSoru();
-      }
-    } else if (VIEW === "yanlisTekrarTest" && currentYanlisTekrar && !currentYanlisTekrar.bitti) {
-      var yq = hatirlaticiSoruBul(currentYanlisTekrar.kuyruk[currentYanlisTekrar.index]);
-      if (yq && !currentYanlisTekrar.cevaplandi && e.key >= "1" && e.key <= "4") {
-        var yidx = parseInt(e.key, 10) - 1;
-        if (yq.siklar[yidx]) { e.preventDefault(); selectYanlisTekrarOption(yidx); }
-      } else if (e.key === "ArrowRight" && currentYanlisTekrar.kaydedildi) {
-        e.preventDefault(); nextYanlisTekrarSoru();
+    } else if (VIEW === "tekrarTest" && currentTekrar) {
+      // Rastgele Soru ile aynı kısayollar: 1-4 seçer, ok tuşları kuyrukta gezer
+      // (cevaplanmamış soru da atlanabilir).
+      var tKayit = tekrarAktifKayit();
+      var tq = tKayit && hatirlaticiSoruBul(tKayit.guid);
+      if (tq && tKayit.secilen === null && e.key >= "1" && e.key <= "4") {
+        var tidx = parseInt(e.key, 10) - 1;
+        if (tq.siklar[tidx]) { e.preventDefault(); selectTekrarOption(tidx); }
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault(); nextTekrarSoru();
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault(); prevTekrarSoru();
       }
     }
   });
