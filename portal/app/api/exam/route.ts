@@ -88,7 +88,7 @@ async function dashboard(userId: string) {
     db.select().from(schema.examAttempts).where(eq(schema.examAttempts.userId, userId)).orderBy(desc(schema.examAttempts.updatedAt)).limit(12),
     db.select().from(schema.questionStats).where(eq(schema.questionStats.userId, userId)),
     db.select({ value: count() }).from(schema.examAttempts).where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.status, 'finished'))),
-    db.select({ avgPercent: avg(schema.examAttempts.scorePercent), avgSeconds: avg(schema.examAttempts.elapsedSeconds) })
+    db.select({ avgPercent: avg(schema.examAttempts.scorePercent), avgCorrect: avg(schema.examAttempts.correctCount), avgSeconds: avg(schema.examAttempts.elapsedSeconds) })
       .from(schema.examAttempts).where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.status, 'finished'))),
   ]);
   const profile = profileRows[0];
@@ -159,6 +159,7 @@ async function dashboard(userId: string) {
     examStats: completedCount ? {
       count: completedCount,
       avgPercent: Math.round(Number(avgPercentRaw ?? 0)),
+      avgCorrect: Math.round(Number(avgRows[0]?.avgCorrect ?? 0)),
       avgSeconds: Math.round(Number(avgSecondsRaw ?? 0)),
     } : null,
   };

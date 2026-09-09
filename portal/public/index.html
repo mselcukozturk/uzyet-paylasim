@@ -1478,7 +1478,7 @@
     var es = remoteDash && remoteDash.examStats;
     var ozetHtml = es ? '<div class="stat-grid">' +
       '<div class="stat-card"><div class="num">' + es.count + '</div><div class="lbl">Toplam deneme</div></div>' +
-      '<div class="stat-card"><div class="num">%' + es.avgPercent + '</div><div class="lbl">Ortalama puan</div></div>' +
+      '<div class="stat-card"><div class="num">' + es.avgCorrect + '/50</div><div class="lbl">Ortalama puan</div></div>' +
       '<div class="stat-card"><div class="num">' + fmtSure(es.avgSeconds) + '</div><div class="lbl">Ortalama süre</div></div>' +
       "</div>" : "";
     var rows = list.map(function (a) {
