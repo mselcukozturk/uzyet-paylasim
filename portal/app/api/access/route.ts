@@ -14,11 +14,12 @@ function fail(message: string, status: number) {
   return withCors(NextResponse.json({ error: message }, { status }));
 }
 
-function statusPayload(profile: { username: string; isActive: boolean; disclaimerAcceptedAt: Date | null }, token?: string) {
+function statusPayload(profile: { username: string; isActive: boolean; canSeeAiSources: boolean; disclaimerAcceptedAt: Date | null }, token?: string) {
   return {
     authenticated: true,
     username: profile.username,
     isActive: profile.isActive,
+    canSeeAiSources: profile.canSeeAiSources,
     disclaimerAccepted: !!profile.disclaimerAcceptedAt,
     ...(token ? { token } : {}),
   };
@@ -61,6 +62,7 @@ export async function POST(request: Request) {
     userId: schema.profiles.userId,
     username: schema.profiles.username,
     isActive: schema.profiles.isActive,
+    canSeeAiSources: schema.profiles.canSeeAiSources,
     disclaimerAcceptedAt: schema.profiles.disclaimerAcceptedAt,
     pinEncrypted: schema.profiles.pinEncrypted,
   }).from(schema.profiles).where(sql`lower(${schema.profiles.username}) = ${username}`).limit(1);
@@ -87,5 +89,5 @@ export async function POST(request: Request) {
   const userId = newProfileId();
   await db.insert(schema.profiles).values({ userId, username, isActive: false, pinEncrypted: encryptPin(pin) });
   const token = await createUserSession(userId);
-  return withCors(NextResponse.json(statusPayload({ username, isActive: false, disclaimerAcceptedAt: null }, token)));
+  return withCors(NextResponse.json(statusPayload({ username, isActive: false, canSeeAiSources: false, disclaimerAcceptedAt: null }, token)));
 }

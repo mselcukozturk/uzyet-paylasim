@@ -12,7 +12,7 @@ import {
   type BankQuestion,
   type ExamMode,
 } from '@/lib/exam-core';
-import type { ExamApiRequest } from '@/lib/portal-types';
+import type { ExamApiRequest, PracticeBankResponse, PracticeCheckpointsResponse, PracticeStatsResponse } from '@/lib/portal-types';
 import bankCorrections from '@/data/bank-corrections.json';
 
 export const runtime = 'nodejs';
@@ -23,6 +23,12 @@ type AttemptQuestion = typeof schema.examAttemptQuestions.$inferSelect;
 
 function fail(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
+}
+
+function requireAiSources(profile: { canSeeAiSources: boolean; disclaimerAcceptedAt: Date | null }) {
+  if (!profile.canSeeAiSources) return fail('Yapay zekâ kaynaklarına erişim iznin yok.', 403);
+  if (!profile.disclaimerAcceptedAt) return fail('Önce kullanım uyarısını kabul etmelisin.', 403);
+  return null;
 }
 
 function currentElapsed(attempt: Attempt) {
@@ -198,6 +204,51 @@ async function handlePost(request: Request) {
 
     const db = getDb();
     const body = await request.json() as ExamApiRequest;
+    if (body.action === 'practice-bank' || body.action === 'checkpoints' || body.action === 'practice-stats') {
+      const denied = requireAiSources(profile);
+      if (denied) return denied;
+
+      if (body.action === 'practice-bank') {
+        const rows = await db.select().from(schema.practiceQuestions);
+        return NextResponse.json({
+          questions: rows.map((q) => ({
+            guid: q.guid, konu: q.topic, modul: q.modul, soru: q.prompt, siklar: q.options,
+            cevapIdx: q.correctIndex, cevapHarf: ['A', 'B', 'C', 'D'][q.correctIndex] || '',
+            cevapMetni: q.options[q.correctIndex] || '', aciklama: q.explanation, kaynak: q.source,
+          })),
+        } satisfies PracticeBankResponse);
+      }
+
+      if (body.action === 'checkpoints') {
+        const rows = await db.select().from(schema.practiceCheckpoints).orderBy(schema.practiceCheckpoints.sira);
+        return NextResponse.json({
+          checkpoints: rows.map((row) => ({
+            id: row.id, konu: row.topic, title: row.title, subtitle: row.subtitle, html: row.html,
+          })),
+        } satisfies PracticeCheckpointsResponse);
+      }
+
+      const [rows, sessions] = await Promise.all([
+        db.select().from(schema.practiceStats).where(eq(schema.practiceStats.userId, user.id)),
+        db.select({
+          konu: schema.practiceSessions.topic,
+          modul: schema.practiceSessions.modul,
+          updatedAt: schema.practiceSessions.updatedAt,
+        }).from(schema.practiceSessions).where(eq(schema.practiceSessions.userId, user.id)),
+      ]);
+      const stats: PracticeStatsResponse['stats'] = {};
+      for (const row of rows) {
+        stats[row.questionGuid] = {
+          gosterim: row.shownCount, dogru: row.correctCount, yanlis: row.wrongCount,
+          sonSonucDogruMu: row.lastResult, sonGorulme: row.lastSeenAt?.toISOString() ?? null,
+        };
+      }
+      return NextResponse.json({
+        stats,
+        sessions: sessions.map((row) => ({ ...row, updatedAt: row.updatedAt.toISOString() })),
+      } satisfies PracticeStatsResponse);
+    }
+
     if (body.action === 'dashboard' || body.action === 'history') {
       return NextResponse.json(await dashboard(user.id));
     }
