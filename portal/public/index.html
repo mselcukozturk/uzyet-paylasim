@@ -2337,10 +2337,16 @@
       '<button class="mode-btn" style="border-left:4px solid var(--seri-8)" ' + flashDisabled + ' data-action="open-deneme-konu-sec">' +
       '<div class="title">📖 Konu Konu Bak</div><div class="desc">Sınav dışında, seçtiğin konudaki sorulara tek tek bak.</div></button>';
 
+    var kullaniciHtml = remoteGirisTamamMi()
+      ? '<span style="margin-left:auto;display:flex;align-items:center;gap:10px">' +
+        '<span class="muted">' + escapeHtml(remoteAuth.username) + '</span>' +
+        '<button class="btn ghost" data-action="deneme-cikis-yap">Çıkış</button></span>'
+      : "";
+
     return (STATE.sadeceDeneme
-      ? (remoteGirisTamamMi() ? '<div class="link-row"><button class="btn ghost" data-action="open-history-remote">Geçmiş</button></div>' : "")
+      ? (remoteGirisTamamMi() ? '<div class="link-row"><button class="btn ghost" data-action="open-history-remote">Geçmiş</button>' + kullaniciHtml + '</div>' : "")
       : '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button>' +
-        '<button class="btn" data-action="open-history">Geçmiş</button></div>') +
+        '<button class="btn" data-action="open-history">Geçmiş</button>' + kullaniciHtml + '</div>') +
       '<div class="section-title">📝 Deneme Sınavı</div>' +
       renderDenemeUzakBolum() +
       hatirlaticiBolumHtml() +
