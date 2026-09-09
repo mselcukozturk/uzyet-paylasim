@@ -166,6 +166,21 @@ async function dashboard(userId: string) {
   };
 }
 
+async function wrongQuestionGuids(userId: string) {
+  const db = getDb();
+  const rows = await db.select({ questionGuid: schema.questionStats.questionGuid })
+    .from(schema.questionStats)
+    .innerJoin(schema.questions, eq(schema.questionStats.questionGuid, schema.questions.guid))
+    .innerJoin(schema.questionBanks, eq(schema.questions.bankId, schema.questionBanks.id))
+    .where(and(
+      eq(schema.questionStats.userId, userId),
+      eq(schema.questionStats.lastResult, false),
+      eq(schema.questionBanks.isActive, true),
+    ))
+    .orderBy(desc(schema.questionStats.lastSeenAt));
+  return rows.map((row) => row.questionGuid);
+}
+
 export async function OPTIONS() {
   return corsPreflight();
 }
@@ -291,6 +306,49 @@ async function handlePost(request: Request) {
         .sort((a, b) => (a.tarihISO < b.tarihISO ? 1 : a.tarihISO > b.tarihISO ? -1 : 0))
         .map((d) => ({ guid: d.guid, konu: d.konu, soru: d.soru, not: d.not, tarihISO: d.tarihISO }));
       return NextResponse.json({ items });
+    }
+
+    if (body.action === 'wrong-questions') {
+      return NextResponse.json({ guids: await wrongQuestionGuids(user.id) });
+    }
+
+    if (body.action === 'wrong-question-answer') {
+      if (!body.questionGuid || typeof body.selectedAnswer !== 'string') return fail('Cevap geçersiz.', 400);
+      const [question] = await db.select({
+        correctIndex: schema.questions.correctIndex,
+        options: schema.questions.options,
+      }).from(schema.questions)
+        .innerJoin(schema.questionBanks, eq(schema.questions.bankId, schema.questionBanks.id))
+        .where(and(
+          eq(schema.questions.guid, body.questionGuid),
+          eq(schema.questionBanks.isActive, true),
+        )).limit(1);
+      if (!question || !question.options.includes(body.selectedAnswer)) return fail('Soru veya cevap geçersiz.', 400);
+      const isCorrect = body.selectedAnswer === question.options[question.correctIndex];
+      const [existingStat] = await db.select({ lastResult: schema.questionStats.lastResult })
+        .from(schema.questionStats)
+        .where(and(
+          eq(schema.questionStats.userId, user.id),
+          eq(schema.questionStats.questionGuid, body.questionGuid),
+        )).limit(1);
+      if (!existingStat || existingStat.lastResult === null) return fail('Soru yanlış havuzunda değil.', 409);
+      if (existingStat.lastResult === true) {
+        return NextResponse.json({
+          ok: true,
+          correct: true,
+          alreadyResolved: true,
+          guids: await wrongQuestionGuids(user.id),
+        });
+      }
+      const now = new Date();
+      // Bu bir resmî deneme değildir: toplam doğru/yanlış/gösterim sayaçlarını
+      // değiştirme. Yalnız eriyen yanlış havuzunun son durumunu güncelle.
+      await db.update(schema.questionStats).set({ lastResult: isCorrect, lastSeenAt: now })
+        .where(and(
+          eq(schema.questionStats.userId, user.id),
+          eq(schema.questionStats.questionGuid, body.questionGuid),
+        ));
+      return NextResponse.json({ ok: true, correct: isCorrect, guids: await wrongQuestionGuids(user.id) });
     }
 
     if (body.action === 'flags') {

@@ -1187,6 +1187,17 @@
     }).catch(function () {}).then(function () { if (cb) cb(); });
   }
 
+  // Tamamlanan denemelerde son sonucu yanlış olan sorular. Hatırlatıcılardan
+  // farklı olarak bu havuz elle işaretlenmez: deneme sonucu ile dolar, kendi
+  // tekrar testinde doğru çözülünce sunucudaki question_stats güncellenir ve erir.
+  var remoteWrongGuids = null;
+  function remoteLoadWrongQuestions(cb) {
+    if (!STATE.sadeceDeneme || !remoteGirisTamamMi()) { if (cb) cb(); return; }
+    remoteFetch("/api/exam", "POST", { action: "wrong-questions" }).then(function (r) {
+      if (r.ok && r.data && r.data.guids) remoteWrongGuids = r.data.guids;
+    }).catch(function () {}).then(function () { if (cb) cb(); });
+  }
+
   // STATE.flags (🔖 Hatırlatıcı, 🚩 hatalı+kategori, not) yalnız bu tarayıcının
   // localStorage'ında tutuluyordu — başka bir cihaz/tarayıcıdan devam edilince
   // sunucudaki kayıt dururken yerelde hiç görünmüyordu ("Denemeden çıkıp geri
@@ -1210,14 +1221,15 @@
     }).catch(function () {}).then(function () { if (cb) cb(); });
   }
 
-  // Deneme dashboard'ı, (giriş tamamsa) soru bankasını, hatırlatıcı listesini ve
-  // gerçek işaret durumunu birlikte tazeler.
+  // Deneme dashboard'ı, (giriş tamamsa) soru bankasını, hatırlatıcı/yanlış
+  // listelerini ve gerçek işaret durumunu birlikte tazeler.
   function afterAuthStateChange(cb) {
     var pending = 0, done = false;
     function finish() { pending--; if (pending <= 0 && !done) { done = true; if (cb) cb(); } }
     if (remoteAuth.isActive) { pending++; remoteRefreshDashboard(finish); }
     if (remoteGirisTamamMi() && !remoteBankLoaded) { pending++; remoteLoadBankIfNeeded(finish); }
     if (remoteGirisTamamMi() && remoteReminderGuids === null) { pending++; remoteLoadReminders(finish); }
+    if (remoteGirisTamamMi() && remoteWrongGuids === null) { pending++; remoteLoadWrongQuestions(finish); }
     if (remoteGirisTamamMi() && !remoteFlagsLoaded) { pending++; remoteLoadFlagsIfNeeded(finish); }
     if (pending === 0 && cb) cb();
   }
@@ -1296,6 +1308,7 @@
     remoteDash = null;
     remoteBankLoaded = false;
     remoteReminderGuids = null;
+    remoteWrongGuids = null;
     remoteFlagsLoaded = false;
     render();
   }
@@ -1436,6 +1449,8 @@
       uzakSonucKur(r.data);
       currentExam = null;
       remoteDash = null;
+      remoteWrongGuids = null;
+      remoteLoadWrongQuestions();
       VIEW = "result";
       render();
     }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
@@ -1775,6 +1790,76 @@
   }
   function hatirlaticiCik() {
     currentHatirlatici = null;
+    VIEW = "menuDeneme";
+    render();
+  }
+
+  // ---------------------------------------------------- Yanlış soru testi --
+  // Yalnız tamamlanan denemelerden gelen, son sonucu yanlış soruları karışık
+  // sırada çalıştırır. Doğru cevap sunucuya başarıyla kaydedilince soru havuzdan
+  // çıkar; yanlış cevapta kalır. Hatırlatıcı testi gibi sınav geçmişi oluşturmaz.
+  var currentYanlisTekrar = null; // {kuyruk,index,secilen,cevaplandi,bitti,kaydediliyor,kaydedildi,kayitHatasi}
+  function startYanlisTekrarTest() {
+    var guids = (remoteWrongGuids || []).filter(function (g) { return hatirlaticiSoruBul(g); });
+    if (!guids.length) { showBanner("Tekrar edilecek yanlış soru bulunamadı.", true); return; }
+    var kuyruk = sampleRandom(guids, guids.length);
+    kuyruk.forEach(function (g) { shuffleSiklarInPlace(hatirlaticiSoruBul(g)); });
+    currentYanlisTekrar = {
+      kuyruk: kuyruk, index: 0, secilen: null, cevaplandi: false, bitti: false,
+      kaydediliyor: false, kaydedildi: false, kayitHatasi: ""
+    };
+    VIEW = "yanlisTekrarTest";
+    render();
+  }
+  function yanlisTekrarCevapKaydet() {
+    if (!currentYanlisTekrar || !currentYanlisTekrar.cevaplandi || currentYanlisTekrar.kaydediliyor) return;
+    var guid = currentYanlisTekrar.kuyruk[currentYanlisTekrar.index];
+    var q = hatirlaticiSoruBul(guid);
+    if (!q || !q.siklar[currentYanlisTekrar.secilen]) return;
+    currentYanlisTekrar.kaydediliyor = true;
+    currentYanlisTekrar.kayitHatasi = "";
+    render();
+    remoteFetch("/api/exam", "POST", {
+      action: "wrong-question-answer", questionGuid: guid, selectedAnswer: q.siklar[currentYanlisTekrar.secilen]
+    }).then(function (r) {
+      if (!currentYanlisTekrar) return;
+      currentYanlisTekrar.kaydediliyor = false;
+      if (!r.ok) {
+        currentYanlisTekrar.kayitHatasi = (r.data && r.data.error) || "Cevap kaydedilemedi.";
+        render(); return;
+      }
+      currentYanlisTekrar.kaydedildi = true;
+      if (r.data && r.data.guids) remoteWrongGuids = r.data.guids;
+      render();
+    }).catch(function () {
+      if (!currentYanlisTekrar) return;
+      currentYanlisTekrar.kaydediliyor = false;
+      currentYanlisTekrar.kayitHatasi = "Bağlantı hatası — cevap kaydedilemedi.";
+      render();
+    });
+  }
+  function selectYanlisTekrarOption(idx) {
+    if (!currentYanlisTekrar || currentYanlisTekrar.cevaplandi) return;
+    currentYanlisTekrar.secilen = idx;
+    currentYanlisTekrar.cevaplandi = true;
+    render();
+    yanlisTekrarCevapKaydet();
+  }
+  function nextYanlisTekrarSoru() {
+    if (!currentYanlisTekrar || !currentYanlisTekrar.kaydedildi) return;
+    if (currentYanlisTekrar.index < currentYanlisTekrar.kuyruk.length - 1) {
+      currentYanlisTekrar.index++;
+      currentYanlisTekrar.secilen = null;
+      currentYanlisTekrar.cevaplandi = false;
+      currentYanlisTekrar.kaydedildi = false;
+      currentYanlisTekrar.kayitHatasi = "";
+    } else {
+      currentYanlisTekrar.bitti = true;
+    }
+    render();
+  }
+  function yanlisTekrarCik() {
+    currentYanlisTekrar = null;
     VIEW = "menuDeneme";
     render();
   }
@@ -2350,6 +2435,7 @@
       '<div class="section-title">📝 Deneme Sınavı</div>' +
       renderDenemeUzakBolum() +
       hatirlaticiBolumHtml() +
+      yanlisSorularBolumHtml() +
       '<div class="mode-grid" style="margin-top:14px">' + flashCards + "</div>";
   }
 
@@ -2367,6 +2453,18 @@
           '<button class="btn ghost" data-action="export-hatirlatici-word">📄 Word\'e Aktar</button>' +
           "</div>"
         : '<div class="muted">Henüz hatırlatıcı olarak işaretlediğin bir soru yok — sınav sırasında bir sorunun altındaki 🔖 Hatırlatıcı butonuna basarak buraya ekleyebilirsin.</div>') +
+      "</div>";
+  }
+
+  function yanlisSorularBolumHtml() {
+    if (!remoteGirisTamamMi() || remoteWrongGuids === null) return "";
+    var guids = remoteWrongGuids.filter(function (g) { return hatirlaticiSoruBul(g); });
+    return '<div class="card" style="margin-top:14px">' +
+      '<div class="section-title" style="font-size:1rem;margin-bottom:6px">❌ Yanlış Sorular (' + guids.length + ')</div>' +
+      (guids.length
+        ? '<div class="muted" style="margin-bottom:10px">Tamamladığın denemelerde son cevabın yanlış olan sorular. Sorular karışık gelir; burada doğru çözdüklerin havuzdan çıkar.</div>' +
+          '<div class="link-row"><button class="btn primary" data-action="start-yanlis-tekrar-test">Test Başlat</button></div>'
+        : '<div class="muted">Bekleyen yanlış sorun yok. Bir denemede yanlış yaptığın sorular burada görünecek.</div>') +
       "</div>";
   }
 
@@ -2419,6 +2517,55 @@
       '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
       optionsHtml + sonucHtml + altNav +
       "</div>";
+  }
+
+  function renderYanlisTekrarTest() {
+    if (!currentYanlisTekrar) return '<div class="card">Oturum bulunamadı. <button class="btn" data-action="yanlis-tekrar-cik">Ana Sayfa</button></div>';
+    if (currentYanlisTekrar.bitti) {
+      var kalan = (remoteWrongGuids || []).filter(function (g) { return hatirlaticiSoruBul(g); }).length;
+      return '<div class="card"><div class="section-title">❌ Yanlış soru testi bitti</div>' +
+        '<div class="desc">' + currentYanlisTekrar.kuyruk.length + ' soru çözüldü · havuzda ' + kalan + ' soru kaldı.</div>' +
+        '<div class="link-row" style="margin-top:10px">' +
+        (kalan ? '<button class="btn primary" data-action="start-yanlis-tekrar-test">Kalanları Çöz</button>' : '') +
+        '<button class="btn ghost" data-action="yanlis-tekrar-cik">Ana Sayfa</button></div></div>';
+    }
+    var guid = currentYanlisTekrar.kuyruk[currentYanlisTekrar.index];
+    var q = hatirlaticiSoruBul(guid);
+    if (!q) { currentYanlisTekrar.index++; return renderYanlisTekrarTest(); }
+    var harfler = ["A", "B", "C", "D"];
+    var secilen = currentYanlisTekrar.secilen;
+    var answered = currentYanlisTekrar.cevaplandi;
+    var optionsHtml = q.siklar.map(function (s, i) {
+      if (!s) return "";
+      var cls = "option-row";
+      if (answered) {
+        if (i === q.cevapIdx) cls += " correct";
+        else if (i === secilen) cls += " wrong";
+      }
+      var action = answered ? "" : ' data-action="select-yanlis-tekrar-option" data-idx="' + i + '"';
+      return '<div class="' + cls + '"' + action + '><span class="option-letter">' + harfler[i] +
+        '</span><span class="option-text">' + escapeHtml(s) + '</span>' +
+        (answered ? "" : '<span class="kbd-hint">' + (i + 1) + "</span>") + "</div>";
+    }).join("");
+    var sonucHtml = "";
+    if (answered) {
+      var dogruMu = secilen === q.cevapIdx;
+      sonucHtml = '<div class="pill ' + (dogruMu ? "good" : "bad") + '" style="margin:10px 0">' +
+        (dogruMu ? "Doğru — kaydedilince havuzdan çıkacak." : "Yanlış — doğrusu " + harfler[q.cevapIdx] + ". Soru havuzda kalacak.") + "</div>" +
+        (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + "</div>" : "") +
+        (currentYanlisTekrar.kaydediliyor ? '<div class="muted" style="margin-top:8px">Cevap kaydediliyor…</div>' : "") +
+        (currentYanlisTekrar.kayitHatasi ? '<div class="banner error" style="margin-top:8px">' + escapeHtml(currentYanlisTekrar.kayitHatasi) +
+          ' <button class="btn ghost" data-action="retry-yanlis-tekrar-answer">Tekrar Dene</button></div>' : "");
+    }
+    var isLast = currentYanlisTekrar.index === currentYanlisTekrar.kuyruk.length - 1;
+    var altNav = answered && currentYanlisTekrar.kaydedildi
+      ? '<div class="sticky-next-bar link-row"><button class="btn primary" data-action="next-yanlis-tekrar-soru">' +
+        (isLast ? "Bitir" : "Sonraki Soru →") + "</button></div>"
+      : "";
+    return '<div class="link-row" style="margin-bottom:10px"><button class="btn ghost" data-action="yanlis-tekrar-cik">← Çık</button>' +
+      '<span class="muted" style="font-size:0.82rem;align-self:center">' + (currentYanlisTekrar.index + 1) + " / " + currentYanlisTekrar.kuyruk.length + "</span></div>" +
+      '<div class="card"><div class="q-meta"><span>❌ Yanlış Soru · ' + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span></div>" +
+      '<div class="q-text">' + escapeHtml(q.soru) + "</div>" + optionsHtml + sonucHtml + altNav + "</div>";
   }
 
   function renderDenemeKonuSec() {
@@ -3273,7 +3420,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     var html = "";
     if (STATE.sadeceDeneme && (VIEW === "menu" || VIEW === "menuTest" || VIEW === "pratikModul" || VIEW === "pratikSoru" ||
       VIEW === "checkpointListe" || VIEW === "checkpointDetay" || VIEW === "settings" || VIEW === "import")) VIEW = "menuDeneme";
-    if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult" || VIEW === "gecmisUzak" || VIEW === "hatirlaticiTest")) VIEW = "menuDeneme";
+    if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult" || VIEW === "gecmisUzak" || VIEW === "hatirlaticiTest" || VIEW === "yanlisTekrarTest")) VIEW = "menuDeneme";
     if (VIEW === "menu") html = renderMenu();
     else if (VIEW === "menuDeneme") html = renderMenuDeneme();
     else if (VIEW === "denemeKonuSec") html = renderDenemeKonuSec();
@@ -3293,6 +3440,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (VIEW === "checkpointDetay") html = renderCheckpointDetay();
     else if (VIEW === "gecmisUzak") html = renderGecmisUzak();
     else if (VIEW === "hatirlaticiTest") html = renderHatirlaticiTest();
+    else if (VIEW === "yanlisTekrarTest") html = renderYanlisTekrarTest();
     if (!html) { // eski bir sekmede kalkan artık var olmayan bir VIEW (ör. kaldırılmış "pratikKonu") gelirse boş ekran yerine ana ekrana düş
       if (STATE.sadeceDeneme) { VIEW = "menuDeneme"; html = renderMenuDeneme(); }
       else { VIEW = "menu"; html = renderMenu(); }
@@ -3356,6 +3504,11 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "next-hatirlatici-soru") nextHatirlaticiSoru();
     else if (action === "hatirlatici-cik") hatirlaticiCik();
     else if (action === "export-hatirlatici-word") exportHatirlaticiWord();
+    else if (action === "start-yanlis-tekrar-test") startYanlisTekrarTest();
+    else if (action === "select-yanlis-tekrar-option") selectYanlisTekrarOption(parseInt(t.getAttribute("data-idx"), 10));
+    else if (action === "retry-yanlis-tekrar-answer") yanlisTekrarCevapKaydet();
+    else if (action === "next-yanlis-tekrar-soru") nextYanlisTekrarSoru();
+    else if (action === "yanlis-tekrar-cik") yanlisTekrarCik();
     else if (action === "pause-exam") pauseExam();
     else if (action === "resume-exam") resumeExam();
     else if (action === "discard-paused") requestDiscardPausedExam();
@@ -3451,6 +3604,22 @@ function pratikEnIyiHtml(konu, modulKey) {
         if (pq.siklar[pidx]) { e.preventDefault(); selectPratikOption(pidx); }
       } else if (e.key === "ArrowRight" && currentPratik.cevaplandi) {
         e.preventDefault(); nextPratikSoru();
+      }
+    } else if (VIEW === "hatirlaticiTest" && currentHatirlatici && !currentHatirlatici.bitti) {
+      var hq = hatirlaticiSoruBul(currentHatirlatici.kuyruk[currentHatirlatici.index]);
+      if (hq && !currentHatirlatici.cevaplandi && e.key >= "1" && e.key <= "4") {
+        var hidx = parseInt(e.key, 10) - 1;
+        if (hq.siklar[hidx]) { e.preventDefault(); selectHatirlaticiOption(hidx); }
+      } else if (e.key === "ArrowRight" && currentHatirlatici.cevaplandi) {
+        e.preventDefault(); nextHatirlaticiSoru();
+      }
+    } else if (VIEW === "yanlisTekrarTest" && currentYanlisTekrar && !currentYanlisTekrar.bitti) {
+      var yq = hatirlaticiSoruBul(currentYanlisTekrar.kuyruk[currentYanlisTekrar.index]);
+      if (yq && !currentYanlisTekrar.cevaplandi && e.key >= "1" && e.key <= "4") {
+        var yidx = parseInt(e.key, 10) - 1;
+        if (yq.siklar[yidx]) { e.preventDefault(); selectYanlisTekrarOption(yidx); }
+      } else if (e.key === "ArrowRight" && currentYanlisTekrar.kaydedildi) {
+        e.preventDefault(); nextYanlisTekrarSoru();
       }
     }
   });
