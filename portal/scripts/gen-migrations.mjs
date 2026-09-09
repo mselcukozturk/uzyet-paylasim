@@ -15,7 +15,11 @@ if (names.length === 0) throw new Error('drizzle/ altında .sql migration buluna
 
 const entries = [];
 for (const name of names) {
-  const content = await readFile(resolve(migrationDir, name), 'utf8');
+  // Satır sonlarını LF'e sabitle: git bu .sql dosyalarını Windows'ta CRLF'e çeviriyor,
+  // Vercel'de (Linux) LF kalıyor. Normalize etmezsek üretilen modül platforma göre
+  // farklı çıkar — SQL anlamı değişmez ama dosya gereksiz yere oynar ve karşılaştırma
+  // yapan test yanlış yere alarm verir.
+  const content = (await readFile(resolve(migrationDir, name), 'utf8')).replace(/\r\n/g, '\n');
   entries.push(
     `  {\n    name: ${JSON.stringify(name)},\n    content: ${JSON.stringify(content)},\n  },`,
   );

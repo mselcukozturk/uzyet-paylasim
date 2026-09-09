@@ -17,7 +17,9 @@ void test('gömülü migration listesi drizzle/*.sql ile aynıdır', () => {
 
 void test('gömülü her migration içeriği kaynak dosyayla birebir aynıdır', () => {
   for (const name of sqlNames) {
-    const disk = readFileSync(new URL(name, sqlDir), 'utf8');
+    // Üretici satır sonlarını LF'e sabitliyor (git .sql'leri Windows'ta CRLF'e çevirir,
+    // Vercel'de LF kalır); karşılaştırmayı aynı normalizasyonla yap.
+    const disk = readFileSync(new URL(name, sqlDir), 'utf8').replace(/\r\n/g, '\n');
     // Üretici JSON.stringify kullanıyor; aynı kodlamayla karşılaştır.
     assert.ok(
       generated.includes(JSON.stringify(disk)),
