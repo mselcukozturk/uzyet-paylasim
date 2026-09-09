@@ -2328,24 +2328,8 @@
 
   function renderMenuDeneme() {
     var toplamSoru = STATE.bank.length;
-    var sinavYuzde = sinavDogruluk();
-    var flashYuzde = flashDogruluk();
-    var sonSkor = STATE.history[0] ? STATE.history[0].skor : null;
     var flashDisabled = (toplamSoru === 0 || (STATE.sadeceDeneme && !remoteGirisTamamMi())) ? "disabled" : "";
-    var dogruHavuz = Object.keys(STATE.stats).filter(function (g) { return STATE.stats[g].sonSonucDogruMu === true; }).length;
-    var yanlisHavuz = Object.keys(STATE.stats).filter(function (g) { return STATE.stats[g].sonSonucDogruMu === false; }).length;
 
-    var statCards = [
-      { num: toplamSoru, lbl: "Havuzdaki soru" },
-      { num: dogruHavuz, lbl: "Doğru çözülen soru" },
-      { num: yanlisHavuz, lbl: "Yanlış geçmişli soru" },
-      { num: sinavYuzde === null ? "—" : sinavYuzde + "%", lbl: "Sınav Doğruluğu", renk: renkEsigi(sinavYuzde) },
-      { num: flashYuzde === null ? "—" : flashYuzde + "%", lbl: "Rastgele Soru Doğruluğu", renk: renkEsigi(flashYuzde) },
-      { num: sonSkor ? (sonSkor.dogru + "/" + (sonSkor.dogru + sonSkor.yanlis + sonSkor.bos)) : "—", lbl: "Son sınav" }
-    ].map(function (c) {
-      var stil = c.renk ? ' style="color:' + c.renk + '"' : "";
-      return '<div class="stat-card"><div class="num"' + stil + '>' + escapeHtml(c.num) + '</div><div class="lbl">' + c.lbl + "</div></div>";
-    }).join("");
 
     var flashCards =
       '<button class="mode-btn" style="border-left:4px solid var(--seri-7)" ' + flashDisabled + ' data-action="start-flash">' +
@@ -2358,7 +2342,6 @@
       : '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button>' +
         '<button class="btn" data-action="open-history">Geçmiş</button></div>') +
       '<div class="section-title">📝 Deneme Sınavı</div>' +
-      '<div class="stat-grid">' + statCards + "</div>" +
       renderDenemeUzakBolum() +
       hatirlaticiBolumHtml() +
       '<div class="mode-grid" style="margin-top:14px">' + flashCards + "</div>";
