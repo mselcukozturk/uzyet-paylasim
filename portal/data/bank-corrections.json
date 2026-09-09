@@ -1,930 +1,1020 @@
 [
-  {
-    "id": "aciklama-20260905-85209acb2921-598a4c1c9d",
-    "guid": "85209acb2921",
-    "konu": "Sermaye Piyasaları ve Hazine",
-    "soru": "Bankamız, aşağıdaki sermaye piyasası araçlarından hangisinin alım satımına doğrudan aracılık edemeyip müşteri emirlerini İş Yatırım Menkul Değerler A.Ş. üzerinden gerçekleştirir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-05T20:08:01.386658+00:00"
-  },
-  {
-    "id": "aciklama-20260905-be00e40da5a3-63336df7e3",
-    "guid": "be00e40da5a3",
-    "konu": "Sermaye Piyasaları ve Hazine",
-    "soru": "I. Portföy yönetim şirketleri\nII. 19.12.2025 sonrasında ilk defa genel finansal varlık koşuluyla nitelikli yatırımcı statüsü talep eden ve 10 milyon TL'yi aşan finansal varlığını belgeleyen gerçek kişiler\nIII. Emeklilik yatırım fonları\n\nYukarıdakilerden hangileri nitelikli yatırımcı tanımına girer?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-05T20:08:01.386658+00:00"
-  },
-  {
-    "id": "aciklama-20260905-5c67ff92e14e-c2c5327635",
-    "guid": "5c67ff92e14e",
-    "konu": "İK Politikaları",
-    "soru": "I. Evlenmesi halinde……………....................... 7 iş günü\nII. Eşinin doğum yapması halinde............... 10 iş günü\nIII. Evlat edinilmesi halinde........................ 10 iş günü\nIV. Çocuğunun evlenmesi halinde............... 2 iş günü\nV. Eşinin, çocuğunun ölümü halinde............ 7 iş günü\n\nYukarıdakilerden hangileri doğrudur ?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-05T20:08:01.386658+00:00"
-  },
-  {
-    "id": "aciklama-20260905-1ddd389d5f9f-178a817b7c",
-    "guid": "1ddd389d5f9f",
-    "konu": "Hukuk",
-    "soru": "I. Düzenleyen\nII. Düzenleyene aval verenler. \nIII.Ciranta\nIV. Cirantaya aval verenler \nHangileri poliçenin başvuru borçlularıdır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T04:47:13.747874+00:00"
-  },
-  {
-    "id": "aciklama-20260905-9123464217de-bca45397c0",
-    "guid": "9123464217de",
-    "konu": "Hukuk",
-    "soru": "Bir taşınırın teslimiyle yapılan elden bağışlamada kanunun aradığı özel bir geçerlilik şekli var mıdır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T04:47:13.747874+00:00"
-  },
-  {
-    "id": "aciklama-20260905-256ab8b15b16-17e2f83c2c",
-    "guid": "256ab8b15b16",
-    "konu": "Hukuk",
-    "soru": "Hangi sözleşme noterde yapılamaz?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T04:47:13.747874+00:00"
-  },
-  {
-    "id": "aciklama-20260905-006222dd92a7-bb229a83ed",
-    "guid": "006222dd92a7",
-    "konu": "Hukuk",
-    "soru": "Zamanaşımı sürelerini başlatan tarihlerle ilgili aşağıda verilen ifadelerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T04:47:13.747874+00:00"
-  },
-  {
-    "id": "aciklama-20260905-5db20f81e5c4-1585923a0b",
-    "guid": "5db20f81e5c4",
-    "konu": "Hukuk",
-    "soru": "Derneklerle ilgili aşağıda verilenlerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T04:47:13.747874+00:00"
-  },
-  {
-    "id": "aciklama-20260905-590665ca19c1-76b2a40be7",
-    "guid": "590665ca19c1",
-    "konu": "Hukuk",
-    "soru": "Anonim şirketlerde asgari esas sermaye tutarı en az kaç TL olabilir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T04:47:13.747874+00:00"
-  },
-  {
-    "id": "aciklama-20260905-ce534ab1db02-34749f03f3",
-    "guid": "ce534ab1db02",
-    "konu": "Genel Ekonomi",
-    "soru": "Aşağıdaki işlemlerden hangisi için Disiplin Kurulu kararına gerek yoktur?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-60c0e0c842ba-b4f3db9f47",
-    "guid": "60c0e0c842ba",
-    "konu": "Hukuk",
-    "soru": "Aşağıdakilerden hangileri bankalarda yönetim kurulu üyesi olabilmek için gerekli şartlardandır?\nI. Konkordato ilan etmemiş olmak ya da hakkında iflasın ertelenmesi kararı bulunmamak\nII. Fona devredilmiş bankalarda nitelikli paya sahip olmamak\nIII. Faaliyet izni kaldırılan banka ya da kredi kuruluşlarında nitelikli paya sahip olmamak\nIV. Taksirli suçlar hariç ağır hapis veya yüz kızartıcı suçlardan hükümlü bulunmamak",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-6ca4b4f2a4bc-3a193fbe24",
-    "guid": "6ca4b4f2a4bc",
-    "konu": "Hukuk",
-    "soru": "Bir taşınmazın üzerine I. II. ve III. derecede ipotek tesis edilmiştir. Sadece II. derece ipotek alacaklısının \\\"Serbest Dereceden Yararlanma Hakkı\\\" olmadığı bilindiğine göre, 1. derece ipoteğin fek edilmesi halinde hangisi söylenebilir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-c747f257fdd4-38f2a2c0da",
-    "guid": "c747f257fdd4",
-    "konu": "Kambiyo",
-    "soru": "600 sayılı Broşüre göre, lehtara bildirimde bulunarak onay verdiği durumlar dışında, belgelerin görevli bankaca alınması ve incelenmesi bu bankaya aşağıdakilerden hangisini yapma yükümlülüğü getirir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-2eabd121b788-b4150fa362",
-    "guid": "2eabd121b788",
-    "konu": "Kambiyo",
-    "soru": "Kabul kredili akreditif işleminde düzenlenen poliçenin muhatabı kimdir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-fad44a28261b-ab8f1e7466",
-    "guid": "fad44a28261b",
-    "konu": "Kambiyo",
-    "soru": "İhtiyat Akreditiflerinde (Stand-by akreditif) rezerv söz konusu olur mu?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-c6678ea3a38f-0406df7e1b",
-    "guid": "c6678ea3a38f",
-    "konu": "Kambiyo",
-    "soru": "745 sayılı Yayına göre, birden fazla orijinal nüsha halinde gönderilen belgelere konulan aşağıdaki ibarelerden hangisi belgenin orijinalliğini ortadan kaldırır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-74fed52c34ca-6c100ccc09",
-    "guid": "74fed52c34ca",
-    "konu": "Kambiyo",
-    "soru": "Serbest iştira (freely available) kaydı kullanılmak üzere açılan iştira akreditiflerinde, lehtar belgelerin bağlı bulunduğu poliçeyi hangi bankaya iştira ettirebilir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-b69042f46e6b-c5f721beb0",
-    "guid": "b69042f46e6b",
-    "konu": "Kredi",
-    "soru": "Döviz kredilerine ilişkin hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-7a091d66cf8f-6ff5c3e1b8",
-    "guid": "7a091d66cf8f",
-    "konu": "Kredi",
-    "soru": "32 sayılı Karar kapsamında Türkiye’de yerleşik kişilerin YP kredilere getirilen kısıtlamalardan hangileri doğrudur?\nI. Gerçek kişilere nakit karşılıklı kredi kullandırılabilir\nII. Döviz geliri olan ve kredi bakiyesi 15 Milyon USD altındaki müşterilerin yp kredi kullanabilmesi için kullanılmak istenen kredi tutarı ile\nmevcut kredi bakiyesi toplamı son üç mali yılın döviz gelirleri toplamını aşmaması gerekir.\nIII. Kredi bakiyesinin son üç mali yılın döviz gelirleri toplamını aştığının sonradan tespit edilmesi durumunda yurt içinde bankalardan (serbest bölge\nşubeleri dâhil), finansal kiralama şirketlerinden, faktöring şirketlerinden ve finansman şirketlerinden kullanılan kredilerin aşıma neden olan kısmı geri\nçağırılır veya Türk Lirası krediye dönüştürülür",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-bffd689a0fc4-e4a7a2a829",
-    "guid": "bffd689a0fc4",
-    "konu": "Kredi",
-    "soru": "Karma şubelerin ikraz yetkisini aşan ve 250.000.000 TL'ye kadar Genel Limiti bulunan firma/risk gruplarına ilişkin kredi teklifleri hangisi tarafından sonuçlandırılır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-f2a5efb5f0cc-dadadbdf06",
-    "guid": "f2a5efb5f0cc",
-    "konu": "Kredi",
-    "soru": "Aşağıdakilerden hangisi Borçlu Cari Hesap (BCH) türleri arasında yer almaz?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-e764353ba928-da85843a6f",
-    "guid": "e764353ba928",
-    "konu": "Kredi",
-    "soru": "Entegre Skoru “1, 2, 3, 4, 5, 6, 7” olan gerçek kişi tacir ya da tüzel kişi müşterilerimizin, .............. TL’ye kadar (dahil) olan 1175 J Açık Gayrinakdi Çek Kredisi TL talepleri, kefil ve maddi teminat alınmaksızın Şubelerimiz aracılığıyla sonuçlandırılabilecektir.",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-fd2128049ee5-b55f666916",
-    "guid": "fd2128049ee5",
-    "konu": "Kredi",
-    "soru": "Kurumsal ve ticari şubelerde Yönetim Kurulunca onaylanan kredi açma yetki sınır ve kapsamı hangi Genel Müdürlük Bölümü tarafından ilgili şubelere bildirilir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-21a7c3dd191a-6917dcdee7",
-    "guid": "21a7c3dd191a",
-    "konu": "Kredi",
-    "soru": "50.000.000 USD veya karşılığı TL’ye kadar olan krediler hangi kredi organımız kararıyla açılır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-397c7fd926e1-7c20533a0d",
-    "guid": "397c7fd926e1",
-    "konu": "Kredi",
-    "soru": "Ana sermayesi ve özkaynakları ayrı ayrı 40 milyar TL olan bir bankanın, istisna bulunmadığı varsayımıyla, bir gerçek veya tüzel kişiye kullandırabileceği azami kredi tutarı nedir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-e84a7746ea6d-21b30e376a",
-    "guid": "e84a7746ea6d",
-    "konu": "Kredi",
-    "soru": "I. Yönetim kurulu üyeleri\nII. Genel müdürün eşi ve çocukları\nIII. Genel müdür yardımcıları\nHangileri bankanın dahil olduğu risk grubundadır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-2e0a921b1271-df74ba16f2",
-    "guid": "2e0a921b1271",
-    "konu": "Kredi",
-    "soru": "TL POS’um Öder kredisi kullanan ve tahsilat oranı %30 olarak belirlenen müşterinin ACH hesabına geçen 100.000 TL POS tutarından kredi anaparası için ne kadar tahsil edilir? (Öncelikli gecikmiş borcu yoktur.)",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-52f48399ed22-208c7754bb",
-    "guid": "52f48399ed22",
-    "konu": "Kredi",
-    "soru": "Genel limiti 60.000.000 TL olan bir karma şube müşterisinin, şube kredi açma yetkisini aşan olağan kredi teklifi hangi birimce sonuçlandırılır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.175480+00:00"
-  },
-  {
-    "id": "aciklama-20260905-d3a982f61389-4c09ea1414",
-    "guid": "d3a982f61389",
-    "konu": "Kredi",
-    "soru": "Müteselsil kefalet ile ilgili aşağıda verilen bilgilerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-7cdec84a3cbb-146c9813aa",
-    "guid": "7cdec84a3cbb",
-    "konu": "Mali Analiz",
-    "soru": "Aşağıdakilerden hangisi firmanın gelir tablosuna bakılarak elde edilebilecek bilgilerden değildir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-220f308c4cfa-841be4a1d9",
-    "guid": "220f308c4cfa",
-    "konu": "Temel İşlemler",
-    "soru": "Aşağıdaki işlemlerin hangisinde sürekli iş ilişkisi kapsamı dışında kimlik tespit yükümlülüğü doğmaktadır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-6a26d8a48beb-4974069723",
-    "guid": "6a26d8a48beb",
-    "konu": "Temel İşlemler",
-    "soru": "Para çekme ekranından yapılan nakit para çekme işlem anı onay limiti ne kadardır",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-e3ed7933aa36-03da162f56",
-    "guid": "e3ed7933aa36",
-    "konu": "Temel İşlemler",
-    "soru": "Teselsülsüz Müşterek Hesap sahipleri hangi ürünlerimizi kullanamaz?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-ab9ae4d50221-01fd4a638e",
-    "guid": "ab9ae4d50221",
-    "konu": "Temel İşlemler",
-    "soru": "Ticari müşterilerin İnternet Şubesinden diğer bankalara yapacakları döviz transferleri için günlük limit hangi bölüm yetkisinde artırılabilir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-1005b6238d90-a4c9c4de6f",
-    "guid": "1005b6238d90",
-    "konu": "Temel İşlemler",
-    "soru": "Bilgi suistimali ve piyasa dolandırıcılığı suçlarına dair bilgi veya şüphe bulunması halinde Kurumsal Uyum Bölümü nereye bildirim yapar?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-f8ef8bdc8a30-d23248a512",
-    "guid": "f8ef8bdc8a30",
-    "konu": "Temel İşlemler",
-    "soru": "28 gün ve üzeri Vadeli TL Mevduat Hesabı açılış alt limiti ne kadardır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-ac881a082e0a-6f27ee3351",
-    "guid": "ac881a082e0a",
-    "konu": "Temel İşlemler",
-    "soru": "Şüpheli işlem, şüphenin oluştuğu tarihten itibaren en geç kaç iş günü içinde MASAK’a bildirilmelidir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-9ae57fc5e8c8-1a2f0c7e08",
-    "guid": "9ae57fc5e8c8",
-    "konu": "Temel İşlemler",
-    "soru": "Hangisinin çek karnesi hesabı açılırken alınması zorunluyken, her yeni çek karnesi verilirken de kontrol edilmesi/alınması zorunludur?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-26ae11bdd3f1-c3f0ca4385",
-    "guid": "26ae11bdd3f1",
-    "konu": "Temel İşlemler",
-    "soru": "Senedin vadesine ilişkin ifadelerden hangisi doğrudur?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-db0869bffde6-de531792cc",
-    "guid": "db0869bffde6",
-    "konu": "Temel İşlemler",
-    "soru": "Bir gerçek kişiye ait IBAN için en fazla kaç adet kolay adres eklenebilir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-12d5e2e90183-166caae1fd",
-    "guid": "12d5e2e90183",
-    "konu": "Temel İşlemler",
-    "soru": "Basım tarihi 14.09.2022 olan, 5941 sayılı Kanuna tabi 20.000 TL tutarındaki çek 26.03.2025’te süresinde ibraz edilmiştir. Hesap bakiyesi sıfırsa ve bankanın yasal yükümlülük bedeli hamile ödenirse karşılıksız belgelendirilecek tutar nedir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-63375a8fc050-95be48f62d",
-    "guid": "63375a8fc050",
-    "konu": "Temel İşlemler",
-    "soru": "2026 yılı TMSF mevduat sigortası hakkında hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-b103a73a1625-930becaafc",
-    "guid": "b103a73a1625",
-    "konu": "Temel İşlemler",
-    "soru": "Sabit Hesap hangi para cinsinden açılabilir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-555c2699b8a6-7cd29b611a",
-    "guid": "555c2699b8a6",
-    "konu": "Temel İşlemler",
-    "soru": "31 Ocak–31 Aralık 2025 döneminde, tahsil edilmek üzere ibraz edilen 5941 sayılı yasaya tabi hangi çek için hamil yasal yükümlülük tutarını reddedemez?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-b13735e09904-f8f032e936",
-    "guid": "b13735e09904",
-    "konu": "Temel İşlemler",
-    "soru": "Bireysel dijital bankacılık kanallarından yurt içindeki veya yurt dışındaki diğer bankalara yapılacak SWIFT işlemlerinde günlük limit kaç ABD dolarıdır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-4e8c392d2884-ec444bd295",
-    "guid": "4e8c392d2884",
-    "konu": "Ürünler",
-    "soru": "BES ile ilgili hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-48482f07cc39-e645b347c0",
-    "guid": "48482f07cc39",
-    "konu": "Ürünler",
-    "soru": "I. Özel sektör borçlanma araçları\nII. Altın ve diğer kıymetli madenler\nIII. Kira sertifikaları\nYukarıdakilerden hangisi/hangileri yatırım fonlarının portföylerine dahil edebileceği enstrümanlardandır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-fb30a682d0c1-b5f25a993f",
-    "guid": "fb30a682d0c1",
-    "konu": "Ürünler",
-    "soru": "Hangileri ticari müşteriler kullanabilir?\nI) Düzenli birikim talimatı\nII) Günlük Kazandıran Hesap\nIII) Birikimli Mevduat hesabı",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-4eb8f9c82bcd-cd96a49fa7",
-    "guid": "4eb8f9c82bcd",
-    "konu": "Ürünler",
-    "soru": "Black veya Black Plus müşterisi, yurt içi Bankamatikten aynı gün yalnızca 500 TL çekmiştir. Başka çekimi yoksa günlük ücretsiz para çekme limitinden ne kadar kalır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-1d2c74f0e2ef-75cbfd58ec",
-    "guid": "1d2c74f0e2ef",
-    "konu": "Ürünler",
-    "soru": "I. En az 1 adet Maximum özellikli kredi kartı (Maximum Kart, Maximiles, Mercedes Card) sahipliği\nII. Kişisel Verilerin Korunması Kanunu (KVKK) izninin “Evet” olması\nIII. En az bir maaşı ya da geriye dönük 4 aylık ortalama maaş tutarının asgari ücret düzeyinde olması\nIV. Maaş ödemelerinin Bankamız maaş sistemi aracılığıyla ve “MA” koduyla yapılmış olması\nBankam Benimle programından yararlanabilmek için yukarıdaki koşullardan hangilerinin sağlanması gerekmektedir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-d2a93a45be9f-a97ad73177",
-    "guid": "d2a93a45be9f",
-    "konu": "Ürünler",
-    "soru": "Müşterek hesaplar ve Ek Hesap uygulamasına ilişkin aşağıdakilerden hangisi doğrudur?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-d04f199336e8-d90576a7fa",
-    "guid": "d04f199336e8",
-    "konu": "Ürünler",
-    "soru": "İşCep üzerinden gerçekleştirilen yatırım hesabı işlemleri ile ilgili aşağıdakilerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-641c439ba453-774b23cccf",
-    "guid": "641c439ba453",
-    "konu": "Ürünler",
-    "soru": "Üstü Kalsın talimatı kapsamında kart hamillerinin tercih edebileceği güncel yuvarlama tutarlarından biri aşağıdakilerden hangisidir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-aa15eafa3842-617a87322b",
-    "guid": "aa15eafa3842",
-    "konu": "Ürünler",
-    "soru": "Üstü Kalsın talimatı ile ilgili aşağıdakilerden hangisi yanlıştır",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-879b87d557e1-0ee8c4bc92",
-    "guid": "879b87d557e1",
-    "konu": "Ürünler",
-    "soru": "Bir asıl karta bağlı olarak en fazla kaç tane ek kart üretilebilir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-ab69c597875d-bec138d1ae",
-    "guid": "ab69c597875d",
-    "konu": "Ürünler",
-    "soru": "Sabit faizli konut kredisinde kalan vade 35 ay ise erken ödenen anapara üzerinden alınabilecek azami erken ödeme tazminatı oranı nedir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-7a2e87691a4b-1395f2fa44",
-    "guid": "7a2e87691a4b",
-    "konu": "Ürünler",
-    "soru": "Bankamatiklerden hangi araçla kartsız para çekilebilir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-dc22fdd6e356-ad7679eb12",
-    "guid": "dc22fdd6e356",
-    "konu": "Ürünler",
-    "soru": "TROY/VISA/MasterCard şemalı Bankamatik kartlarıyla non-secure internet sitelerinde tekil işlem başına en fazla ne kadar alışveriş yapılabilir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-fc52b549748f-db2b0919b9",
-    "guid": "fc52b549748f",
-    "konu": "Ürünler",
-    "soru": "Dijital bankacılık kanallarında görüntülenmeyen hesaplara ne ad verilir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-61f94128457b-1863da0e43",
-    "guid": "61f94128457b",
-    "konu": "Ürünler",
-    "soru": "Bankamatiklerden gerçekleştirilen kartsız para çekme işlemleri ile ilgili aşağıda verilenlerden hangisi/hangileri yanlıştır?\n1. Bluetooth ile de kartsız para çekilebilir.\n2. Döviz çekilemez.\n3. Kartsız para çekme işlemleri kartlı para çekme işlemleri ile ortak limiti kullanır.",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-b04dcbe7b1c4-79b41cc453",
-    "guid": "b04dcbe7b1c4",
-    "konu": "Ürünler",
-    "soru": "Anında kredi ürünümüz ile ilgili aşağıda verilenlerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-11085ff768c4-b8c523ffaa",
-    "guid": "11085ff768c4",
-    "konu": "Mali Analiz",
-    "soru": "Duran varlıkların amortismanında ekonomik ömür ve yararlı ömür kavramları ile ilgili olarak aşağıdakilerden hangisi doğrudur?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-c5399e7f56ab-31bc6de0f4",
-    "guid": "c5399e7f56ab",
-    "konu": "Kambiyo",
-    "soru": "821 sayılı Yayına göre, birden fazla orijinal nüsha halinde gönderilen belgelere konulan aşağıdaki ibarelerden hangisi belgenin orijinalliğini ortadan kaldırmaz?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-52c02bbab0ae-29298f5a5b",
-    "guid": "52c02bbab0ae",
-    "konu": "Kambiyo",
-    "soru": "Aracı bankalarca aşağıdaki hangi resmi kuruma bankalarca süresi içinde kapatılmayan ihracat hesaplarına ilişkin bildirim yapılması doğru değildir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-7b5fde75a60f-9584fc9b32",
-    "guid": "7b5fde75a60f",
-    "konu": "Kambiyo",
-    "soru": "I-Bankamızda forfaiting işlemleri DİTKOB tarafından gerçekleştirilir. II-İthalatçıdan ziyade garantör konumundaki yabancı bankanın değerliliği değerlendirilir. III-Teyitsiz vadeli akreditifler forfaitinge konu edilemez. Forfaiting hakkında yukarıdakilerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-31a7dd35fe15-10977c0ad3",
-    "guid": "31a7dd35fe15",
-    "konu": "Kambiyo",
-    "soru": "Yabancı bankaların Bankamız nezdinde açtırdığı yabancı para hesapları ve bu hesapların operasyonunu yürüten bölüm hangi seçenekte doğru eşleştirilmiştir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-0f18727f4e65-9e79238736",
-    "guid": "0f18727f4e65",
-    "konu": "Kambiyo",
-    "soru": "İstisna veya muafiyet bulunmadığı varsayımıyla, aşağıdaki ithalat ödeme şekillerinden hangisi KKDF kesintisine tabidir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-221ef7edf29c-001710323f",
-    "guid": "221ef7edf29c",
-    "konu": "Kambiyo",
-    "soru": "Hangi işlem türünde, belgelerin teslimi aşamasında firmaya Vadeli İthalat Bildirim Yazısı da verilmelidir.",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-f4cf595e9933-ec11cdd982",
-    "guid": "f4cf595e9933",
-    "konu": "Kambiyo",
-    "soru": "İhracat bedellerinin yurda getirilmesi ve tahsili ile ilgili aşağıda verilenlerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-7b3650746a82-42f5248109",
-    "guid": "7b3650746a82",
-    "konu": "Kredi",
-    "soru": "Aşağıdakilerden hangisi/hangileri bir teminat mektubunun taraflarındandır?\n• Banka\n• Muhatap\n• Lehtar",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-65491a048172-a62870f34c",
-    "guid": "65491a048172",
-    "konu": "Kredi",
-    "soru": "Aşağıdakilerden hangisi Ticari Krediler tahsis bölümünün yetki çerçevesinde değildir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-bc93b89746df-9bf24501f5",
-    "guid": "bc93b89746df",
-    "konu": "Kredi",
-    "soru": "Ana sermayesi ve özkaynakları ayrı ayrı 10 milyar TL olan bir bankanın, istisna bulunmadığı varsayımıyla, bir gerçek veya tüzel kişiye kullandırabileceği azami kredi tutarı nedir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-9a705ed26d6f-517b802255",
-    "guid": "9a705ed26d6f",
-    "konu": "Kredi",
-    "soru": "OTS Kapsamı dışındaki Tarım Kredi tahsis koşullarıyla ilgili hangisi doğrudur?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-d3809ce98400-748e32535c",
-    "guid": "d3809ce98400",
-    "konu": "Ürünler",
-    "soru": "Kart aidatlarının MaxiPuan ile ödenmesi hangi kanallardan yapılabilir?\nI. İşCep\nII. Şube\nIII. İnternet Şube\nIV.Çözüm Merkezi",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-276b681ac6ae-e05a5c25e2",
-    "guid": "276b681ac6ae",
-    "konu": "Temel İşlemler",
-    "soru": "Hangi \"Düzenlenme Tarihi\" çeki geçersiz kılmaz?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-976addbf8743-12c2e07ab8",
-    "guid": "976addbf8743",
-    "konu": "Temel İşlemler",
-    "soru": "31 Ocak–31 Aralık 2025 döneminde karşılıksız işlemi yapılan 5941 sayılı Çek Kanunu'na tabi çek için ödenecek azami yasal yükümlülük tutarı ne kadardır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-a01fe4685cf7-1818e142b1",
-    "guid": "a01fe4685cf7",
-    "konu": "Temel İşlemler",
-    "soru": "31 Ocak–31 Aralık 2025 döneminde tahsil edilmek üzere ibraz edilen hangi çek için hamil yasal yükümlülük tutarını reddedemez?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-4387681dc624-36c17a9a6a",
-    "guid": "4387681dc624",
-    "konu": "Genel Ekonomi",
-    "soru": "Haziran 2026 verilerine göre aşağıdakilerden hangisinde Bankamız özel bankalar içinde birinci sıradadır?\n\nI. TL mevduat\nII. Toplam Krediler\nIII. Vadesiz Mevduat",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-6ae794c9028f-d7903599d5",
-    "guid": "6ae794c9028f",
-    "konu": "Genel Ekonomi",
-    "soru": "Haziran 2026 yatırımcı sunumuna göre iştirak kompozisyonuna dair hangisi doğrudur?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T12:36:37.176481+00:00"
-  },
-  {
-    "id": "aciklama-20260905-37ef75d62ac0-4da74c8cde",
-    "guid": "37ef75d62ac0",
-    "konu": "Hukuk",
-    "soru": "Aşağıdakilerden hangisi geçerli değildir?\n1. Çekte kısmi ciro\n2. Poliçede kısmi ödeme\n3. Bonoda kısmi aval",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-b5f4fd2dfe63-a60a16baef",
-    "guid": "b5f4fd2dfe63",
-    "konu": "Hukuk",
-    "soru": "I. Çekte kısmi ciro\nII. Poliçede kısmi ödeme\nIII. Bonoda kısmi aval\nYukarıda sayılanlardan hangisi geçerli bir işlem değildir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-b3698dfcff11-fae0c24d19",
-    "guid": "b3698dfcff11",
-    "konu": "Hukuk",
-    "soru": "Konkordato ile ilgili aşağıdakilerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-cd3d7c02a20b-2d06626dd6",
-    "guid": "cd3d7c02a20b",
-    "konu": "Hukuk",
-    "soru": "Seçeneklerde verilen keşide yeri ve hesap şubesi ikililerinden hangisinin ibraz süresi 10 gündür?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-4c00d843f053-c2cc1af1f7",
-    "guid": "4c00d843f053",
-    "konu": "Hukuk",
-    "soru": "Mirasçılık belgesini hangisi düzenleyemez?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-9f8bca7e0ee8-ce74c57876",
-    "guid": "9f8bca7e0ee8",
-    "konu": "Hukuk",
-    "soru": "Hangisi ölüm karinesinin kabul edilebilmesinin şartlarından değildir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-6295a6248856-ba1c15f57a",
-    "guid": "6295a6248856",
-    "konu": "Hukuk",
-    "soru": "Hangisi alacağın devrinin şartlarından biri değildir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-b0b5ac427d5d-04a60bf0c9",
-    "guid": "b0b5ac427d5d",
-    "konu": "Hukuk",
-    "soru": "Hangisinin alacağa teminat olma işlevi vardır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-e96525adc1c8-e18e6727c2",
-    "guid": "e96525adc1c8",
-    "konu": "Kredi",
-    "soru": "Aşağıdakilerden hangisi kredi sınırlarına tabi olmayan işlemlerden biridir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-4d143b9f9db1-312992bc0f",
-    "guid": "4d143b9f9db1",
-    "konu": "Temel İşlemler",
-    "soru": "Altın Mevduat Hesapları'na ilişkin verilen ifadelerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-b3a38e1251e7-51c849daa4",
-    "guid": "b3a38e1251e7",
-    "konu": "Ürünler",
-    "soru": "Bireysel müşteriler için taşıt teminatlı ihtiyaç kredisinin vadesi azami kaç ay vadeli olabilir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-69e31ffcd18b-08ac0cc812",
-    "guid": "69e31ffcd18b",
-    "konu": "Ürünler",
-    "soru": "Maximum Mobil içindeki kampanyalar menüsü ile ilgili hangisi doğrudur?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-8e2183e67815-6ce38539e3",
-    "guid": "8e2183e67815",
-    "konu": "Ürünler",
-    "soru": "Anında Alışveriş Kredisi ile fiyatı 20.000 TL’nin üzerinde olan cep telefonu alımlarında azami taksit sayısı kaç aydır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-f71e810306ba-0140cda4dc",
-    "guid": "f71e810306ba",
-    "konu": "Ürünler",
-    "soru": "Hangi ürün ve hizmetlerden TROY logolu kredi kartı sahipleri de faydalanabilir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-825e8a226133-d289188513",
-    "guid": "825e8a226133",
-    "konu": "Ürünler",
-    "soru": "Otomatik fatura ödeme talimatı hangi kanaldan verilemez?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-410f00bb1eca-64272872cc",
-    "guid": "410f00bb1eca",
-    "konu": "Ürünler",
-    "soru": "Aşağıdaki işlemlerden hangisi Maximum Mobil üzerinden gerçekleştirilebilirken İşCep üzerinden gerçekleştirilemez?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-908df85d67c6-3175d5182f",
-    "guid": "908df85d67c6",
-    "konu": "Kambiyo",
-    "soru": "Aşağıdakilerden hangileri ihracat bedelinin yurda getirilmesinde istisna tanınan ülkelerdendir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-59c4a988c4c4-9fde92dffe",
-    "guid": "59c4a988c4c4",
-    "konu": "Kambiyo",
-    "soru": "İhracat hesaplarının takibinde süre bitimine 30 ve 15 gün kalan açık ihracat beyannameleri için sistem tarafından kime e-posta gönderimi yapılır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-9092f950aa33-94f440e1b0",
-    "guid": "9092f950aa33",
-    "konu": "Kambiyo",
-    "soru": "Türk Eximbank'ın temel amacı nedir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-57334caa1e9b-bf67885500",
-    "guid": "57334caa1e9b",
-    "konu": "Genel Ekonomi",
-    "soru": "Bankamızın 2026/6 verilerine göre aşağıdakilerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-abbefc1cd001-bf67885500",
-    "guid": "abbefc1cd001",
-    "konu": "Genel Ekonomi",
-    "soru": "Bankamızın 2026/6 verilerine göre aşağıdakilerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-cfb11591520a-c9e3c50879",
-    "guid": "cfb11591520a",
-    "konu": "Genel Ekonomi",
-    "soru": "2026/6 itibariyle aşağıdaki sektörlerden hangisinde bankamız iştiraki bulunmamaktadır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-81e536537be3-d75bf9ad8d",
-    "guid": "81e536537be3",
-    "konu": "Genel Ekonomi",
-    "soru": "2026/6 itibariyle bankamız dijitalleşme verisiyle ilgili aşağıda verilenlerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-da967bf962f8-af122a9ef7",
-    "guid": "da967bf962f8",
-    "konu": "Genel Ekonomi",
-    "soru": "2026/6 itibariyle bankamız kârlılık oranları ile ilgili aşağıda verilenlerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-19e51a275641-2ba1251160",
-    "guid": "19e51a275641",
-    "konu": "Genel Ekonomi",
-    "soru": "2026/6 itibariyle bankamız komisyon gelirlerinin performansıyla ilgili aşağıda verilenlerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-f02a978fb084-948545377c",
-    "guid": "f02a978fb084",
-    "konu": "Genel Ekonomi",
-    "soru": "2026/6 itibariyle bankamız solo sermaye yeterlilik oranı kaçtır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-89f423aaa4eb-82d1906856",
-    "guid": "89f423aaa4eb",
-    "konu": "Genel Ekonomi",
-    "soru": "2026/6 itibarıyla bankamız mevduat tabanıyla ilgili aşağıda verilenlerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-6cc42a4b41c8-d8325a2bb1",
-    "guid": "6cc42a4b41c8",
-    "konu": "Genel Ekonomi",
-    "soru": "2026/6 itibarıyla bankamız pasif kompozisyonu ile ilgili aşağıda verilenlerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-fe2459c435d3-f40baeacfb",
-    "guid": "fe2459c435d3",
-    "konu": "Genel Ekonomi",
-    "soru": "2026/6 itibarıyla bankamız aktif kalitesi ile ilgili aşağıda verilenlerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-a7caf5be98b0-26ff5c20b0",
-    "guid": "a7caf5be98b0",
-    "konu": "Genel Ekonomi",
-    "soru": "2026/6 itibarıyla bankamız kredi portföyünde yer alan tüketici kredi türleri / oran eşleşmesi aşağıdakilerden hangisinde yanlış verilmiştir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-50c24ee10961-a362f969b6",
-    "guid": "50c24ee10961",
-    "konu": "Genel Ekonomi",
-    "soru": "2026/6 itibarıyla bankamız kredi portföyünde yer alan kredi türleri / oran eşleşmesi aşağıdakilerden hangisinde yanlış verilmiştir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-816a32b519c5-69ad86b560",
-    "guid": "816a32b519c5",
-    "konu": "Genel Ekonomi",
-    "soru": "2026/6 bankamız büyüme performansıyla ilgili aşağıda verilenlerden hangisi yanlıştır?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-5b937779d102-8a92d8bd6e",
-    "guid": "5b937779d102",
-    "konu": "Genel Ekonomi",
-    "soru": "2026/6 TP/YP Kredi kompozisyonumuz aşağıdakilerin hangisinde doğru olarak verilmiştir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-037f7306c356-d9da736389",
-    "guid": "037f7306c356",
-    "konu": "Genel Ekonomi",
-    "soru": "2026/6 Menkul Kıymetlerin toplam aktifimize oranı aşağıdakilerin hangisinde doğru verilmiştir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-587a8bc8a735-7eeb7055ef",
-    "guid": "587a8bc8a735",
-    "konu": "Genel Ekonomi",
-    "soru": "2026/6 toplam aktif tutarımız aşağıdaki seçeneklerden hangisinde doğru verilmiştir?",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-8c5943751370-d47cc1ab1e",
-    "guid": "8c5943751370",
-    "konu": "Genel Ekonomi",
-    "soru": "Vadesiz mevduatın toplam mevduat içindeki payı nedir? (2026/6)",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  },
-  {
-    "id": "aciklama-20260905-5cd9983c1217-2392957489",
-    "guid": "5cd9983c1217",
-    "konu": "Genel Ekonomi",
-    "soru": "2026/6 verilerine göre Bankamızın SYR'si aşağıdakilerden hangisidir? (Solo Bilanço)",
-    "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-    "tarihISO": "2026-09-06T14:28:55.870864+00:00"
-  }
+ {
+  "id": "aciklama-20260905-85209acb2921-598a4c1c9d",
+  "guid": "85209acb2921",
+  "konu": "Sermaye Piyasaları ve Hazine",
+  "soru": "Bankamız, aşağıdaki sermaye piyasası araçlarından hangisinin alım satımına doğrudan aracılık edemeyip müşteri emirlerini İş Yatırım Menkul Değerler A.Ş. üzerinden gerçekleştirir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-05T20:08:01.386658+00:00"
+ },
+ {
+  "id": "aciklama-20260905-be00e40da5a3-63336df7e3",
+  "guid": "be00e40da5a3",
+  "konu": "Sermaye Piyasaları ve Hazine",
+  "soru": "I. Portföy yönetim şirketleri\nII. 19.12.2025 sonrasında ilk defa genel finansal varlık koşuluyla nitelikli yatırımcı statüsü talep eden ve 10 milyon TL'yi aşan finansal varlığını belgeleyen gerçek kişiler\nIII. Emeklilik yatırım fonları\n\nYukarıdakilerden hangileri nitelikli yatırımcı tanımına girer?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-05T20:08:01.386658+00:00"
+ },
+ {
+  "id": "aciklama-20260905-5c67ff92e14e-c2c5327635",
+  "guid": "5c67ff92e14e",
+  "konu": "İK Politikaları",
+  "soru": "I. Evlenmesi halinde……………....................... 7 iş günü\nII. Eşinin doğum yapması halinde............... 10 iş günü\nIII. Evlat edinilmesi halinde........................ 10 iş günü\nIV. Çocuğunun evlenmesi halinde............... 2 iş günü\nV. Eşinin, çocuğunun ölümü halinde............ 7 iş günü\n\nYukarıdakilerden hangileri doğrudur ?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-05T20:08:01.386658+00:00"
+ },
+ {
+  "id": "aciklama-20260905-1ddd389d5f9f-178a817b7c",
+  "guid": "1ddd389d5f9f",
+  "konu": "Hukuk",
+  "soru": "I. Düzenleyen\nII. Düzenleyene aval verenler. \nIII.Ciranta\nIV. Cirantaya aval verenler \nHangileri poliçenin başvuru borçlularıdır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T04:47:13.747874+00:00"
+ },
+ {
+  "id": "aciklama-20260905-9123464217de-bca45397c0",
+  "guid": "9123464217de",
+  "konu": "Hukuk",
+  "soru": "Bir taşınırın teslimiyle yapılan elden bağışlamada kanunun aradığı özel bir geçerlilik şekli var mıdır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T04:47:13.747874+00:00"
+ },
+ {
+  "id": "aciklama-20260905-256ab8b15b16-17e2f83c2c",
+  "guid": "256ab8b15b16",
+  "konu": "Hukuk",
+  "soru": "Hangi sözleşme noterde yapılamaz?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T04:47:13.747874+00:00"
+ },
+ {
+  "id": "aciklama-20260905-006222dd92a7-bb229a83ed",
+  "guid": "006222dd92a7",
+  "konu": "Hukuk",
+  "soru": "Zamanaşımı sürelerini başlatan tarihlerle ilgili aşağıda verilen ifadelerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T04:47:13.747874+00:00"
+ },
+ {
+  "id": "aciklama-20260905-5db20f81e5c4-1585923a0b",
+  "guid": "5db20f81e5c4",
+  "konu": "Hukuk",
+  "soru": "Derneklerle ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T04:47:13.747874+00:00"
+ },
+ {
+  "id": "aciklama-20260905-590665ca19c1-76b2a40be7",
+  "guid": "590665ca19c1",
+  "konu": "Hukuk",
+  "soru": "Anonim şirketlerde asgari esas sermaye tutarı en az kaç TL olabilir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T04:47:13.747874+00:00"
+ },
+ {
+  "id": "aciklama-20260905-ce534ab1db02-34749f03f3",
+  "guid": "ce534ab1db02",
+  "konu": "Genel Ekonomi",
+  "soru": "Aşağıdaki işlemlerden hangisi için Disiplin Kurulu kararına gerek yoktur?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-60c0e0c842ba-b4f3db9f47",
+  "guid": "60c0e0c842ba",
+  "konu": "Hukuk",
+  "soru": "Aşağıdakilerden hangileri bankalarda yönetim kurulu üyesi olabilmek için gerekli şartlardandır?\nI. Konkordato ilan etmemiş olmak ya da hakkında iflasın ertelenmesi kararı bulunmamak\nII. Fona devredilmiş bankalarda nitelikli paya sahip olmamak\nIII. Faaliyet izni kaldırılan banka ya da kredi kuruluşlarında nitelikli paya sahip olmamak\nIV. Taksirli suçlar hariç ağır hapis veya yüz kızartıcı suçlardan hükümlü bulunmamak",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-6ca4b4f2a4bc-3a193fbe24",
+  "guid": "6ca4b4f2a4bc",
+  "konu": "Hukuk",
+  "soru": "Bir taşınmazın üzerine I. II. ve III. derecede ipotek tesis edilmiştir. Sadece II. derece ipotek alacaklısının \\\"Serbest Dereceden Yararlanma Hakkı\\\" olmadığı bilindiğine göre, 1. derece ipoteğin fek edilmesi halinde hangisi söylenebilir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-c747f257fdd4-38f2a2c0da",
+  "guid": "c747f257fdd4",
+  "konu": "Kambiyo",
+  "soru": "600 sayılı Broşüre göre, lehtara bildirimde bulunarak onay verdiği durumlar dışında, belgelerin görevli bankaca alınması ve incelenmesi bu bankaya aşağıdakilerden hangisini yapma yükümlülüğü getirir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-2eabd121b788-b4150fa362",
+  "guid": "2eabd121b788",
+  "konu": "Kambiyo",
+  "soru": "Kabul kredili akreditif işleminde düzenlenen poliçenin muhatabı kimdir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-fad44a28261b-ab8f1e7466",
+  "guid": "fad44a28261b",
+  "konu": "Kambiyo",
+  "soru": "İhtiyat Akreditiflerinde (Stand-by akreditif) rezerv söz konusu olur mu?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-c6678ea3a38f-0406df7e1b",
+  "guid": "c6678ea3a38f",
+  "konu": "Kambiyo",
+  "soru": "745 sayılı Yayına göre, birden fazla orijinal nüsha halinde gönderilen belgelere konulan aşağıdaki ibarelerden hangisi belgenin orijinalliğini ortadan kaldırır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-74fed52c34ca-6c100ccc09",
+  "guid": "74fed52c34ca",
+  "konu": "Kambiyo",
+  "soru": "Serbest iştira (freely available) kaydı kullanılmak üzere açılan iştira akreditiflerinde, lehtar belgelerin bağlı bulunduğu poliçeyi hangi bankaya iştira ettirebilir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-b69042f46e6b-c5f721beb0",
+  "guid": "b69042f46e6b",
+  "konu": "Kredi",
+  "soru": "Döviz kredilerine ilişkin hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-7a091d66cf8f-6ff5c3e1b8",
+  "guid": "7a091d66cf8f",
+  "konu": "Kredi",
+  "soru": "32 sayılı Karar kapsamında Türkiye’de yerleşik kişilerin YP kredilere getirilen kısıtlamalardan hangileri doğrudur?\nI. Gerçek kişilere nakit karşılıklı kredi kullandırılabilir\nII. Döviz geliri olan ve kredi bakiyesi 15 Milyon USD altındaki müşterilerin yp kredi kullanabilmesi için kullanılmak istenen kredi tutarı ile\nmevcut kredi bakiyesi toplamı son üç mali yılın döviz gelirleri toplamını aşmaması gerekir.\nIII. Kredi bakiyesinin son üç mali yılın döviz gelirleri toplamını aştığının sonradan tespit edilmesi durumunda yurt içinde bankalardan (serbest bölge\nşubeleri dâhil), finansal kiralama şirketlerinden, faktöring şirketlerinden ve finansman şirketlerinden kullanılan kredilerin aşıma neden olan kısmı geri\nçağırılır veya Türk Lirası krediye dönüştürülür",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-bffd689a0fc4-e4a7a2a829",
+  "guid": "bffd689a0fc4",
+  "konu": "Kredi",
+  "soru": "Karma şubelerin ikraz yetkisini aşan ve 250.000.000 TL'ye kadar Genel Limiti bulunan firma/risk gruplarına ilişkin kredi teklifleri hangisi tarafından sonuçlandırılır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-f2a5efb5f0cc-dadadbdf06",
+  "guid": "f2a5efb5f0cc",
+  "konu": "Kredi",
+  "soru": "Aşağıdakilerden hangisi Borçlu Cari Hesap (BCH) türleri arasında yer almaz?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-e764353ba928-da85843a6f",
+  "guid": "e764353ba928",
+  "konu": "Kredi",
+  "soru": "Entegre Skoru “1, 2, 3, 4, 5, 6, 7” olan gerçek kişi tacir ya da tüzel kişi müşterilerimizin, .............. TL’ye kadar (dahil) olan 1175 J Açık Gayrinakdi Çek Kredisi TL talepleri, kefil ve maddi teminat alınmaksızın Şubelerimiz aracılığıyla sonuçlandırılabilecektir.",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-fd2128049ee5-b55f666916",
+  "guid": "fd2128049ee5",
+  "konu": "Kredi",
+  "soru": "Kurumsal ve ticari şubelerde Yönetim Kurulunca onaylanan kredi açma yetki sınır ve kapsamı hangi Genel Müdürlük Bölümü tarafından ilgili şubelere bildirilir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-21a7c3dd191a-6917dcdee7",
+  "guid": "21a7c3dd191a",
+  "konu": "Kredi",
+  "soru": "50.000.000 USD veya karşılığı TL’ye kadar olan krediler hangi kredi organımız kararıyla açılır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-397c7fd926e1-7c20533a0d",
+  "guid": "397c7fd926e1",
+  "konu": "Kredi",
+  "soru": "Ana sermayesi ve özkaynakları ayrı ayrı 40 milyar TL olan bir bankanın, istisna bulunmadığı varsayımıyla, bir gerçek veya tüzel kişiye kullandırabileceği azami kredi tutarı nedir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-e84a7746ea6d-21b30e376a",
+  "guid": "e84a7746ea6d",
+  "konu": "Kredi",
+  "soru": "I. Yönetim kurulu üyeleri\nII. Genel müdürün eşi ve çocukları\nIII. Genel müdür yardımcıları\nHangileri bankanın dahil olduğu risk grubundadır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-2e0a921b1271-df74ba16f2",
+  "guid": "2e0a921b1271",
+  "konu": "Kredi",
+  "soru": "TL POS’um Öder kredisi kullanan ve tahsilat oranı %30 olarak belirlenen müşterinin ACH hesabına geçen 100.000 TL POS tutarından kredi anaparası için ne kadar tahsil edilir? (Öncelikli gecikmiş borcu yoktur.)",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-52f48399ed22-208c7754bb",
+  "guid": "52f48399ed22",
+  "konu": "Kredi",
+  "soru": "Genel limiti 60.000.000 TL olan bir karma şube müşterisinin, şube kredi açma yetkisini aşan olağan kredi teklifi hangi birimce sonuçlandırılır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.175480+00:00"
+ },
+ {
+  "id": "aciklama-20260905-d3a982f61389-4c09ea1414",
+  "guid": "d3a982f61389",
+  "konu": "Kredi",
+  "soru": "Müteselsil kefalet ile ilgili aşağıda verilen bilgilerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-7cdec84a3cbb-146c9813aa",
+  "guid": "7cdec84a3cbb",
+  "konu": "Mali Analiz",
+  "soru": "Aşağıdakilerden hangisi firmanın gelir tablosuna bakılarak elde edilebilecek bilgilerden değildir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-220f308c4cfa-841be4a1d9",
+  "guid": "220f308c4cfa",
+  "konu": "Temel İşlemler",
+  "soru": "Aşağıdaki işlemlerin hangisinde sürekli iş ilişkisi kapsamı dışında kimlik tespit yükümlülüğü doğmaktadır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-6a26d8a48beb-4974069723",
+  "guid": "6a26d8a48beb",
+  "konu": "Temel İşlemler",
+  "soru": "Para çekme ekranından yapılan nakit para çekme işlem anı onay limiti ne kadardır",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-e3ed7933aa36-03da162f56",
+  "guid": "e3ed7933aa36",
+  "konu": "Temel İşlemler",
+  "soru": "Teselsülsüz Müşterek Hesap sahipleri hangi ürünlerimizi kullanamaz?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-ab9ae4d50221-01fd4a638e",
+  "guid": "ab9ae4d50221",
+  "konu": "Temel İşlemler",
+  "soru": "Ticari müşterilerin İnternet Şubesinden diğer bankalara yapacakları döviz transferleri için günlük limit hangi bölüm yetkisinde artırılabilir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-1005b6238d90-a4c9c4de6f",
+  "guid": "1005b6238d90",
+  "konu": "Temel İşlemler",
+  "soru": "Bilgi suistimali ve piyasa dolandırıcılığı suçlarına dair bilgi veya şüphe bulunması halinde Kurumsal Uyum Bölümü nereye bildirim yapar?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-f8ef8bdc8a30-d23248a512",
+  "guid": "f8ef8bdc8a30",
+  "konu": "Temel İşlemler",
+  "soru": "28 gün ve üzeri Vadeli TL Mevduat Hesabı açılış alt limiti ne kadardır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-ac881a082e0a-6f27ee3351",
+  "guid": "ac881a082e0a",
+  "konu": "Temel İşlemler",
+  "soru": "Şüpheli işlem, şüphenin oluştuğu tarihten itibaren en geç kaç iş günü içinde MASAK’a bildirilmelidir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-9ae57fc5e8c8-1a2f0c7e08",
+  "guid": "9ae57fc5e8c8",
+  "konu": "Temel İşlemler",
+  "soru": "Hangisinin çek karnesi hesabı açılırken alınması zorunluyken, her yeni çek karnesi verilirken de kontrol edilmesi/alınması zorunludur?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-26ae11bdd3f1-c3f0ca4385",
+  "guid": "26ae11bdd3f1",
+  "konu": "Temel İşlemler",
+  "soru": "Senedin vadesine ilişkin ifadelerden hangisi doğrudur?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-db0869bffde6-de531792cc",
+  "guid": "db0869bffde6",
+  "konu": "Temel İşlemler",
+  "soru": "Bir gerçek kişiye ait IBAN için en fazla kaç adet kolay adres eklenebilir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-12d5e2e90183-166caae1fd",
+  "guid": "12d5e2e90183",
+  "konu": "Temel İşlemler",
+  "soru": "Basım tarihi 14.09.2022 olan, 5941 sayılı Kanuna tabi 20.000 TL tutarındaki çek 26.03.2025’te süresinde ibraz edilmiştir. Hesap bakiyesi sıfırsa ve bankanın yasal yükümlülük bedeli hamile ödenirse karşılıksız belgelendirilecek tutar nedir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-63375a8fc050-95be48f62d",
+  "guid": "63375a8fc050",
+  "konu": "Temel İşlemler",
+  "soru": "2026 yılı TMSF mevduat sigortası hakkında hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-b103a73a1625-930becaafc",
+  "guid": "b103a73a1625",
+  "konu": "Temel İşlemler",
+  "soru": "Sabit Hesap hangi para cinsinden açılabilir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-555c2699b8a6-7cd29b611a",
+  "guid": "555c2699b8a6",
+  "konu": "Temel İşlemler",
+  "soru": "31 Ocak–31 Aralık 2025 döneminde, tahsil edilmek üzere ibraz edilen 5941 sayılı yasaya tabi hangi çek için hamil yasal yükümlülük tutarını reddedemez?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-b13735e09904-f8f032e936",
+  "guid": "b13735e09904",
+  "konu": "Temel İşlemler",
+  "soru": "Bireysel dijital bankacılık kanallarından yurt içindeki veya yurt dışındaki diğer bankalara yapılacak SWIFT işlemlerinde günlük limit kaç ABD dolarıdır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-4e8c392d2884-ec444bd295",
+  "guid": "4e8c392d2884",
+  "konu": "Ürünler",
+  "soru": "BES ile ilgili hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-48482f07cc39-e645b347c0",
+  "guid": "48482f07cc39",
+  "konu": "Ürünler",
+  "soru": "I. Özel sektör borçlanma araçları\nII. Altın ve diğer kıymetli madenler\nIII. Kira sertifikaları\nYukarıdakilerden hangisi/hangileri yatırım fonlarının portföylerine dahil edebileceği enstrümanlardandır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-fb30a682d0c1-b5f25a993f",
+  "guid": "fb30a682d0c1",
+  "konu": "Ürünler",
+  "soru": "Hangileri ticari müşteriler kullanabilir?\nI) Düzenli birikim talimatı\nII) Günlük Kazandıran Hesap\nIII) Birikimli Mevduat hesabı",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-4eb8f9c82bcd-cd96a49fa7",
+  "guid": "4eb8f9c82bcd",
+  "konu": "Ürünler",
+  "soru": "Black veya Black Plus müşterisi, yurt içi Bankamatikten aynı gün yalnızca 500 TL çekmiştir. Başka çekimi yoksa günlük ücretsiz para çekme limitinden ne kadar kalır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-1d2c74f0e2ef-75cbfd58ec",
+  "guid": "1d2c74f0e2ef",
+  "konu": "Ürünler",
+  "soru": "I. En az 1 adet Maximum özellikli kredi kartı (Maximum Kart, Maximiles, Mercedes Card) sahipliği\nII. Kişisel Verilerin Korunması Kanunu (KVKK) izninin “Evet” olması\nIII. En az bir maaşı ya da geriye dönük 4 aylık ortalama maaş tutarının asgari ücret düzeyinde olması\nIV. Maaş ödemelerinin Bankamız maaş sistemi aracılığıyla ve “MA” koduyla yapılmış olması\nBankam Benimle programından yararlanabilmek için yukarıdaki koşullardan hangilerinin sağlanması gerekmektedir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-d2a93a45be9f-a97ad73177",
+  "guid": "d2a93a45be9f",
+  "konu": "Ürünler",
+  "soru": "Müşterek hesaplar ve Ek Hesap uygulamasına ilişkin aşağıdakilerden hangisi doğrudur?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-d04f199336e8-d90576a7fa",
+  "guid": "d04f199336e8",
+  "konu": "Ürünler",
+  "soru": "İşCep üzerinden gerçekleştirilen yatırım hesabı işlemleri ile ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-641c439ba453-774b23cccf",
+  "guid": "641c439ba453",
+  "konu": "Ürünler",
+  "soru": "Üstü Kalsın talimatı kapsamında kart hamillerinin tercih edebileceği güncel yuvarlama tutarlarından biri aşağıdakilerden hangisidir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-aa15eafa3842-617a87322b",
+  "guid": "aa15eafa3842",
+  "konu": "Ürünler",
+  "soru": "Üstü Kalsın talimatı ile ilgili aşağıdakilerden hangisi yanlıştır",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-879b87d557e1-0ee8c4bc92",
+  "guid": "879b87d557e1",
+  "konu": "Ürünler",
+  "soru": "Bir asıl karta bağlı olarak en fazla kaç tane ek kart üretilebilir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-ab69c597875d-bec138d1ae",
+  "guid": "ab69c597875d",
+  "konu": "Ürünler",
+  "soru": "Sabit faizli konut kredisinde kalan vade 35 ay ise erken ödenen anapara üzerinden alınabilecek azami erken ödeme tazminatı oranı nedir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-7a2e87691a4b-1395f2fa44",
+  "guid": "7a2e87691a4b",
+  "konu": "Ürünler",
+  "soru": "Bankamatiklerden hangi araçla kartsız para çekilebilir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-dc22fdd6e356-ad7679eb12",
+  "guid": "dc22fdd6e356",
+  "konu": "Ürünler",
+  "soru": "TROY/VISA/MasterCard şemalı Bankamatik kartlarıyla non-secure internet sitelerinde tekil işlem başına en fazla ne kadar alışveriş yapılabilir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-fc52b549748f-db2b0919b9",
+  "guid": "fc52b549748f",
+  "konu": "Ürünler",
+  "soru": "Dijital bankacılık kanallarında görüntülenmeyen hesaplara ne ad verilir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-61f94128457b-1863da0e43",
+  "guid": "61f94128457b",
+  "konu": "Ürünler",
+  "soru": "Bankamatiklerden gerçekleştirilen kartsız para çekme işlemleri ile ilgili aşağıda verilenlerden hangisi/hangileri yanlıştır?\n1. Bluetooth ile de kartsız para çekilebilir.\n2. Döviz çekilemez.\n3. Kartsız para çekme işlemleri kartlı para çekme işlemleri ile ortak limiti kullanır.",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-b04dcbe7b1c4-79b41cc453",
+  "guid": "b04dcbe7b1c4",
+  "konu": "Ürünler",
+  "soru": "Anında kredi ürünümüz ile ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-11085ff768c4-b8c523ffaa",
+  "guid": "11085ff768c4",
+  "konu": "Mali Analiz",
+  "soru": "Duran varlıkların amortismanında ekonomik ömür ve yararlı ömür kavramları ile ilgili olarak aşağıdakilerden hangisi doğrudur?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-c5399e7f56ab-31bc6de0f4",
+  "guid": "c5399e7f56ab",
+  "konu": "Kambiyo",
+  "soru": "821 sayılı Yayına göre, birden fazla orijinal nüsha halinde gönderilen belgelere konulan aşağıdaki ibarelerden hangisi belgenin orijinalliğini ortadan kaldırmaz?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-52c02bbab0ae-29298f5a5b",
+  "guid": "52c02bbab0ae",
+  "konu": "Kambiyo",
+  "soru": "Aracı bankalarca aşağıdaki hangi resmi kuruma bankalarca süresi içinde kapatılmayan ihracat hesaplarına ilişkin bildirim yapılması doğru değildir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-7b5fde75a60f-9584fc9b32",
+  "guid": "7b5fde75a60f",
+  "konu": "Kambiyo",
+  "soru": "I-Bankamızda forfaiting işlemleri DİTKOB tarafından gerçekleştirilir. II-İthalatçıdan ziyade garantör konumundaki yabancı bankanın değerliliği değerlendirilir. III-Teyitsiz vadeli akreditifler forfaitinge konu edilemez. Forfaiting hakkında yukarıdakilerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-31a7dd35fe15-10977c0ad3",
+  "guid": "31a7dd35fe15",
+  "konu": "Kambiyo",
+  "soru": "Yabancı bankaların Bankamız nezdinde açtırdığı yabancı para hesapları ve bu hesapların operasyonunu yürüten bölüm hangi seçenekte doğru eşleştirilmiştir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-0f18727f4e65-9e79238736",
+  "guid": "0f18727f4e65",
+  "konu": "Kambiyo",
+  "soru": "İstisna veya muafiyet bulunmadığı varsayımıyla, aşağıdaki ithalat ödeme şekillerinden hangisi KKDF kesintisine tabidir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-221ef7edf29c-001710323f",
+  "guid": "221ef7edf29c",
+  "konu": "Kambiyo",
+  "soru": "Hangi işlem türünde, belgelerin teslimi aşamasında firmaya Vadeli İthalat Bildirim Yazısı da verilmelidir.",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-f4cf595e9933-ec11cdd982",
+  "guid": "f4cf595e9933",
+  "konu": "Kambiyo",
+  "soru": "İhracat bedellerinin yurda getirilmesi ve tahsili ile ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-7b3650746a82-42f5248109",
+  "guid": "7b3650746a82",
+  "konu": "Kredi",
+  "soru": "Aşağıdakilerden hangisi/hangileri bir teminat mektubunun taraflarındandır?\n• Banka\n• Muhatap\n• Lehtar",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-65491a048172-a62870f34c",
+  "guid": "65491a048172",
+  "konu": "Kredi",
+  "soru": "Aşağıdakilerden hangisi Ticari Krediler tahsis bölümünün yetki çerçevesinde değildir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-bc93b89746df-9bf24501f5",
+  "guid": "bc93b89746df",
+  "konu": "Kredi",
+  "soru": "Ana sermayesi ve özkaynakları ayrı ayrı 10 milyar TL olan bir bankanın, istisna bulunmadığı varsayımıyla, bir gerçek veya tüzel kişiye kullandırabileceği azami kredi tutarı nedir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-9a705ed26d6f-517b802255",
+  "guid": "9a705ed26d6f",
+  "konu": "Kredi",
+  "soru": "OTS Kapsamı dışındaki Tarım Kredi tahsis koşullarıyla ilgili hangisi doğrudur?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-d3809ce98400-748e32535c",
+  "guid": "d3809ce98400",
+  "konu": "Ürünler",
+  "soru": "Kart aidatlarının MaxiPuan ile ödenmesi hangi kanallardan yapılabilir?\nI. İşCep\nII. Şube\nIII. İnternet Şube\nIV.Çözüm Merkezi",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-276b681ac6ae-e05a5c25e2",
+  "guid": "276b681ac6ae",
+  "konu": "Temel İşlemler",
+  "soru": "Hangi \"Düzenlenme Tarihi\" çeki geçersiz kılmaz?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-976addbf8743-12c2e07ab8",
+  "guid": "976addbf8743",
+  "konu": "Temel İşlemler",
+  "soru": "31 Ocak–31 Aralık 2025 döneminde karşılıksız işlemi yapılan 5941 sayılı Çek Kanunu'na tabi çek için ödenecek azami yasal yükümlülük tutarı ne kadardır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-a01fe4685cf7-1818e142b1",
+  "guid": "a01fe4685cf7",
+  "konu": "Temel İşlemler",
+  "soru": "31 Ocak–31 Aralık 2025 döneminde tahsil edilmek üzere ibraz edilen hangi çek için hamil yasal yükümlülük tutarını reddedemez?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-4387681dc624-36c17a9a6a",
+  "guid": "4387681dc624",
+  "konu": "Genel Ekonomi",
+  "soru": "Haziran 2026 verilerine göre aşağıdakilerden hangisinde Bankamız özel bankalar içinde birinci sıradadır?\n\nI. TL mevduat\nII. Toplam Krediler\nIII. Vadesiz Mevduat",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-6ae794c9028f-d7903599d5",
+  "guid": "6ae794c9028f",
+  "konu": "Genel Ekonomi",
+  "soru": "Haziran 2026 yatırımcı sunumuna göre iştirak kompozisyonuna dair hangisi doğrudur?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
+ },
+ {
+  "id": "aciklama-20260905-37ef75d62ac0-4da74c8cde",
+  "guid": "37ef75d62ac0",
+  "konu": "Hukuk",
+  "soru": "Aşağıdakilerden hangisi geçerli değildir?\n1. Çekte kısmi ciro\n2. Poliçede kısmi ödeme\n3. Bonoda kısmi aval",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-b5f4fd2dfe63-a60a16baef",
+  "guid": "b5f4fd2dfe63",
+  "konu": "Hukuk",
+  "soru": "I. Çekte kısmi ciro\nII. Poliçede kısmi ödeme\nIII. Bonoda kısmi aval\nYukarıda sayılanlardan hangisi geçerli bir işlem değildir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-b3698dfcff11-fae0c24d19",
+  "guid": "b3698dfcff11",
+  "konu": "Hukuk",
+  "soru": "Konkordato ile ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-cd3d7c02a20b-2d06626dd6",
+  "guid": "cd3d7c02a20b",
+  "konu": "Hukuk",
+  "soru": "Seçeneklerde verilen keşide yeri ve hesap şubesi ikililerinden hangisinin ibraz süresi 10 gündür?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-4c00d843f053-c2cc1af1f7",
+  "guid": "4c00d843f053",
+  "konu": "Hukuk",
+  "soru": "Mirasçılık belgesini hangisi düzenleyemez?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-9f8bca7e0ee8-ce74c57876",
+  "guid": "9f8bca7e0ee8",
+  "konu": "Hukuk",
+  "soru": "Hangisi ölüm karinesinin kabul edilebilmesinin şartlarından değildir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-6295a6248856-ba1c15f57a",
+  "guid": "6295a6248856",
+  "konu": "Hukuk",
+  "soru": "Hangisi alacağın devrinin şartlarından biri değildir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-b0b5ac427d5d-04a60bf0c9",
+  "guid": "b0b5ac427d5d",
+  "konu": "Hukuk",
+  "soru": "Hangisinin alacağa teminat olma işlevi vardır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-e96525adc1c8-e18e6727c2",
+  "guid": "e96525adc1c8",
+  "konu": "Kredi",
+  "soru": "Aşağıdakilerden hangisi kredi sınırlarına tabi olmayan işlemlerden biridir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-4d143b9f9db1-312992bc0f",
+  "guid": "4d143b9f9db1",
+  "konu": "Temel İşlemler",
+  "soru": "Altın Mevduat Hesapları'na ilişkin verilen ifadelerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-b3a38e1251e7-51c849daa4",
+  "guid": "b3a38e1251e7",
+  "konu": "Ürünler",
+  "soru": "Bireysel müşteriler için taşıt teminatlı ihtiyaç kredisinin vadesi azami kaç ay vadeli olabilir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-69e31ffcd18b-08ac0cc812",
+  "guid": "69e31ffcd18b",
+  "konu": "Ürünler",
+  "soru": "Maximum Mobil içindeki kampanyalar menüsü ile ilgili hangisi doğrudur?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-8e2183e67815-6ce38539e3",
+  "guid": "8e2183e67815",
+  "konu": "Ürünler",
+  "soru": "Anında Alışveriş Kredisi ile fiyatı 20.000 TL’nin üzerinde olan cep telefonu alımlarında azami taksit sayısı kaç aydır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-f71e810306ba-0140cda4dc",
+  "guid": "f71e810306ba",
+  "konu": "Ürünler",
+  "soru": "Hangi ürün ve hizmetlerden TROY logolu kredi kartı sahipleri de faydalanabilir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-825e8a226133-d289188513",
+  "guid": "825e8a226133",
+  "konu": "Ürünler",
+  "soru": "Otomatik fatura ödeme talimatı hangi kanaldan verilemez?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-410f00bb1eca-64272872cc",
+  "guid": "410f00bb1eca",
+  "konu": "Ürünler",
+  "soru": "Aşağıdaki işlemlerden hangisi Maximum Mobil üzerinden gerçekleştirilebilirken İşCep üzerinden gerçekleştirilemez?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-908df85d67c6-3175d5182f",
+  "guid": "908df85d67c6",
+  "konu": "Kambiyo",
+  "soru": "Aşağıdakilerden hangileri ihracat bedelinin yurda getirilmesinde istisna tanınan ülkelerdendir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-59c4a988c4c4-9fde92dffe",
+  "guid": "59c4a988c4c4",
+  "konu": "Kambiyo",
+  "soru": "İhracat hesaplarının takibinde süre bitimine 30 ve 15 gün kalan açık ihracat beyannameleri için sistem tarafından kime e-posta gönderimi yapılır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-9092f950aa33-94f440e1b0",
+  "guid": "9092f950aa33",
+  "konu": "Kambiyo",
+  "soru": "Türk Eximbank'ın temel amacı nedir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-57334caa1e9b-bf67885500",
+  "guid": "57334caa1e9b",
+  "konu": "Genel Ekonomi",
+  "soru": "Bankamızın 2026/6 verilerine göre aşağıdakilerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-abbefc1cd001-bf67885500",
+  "guid": "abbefc1cd001",
+  "konu": "Genel Ekonomi",
+  "soru": "Bankamızın 2026/6 verilerine göre aşağıdakilerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-cfb11591520a-c9e3c50879",
+  "guid": "cfb11591520a",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 itibariyle aşağıdaki sektörlerden hangisinde bankamız iştiraki bulunmamaktadır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-81e536537be3-d75bf9ad8d",
+  "guid": "81e536537be3",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 itibariyle bankamız dijitalleşme verisiyle ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-da967bf962f8-af122a9ef7",
+  "guid": "da967bf962f8",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 itibariyle bankamız kârlılık oranları ile ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-19e51a275641-2ba1251160",
+  "guid": "19e51a275641",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 itibariyle bankamız komisyon gelirlerinin performansıyla ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-f02a978fb084-948545377c",
+  "guid": "f02a978fb084",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 itibariyle bankamız solo sermaye yeterlilik oranı kaçtır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-89f423aaa4eb-82d1906856",
+  "guid": "89f423aaa4eb",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 itibarıyla bankamız mevduat tabanıyla ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-6cc42a4b41c8-d8325a2bb1",
+  "guid": "6cc42a4b41c8",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 itibarıyla bankamız pasif kompozisyonu ile ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-fe2459c435d3-f40baeacfb",
+  "guid": "fe2459c435d3",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 itibarıyla bankamız aktif kalitesi ile ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-a7caf5be98b0-26ff5c20b0",
+  "guid": "a7caf5be98b0",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 itibarıyla bankamız kredi portföyünde yer alan tüketici kredi türleri / oran eşleşmesi aşağıdakilerden hangisinde yanlış verilmiştir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-50c24ee10961-a362f969b6",
+  "guid": "50c24ee10961",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 itibarıyla bankamız kredi portföyünde yer alan kredi türleri / oran eşleşmesi aşağıdakilerden hangisinde yanlış verilmiştir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-816a32b519c5-69ad86b560",
+  "guid": "816a32b519c5",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 bankamız büyüme performansıyla ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-5b937779d102-8a92d8bd6e",
+  "guid": "5b937779d102",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 TP/YP Kredi kompozisyonumuz aşağıdakilerin hangisinde doğru olarak verilmiştir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-037f7306c356-d9da736389",
+  "guid": "037f7306c356",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 Menkul Kıymetlerin toplam aktifimize oranı aşağıdakilerin hangisinde doğru verilmiştir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-587a8bc8a735-7eeb7055ef",
+  "guid": "587a8bc8a735",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 toplam aktif tutarımız aşağıdaki seçeneklerden hangisinde doğru verilmiştir?",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-8c5943751370-d47cc1ab1e",
+  "guid": "8c5943751370",
+  "konu": "Genel Ekonomi",
+  "soru": "Vadesiz mevduatın toplam mevduat içindeki payı nedir? (2026/6)",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "aciklama-20260905-5cd9983c1217-2392957489",
+  "guid": "5cd9983c1217",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 verilerine göre Bankamızın SYR'si aşağıdakilerden hangisidir? (Solo Bilanço)",
+  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "tarihISO": "2026-09-06T14:28:55.870864+00:00"
+ },
+ {
+  "id": "isaretli-20260909-8213426e7f53-3762545a",
+  "guid": "8213426e7f53",
+  "konu": "Ürünler",
+  "soru": "Mobil temassız işlem ile ilgili hangisi doğrudur?",
+  "not": "İşaretli soru incelemesi: kaynak kontrolü sonrası soru/şık/cevap güncellendi. Deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026.pdf s.43, s.88",
+  "tarihISO": "2026-09-09T18:39:33.241888+00:00"
+ },
+ {
+  "id": "isaretli-20260909-2cfa3ca5f815-44002b2d",
+  "guid": "2cfa3ca5f815",
+  "konu": "Genel Ekonomi",
+  "soru": "I. ATM Sayısı\nII. TP krediler\nIII. Toplam mevduat\n\nBankamız 1H2026 Yatırımcı Sunumu'na göre özel bankalar arasında hangilerinde birinci sıradadır?",
+  "not": "İşaretli soru incelemesi: kaynak kontrolü sonrası soru/şık/cevap güncellendi. Deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "kaynak_atif": "YatirimciSunumu.pdf sl.4",
+  "tarihISO": "2026-09-09T18:39:33.241888+00:00"
+ },
+ {
+  "id": "isaretli-20260909-8ad966c99eba-1f177196",
+  "guid": "8ad966c99eba",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 (1H2026) Yatırımcı Sunumu'na göre Bankamızın POS cirosu (üye işyeri) pazar payı aşağıdakilerden hangisinde doğru verilmiştir?",
+  "not": "İşaretli soru incelemesi: kaynak kontrolü sonrası soru/şık/cevap güncellendi. Deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "kaynak_atif": "YatirimciSunumu.pdf sl.4",
+  "tarihISO": "2026-09-09T18:39:33.241888+00:00"
+ },
+ {
+  "id": "isaretli-20260909-5a24a25fbd86-b9d13114",
+  "guid": "5a24a25fbd86",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 (1H2026) Yatırımcı Sunumu'na göre Bankamızın pazar paylarıyla (özel bankalar arasında) ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "İşaretli soru incelemesi: kaynak kontrolü sonrası soru/şık/cevap güncellendi. Deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "kaynak_atif": "YatirimciSunumu.pdf sl.4",
+  "tarihISO": "2026-09-09T18:39:33.241888+00:00"
+ },
+ {
+  "id": "isaretli-20260909-555c2699b8a6-a491d8e6",
+  "guid": "555c2699b8a6",
+  "konu": "Temel İşlemler",
+  "soru": "2026 yılında, tahsil edilmek üzere ibraz edilen 5941 sayılı yasaya tabi hangi çek için hamil yasal yükümlülük tutarını reddedemez?",
+  "not": "İşaretli soru incelemesi: kaynak kontrolü sonrası soru/şık/cevap güncellendi. Deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "kaynak_atif": "Temel Islemler_YYS_2026.pdf s.245-247 (TCMB Tebliğ 2026/4)",
+  "tarihISO": "2026-09-09T18:39:33.241888+00:00"
+ },
+ {
+  "id": "isaretli-20260909-97a15ff096e5-fbb5ba6e",
+  "guid": "97a15ff096e5",
+  "konu": "Ürünler",
+  "soru": "Anında Alışveriş Kredisi ile ilgili aşağıdakilerden hangileri doğrudur?\nI. Kredi limiti azami 250.000 TL'dir.\nII. Asgari 2 ay, azami 36 ay vade ile kullanılabilir.\nIII. Yalnızca Bankamız müşterileri başvurabilir.\nIV. Kredi kullandırımı sırasında gelir belgesi ibrazı zorunludur.",
+  "not": "İşaretli soru incelemesi: kaynak kontrolü sonrası soru/şık/cevap güncellendi. Deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026.pdf s.205 (kitap s.188)",
+  "tarihISO": "2026-09-09T18:39:33.241888+00:00"
+ },
+ {
+  "id": "isaretli-20260909-ce48e42db320-1e771be5",
+  "guid": "ce48e42db320",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 (1H2026) Yatırımcı Sunumu'na göre Bankamızın Krediler / Mevduat oranı aşağıdaki seçeneklerden hangisinde doğru olarak verilmiştir?",
+  "not": "İşaretli soru incelemesi: kaynak kontrolü sonrası soru/şık/cevap güncellendi. Deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "kaynak_atif": "YatirimciSunumu.pdf sl.8 (ve finansalsonuclarailiskinsunum.pdf sl.9)",
+  "tarihISO": "2026-09-09T18:39:33.241888+00:00"
+ },
+ {
+  "id": "isaretli-20260909-b1bd36152f75-1e0c7ffa",
+  "guid": "b1bd36152f75",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 (1H2026) Yatırımcı Sunumu'na göre Bankamız komisyon gelirleri içerisinde hangisi en fazla paya sahiptir?",
+  "not": "İşaretli soru incelemesi: kaynak kontrolü sonrası soru/şık/cevap güncellendi. Deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "kaynak_atif": "YatirimciSunumu.pdf sl.14",
+  "tarihISO": "2026-09-09T18:39:33.241888+00:00"
+ },
+ {
+  "id": "isaretli-20260909-a76bf7efe16f-e1b7ae69",
+  "guid": "a76bf7efe16f",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 (1H2026) Yatırımcı Sunumu'na göre Bankamızın marjlar ve getiri-maliyet farklarıyla ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "İşaretli soru incelemesi: kaynak kontrolü sonrası soru/şık/cevap güncellendi. Deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "kaynak_atif": "YatirimciSunumu.pdf sl.13 (ve finansalsonuclarailiskinsunum.pdf sl.11)",
+  "tarihISO": "2026-09-09T18:39:33.241888+00:00"
+ },
+ {
+  "id": "isaretli-20260909-ea1ad5f6d012-17c55f0c",
+  "guid": "ea1ad5f6d012",
+  "konu": "Ürünler",
+  "soru": "Bankamatikten kredi kartı ile 500 TL çeken varlıklı (İş Black) bir müşteri, aynı gün karekodla mevduat hesabından en fazla kaç TL daha ücretsiz para çekebilir?",
+  "not": "İşaretli soru incelemesi: kaynak kontrolü sonrası soru/şık/cevap güncellendi. Deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026.pdf s.32 (kitap s.15) ve s.241 (kitap s.224)",
+  "tarihISO": "2026-09-09T18:39:33.241888+00:00"
+ }
 ]
