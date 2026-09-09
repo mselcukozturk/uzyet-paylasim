@@ -1176,6 +1176,63 @@
     }).catch(function () {}).then(function () { if (cb) cb(); });
   }
 
+  var remotePracticeBankLoaded = false;
+  var remoteCheckpointsLoaded = false;
+  var remotePracticeSessions = {};
+  var remotePracticeLoads = {};
+  var remotePracticeLoading = 0;
+
+  // AI içeriği yalnız bölüm açılınca istenir; giriş akışına eklenmez ve localStorage'a yazılmaz.
+  function remoteLoadPractice(action, apply, cb) {
+    if (!remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true) {
+      if (cb) cb(false);
+      return Promise.resolve(false);
+    }
+    if (!remotePracticeLoads[action]) {
+      remotePracticeLoading++;
+      remotePracticeLoads[action] = remoteFetch("/api/exam", "POST", { action: action }).then(function (r) {
+        if (!r.ok) throw new Error((r.data && r.data.error) || "AI kaynakları yüklenemedi.");
+        apply(r.data);
+        return true;
+      }).catch(function (e) {
+        showBanner(e.message || "AI kaynakları yüklenemedi; tekrar dene.", true);
+        return false;
+      }).then(function (ok) {
+        remotePracticeLoading--;
+        delete remotePracticeLoads[action];
+        return ok;
+      });
+    }
+    return remotePracticeLoads[action].then(function (ok) { if (cb) cb(ok); return ok; });
+  }
+
+  function remoteLoadPracticeBankIfNeeded(cb) {
+    if (remotePracticeBankLoaded) { if (cb) cb(true); return Promise.resolve(true); }
+    return remoteLoadPractice("practice-bank", function (data) {
+      if (!Array.isArray(data.questions)) throw new Error("Pratik soru yanıtı geçersiz.");
+      STATE.practiceBank = data.questions;
+      remotePracticeBankLoaded = true;
+    }, cb);
+  }
+
+  function remoteLoadCheckpointsIfNeeded(cb) {
+    if (remoteCheckpointsLoaded) { if (cb) cb(true); return Promise.resolve(true); }
+    return remoteLoadPractice("checkpoints", function (data) {
+      if (!Array.isArray(data.checkpoints)) throw new Error("Checkpoint yanıtı geçersiz.");
+      STATE.checkpoints = data.checkpoints;
+      remoteCheckpointsLoaded = true;
+    }, cb);
+  }
+
+  function remoteLoadPracticeStats(cb) {
+    return remoteLoadPractice("practice-stats", function (data) {
+      if (!data.stats || !Array.isArray(data.sessions)) throw new Error("Pratik ilerleme yanıtı geçersiz.");
+      STATE.pStats = data.stats;
+      remotePracticeSessions = {};
+      data.sessions.forEach(function (s) { remotePracticeSessions[pratikSlotKey(s.konu, s.modul)] = s; });
+    }, cb);
+  }
+
   // Hatırlatıcı olarak işaretlenmiş soruların guid listesi — cihazlar arası kalıcı
   // olsun diye sunucudan çekilir (bkz. /api/exam {action:'reminders'}), STATE.flags
   // gibi yalnız localStorage'a bağlı kalmaz.
@@ -3071,7 +3128,8 @@ function pratikEnIyiHtml(konu, modulKey) {
   function pratikDevamHtml(konu, modulKey) {
     // Modül kartında "yarım kaldı" rozeti — kaç soruda kalındığını gösterir.
     var s = pratikSlotOku(konu, modulKey);
-    if (!s) return "";
+    if (!s) return remotePracticeSessions[pratikSlotKey(konu, modulKey)]
+      ? '<div class="desc" style="color:var(--accent-strong);font-weight:600">▶ yarım kaldı · başka cihazdan devam edebilirsin</div>' : "";
     return '<div class="desc" style="color:var(--accent-strong);font-weight:600">▶ yarım kaldı: ' +
       Object.keys(s.cevaplar || {}).length + " / " + s.kuyruk.length + "</div>";
   }
