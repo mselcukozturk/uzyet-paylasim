@@ -64,6 +64,8 @@ export type ExamApiRequest =
   | { action: 'history' }
   | { action: 'flag'; questionGuid: string; note: string; category?: string | null; reported?: boolean; reminder?: boolean }
   | { action: 'reminders' }
+  | { action: 'wrong-questions' }
+  | { action: 'wrong-question-answer'; questionGuid: string; selectedAnswer: string }
   | { action: 'flags' }
   | { action: 'bank' }
   | { action: 'corrections' };
