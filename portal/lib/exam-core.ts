@@ -1,4 +1,4 @@
-export type ExamMode = 'rastgele' | 'azgorulen' | 'yanlislar';
+export type ExamMode = 'rastgele' | 'azgorulen' | 'yanlislar' | 'zor';
 
 export const OFFICIAL_DISTRIBUTION: Record<string, number> = {
   'Ürünler': 8,
@@ -25,6 +25,7 @@ export type BankQuestion = {
 export type UserQuestionStat = {
   questionGuid: string;
   shownCount: number;
+  wrongCount: number;
   lastResult: boolean | null;
 };
 
@@ -37,13 +38,13 @@ export function mulberry32(seed: number) {
   };
 }
 export function examCode(mode: ExamMode, seed: number) {
-  const prefix = { rastgele: 'R', azgorulen: 'A', yanlislar: 'Y' }[mode];
+  const prefix = { rastgele: 'R', azgorulen: 'A', yanlislar: 'Y', zor: 'Z' }[mode];
   return `UZY-${prefix}${(seed >>> 0).toString(36).toUpperCase()}`;
 }
 
 export function parseExamCode(value: string): { mode: ExamMode; seed: number } | null {
   const clean = value.trim().toUpperCase().replace(/^UZY-?/, '');
-  const modes: Record<string, ExamMode> = { R: 'rastgele', A: 'azgorulen', Y: 'yanlislar' };
+  const modes: Record<string, ExamMode> = { R: 'rastgele', A: 'azgorulen', Y: 'yanlislar', Z: 'zor' };
   const mode = modes[clean[0]];
   const seedText = clean.slice(1);
   if (!mode || !/^[0-9A-Z]+$/.test(seedText)) return null;
@@ -81,6 +82,9 @@ export function selectExamQuestions(
     } else if (mode === 'azgorulen') {
       ordered = shuffled(topicQuestions, random).sort((left, right) =>
         (statMap.get(left.guid)?.shownCount ?? 0) - (statMap.get(right.guid)?.shownCount ?? 0));
+    } else if (mode === 'zor') {
+      ordered = shuffled(topicQuestions, random).sort((left, right) =>
+        (statMap.get(right.guid)?.wrongCount ?? 0) - (statMap.get(left.guid)?.wrongCount ?? 0));
     } else {
       ordered = shuffled(topicQuestions, random);
     }

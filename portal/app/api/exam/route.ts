@@ -352,7 +352,7 @@ async function handlePost(request: Request) {
 
       let mode: ExamMode = body.mode;
       let seed = crypto.getRandomValues(new Uint32Array(1))[0];
-      if (!['rastgele', 'azgorulen', 'yanlislar'].includes(mode)) return fail('Sınav modu geçersiz.', 400);
+      if (!['rastgele', 'azgorulen', 'yanlislar', 'zor'].includes(mode)) return fail('Sınav modu geçersiz.', 400);
       if (body.examCode) {
         const parsed = parseExamCode(body.examCode);
         if (!parsed) return fail('Deneme kodu geçersiz.', 400);
@@ -362,10 +362,7 @@ async function handlePost(request: Request) {
 
       const [bank] = await db.select().from(schema.questionBanks).where(eq(schema.questionBanks.isActive, true)).limit(1);
       if (!bank) return fail('Aktif soru bankası bulunamadı.', 503);
-      const [questionRows, statRows] = await Promise.all([
-        db.select().from(schema.questions).where(eq(schema.questions.bankId, bank.id)),
-        db.select().from(schema.questionStats).where(eq(schema.questionStats.userId, user.id)),
-      ]);
+      const questionRows = await db.select().from(schema.questions).where(eq(schema.questions.bankId, bank.id));
       const bankQuestions: BankQuestion[] = questionRows.map((item) => ({
         id: item.id,
         guid: item.guid,
@@ -375,7 +372,17 @@ async function handlePost(request: Request) {
         correctIndex: item.correctIndex,
         explanation: item.explanation,
       }));
-      const stats = statRows.map((item) => ({ questionGuid: item.questionGuid, shownCount: item.shownCount, lastResult: item.lastResult }));
+      // "zor" TÜM kullanıcılar arasında en çok yanlış yapılan soruları hedefler — kişisel
+      // değil, herkesin question_stats'ı toplanır (guid bazında SUM(wrong_count)). Diğer
+      // modlar hâlâ yalnız bu kullanıcının kendi geçmişini kullanır.
+      const stats = mode === 'zor'
+        ? (await db.select({
+            questionGuid: schema.questionStats.questionGuid,
+            wrongCount: sql<number>`sum(${schema.questionStats.wrongCount})`.mapWith(Number),
+          }).from(schema.questionStats).groupBy(schema.questionStats.questionGuid))
+          .map((item) => ({ questionGuid: item.questionGuid, shownCount: 0, wrongCount: item.wrongCount, lastResult: null as boolean | null }))
+        : (await db.select().from(schema.questionStats).where(eq(schema.questionStats.userId, user.id)))
+          .map((item) => ({ questionGuid: item.questionGuid, shownCount: item.shownCount, wrongCount: item.wrongCount, lastResult: item.lastResult }));
       const picked = selectExamQuestions(bankQuestions, stats, mode, seed);
       if (picked.questions.length !== 50) return fail('Resmî dağılım için yeterli soru bulunamadı.', 503);
       const optionRandom = mulberry32(seed ^ 0x9e3779b9);

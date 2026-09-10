@@ -1,0 +1,1 @@
+ALTER TYPE "exam_mode" ADD VALUE IF NOT EXISTS 'zor';

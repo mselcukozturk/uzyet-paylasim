@@ -306,8 +306,8 @@
     // yalnızca "Konu Çalışma" (pratik) menüsünde ayrı bir ders kutusu açmak için burada.
     "Finansal Sunum": 0
   };
-  var MOD_ADI = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar" };
-  var MOD_RENK = { rastgele: "var(--seri-6)", azgorulen: "var(--seri-5)", yanlislar: "var(--seri-3)" };
+  var MOD_ADI = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar", zor: "Zor Deneme" };
+  var MOD_RENK = { rastgele: "var(--seri-6)", azgorulen: "var(--seri-5)", yanlislar: "var(--seri-3)", zor: "var(--seri-7)" };
   var KONU_SIRA = Object.keys(RESMI_DAGILIM_DEFAULT);
   function konuSeriIdx(konu) {
     var i = KONU_SIRA.indexOf(konu);
@@ -699,8 +699,8 @@
   // çalıştırır. Bu yüzden yalnız banka bu iki deneme arasında büyük ölçüde
   // değişmediyse birebir aynı soruları garanti eder ("azgorulen"/"yanlislar"
   // modlarında ayrıca kişisel istatistikler de değişmemiş olmalı).
-  var EXAM_MODE_KODU = { rastgele: "R", azgorulen: "A", yanlislar: "Y" };
-  var EXAM_KODU_MOD = { R: "rastgele", A: "azgorulen", Y: "yanlislar" };
+  var EXAM_MODE_KODU = { rastgele: "R", azgorulen: "A", yanlislar: "Y", zor: "Z" };
+  var EXAM_KODU_MOD = { R: "rastgele", A: "azgorulen", Y: "yanlislar", Z: "zor" };
   function examKoduUret(mode, seed) {
     if (typeof seed !== "number" || !isFinite(seed)) return null;
     var harf = EXAM_MODE_KODU[mode] || "R";
@@ -1847,8 +1847,9 @@
     }
     if (denemeKodOnizleme) {
       var dko = denemeKodOnizleme;
-      var farkliCikabilirNotu = dko.mode === "rastgele" ? "" :
-        " (Az Görülenler/Yanlışlar kişisel istatistiğine bağlı olduğu için başkasında tam olarak aynı soruları vermeyebilir)";
+      var farkliCikabilirNotu = (dko.mode === "azgorulen" || dko.mode === "yanlislar")
+        ? " (Az Görülenler/Yanlışlar kişisel istatistiğine bağlı olduğu için başkasında tam olarak aynı soruları vermeyebilir)"
+        : "";
       return '<div class="card">' +
         '<div class="section-title" style="font-size:1rem;margin-bottom:6px">' + (MOD_ADI[dko.mode] || dko.mode) + " — kod hazır</div>" +
         '<div class="muted" style="margin-bottom:10px">Sınava başlamadan önce bu kodu arkadaşınla paylaşabilirsin' + farkliCikabilirNotu + ". Başladığında 60 dakikalık süre işlemeye başlar." + "</div>" +
@@ -1861,12 +1862,13 @@
         '<button class="btn ghost" data-action="cancel-exam-kod-onizleme">Vazgeç</button>' +
         "</div></div>";
     }
-    var modes = ["rastgele", "azgorulen", "yanlislar"].map(function (mode) {
-      var titles = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar" };
+    var modes = ["rastgele", "azgorulen", "yanlislar", "zor"].map(function (mode) {
+      var titles = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar", zor: "Zor Deneme" };
       var descs = {
         rastgele: "Resmi dağılıma göre 50 soruluk rastgele deneme.",
         azgorulen: "Aynı dağılım, öncelik en az karşılaştığın sorularda.",
-        yanlislar: "Aynı dağılım, öncelik son denemesinde yanlış yaptıkların."
+        yanlislar: "Aynı dağılım, öncelik son denemesinde yanlış yaptıkların.",
+        zor: "Aynı dağılım, öncelik tüm kullanıcılar arasında en çok yanlış yapılan sorularda."
       };
       var renk = MOD_RENK[mode];
       return '<button class="mode-btn" style="border-left:4px solid ' + renk + '" data-action="prepare-exam-remote" data-mode="' + mode + '">' +

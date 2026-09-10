@@ -55,7 +55,7 @@ void test('yanlışlar modu yanlış geçmişli soruları önceliklendirir', () 
   const wrongGuids = Object.keys(OFFICIAL_DISTRIBUTION).map((topic) => `${topic}-0`);
   const selected = selectExamQuestions(
     questions,
-    wrongGuids.map((questionGuid) => ({ questionGuid, shownCount: 1, lastResult: false })),
+    wrongGuids.map((questionGuid) => ({ questionGuid, shownCount: 1, wrongCount: 1, lastResult: false })),
     'yanlislar',
     91,
   ).questions.map((item) => item.guid);
@@ -67,9 +67,21 @@ void test('az görülenler modu çok görülen soruları geri plana atar', () =>
   const overSeen = Object.keys(OFFICIAL_DISTRIBUTION).map((topic) => `${topic}-0`);
   const selected = selectExamQuestions(
     questions,
-    overSeen.map((questionGuid) => ({ questionGuid, shownCount: 999, lastResult: true })),
+    overSeen.map((questionGuid) => ({ questionGuid, shownCount: 999, wrongCount: 0, lastResult: true })),
     'azgorulen',
     13,
   ).questions.map((item) => item.guid);
   for (const guid of overSeen) assert.ok(!selected.includes(guid), `${guid} seçilmemeliydi`);
+});
+
+void test('zor modu en çok yanlış yapılan soruları önceliklendirir', () => {
+  const questions = bank();
+  const hardGuids = Object.keys(OFFICIAL_DISTRIBUTION).map((topic) => `${topic}-0`);
+  const selected = selectExamQuestions(
+    questions,
+    hardGuids.map((questionGuid) => ({ questionGuid, shownCount: 5, wrongCount: 5, lastResult: false })),
+    'zor',
+    77,
+  ).questions.map((item) => item.guid);
+  for (const guid of hardGuids) assert.ok(selected.includes(guid), `${guid} seçilmeliydi`);
 });

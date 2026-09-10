@@ -53,4 +53,8 @@ export const MIGRATIONS: readonly Migration[] = [
     name: "0011_ai_disclaimer.sql",
     content: "ALTER TABLE \"profiles\" ADD COLUMN IF NOT EXISTS \"ai_disclaimer_accepted_at\" timestamp with time zone;\n",
   },
+  {
+    name: "0012_zor_mode.sql",
+    content: "ALTER TYPE \"exam_mode\" ADD VALUE IF NOT EXISTS 'zor';\n",
+  },
 ];

@@ -15,7 +15,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
-export const examMode = pgEnum('exam_mode', ['rastgele', 'azgorulen', 'yanlislar']);
+export const examMode = pgEnum('exam_mode', ['rastgele', 'azgorulen', 'yanlislar', 'zor']);
 export const attemptStatus = pgEnum('attempt_status', ['active', 'paused', 'finished', 'cancelled']);
 
 export const profiles = pgTable('profiles', {
