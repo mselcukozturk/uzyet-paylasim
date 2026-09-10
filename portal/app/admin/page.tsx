@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth/server';
 import { decryptPin } from '@/lib/auth/session';
 import { getDb, schema } from '@/lib/db';
 import { requestPasswordResetAction, signInAction, signOutAction } from '@/app/actions/auth';
-import { approveUserAction, deleteUserAction, rejectUserAction } from '@/app/actions/admin';
+import { approveUserAction, deleteUserAction, rejectUserAction, toggleAiAccessAction } from '@/app/actions/admin';
 import KullaniciSilFormu from './kullanici-sil-formu';
 
 async function currentAdmin() {
@@ -58,6 +58,7 @@ export default async function AdminPage() {
     username: schema.profiles.username,
     createdAt: schema.profiles.createdAt,
     isAdmin: schema.profiles.isAdmin,
+    canSeeAiSources: schema.profiles.canSeeAiSources,
     pinEncrypted: schema.profiles.pinEncrypted,
   }).from(schema.profiles).where(eq(schema.profiles.isActive, true)).orderBy(desc(schema.profiles.createdAt));
 
@@ -127,6 +128,7 @@ export default async function AdminPage() {
             <th style={{ padding: '0.4rem 0' }}>İsim</th>
             <th style={{ padding: '0.4rem 0' }}>PIN</th>
             <th style={{ padding: '0.4rem 0' }}>Kayıt tarihi</th>
+            <th style={{ padding: '0.4rem 0' }}>AI Kaynakları</th>
             <th style={{ padding: '0.4rem 0' }}>İşlem</th>
           </tr>
         </thead>
@@ -135,6 +137,10 @@ export default async function AdminPage() {
             async function submitDelete() {
               'use server';
               await deleteUserAction(item.userId);
+            }
+            async function submitToggleAi() {
+              'use server';
+              await toggleAiAccessAction(item.userId, !item.canSeeAiSources);
             }
             return (
             <tr key={item.userId} style={{ borderBottom: '1px solid #eee' }}>
@@ -148,6 +154,11 @@ export default async function AdminPage() {
                 ) : '—'}
               </td>
               <td style={{ padding: '0.4rem 0', color: '#666' }}>{formatTarih(item.createdAt)}</td>
+              <td style={{ padding: '0.4rem 0' }}>
+                <form action={submitToggleAi}>
+                  <button type="submit">{item.canSeeAiSources ? 'Açık — kapat' : 'Kapalı — aç'}</button>
+                </form>
+              </td>
               <td style={{ padding: '0.4rem 0' }}>
                 {item.userId !== admin.userId && <KullaniciSilFormu action={submitDelete} kullaniciAdi={item.username} />}
               </td>
