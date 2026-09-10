@@ -2804,7 +2804,9 @@
       '<div class="q-meta"><span>' + cfg.etiket + " · " + (currentTekrar.konum + 1) + " / " + currentTekrar.kuyruk.length +
       ". soru</span><span>" + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span></div>" +
       '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
-      optionsHtml + sonucHtml + navHtml +
+      optionsHtml + sonucHtml +
+      (answered ? flagBarHtml(kayit.guid) : "") +
+      navHtml +
       "</div>";
   }
 
