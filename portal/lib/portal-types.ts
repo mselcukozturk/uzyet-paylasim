@@ -90,7 +90,7 @@ export type PracticeStatsResponse = {
 };
 
 export type ExamApiRequest =
-  | { action: 'practice-answer'; questionGuid: string; selectedAnswer: string }
+  | { action: 'practice-answer'; questionGuid: string; selectedAnswer: string; requestId?: string }
   | { action: 'practice-session-save'; konu: string; modul: string; payload: unknown }
   | { action: 'practice-session-load'; konu: string; modul: string }
   | { action: 'practice-session-delete'; konu: string; modul: string }

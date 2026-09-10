@@ -109,6 +109,16 @@ export const practiceSessions = pgTable('practice_sessions', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [unique('practice_sessions_user_topic_modul_unique').on(table.userId, table.topic, table.modul)]);
 
+// A retried answer must not increment counters twice when the response was lost.
+export const practiceAnswerReceipts = pgTable('practice_answer_receipts', {
+  userId: text('user_id').notNull(),
+  requestId: text('request_id').notNull(),
+  questionGuid: text('question_guid').notNull(),
+  selectedAnswer: text('selected_answer').notNull(),
+  response: jsonb('response').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [unique('practice_answer_receipts_user_request_unique').on(table.userId, table.requestId)]);
+
 export const examAttempts = pgTable('exam_attempts', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: text('user_id').notNull(),

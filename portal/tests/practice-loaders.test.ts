@@ -4,12 +4,13 @@ import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 
 const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
-const loaders = html.slice(html.indexOf('  var remotePracticeBankLoaded'), html.indexOf('  // Hatırlatıcı olarak işaretlenmiş'));
+const loaders = html.slice(html.indexOf('  var remotePracticeBankLoaded'), html.indexOf('  // ---- Hesaba bağlı,'));
 function setup(fetcher: (path: string, method: string, body: { action: string }) => Promise<unknown>, permitted = true) {
   const context = {
     STATE: { practiceBank: [], checkpoints: [], pStats: { stale: {} } },
     remoteAuth: { canSeeAiSources: permitted }, remoteGirisTamamMi: () => true,
     remoteFetch: fetcher, showBanner: () => {}, pratikSlotKey: (konu: string, modul: string) => konu + '::' + modul,
+    remotePendingPracticeStats: () => {},
   };
   return runInNewContext(loaders + '\n({ remoteLoadPracticeBankIfNeeded, remoteLoadCheckpointsIfNeeded, remoteLoadPracticeStats, STATE })', context);
 }
