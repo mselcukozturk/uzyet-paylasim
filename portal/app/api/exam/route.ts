@@ -151,7 +151,34 @@ async function dashboard(userId: string) {
     }));
   }
 
+  // Resmi denemelerin konu bazlı ortalaması: bitmiş denemelerdeki her sorunun
+  // konusu ve cevabın doğruluğu (cevaplanmamış = yanlış) toplanır; ortalama,
+  // "Ortalama puan" kartıyla aynı küme (status='finished') üzerinden hesaplanır.
+  const examTopicRows = await db.select({
+    topic: schema.examAttemptQuestions.topic,
+    asked: count(),
+    correct: sql<number>`sum(case when ${schema.examAnswers.selectedIndex} = ${schema.examAttemptQuestions.correctIndex} then 1 else 0 end)`,
+  })
+    .from(schema.examAttemptQuestions)
+    .innerJoin(schema.examAttempts, eq(schema.examAttemptQuestions.attemptId, schema.examAttempts.id))
+    .leftJoin(schema.examAnswers, eq(schema.examAnswers.attemptQuestionId, schema.examAttemptQuestions.id))
+    .where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.status, 'finished')))
+    .groupBy(schema.examAttemptQuestions.topic);
+
   const completedCount = Number(completedRows[0]?.value ?? 0);
+  const examTopicStats = examTopicRows.map((row) => {
+    const asked = Number(row.asked ?? 0);
+    const correct = Number(row.correct ?? 0);
+    return {
+      topic: row.topic,
+      asked,
+      correct,
+      avgAsked: completedCount ? asked / completedCount : 0,
+      avgCorrect: completedCount ? correct / completedCount : 0,
+      percent: asked ? Math.round(correct / asked * 100) : 0,
+    };
+  }).sort((a, b) => b.avgAsked - a.avgAsked || a.topic.localeCompare(b.topic, 'tr'));
+
   const avgPercentRaw = avgRows[0]?.avgPercent;
   const avgSecondsRaw = avgRows[0]?.avgSeconds;
 
@@ -164,6 +191,7 @@ async function dashboard(userId: string) {
     activeAttempt: open ? toSummary(open) : null,
     recentAttempts: completed.slice(0, 6).map(toSummary),
     topicStats,
+    examTopicStats,
     examStats: completedCount ? {
       count: completedCount,
       avgPercent: Math.round(Number(avgPercentRaw ?? 0)),

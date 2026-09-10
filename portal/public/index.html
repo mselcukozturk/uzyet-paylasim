@@ -1729,6 +1729,7 @@
       '<div class="stat-card"><div class="num">' + es.avgCorrect + '/50</div><div class="lbl">Ortalama puan</div></div>' +
       '<div class="stat-card"><div class="num">' + fmtSure(es.avgSeconds) + '</div><div class="lbl">Ortalama süre</div></div>' +
       "</div>" : "";
+    var konuHtml = konuOrtalamaKartiHtml();
     var rows = list.map(function (a) {
       var toplam = a.score ? (a.score.correct + a.score.wrong + a.score.blank) : a.totalCount;
       var skorTxt = a.score ? (a.score.correct + " / " + toplam + " · %" + a.score.percent) : "—";
@@ -1750,7 +1751,31 @@
     return '<div class="link-row"><button class="btn ghost" data-action="open-menu-deneme">← Deneme Sınavı</button></div>' +
       '<div class="section-title">📊 Deneme Geçmişi</div>' +
       ozetHtml +
+      konuHtml +
       (list.length ? rows : '<div class="card">Henüz tamamlanmış resmi deneme yok.</div>');
+  }
+
+  // "Ortalama puan"ın konu kırılımı: bitmiş denemelerde konu başına ortalama kaç
+  // doğru yapıldığı ve o konudan ortalama kaç soru geldiği (sunucu: examTopicStats).
+  function fmtOrt(n) {
+    var v = Math.round((Number(n) || 0) * 10) / 10;
+    return v.toFixed(1).replace(".", ",");
+  }
+  function konuOrtalamaKartiHtml() {
+    var ts = (remoteDash && remoteDash.examTopicStats) || [];
+    if (!ts.length) return "";
+    var satirlar = ts.map(function (t) {
+      var pct = t.percent || 0;
+      return '<div class="history-row" style="grid-template-columns:1fr auto 90px 46px">' +
+        '<span>' + konuDotHtml(t.topic) + escapeHtml(t.topic) + "</span>" +
+        '<div class="bar-track" style="max-width:120px"><div class="bar-fill" style="width:' + pct + '%;background:' + renkEsigi(pct) + '"></div></div>' +
+        '<span style="font-variant-numeric:tabular-nums;text-align:right">' + fmtOrt(t.avgCorrect) + " / " + fmtOrt(t.avgAsked) + "</span>" +
+        '<span class="muted" style="text-align:right">%' + pct + "</span></div>";
+    }).join("");
+    return '<div class="card" style="margin-bottom:16px">' +
+      '<div class="section-title">Konu bazlı ortalama</div>' +
+      '<div class="muted" style="font-size:0.82rem;margin-bottom:8px">Tamamlanan denemelerde konu başına ortalama doğru / ortalama soru sayısı.</div>' +
+      satirlar + "</div>";
   }
 
   // Yerel STATE.flags dual-write'ından sonra çağrılır; guid bir uzak deneme

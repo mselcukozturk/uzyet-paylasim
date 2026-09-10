@@ -50,6 +50,10 @@ export type DashboardData = {
   activeAttempt: AttemptSummary | null;
   recentAttempts: AttemptSummary[];
   topicStats: Array<{ topic: string; correct: number; total: number; percent: number }>;
+  // Bitmiş resmi denemelerin konu kırılımı: deneme başına ortalama kaç soru geldiği
+  // ve ortalama kaç doğru yapıldığı (Geçmiş ekranındaki "Konu bazlı ortalama" kartı).
+  examTopicStats: Array<{ topic: string; asked: number; correct: number; avgAsked: number; avgCorrect: number; percent: number }>;
+  examStats: { count: number; avgPercent: number; avgCorrect: number; avgSeconds: number } | null;
 };
 
 export type PracticeQuestion = {
