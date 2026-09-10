@@ -432,6 +432,7 @@
   if (!STATE.pFlashOzet) STATE.pFlashOzet = { gosterim: 0, dogru: 0 }; // Test sayfasındaki Rastgele Soru (pratik havuzu) — flashOzet'ten ayrı
   if (STATE.pausedExam === undefined) STATE.pausedExam = null;
   if (!STATE.pausedPratik) STATE.pausedPratik = {};   // {"<konu>::<modul>": {mod, kuyruk, index, cevaplar, savedAtISO}} — yarım kalan konu çalışması, modül başına bir slot
+  if (!STATE.pausedCheckpoints) STATE.pausedCheckpoints = {}; // {[checkpointId]: {index, savedAtISO}} — yarım kalan checkpoint notu
   if (typeof STATE.rev !== "number") STATE.rev = 0;   // her veri mutasyonunda artar; localStorage anlık görüntüsüyle hangisinin yeni olduğunu ayırt etmek için
   if (STATE.sadeceDeneme === undefined) STATE.sadeceDeneme = false; // paylaşım derlemesi: Test/Checkpoint yok, doğrudan Deneme ekranı
 
@@ -456,6 +457,7 @@
   var pratikSeciliModul = null; // seçili modül (alt-mod seçimi bu modül için gösterilir)
   var checkpointSeciliKonu = null; // checkpointListe ekranında hangi Konu açık
   var checkpointSeciliId = null;   // checkpointDetay ekranında gösterilen özet
+  var currentCheckpoint = null;    // {id, index, bitti} — checkpoint içindeki soru/adım
   var deletingHistoryId = null;   // Geçmiş ekranında iki adımlı sil onayı bekleyen kayıt
   var pendingSaveDirty = false;   // publish() sayfayı yeniden yüklediği için, akış-içi tekrarlayan
                                    // aksiyonlar (bayrak, hata notu, geçmiş silme, rastgele soru cevabı)
@@ -478,6 +480,9 @@
         currentPratik = p.currentPratik || null;
         pratikSeciliKonu = p.pratikSeciliKonu || null;
         pratikSeciliModul = p.pratikSeciliModul || null;
+        currentCheckpoint = p.currentCheckpoint || null;
+        checkpointSeciliKonu = p.checkpointSeciliKonu || null;
+        checkpointSeciliId = p.checkpointSeciliId || null;
       }
     } catch (e) { /* sessionStorage kullanılamıyor olabilir, sorun değil */ }
   })();
@@ -494,7 +499,7 @@
   // gelmez — onlar hep yayınlanan HTML'den okunur, yoksa yeni yayınlanan sorular ezilirdi.
   var LS_KEY = "uzyet_state_v1";
   var LS_ALANLAR = ["stats", "pStats", "pBest", "arsivIstatistik", "arsivPratikIstatistik",
-    "flags", "history", "duzeltmeler", "appliedBankCorrections", "flashOzet", "pFlashOzet", "pausedExam", "pausedPratik", "settings", "meta"];
+    "flags", "history", "duzeltmeler", "appliedBankCorrections", "flashOzet", "pFlashOzet", "pausedExam", "pausedPratik", "pausedCheckpoints", "settings", "meta"];
   var autosaveTimer = null;
 
   function bumpRev() { STATE.rev = (STATE.rev || 0) + 1; }
@@ -1118,7 +1123,8 @@
       sessionStorage.setItem("uzyet_pending_view", JSON.stringify({
         view: VIEW, lastResult: lastResult, currentExam: currentExam, currentFlash: currentFlash,
         lastFlashResult: lastFlashResult,
-        currentPratik: currentPratik, pratikSeciliKonu: pratikSeciliKonu, pratikSeciliModul: pratikSeciliModul
+        currentPratik: currentPratik, pratikSeciliKonu: pratikSeciliKonu, pratikSeciliModul: pratikSeciliModul,
+        currentCheckpoint: currentCheckpoint, checkpointSeciliKonu: checkpointSeciliKonu, checkpointSeciliId: checkpointSeciliId
       }));
     } catch (e) { /* sessionStorage kullanılamıyor olabilir, sorun değil */ }
   }
@@ -1290,14 +1296,23 @@
   }
   function remoteSavePracticeLocal() {
     if (!remoteAuth.username) return;
-    try { localStorage.setItem("uzyet_practice_local_v1:" + remoteAuth.username, JSON.stringify(STATE.pausedPratik)); } catch (e) {}
+    try {
+      localStorage.setItem("uzyet_practice_local_v1:" + remoteAuth.username, JSON.stringify({
+        pausedPratik: STATE.pausedPratik, pausedCheckpoints: STATE.pausedCheckpoints
+      }));
+    } catch (e) {}
   }
   function remoteInitPracticeOwner() {
     if (remotePracticeOwner === remoteAuth.username) return;
     remotePracticeOwner = remoteAuth.username;
-    STATE.pStats = {}; STATE.pausedPratik = {};
+    STATE.pStats = {}; STATE.pausedPratik = {}; STATE.pausedCheckpoints = {};
     if (remotePracticeOwner) {
-      try { STATE.pausedPratik = JSON.parse(localStorage.getItem("uzyet_practice_local_v1:" + remotePracticeOwner) || "{}"); } catch (e) {}
+      try {
+        var saved = JSON.parse(localStorage.getItem("uzyet_practice_local_v1:" + remotePracticeOwner) || "{}");
+        // Eski yalnız-pratik biçimini de okuyarak mevcut kullanıcıların oturumlarını koru.
+        STATE.pausedPratik = saved.pausedPratik || saved;
+        STATE.pausedCheckpoints = saved.pausedCheckpoints || {};
+      } catch (e) {}
     }
   }
   function remotePendingPracticeStats(onlyGuid) {
@@ -1480,7 +1495,8 @@
   }
   function leaveAiSources() {
     if (currentPratik && !currentPratik.bitti) { pratikSlotYaz(); veriDegisti(); }
-    currentPratik = null; currentFlash = null;
+    if (currentCheckpoint && !currentCheckpoint.bitti) { checkpointSlotYaz(); veriDegisti(); }
+    currentPratik = null; currentCheckpoint = null; currentFlash = null;
     aiModu = false; aiUyariAcik = false;
     openMenuDeneme();
   }
@@ -1527,10 +1543,10 @@
 
   function denemeCikisYap() {
     aiModu = false; aiUyariAcik = false; aiYukleniyor = false;
-    STATE.practiceBank = []; STATE.checkpoints = []; STATE.pStats = {}; STATE.pausedPratik = {};
+    STATE.practiceBank = []; STATE.checkpoints = []; STATE.pStats = {}; STATE.pausedPratik = {}; STATE.pausedCheckpoints = {};
     remotePracticeBankLoaded = false; remoteCheckpointsLoaded = false; remotePracticeSessions = {};
     remotePracticeOwner = null;
-    currentPratik = null; currentFlash = null;
+    currentPratik = null; currentCheckpoint = null; currentFlash = null;
     clearTimeout(remotePracticeRetryTimer);
     localStorage.removeItem(REMOTE_TOKEN_KEY);
     remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
@@ -2398,8 +2414,9 @@
 
   function backToMenu() {
     if (currentPratik && !currentPratik.bitti) { pratikSlotYaz(); bumpRev(); lsKaydet(); pendingSaveDirty = true; }
+    if (currentCheckpoint && !currentCheckpoint.bitti) { checkpointSlotYaz(); bumpRev(); lsKaydet(); pendingSaveDirty = true; }
     VIEW = aiModu ? "menu" : STATE.sadeceDeneme ? "menuDeneme" : "menu"; currentExam = null; lastResult = null; currentFlash = null; lastFlashResult = null;
-    currentPratik = null; pratikSeciliKonu = null; pratikSeciliModul = null;
+    currentPratik = null; currentCheckpoint = null; pratikSeciliKonu = null; pratikSeciliModul = null;
     checkpointSeciliKonu = null; checkpointSeciliId = null;
     pausedDeleteConfirm = false; deletingHistoryId = null; denemeKodOnizleme = null;
     render();
@@ -2709,7 +2726,7 @@
       '<div class="title">📌 Checkpoint</div><div class="desc">Bölüm özetleri — numaralı, kaynak sayfalı checkpoint listeleriyle ufak ufak ezber.</div></button>' +
       "</div>";
 
-    if (aiModu) return '<div class="section-title">🤖 Yapay Zekâ Kaynakları</div>' + navCards +
+    if (aiModu) return '<div class="section-title">🤖 Yapay Zekâ Kaynakları</div>' + checkpointYarimKalanKartlari() + navCards +
       '<div class="link-row"><button class="btn" data-action="open-flags">İşaretliler (' + hatirlaticiSayisi + ' 🔖 · ' + hataSayisi + ' 🚩)</button></div>';
 
     return '<div class="hero-band"><div class="masthead"><div><h1>UZYET</h1><div class="sub">' + meta + '</div></div></div></div>' +
@@ -2967,9 +2984,95 @@
   }
 
   // ------------------------------------------------------------ Checkpoint --
-  // Bölüm özetleri (numaralı checkpoint listeleri) — sınav bankasından ve
-  // pratik havuzundan tamamen ayrı, salt-okunur bir referans alanı.
-  // İstatistik tutulmaz. Kaynağı checkpoints.json (bkz. build_quiz_dist.py).
+  // Bölüm özetleri, içeriklerindeki liste maddelerinden soru/adım üretilerek
+  // pratik gibi ileri-geri gezilir. Doğru/yanlış istatistiği tutulmaz; yalnız
+  // kullanıcının kaldığı soru hesabına bağlı olarak saklanır.
+  function checkpointBul(id) { return STATE.checkpoints.filter(function (c) { return c.id === id; })[0]; }
+
+  function checkpointSorular(c) {
+    if (!c) return [];
+    var doc = new DOMParser().parseFromString(c.html || "", "text/html");
+    var listItems = Array.prototype.slice.call(doc.querySelectorAll("li"));
+    if (!listItems.length) return [doc.body.innerHTML || c.html || ""];
+    return listItems.map(function (item) { return item.innerHTML; }).filter(function (html) { return html.trim() !== ""; });
+  }
+
+  function checkpointOturumKonusu(c) { return "__checkpoint__:" + c.konu; }
+  function checkpointSlotAnahtari(c) { return pratikSlotKey(checkpointOturumKonusu(c), c.id); }
+  function checkpointSlotOku(c) { return STATE.pausedCheckpoints[c.id] || null; }
+  function checkpointSlotYaz() {
+    if (!currentCheckpoint || currentCheckpoint.bitti) return;
+    var c = checkpointBul(currentCheckpoint.id);
+    if (!c) return;
+    var slot = { index: currentCheckpoint.index, savedAtISO: new Date().toISOString() };
+    STATE.pausedCheckpoints[c.id] = slot;
+    remoteSavePracticeLocal();
+    remoteQueuePractice({ action: "practice-session-save", konu: checkpointOturumKonusu(c), modul: c.id, payload: slot }, null, true);
+  }
+  function checkpointSlotSil(c) {
+    delete STATE.pausedCheckpoints[c.id];
+    delete remotePracticeSessions[checkpointSlotAnahtari(c)];
+    remoteSavePracticeLocal();
+    remoteQueuePractice({ action: "practice-session-delete", konu: checkpointOturumKonusu(c), modul: c.id }, null, false);
+  }
+  function checkpointDevamVarMi(c) { return !!checkpointSlotOku(c) || !!remotePracticeSessions[checkpointSlotAnahtari(c)]; }
+  function checkpointYarimKalanKartlari() {
+    var checkpoints = STATE.checkpoints.filter(function (c) { return checkpointDevamVarMi(c); }).sort(function (a, b) {
+      var aSlot = checkpointSlotOku(a) || remotePracticeSessions[checkpointSlotAnahtari(a)] || {};
+      var bSlot = checkpointSlotOku(b) || remotePracticeSessions[checkpointSlotAnahtari(b)] || {};
+      return (bSlot.savedAtISO || bSlot.updatedAt || "").localeCompare(aSlot.savedAtISO || aSlot.updatedAt || "");
+    });
+    if (!checkpoints.length) return "";
+    return '<div class="section-title" style="margin-top:18px">▶ Yarım kalan checkpointler</div><div class="mode-grid">' + checkpoints.map(function (c) {
+      var slot = checkpointSlotOku(c) || remotePracticeSessions[checkpointSlotAnahtari(c)] || {};
+      var toplam = checkpointSorular(c).length;
+      var index = Math.min((slot.index || 0) + 1, toplam || 1);
+      return '<div class="card resume-card" style="border-left:4px solid var(--seri-' + konuSeriIdx(c.konu) + ')">' +
+        '<div class="title">' + konuDotHtml(c.konu) + escapeHtml(c.title) + '</div>' +
+        '<div class="desc">' + index + " / " + toplam + ". soruda kaldın" + ((slot.savedAtISO || slot.updatedAt) ? " · " + fmtTarih(slot.savedAtISO || slot.updatedAt) : "") + '</div>' +
+        '<div class="link-row" style="margin-top:10px"><button class="btn primary" data-action="devam-checkpoint" data-id="' + escapeHtml(c.id) + '">Kaldığım Yerden Devam Et</button></div></div>';
+    }).join("") + "</div>";
+  }
+  function checkpointBaslat(id) {
+    var c = checkpointBul(id), sorular = checkpointSorular(c);
+    if (!c || !sorular.length) { showBanner("Bu checkpoint'te gösterilecek soru bulunamadı.", true); return; }
+    checkpointSlotSil(c);
+    currentCheckpoint = { id: c.id, index: 0, bitti: false };
+    checkpointSlotYaz(); checkpointSeciliId = c.id; VIEW = "checkpointSoru";
+    veriDegisti(); render();
+  }
+  function checkpointDevamEt(id) {
+    var c = checkpointBul(id), slot = c && checkpointSlotOku(c);
+    if (!c) return;
+    if (!slot) {
+      showBanner("Kayıtlı checkpoint yükleniyor…", false);
+      remoteFetch("/api/exam", "POST", { action: "practice-session-load", konu: checkpointOturumKonusu(c), modul: c.id }).then(function (r) {
+        if (!r.ok) throw new Error((r.data && r.data.error) || "Checkpoint yüklenemedi.");
+        if (!r.data.payload) { delete remotePracticeSessions[checkpointSlotAnahtari(c)]; showBanner("Kayıtlı yarım checkpoint bulunamadı.", true); render(); return; }
+        STATE.pausedCheckpoints[c.id] = r.data.payload;
+        remoteSavePracticeLocal(); checkpointDevamEt(c.id);
+      }).catch(function (e) { showBanner(e.message || "Checkpoint yüklenemedi.", true); });
+      return;
+    }
+    var sorular = checkpointSorular(c);
+    if (!sorular.length) { checkpointSlotSil(c); showBanner("Bu checkpoint'te gösterilecek soru bulunamadı.", true); render(); return; }
+    currentCheckpoint = { id: c.id, index: Math.min(Math.max(0, slot.index || 0), sorular.length - 1), bitti: false };
+    checkpointSeciliId = c.id; VIEW = "checkpointSoru"; render();
+  }
+  function checkpointOnceki() {
+    if (!currentCheckpoint || currentCheckpoint.index === 0) return;
+    currentCheckpoint.index--; checkpointSlotYaz(); veriDegisti(); render();
+  }
+  function checkpointSonraki() {
+    var c = currentCheckpoint && checkpointBul(currentCheckpoint.id), sorular = checkpointSorular(c);
+    if (!c || !currentCheckpoint) return;
+    if (currentCheckpoint.index < sorular.length - 1) { currentCheckpoint.index++; checkpointSlotYaz(); veriDegisti(); render(); return; }
+    currentCheckpoint.bitti = true; checkpointSlotSil(c); veriDegisti(); render();
+  }
+  function checkpointKaydetVeCik() {
+    if (currentCheckpoint && !currentCheckpoint.bitti) { checkpointSlotYaz(); veriDegisti(true); }
+    currentCheckpoint = null; VIEW = "checkpointDetay"; render();
+  }
   function checkpointKonular() {
     var konular = [];
     STATE.checkpoints.forEach(function (c) {
@@ -3019,21 +3122,39 @@
   }
 
   function renderCheckpointDetay() {
-    var c = STATE.checkpoints.filter(function (x) { return x.id === checkpointSeciliId; })[0];
+    var c = checkpointBul(checkpointSeciliId);
     if (!c) { checkpointSeciliId = null; return renderCheckpointListe(); }
-    var items = STATE.checkpoints.filter(function (x) { return x.konu === c.konu; });
-    var idx = items.indexOf(c);
-    var prevBtn = items[idx - 1]
-      ? '<button class="btn" data-action="open-checkpoint-detay" data-id="' + escapeHtml(items[idx - 1].id) + '">← Önceki</button>' : "";
-    var nextBtn = items[idx + 1]
-      ? '<button class="btn" data-action="open-checkpoint-detay" data-id="' + escapeHtml(items[idx + 1].id) + '">Sonraki →</button>' : "";
+    var soruSayisi = checkpointSorular(c).length;
+    var slot = checkpointSlotOku(c);
+    var devamVar = checkpointDevamVarMi(c);
+    var ilerleme = slot ? " · " + Math.min((slot.index || 0) + 1, soruSayisi) + " / " + soruSayisi + ". soruda kaldın" : "";
     return '<div class="link-row"><button class="btn ghost" data-action="checkpoint-konu-geri">← ' + escapeHtml(c.konu) + " Özetleri</button></div>" +
       '<div class="card">' +
       '<div class="section-title" style="margin-bottom:2px">' + escapeHtml(c.title) + "</div>" +
       '<div class="muted" style="margin-bottom:18px">' + escapeHtml(c.subtitle) + "</div>" +
-      '<div class="cp-content">' + c.html + "</div>" +
-      '<div class="link-row" style="margin-top:20px">' + prevBtn + nextBtn + "</div>" +
+      '<div class="desc">' + soruSayisi + " soru/adım. İleri geri gezebilir, çıkınca kaldığın yerden devam edebilirsin." + ilerleme + "</div>" +
+      '<div class="link-row" style="margin-top:20px">' +
+      (devamVar ? '<button class="btn primary" data-action="devam-checkpoint" data-id="' + escapeHtml(c.id) + '">Kaldığım Yerden Devam Et</button>' : '<button class="btn primary" data-action="start-checkpoint" data-id="' + escapeHtml(c.id) + '">Başlat</button>') +
+      (devamVar ? '<button class="btn" data-action="start-checkpoint" data-id="' + escapeHtml(c.id) + '">Baştan Başla</button>' : "") +
+      "</div>" +
       "</div>";
+  }
+
+  function renderCheckpointSoru() {
+    if (!currentCheckpoint) { VIEW = "checkpointDetay"; return renderCheckpointDetay(); }
+    var c = checkpointBul(currentCheckpoint.id), sorular = checkpointSorular(c);
+    if (!c || !sorular.length) { currentCheckpoint = null; return '<div class="card">Checkpoint artık bulunamadı. <button class="btn" data-action="open-checkpoint-liste">Listeye Dön</button></div>'; }
+    if (currentCheckpoint.bitti) {
+      return '<div class="card"><div class="section-title">Checkpoint bitti 🎉</div><div class="muted">' + escapeHtml(c.title) + " içindeki " + sorular.length + " soru/adımı tamamladın.</div>" +
+        '<div class="link-row" style="margin-top:14px"><button class="btn primary" data-action="start-checkpoint" data-id="' + escapeHtml(c.id) + '">Tekrar Başlat</button><button class="btn" data-action="checkpoint-kaydet-cik">Özetlere Dön</button></div></div>';
+    }
+    var index = Math.min(currentCheckpoint.index, sorular.length - 1);
+    var cikis = '<div class="link-row" style="margin-bottom:10px"><button class="btn primary" data-action="checkpoint-kaydet-cik">💾 Kaydet ve Çık</button><span class="muted" style="font-size:0.82rem;align-self:center">İlerleme her adımda otomatik kaydediliyor</span></div>';
+    return cikis + '<div class="card"><div class="q-meta"><span>Checkpoint · ' + (index + 1) + " / " + sorular.length + '</span><span>' + konuDotHtml(c.konu) + escapeHtml(c.konu) + "</span></div>" +
+      '<div class="cp-content">' + sorular[index] + "</div>" +
+      '<div class="link-row" style="margin-top:20px">' +
+      (index > 0 ? '<button class="btn" data-action="checkpoint-onceki">← Önceki Soru</button>' : "") +
+      '<button class="btn primary" data-action="checkpoint-sonraki">' + (index < sorular.length - 1 ? "Sonraki Soru →" : "Tamamla →") + "</button></div></div>";
   }
 
   // Soruyu (soru + şıklar + varsa kaynak) düz metin olarak panoya kopyalar —
@@ -3740,7 +3861,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     var html = "";
     if (aiModu && (!remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true)) { aiModu = false; VIEW = "menuDeneme"; }
     if (STATE.sadeceDeneme && !aiModu && (VIEW === "menu" || VIEW === "menuTest" || VIEW === "pratikModul" || VIEW === "pratikSoru" ||
-      VIEW === "checkpointListe" || VIEW === "checkpointDetay" || VIEW === "settings" || VIEW === "import")) VIEW = "menuDeneme";
+      VIEW === "checkpointListe" || VIEW === "checkpointDetay" || VIEW === "checkpointSoru" || VIEW === "settings" || VIEW === "import")) VIEW = "menuDeneme";
     if (STATE.sadeceDeneme && (VIEW === "settings" || VIEW === "import")) VIEW = aiModu ? "menu" : "menuDeneme";
     if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult" || VIEW === "gecmisUzak" || VIEW === "tekrarTest" || VIEW === "tekrarSonuc")) VIEW = "menuDeneme";
     if (VIEW === "menu") html = renderMenu();
@@ -3760,6 +3881,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (VIEW === "pratikSoru") html = renderPratikSoru();
     else if (VIEW === "checkpointListe") html = renderCheckpointListe();
     else if (VIEW === "checkpointDetay") html = renderCheckpointDetay();
+    else if (VIEW === "checkpointSoru") html = renderCheckpointSoru();
     else if (VIEW === "gecmisUzak") html = renderGecmisUzak();
     else if (VIEW === "tekrarTest") html = renderTekrarTest();
     else if (VIEW === "tekrarSonuc") html = renderTekrarSonuc();
@@ -3869,6 +3991,11 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "select-checkpoint-konu") { checkpointSeciliKonu = t.getAttribute("data-konu"); VIEW = "checkpointListe"; render(); }
     else if (action === "checkpoint-konu-geri") { checkpointSeciliId = null; VIEW = "checkpointListe"; render(); }
     else if (action === "open-checkpoint-detay") { checkpointSeciliId = t.getAttribute("data-id"); VIEW = "checkpointDetay"; render(); }
+    else if (action === "start-checkpoint") checkpointBaslat(t.getAttribute("data-id"));
+    else if (action === "devam-checkpoint") checkpointDevamEt(t.getAttribute("data-id"));
+    else if (action === "checkpoint-onceki") checkpointOnceki();
+    else if (action === "checkpoint-sonraki") checkpointSonraki();
+    else if (action === "checkpoint-kaydet-cik") checkpointKaydetVeCik();
     else if (action === "select-pratik-modul") {
       var secilenModul = t.getAttribute("data-modul");
       // Yarım kalan oturum varsa doğrudan başlatma — "Devam Et"i göstermek için modülü seç,
