@@ -57,4 +57,8 @@ export const MIGRATIONS: readonly Migration[] = [
     name: "0012_zor_mode.sql",
     content: "ALTER TYPE \"exam_mode\" ADD VALUE IF NOT EXISTS 'zor';\n",
   },
+  {
+    name: "0013_exam_code_index.sql",
+    content: "CREATE INDEX IF NOT EXISTS \"exam_attempts_exam_code_idx\" ON \"exam_attempts\" (\"exam_code\");\n",
+  },
 ];

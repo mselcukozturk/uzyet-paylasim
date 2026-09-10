@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { and, avg, count, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, avg, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { getSessionProfile } from '@/lib/auth/session';
 import { corsPreflight, withCors } from '@/lib/cors';
 import { getDb, schema } from '@/lib/db';
@@ -388,45 +388,89 @@ async function handlePost(request: Request) {
         seed = parsed.seed;
       }
 
-      const [bank] = await db.select().from(schema.questionBanks).where(eq(schema.questionBanks.isActive, true)).limit(1);
-      if (!bank) return fail('Aktif soru bankası bulunamadı.', 503);
-      const questionRows = await db.select().from(schema.questions).where(eq(schema.questions.bankId, bank.id));
-      const bankQuestions: BankQuestion[] = questionRows.map((item) => ({
-        id: item.id,
-        guid: item.guid,
-        topic: item.topic,
-        prompt: item.prompt,
-        options: item.options,
-        correctIndex: item.correctIndex,
-        explanation: item.explanation,
-      }));
-      // "zor" TÜM kullanıcılar arasında en çok yanlış yapılan soruları hedefler — kişisel
-      // değil, herkesin question_stats'ı toplanır (guid bazında SUM(wrong_count)). Diğer
-      // modlar hâlâ yalnız bu kullanıcının kendi geçmişini kullanır.
-      const stats = mode === 'zor'
-        ? (await db.select({
-            questionGuid: schema.questionStats.questionGuid,
-            wrongCount: sql<number>`sum(${schema.questionStats.wrongCount})`.mapWith(Number),
-          }).from(schema.questionStats).groupBy(schema.questionStats.questionGuid))
-          .map((item) => ({ questionGuid: item.questionGuid, shownCount: 0, wrongCount: item.wrongCount, lastResult: null as boolean | null }))
-        : (await db.select().from(schema.questionStats).where(eq(schema.questionStats.userId, user.id)))
-          .map((item) => ({ questionGuid: item.questionGuid, shownCount: item.shownCount, wrongCount: item.wrongCount, lastResult: item.lastResult }));
-      const picked = selectExamQuestions(bankQuestions, stats, mode, seed);
-      if (picked.questions.length !== 50) return fail('Resmî dağılım için yeterli soru bulunamadı.', 503);
-      const optionRandom = mulberry32(seed ^ 0x9e3779b9);
-      const snapshots = picked.questions.map((item) => shuffleQuestionOptions(item, optionRandom));
+      type QuestionSnapshot = {
+        questionId: string; questionGuid: string; topic: string; prompt: string;
+        options: string[]; correctIndex: number; explanation: string;
+      };
+      let bankId: string;
+      let snapshots: QuestionSnapshot[];
+
+      // Aynı kod (aynı mode+seed) daha önce bir denemeye dönüştüyse, o ilk denemenin
+      // soru anlık görüntüsünü birebir kopyala. "azgorulen"/"yanlislar" gibi kişisel
+      // istatistiğe bağlı modlar da dahil, kodu açan HERKES böylece aynı 50 soruyu görür
+      // — kişisel istatistiğe göre yeniden seçim yalnız kodun ilk kullanımında (kodu
+      // üretenin kendi başlatması dahil) yapılır.
+      let reusedSnapshots: QuestionSnapshot[] | null = null;
+      let reusedBankId: string | null = null;
+      if (body.examCode) {
+        const canonicalCode = examCode(mode, seed);
+        const [source] = await db.select({ id: schema.examAttempts.id, bankId: schema.examAttempts.bankId })
+          .from(schema.examAttempts)
+          .where(eq(schema.examAttempts.examCode, canonicalCode))
+          .orderBy(asc(schema.examAttempts.startedAt))
+          .limit(1);
+        if (source) {
+          const sourceQuestions = await db.select().from(schema.examAttemptQuestions)
+            .where(eq(schema.examAttemptQuestions.attemptId, source.id))
+            .orderBy(asc(schema.examAttemptQuestions.position));
+          if (sourceQuestions.length === 50) {
+            reusedSnapshots = sourceQuestions.map((item) => ({
+              questionId: item.questionId, questionGuid: item.questionGuid, topic: item.topic,
+              prompt: item.prompt, options: item.options, correctIndex: item.correctIndex, explanation: item.explanation,
+            }));
+            reusedBankId = source.bankId;
+          }
+        }
+      }
+
+      if (reusedSnapshots && reusedBankId) {
+        bankId = reusedBankId;
+        snapshots = reusedSnapshots;
+      } else {
+        const [bank] = await db.select().from(schema.questionBanks).where(eq(schema.questionBanks.isActive, true)).limit(1);
+        if (!bank) return fail('Aktif soru bankası bulunamadı.', 503);
+        const questionRows = await db.select().from(schema.questions).where(eq(schema.questions.bankId, bank.id));
+        const bankQuestions: BankQuestion[] = questionRows.map((item) => ({
+          id: item.id,
+          guid: item.guid,
+          topic: item.topic,
+          prompt: item.prompt,
+          options: item.options,
+          correctIndex: item.correctIndex,
+          explanation: item.explanation,
+        }));
+        // "zor" TÜM kullanıcılar arasında en çok yanlış yapılan soruları hedefler — kişisel
+        // değil, herkesin question_stats'ı toplanır (guid bazında SUM(wrong_count)). Diğer
+        // modlar hâlâ yalnız bu kullanıcının kendi geçmişini kullanır.
+        const stats = mode === 'zor'
+          ? (await db.select({
+              questionGuid: schema.questionStats.questionGuid,
+              wrongCount: sql<number>`sum(${schema.questionStats.wrongCount})`.mapWith(Number),
+            }).from(schema.questionStats).groupBy(schema.questionStats.questionGuid))
+            .map((item) => ({ questionGuid: item.questionGuid, shownCount: 0, wrongCount: item.wrongCount, lastResult: null as boolean | null }))
+          : (await db.select().from(schema.questionStats).where(eq(schema.questionStats.userId, user.id)))
+            .map((item) => ({ questionGuid: item.questionGuid, shownCount: item.shownCount, wrongCount: item.wrongCount, lastResult: item.lastResult }));
+        const picked = selectExamQuestions(bankQuestions, stats, mode, seed);
+        if (picked.questions.length !== 50) return fail('Resmî dağılım için yeterli soru bulunamadı.', 503);
+        const optionRandom = mulberry32(seed ^ 0x9e3779b9);
+        snapshots = picked.questions.map((item) => shuffleQuestionOptions(item, optionRandom)).map((item) => ({
+          questionId: item.id, questionGuid: item.guid, topic: item.topic, prompt: item.prompt,
+          options: item.options, correctIndex: item.correctIndex, explanation: item.explanation,
+        }));
+        bankId = bank.id;
+      }
 
       const created = await db.transaction(async (tx) => {
         const [attempt] = await tx.insert(schema.examAttempts).values({
           userId: user.id,
-          bankId: bank.id,
+          bankId,
           mode,
           examCode: examCode(mode, seed),
         }).returning();
         const insertedQuestions = await tx.insert(schema.examAttemptQuestions).values(snapshots.map((item, index) => ({
           attemptId: attempt.id,
-          questionId: item.id,
-          questionGuid: item.guid,
+          questionId: item.questionId,
+          questionGuid: item.questionGuid,
           position: index + 1,
           topic: item.topic,
           prompt: item.prompt,
