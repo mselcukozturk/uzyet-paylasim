@@ -407,6 +407,10 @@
 
   var artifactNs;              // undefined = henüz sorulmadı, null = yok
   var VIEW = STATE.sadeceDeneme ? "menuDeneme" : "menu";
+  var aiModu = false;
+  var aiUyariAcik = false;
+  var aiYukleniyor = false;
+  var AI_KAYNAK_UYARISI = "Buradaki soru ve konular yapay zekâ ile kişisel kullanım için üretildi, doğruluğu ve kapsamı teyit edilmedi.";
   var currentExam = null;      // {tip, sorular:[guid...], index, cevaplar:{guid:idx}, uyarilar}
   var lastResult = null;
   var importPreview = null;    // {stateKopya, sonuc, dosyaAdi, sheetName}
@@ -1133,7 +1137,7 @@
   var REMOTE_TOKEN_KEY = "uzyet_portal_token";
   // TODO: kullanıcı gerçek metni verince buraya yazılacak — şimdilik yer tutucu.
   var DISCLAIMER_METNI = "Bu, gerçek sınavın simülasyonudur; sorular ve açıklamalar UZYET ekibi tarafından hazırlanmıştır, resmi kaynak yerine geçmez. Kendi sorumluluğunda kullan.";
-  var remoteAuth = { checked: false, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false };
+  var remoteAuth = { checked: false, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false, canSeeAiSources: false };
   var remoteDash = null;
   var remoteBusy = false;
   // Kayıt formu her render()'da sıfırdan kurulduğu için, hatalı gönderim sonrası
@@ -1385,28 +1389,58 @@
 
   function remoteCheckStatus(cb) {
     if (!remoteToken()) {
-      remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false };
+      remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false, canSeeAiSources: false };
       if (cb) cb();
       return;
     }
     remoteAuth.checking = true;
     remoteFetch("/api/access", "GET").then(function (r) {
       if (r.ok && r.data && r.data.authenticated) {
-        remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, disclaimerAccepted: !!r.data.disclaimerAccepted };
+        remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, disclaimerAccepted: !!r.data.disclaimerAccepted, canSeeAiSources: r.data.canSeeAiSources === true };
       } else {
-        remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false };
+        remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false, canSeeAiSources: false };
       }
     }).catch(function () {
-      remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false };
+      remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false, canSeeAiSources: false };
     }).then(function () {
       afterAuthStateChange(cb);
     });
   }
 
   function openMenuDeneme() {
+    aiModu = false;
     VIEW = "menuDeneme";
     render();
     if (!remoteAuth.checked) remoteCheckStatus(function () { if (VIEW === "menuDeneme") render(); });
+  }
+
+  function openAiSources() {
+    if (!remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true) return;
+    aiUyariAcik = true;
+    render();
+    var button = document.getElementById("ai-uyari-anladim");
+    if (button) button.focus();
+  }
+  // Uyarı tek butonlu ama kapanabilir olmalı: kabul etmeyen kullanıcı arka plana
+  // (Deneme ekranına) dönebilsin diye Esc ve karartma alanı da kapatır.
+  function closeAiUyari() { aiUyariAcik = false; render(); }
+  function acceptAiSources() {
+    if (!remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true) return;
+    aiUyariAcik = false; aiModu = true; aiYukleniyor = true; VIEW = "menu";
+    render();
+    Promise.all([remoteLoadPracticeBankIfNeeded(), remoteLoadCheckpointsIfNeeded(), remoteLoadPracticeStats()]).then(function (results) {
+      aiYukleniyor = false;
+      if (!aiModu) return;
+      if (results.some(function (ok) { return !ok; })) { aiModu = false; VIEW = "menuDeneme"; }
+      else bannerMsg = null;
+      render();
+    });
+  }
+  function leaveAiSources() {
+    if (currentPratik && !currentPratik.bitti) { pratikSlotYaz(); veriDegisti(); }
+    currentPratik = null; currentFlash = null;
+    aiModu = false; aiUyariAcik = false;
+    openMenuDeneme();
   }
 
   function remoteRegisterSubmit() {
@@ -1425,7 +1459,7 @@
       if (!r.ok) { showBanner((r.data && r.data.error) || "Kayıt başarısız.", true); render(); return; }
       denemeIsimTaslak = ""; denemePinTaslak = "";
       if (r.data.token) remoteSetToken(r.data.token);
-      remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, disclaimerAccepted: !!r.data.disclaimerAccepted };
+      remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, disclaimerAccepted: !!r.data.disclaimerAccepted, canSeeAiSources: r.data.canSeeAiSources === true };
       render();
       afterAuthStateChange(render);
     }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası — internet bağlantını kontrol et.", true); render(); });
@@ -1437,7 +1471,7 @@
     remoteFetch("/api/access", "POST", { acceptDisclaimer: true }).then(function (r) {
       remoteBusy = false;
       if (!r.ok) { showBanner((r.data && r.data.error) || "Kaydedilemedi, tekrar dene.", true); render(); return; }
-      remoteAuth.disclaimerAccepted = !!r.data.disclaimerAccepted;
+      remoteAuth.disclaimerAccepted = !!r.data.disclaimerAccepted; remoteAuth.canSeeAiSources = r.data.canSeeAiSources === true;
       render();
       afterAuthStateChange(render);
     }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
@@ -1450,8 +1484,14 @@
   }
 
   function denemeCikisYap() {
+    aiModu = false; aiUyariAcik = false; aiYukleniyor = false;
+    STATE.practiceBank = []; STATE.checkpoints = []; STATE.pStats = {}; STATE.pausedPratik = {};
+    remotePracticeBankLoaded = false; remoteCheckpointsLoaded = false; remotePracticeSessions = {};
+    remotePracticeOwner = null;
+    currentPratik = null; currentFlash = null;
+    clearTimeout(remotePracticeRetryTimer);
     localStorage.removeItem(REMOTE_TOKEN_KEY);
-    remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false };
+    remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false, canSeeAiSources: false };
     denemeIsimTaslak = "";
     denemePinTaslak = "";
     remoteDash = null;
@@ -2265,7 +2305,7 @@
 
   function backToMenu() {
     if (currentPratik && !currentPratik.bitti) { pratikSlotYaz(); bumpRev(); lsKaydet(); pendingSaveDirty = true; }
-    VIEW = STATE.sadeceDeneme ? "menuDeneme" : "menu"; currentExam = null; lastResult = null; currentFlash = null; lastFlashResult = null;
+    VIEW = aiModu ? "menu" : STATE.sadeceDeneme ? "menuDeneme" : "menu"; currentExam = null; lastResult = null; currentFlash = null; lastFlashResult = null;
     currentPratik = null; pratikSeciliKonu = null; pratikSeciliModul = null;
     checkpointSeciliKonu = null; checkpointSeciliId = null;
     pausedDeleteConfirm = false; deletingHistoryId = null; denemeKodOnizleme = null;
@@ -2576,6 +2616,9 @@
       '<div class="title">📌 Checkpoint</div><div class="desc">Bölüm özetleri — numaralı, kaynak sayfalı checkpoint listeleriyle ufak ufak ezber.</div></button>' +
       "</div>";
 
+    if (aiModu) return '<div class="section-title">🤖 Yapay Zekâ Kaynakları</div>' + navCards +
+      '<div class="link-row"><button class="btn" data-action="open-flags">İşaretliler (' + hatirlaticiSayisi + ' 🔖 · ' + hataSayisi + ' 🚩)</button></div>';
+
     return '<div class="hero-band"><div class="masthead"><div><h1>UZYET</h1><div class="sub">' + meta + '</div></div></div></div>' +
       (toplamSoru === 0 ? '<div class="banner">Önce bir soru bankası içe aktarmalısın. Aşağıdan "Soru Bankasını Güncelle"yi kullan.</div>' : "") +
       pausedCard +
@@ -2606,7 +2649,8 @@
       : "";
 
     return (STATE.sadeceDeneme
-      ? (remoteGirisTamamMi() ? '<div class="link-row"><button class="btn ghost" data-action="open-history-remote">Geçmiş</button>' + kullaniciHtml + '</div>' : "")
+      ? (remoteGirisTamamMi() ? '<div class="link-row"><button class="btn ghost" data-action="open-history-remote">Geçmiş</button>' +
+        (remoteAuth.canSeeAiSources === true ? '<button class="btn ghost" data-action="open-ai-sources">🤖 Yapay Zekâ Kaynakları</button>' : '') + kullaniciHtml + '</div>' : "")
       : '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button>' +
         '<button class="btn" data-action="open-history">Geçmiş</button>' + kullaniciHtml + '</div>') +
       '<div class="section-title">📝 Deneme Sınavı</div>' +
@@ -3595,8 +3639,10 @@ function pratikEnIyiHtml(konu, modulKey) {
 
   function render() {
     var html = "";
-    if (STATE.sadeceDeneme && (VIEW === "menu" || VIEW === "menuTest" || VIEW === "pratikModul" || VIEW === "pratikSoru" ||
+    if (aiModu && (!remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true)) { aiModu = false; VIEW = "menuDeneme"; }
+    if (STATE.sadeceDeneme && !aiModu && (VIEW === "menu" || VIEW === "menuTest" || VIEW === "pratikModul" || VIEW === "pratikSoru" ||
       VIEW === "checkpointListe" || VIEW === "checkpointDetay" || VIEW === "settings" || VIEW === "import")) VIEW = "menuDeneme";
+    if (STATE.sadeceDeneme && (VIEW === "settings" || VIEW === "import")) VIEW = aiModu ? "menu" : "menuDeneme";
     if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult" || VIEW === "gecmisUzak" || VIEW === "tekrarTest" || VIEW === "tekrarSonuc")) VIEW = "menuDeneme";
     if (VIEW === "menu") html = renderMenu();
     else if (VIEW === "menuDeneme") html = renderMenuDeneme();
@@ -3625,6 +3671,11 @@ function pratikEnIyiHtml(konu, modulKey) {
     var bannerHtml = bannerMsg ? '<div class="banner' + (bannerIsError ? " error" : "") + '">' + escapeHtml(bannerMsg) + "</div>" : "";
     var narrowViews = { settings: true, import: true };
     var shellClass = "shell" + (narrowViews[VIEW] ? " narrow" : "");
+    if (aiModu) html = '<div class="link-row"><button class="btn ghost" data-action="leave-ai-sources">← Deneme\'ye Dön</button></div>' +
+      (aiYukleniyor ? '<div class="card" role="status">AI kaynakları yükleniyor…</div>' : html);
+    if (aiUyariAcik) html += '<div role="dialog" aria-modal="true" aria-labelledby="ai-uyari-baslik" data-action="close-ai-uyari" style="position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:100;padding:20px">' +
+      '<div class="card" data-action="ai-uyari-govde" style="max-width:520px"><h2 id="ai-uyari-baslik">Yapay Zekâ Kaynakları</h2><p>' + escapeHtml(AI_KAYNAK_UYARISI) + '</p>' +
+      '<button id="ai-uyari-anladim" class="btn primary" data-action="accept-ai-sources">Anladım</button></div></div>';
     $app().innerHTML = '<div class="' + shellClass + '">' + bannerHtml + html + "</div>";
   }
 
@@ -3633,6 +3684,14 @@ function pratikEnIyiHtml(konu, modulKey) {
     var t = e.target.closest ? e.target.closest("[data-action]") : null;
     if (!t) return;
     var action = t.getAttribute("data-action");
+    if (aiUyariAcik) {
+      // Modal açıkken arkadaki ekran tıklanamaz; yalnız kabul veya kapatma işler.
+      if (action === "accept-ai-sources") acceptAiSources();
+      else if (action === "close-ai-uyari") closeAiUyari();
+      return; // "ai-uyari-govde" dahil geri kalan her şey yutulur
+    }
+    if (action === "open-ai-sources") { openAiSources(); return; }
+    if (action === "leave-ai-sources") { leaveAiSources(); return; }
     if (action === "open-menu-deneme") { denemeKodOnizleme = null; openMenuDeneme(); }
     else if (action === "open-menu-test") { VIEW = "menuTest"; render(); }
     else if (action === "copy-soru") kopyalaAktifSoru(t.getAttribute("data-scope"));
@@ -3748,6 +3807,10 @@ function pratikEnIyiHtml(konu, modulKey) {
     }
   });
   document.addEventListener("keydown", function (e) {
+    if (aiUyariAcik) {
+      if (e.key === "Escape") { e.preventDefault(); closeAiUyari(); }
+      return;
+    }
     var tag = document.activeElement && document.activeElement.tagName;
     if (tag === "INPUT" || tag === "TEXTAREA") {
       if (e.key === "Enter" && document.activeElement.id === "exam-code-input") { e.preventDefault(); startExamWithCode(); }
