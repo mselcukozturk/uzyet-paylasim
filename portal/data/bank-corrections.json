@@ -1016,5 +1016,32 @@
   "not": "İşaretli soru incelemesi: kaynak kontrolü sonrası soru/şık/cevap güncellendi. Deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
   "kaynak_atif": "Ürünlerimiz YYS 2026.pdf s.32 (kitap s.15) ve s.241 (kitap s.224)",
   "tarihISO": "2026-09-09T18:39:33.241888+00:00"
+ },
+ {
+  "id": "gece-20260911-5f466281b6aa",
+  "guid": "5f466281b6aa",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 (1H2026) Yatırımcı Sunumu'na göre Türkiye İş Bankası'nın bilanço ve büyüme göstergeleriyle ilgili aşağıdaki ifadelerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "YatirimciSunumu.pdf sl.6, sl.7, sl.15",
+  "tarihISO": "2026-09-10T23:09:18.580869+00:00"
+ },
+ {
+  "id": "gece-20260911-9ef00054949b",
+  "guid": "9ef00054949b",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 (1H2026) Yatırımcı Sunumu'na göre Bankamız finansal göstergeleriyle ilgili;\nI. Bankamızın aktif büyüklüğü yıl sonuna göre %10,1 büyümüştür.\nII. Bankamızın toplam aktifi 5 Trilyon TL'yi aşmıştır.\nIII. Bankamızın solo Sermaye Yeterliliği Oranı (SYO) %15,4'tür (İDDY uygulandığında %17,3).\nIV. Bankamızın toplam kredileri yıl sonuna göre %13,1 büyüme ile 2,6 Trilyon TL'yi aşmıştır.\n\nYukarıdakilerden hangileri doğrudur?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "YatirimciSunumu.pdf sl.6, sl.7, sl.16",
+  "tarihISO": "2026-09-10T23:09:18.580869+00:00"
+ },
+ {
+  "id": "gece-20260911-7b263f266e8d",
+  "guid": "7b263f266e8d",
+  "konu": "Genel Ekonomi",
+  "soru": "Türkiye ekonomisinde 2026 yılı (ilk yarı) verilerine göre aşağıdakilerden hangileri doğrudur?\nI- En fazla ihracat yaptığımız ülke Almanya’dır.\nII- Dış ticaret açığı daralmıştır.\nIII- GSYH artmıştır.",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Genel Ekonomi — Güncelleme Karşılaştırması (Ağu 2026).md Tablo A",
+  "tarihISO": "2026-09-10T23:09:18.580869+00:00"
  }
 ]
