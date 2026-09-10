@@ -14,13 +14,18 @@ function fail(message: string, status: number) {
   return withCors(NextResponse.json({ error: message }, { status }));
 }
 
-function statusPayload(profile: { username: string; isActive: boolean; canSeeAiSources: boolean; disclaimerAcceptedAt: Date | null }, token?: string) {
+function statusPayload(profile: {
+  username: string; isActive: boolean; isAdmin?: boolean; canSeeAiSources: boolean;
+  disclaimerAcceptedAt: Date | null; aiDisclaimerAcceptedAt?: Date | null;
+}, token?: string) {
   return {
     authenticated: true,
     username: profile.username,
     isActive: profile.isActive,
+    isAdmin: !!profile.isAdmin,
     canSeeAiSources: profile.canSeeAiSources,
     disclaimerAccepted: !!profile.disclaimerAcceptedAt,
+    aiDisclaimerAccepted: !!profile.aiDisclaimerAcceptedAt,
     ...(token ? { token } : {}),
   };
 }
@@ -38,7 +43,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const existing = await getSessionProfile(request);
   const body = await request.json().catch(() => null) as
-    { username?: string; pin?: string; acceptDisclaimer?: boolean } | null;
+    { username?: string; pin?: string; acceptDisclaimer?: boolean; acceptAiDisclaimer?: boolean } | null;
 
   if (existing) {
     if (body?.acceptDisclaimer) {
@@ -46,6 +51,12 @@ export async function POST(request: Request) {
       await db.update(schema.profiles).set({ disclaimerAcceptedAt: new Date(), updatedAt: new Date() })
         .where(eq(schema.profiles.userId, existing.userId));
       return withCors(NextResponse.json(statusPayload({ ...existing, disclaimerAcceptedAt: new Date() })));
+    }
+    if (body?.acceptAiDisclaimer) {
+      const db = getDb();
+      await db.update(schema.profiles).set({ aiDisclaimerAcceptedAt: new Date(), updatedAt: new Date() })
+        .where(eq(schema.profiles.userId, existing.userId));
+      return withCors(NextResponse.json(statusPayload({ ...existing, aiDisclaimerAcceptedAt: new Date() })));
     }
     return withCors(NextResponse.json(statusPayload(existing)));
   }
@@ -62,8 +73,10 @@ export async function POST(request: Request) {
     userId: schema.profiles.userId,
     username: schema.profiles.username,
     isActive: schema.profiles.isActive,
+    isAdmin: schema.profiles.isAdmin,
     canSeeAiSources: schema.profiles.canSeeAiSources,
     disclaimerAcceptedAt: schema.profiles.disclaimerAcceptedAt,
+    aiDisclaimerAcceptedAt: schema.profiles.aiDisclaimerAcceptedAt,
     pinEncrypted: schema.profiles.pinEncrypted,
   }).from(schema.profiles).where(sql`lower(${schema.profiles.username}) = ${username}`).limit(1);
 

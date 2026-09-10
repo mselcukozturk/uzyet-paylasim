@@ -40,14 +40,22 @@ void test('AI menüsü ayarlar, banka içe aktarma ve kişisel düzeltme listesi
   assert.doesNotMatch(aiDal, /open-settings|open-import|open-duzeltmeler/);
 });
 
-void test('uyarı her açılışta gösterilir, kalıcı onay yazılmaz ve kapatılabilir', () => {
+void test('uyarı yalnız ilk girişte gösterilir, kabul sunucuya kalıcı yazılır ve kapatılabilir', () => {
   assert.match(script, /var AI_KAYNAK_UYARISI = "Buradaki soru ve konular yapay zekâ ile kişisel kullanım için üretildi, doğruluğu ve kapsamı teyit edilmedi\.";/);
-  // profiles'a onay kolonu eklenmedi; uyarı hiçbir yerde saklanmıyor.
-  assert.doesNotMatch(fn('openAiSources') + fn('acceptAiSources'), /localStorage|sessionStorage|acceptDisclaimer/);
+  // Daha önce kabul edilmişse modal atlanıp doğrudan bölüm açılır.
+  assert.match(fn('openAiSources'), /if \(remoteAuth\.aiDisclaimerAccepted\) \{ acceptAiSources\(\); return; \}/);
+  // İlk kabulde (yalnız modal açıkken ve henüz kabul edilmemişken) sunucuya kalıcı yazılır.
+  const accept = fn('acceptAiSources');
+  assert.match(accept, /var ilkKabul = aiUyariAcik && !remoteAuth\.aiDisclaimerAccepted;/);
+  assert.match(accept, /remoteFetch\("\/api\/access", "POST", \{ acceptAiDisclaimer: true \}\)/);
   // Tek butonlu ama çıkışsız değil: Esc ve karartma alanı kapatır, gövde tıklaması yutulur.
   assert.match(script, /if \(e\.key === "Escape"\) \{ e\.preventDefault\(\); closeAiUyari\(\); \}/);
   assert.match(script, /data-action="close-ai-uyari"/);
   assert.match(script, /data-action="ai-uyari-govde"/);
+});
+
+void test('"sınav bankasına aday" ve "kapsam dışı" işaretleri yalnız yönetici hesabında görünür', () => {
+  assert.match(script, /var pratikExtraBtns = \(showPratikExtras && remoteAuth\.isAdmin\)/);
 });
 
 void test('bölüm açılınca tembel yükleyiciler çağrılır, hata olursa Deneme ekranına dönülür', () => {
