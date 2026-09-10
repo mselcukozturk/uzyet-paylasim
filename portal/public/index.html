@@ -2229,12 +2229,14 @@
     return flashHavuzu(f.kaynak, f.konuFiltre).filter(function (b) { return b.guid === f.guid; })[0];
   }
 
-  // Rastgele Soru artık kör rastgele değil ama kesin gruplama da değil: her seçimde
-  // ağırlıklı rastgele (bkz. soruAgirligi) — yanlış geçmişliler daha sık, ama
-  // denenmemiş/doğru da her zaman bir ihtimalle gelebilir (kesin gruplama "her
-  // session'da hep aynı yanlış havuzuyla başlıyorum" şikayetine yol açmıştı,
-  // kullanıcı geri bildirimi 8 Eyl 2026). kaynak "practice" ise pStats, "bank"
-  // ise stats sözlüğü okunur.
+  // Rastgele Soru iki katmanlı: ÖNCE hiç görülmemiş + son cevabı yanlış olan sorular
+  // (öncelikli havuz), o havuz tükenince doğru çözülmüş sorulara düşülür. Katman
+  // içinde seçim yine ağırlıklı rastgele (bkz. soruAgirligi) — yani "hep aynı bloktan
+  // başlıyorum" (8 Eyl 2026 şikayeti) durumu geri gelmiyor, sıra sabit değil.
+  // Katmanlama 10 Eyl 2026'da eklendi: eskiden doğru çözülmüş sorular yalnız 3 kat
+  // seyrekleşiyordu ve `haric` yalnız o anki oturumu kapsadığı için Rastgele Soru'dan
+  // çıkıp tekrar girince dünkü sorular anında yeniden aday oluyordu (kullanıcı
+  // bildirimi). kaynak "practice" ise pStats, "bank" ise stats sözlüğü okunur.
   // `haric`: bu OTURUMDA zaten gösterilmiş guid'ler — havuz onları çıkarınca
   // tükeniyorsa (ör. konu çok küçük) tekrara izin verilir, aksi halde aynı soru
   // art arda / aynı oturumda tekrar tekrar çıkmasın diye elenir.
@@ -2253,6 +2255,11 @@
       var sonHaricYok = aktifHavuz.filter(function (q) { return q.guid !== sonGosterilen; });
       if (sonHaricYok.length) aktifHavuz = sonHaricYok;
     }
+    var oncelikli = aktifHavuz.filter(function (q) {
+      var s = statlar[q.guid];
+      return !s || s.sonSonucDogruMu !== true;
+    });
+    if (oncelikli.length) aktifHavuz = oncelikli;
     return weightedOrder(aktifHavuz, function (q) { return soruAgirligi(q.guid, statlar); })[0];
   }
 
