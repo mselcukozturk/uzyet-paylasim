@@ -211,28 +211,48 @@ async function handlePost(request: Request) {
       if (denied) return denied;
       if (body.action === 'practice-answer') {
         if (typeof body.questionGuid !== 'string' || !body.questionGuid.trim()) return fail('Soru kimliği eksik.', 400);
+        if (body.requestId !== undefined && (typeof body.requestId !== 'string' || !/^[a-zA-Z0-9_-]{8,80}$/.test(body.requestId))) {
+          return fail('İstek kimliği geçersiz.', 400);
+        }
         const [question] = await db.select({ options: schema.practiceQuestions.options, correctIndex: schema.practiceQuestions.correctIndex })
           .from(schema.practiceQuestions).where(eq(schema.practiceQuestions.guid, body.questionGuid)).limit(1);
         let correct: boolean;
         try { correct = validatePracticeAnswer(question, body.selectedAnswer); }
         catch { return fail('Soru veya cevap geçersiz.', 400); }
-        const now = new Date();
-        const [stat] = await db.insert(schema.practiceStats).values({
-          userId: user.id, questionGuid: body.questionGuid, shownCount: 1,
-          correctCount: correct ? 1 : 0, wrongCount: correct ? 0 : 1, lastResult: correct, lastSeenAt: now,
-        }).onConflictDoUpdate({
-          target: [schema.practiceStats.userId, schema.practiceStats.questionGuid],
-          set: {
-            shownCount: sql`${schema.practiceStats.shownCount} + 1`,
-            correctCount: sql`${schema.practiceStats.correctCount} + ${correct ? 1 : 0}`,
-            wrongCount: sql`${schema.practiceStats.wrongCount} + ${correct ? 0 : 1}`,
-            lastResult: correct, lastSeenAt: now,
-          },
-        }).returning();
-        return NextResponse.json({ ok: true, correct, stat: {
-          gosterim: stat.shownCount, dogru: stat.correctCount, yanlis: stat.wrongCount,
-          sonSonucDogruMu: stat.lastResult, sonGorulme: stat.lastSeenAt?.toISOString() ?? null,
-        } });
+        const response = await db.transaction(async (tx) => {
+          if (body.requestId) {
+            await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${user.id + ':' + body.requestId}, 0))`);
+            const [receipt] = await tx.select().from(schema.practiceAnswerReceipts)
+              .where(and(eq(schema.practiceAnswerReceipts.userId, user.id), eq(schema.practiceAnswerReceipts.requestId, body.requestId))).limit(1);
+            if (receipt) {
+              if (receipt.questionGuid !== body.questionGuid || receipt.selectedAnswer !== body.selectedAnswer) throw new Error('REQUEST_CONFLICT');
+              return receipt.response;
+            }
+          }
+          const now = new Date();
+          const [stat] = await tx.insert(schema.practiceStats).values({
+            userId: user.id, questionGuid: body.questionGuid, shownCount: 1,
+            correctCount: correct ? 1 : 0, wrongCount: correct ? 0 : 1, lastResult: correct, lastSeenAt: now,
+          }).onConflictDoUpdate({
+            target: [schema.practiceStats.userId, schema.practiceStats.questionGuid],
+            set: {
+              shownCount: sql`${schema.practiceStats.shownCount} + 1`,
+              correctCount: sql`${schema.practiceStats.correctCount} + ${correct ? 1 : 0}`,
+              wrongCount: sql`${schema.practiceStats.wrongCount} + ${correct ? 0 : 1}`,
+              lastResult: correct, lastSeenAt: now,
+            },
+          }).returning();
+          const result = { ok: true, correct, stat: {
+            gosterim: stat.shownCount, dogru: stat.correctCount, yanlis: stat.wrongCount,
+            sonSonucDogruMu: stat.lastResult, sonGorulme: stat.lastSeenAt?.toISOString() ?? null,
+          } };
+          if (body.requestId) await tx.insert(schema.practiceAnswerReceipts).values({
+            userId: user.id, requestId: body.requestId, questionGuid: body.questionGuid,
+            selectedAnswer: body.selectedAnswer, response: result,
+          });
+          return result;
+        });
+        return NextResponse.json(response);
       }
 
       if (typeof body.konu !== 'string' || !body.konu.trim() || typeof body.modul !== 'string' || !body.modul.trim()) {
@@ -685,6 +705,7 @@ async function handlePost(request: Request) {
 
     return fail('İşlem tanınmadı.', 400);
   } catch (error) {
+    if (error instanceof Error && error.message === 'REQUEST_CONFLICT') return fail('İstek kimliği başka bir cevap için kullanılmış.', 409);
     if (error instanceof Error && error.message === 'NOT_FOUND') return fail('Sınav bulunamadı.', 404);
     console.error(error);
     return fail('İşlem tamamlanamadı.', 500);

@@ -1154,7 +1154,10 @@
     if (tok) headers["Authorization"] = "Bearer " + tok;
     return fetch(REMOTE_API + path, { method: method || "GET", headers: headers, body: body ? JSON.stringify(body) : undefined })
       .then(function (res) {
-        return res.json().catch(function () { return {}; }).then(function (data) { return { ok: res.ok, status: res.status, data: data }; });
+        return res.json().catch(function () { return {}; }).then(function (data) {
+          if (res.ok) setTimeout(remoteFlushPracticeQueue, 0);
+          return { ok: res.ok, status: res.status, data: data };
+        });
       });
   }
 
@@ -1230,8 +1233,95 @@
       STATE.pStats = data.stats;
       remotePracticeSessions = {};
       data.sessions.forEach(function (s) { remotePracticeSessions[pratikSlotKey(s.konu, s.modul)] = s; });
+      remotePendingPracticeStats();
     }, cb);
   }
+
+  // ---- Hesaba bağlı, kalıcı ve sıralı pratik yazma kuyruğu -----------------
+  var remotePracticeOwner = null;
+  var remotePracticeFlushing = false;
+  var remotePracticeRetryTimer = null;
+  var remotePracticeInFlight = null;
+  function remotePracticeQueueKey() { return "uzyet_practice_queue_v1:" + remoteAuth.username; }
+  function remoteReadPracticeQueue() {
+    try { var q = JSON.parse(localStorage.getItem(remotePracticeQueueKey()) || "[]"); return Array.isArray(q) ? q : []; }
+    catch (e) { return []; }
+  }
+  function remoteStorePracticeQueue(queue) {
+    try { localStorage.setItem(remotePracticeQueueKey(), JSON.stringify(queue)); }
+    catch (e) { showBanner("Yerel kayıt alanı dolu; pratik yanıtlarını kaydetmek için bağlantını kontrol et.", true); }
+  }
+  function remoteSavePracticeLocal() {
+    if (!remoteAuth.username) return;
+    try { localStorage.setItem("uzyet_practice_local_v1:" + remoteAuth.username, JSON.stringify(STATE.pausedPratik)); } catch (e) {}
+  }
+  function remoteInitPracticeOwner() {
+    if (remotePracticeOwner === remoteAuth.username) return;
+    remotePracticeOwner = remoteAuth.username;
+    STATE.pStats = {}; STATE.pausedPratik = {};
+    if (remotePracticeOwner) {
+      try { STATE.pausedPratik = JSON.parse(localStorage.getItem("uzyet_practice_local_v1:" + remotePracticeOwner) || "{}"); } catch (e) {}
+    }
+  }
+  function remotePendingPracticeStats(onlyGuid) {
+    remoteReadPracticeQueue().forEach(function (entry) {
+      if (entry.body.action !== "practice-answer" || (onlyGuid && entry.body.questionGuid !== onlyGuid)) return;
+      var guid = entry.body.questionGuid;
+      var s = STATE.pStats[guid] || (STATE.pStats[guid] = { gosterim: 0, dogru: 0, yanlis: 0 });
+      s.gosterim++; if (entry.correct) s.dogru++; else s.yanlis++;
+      s.sonSonucDogruMu = entry.correct; s.sonGorulme = entry.at;
+    });
+  }
+  function remoteQueuePractice(body, correct, debounce) {
+    if (!STATE.sadeceDeneme || !remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true) return;
+    var queue = remoteReadPracticeQueue();
+    if (body.action !== "practice-answer") {
+      queue = queue.filter(function (entry) {
+        return entry.id === remotePracticeInFlight || entry.body.action === "practice-answer"
+          || entry.body.konu !== body.konu || entry.body.modul !== body.modul;
+      });
+    }
+    var id = crypto.randomUUID();
+    if (body.action === "practice-answer") body.requestId = id;
+    queue.push({ id: id, body: body, correct: correct, at: new Date().toISOString(), readyAt: Date.now() + (debounce ? 3000 : 0) });
+    if (queue.length > 50) {
+      queue.splice(queue[0].id === remotePracticeInFlight ? 1 : 0, 1);
+      showBanner("Çevrimdışı kayıt kuyruğu doldu; en eski bekleyen işlem kaldırıldı. Bağlantını kontrol et.", true);
+    }
+    remoteStorePracticeQueue(queue);
+    remoteFlushPracticeQueue();
+  }
+  function remoteFlushPracticeQueue() {
+    if (remotePracticeFlushing || !STATE.sadeceDeneme || !remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true) return Promise.resolve();
+    var queue = remoteReadPracticeQueue();
+    if (!queue.length) return Promise.resolve();
+    var entry = queue[0];
+    clearTimeout(remotePracticeRetryTimer);
+    if (entry.readyAt > Date.now()) {
+      remotePracticeRetryTimer = setTimeout(remoteFlushPracticeQueue, entry.readyAt - Date.now());
+      return Promise.resolve();
+    }
+    var owner = remoteAuth.username;
+    remotePracticeFlushing = true; remotePracticeInFlight = entry.id;
+    return remoteFetch("/api/exam", "POST", entry.body).then(function (r) {
+      if (!r.ok) throw new Error((r.data && r.data.error) || "Pratik ilerlemesi henüz sunucuya kaydedilemedi.");
+      if (owner !== remoteAuth.username) return;
+      remoteStorePracticeQueue(remoteReadPracticeQueue().filter(function (item) { return item.id !== entry.id; }));
+      if (entry.body.action === "practice-answer" && r.data.stat) {
+        STATE.pStats[entry.body.questionGuid] = r.data.stat;
+        remotePendingPracticeStats(entry.body.questionGuid);
+        bumpRev(); lsKaydet();
+      }
+      return true;
+    }).catch(function (e) {
+      if (owner === remoteAuth.username) showBanner(e.message + " Yerel kayıt korundu; bağlantı gelince yeniden denenecek.", true);
+      return false;
+    }).then(function (ok) {
+      remotePracticeFlushing = false; remotePracticeInFlight = null;
+      remotePracticeRetryTimer = setTimeout(remoteFlushPracticeQueue, ok ? 0 : 15000);
+    });
+  }
+  window.addEventListener("online", remoteFlushPracticeQueue);
 
   // Hatırlatıcı olarak işaretlenmiş soruların guid listesi — cihazlar arası kalıcı
   // olsun diye sunucudan çekilir (bkz. /api/exam {action:'reminders'}), STATE.flags
@@ -1281,6 +1371,8 @@
   // Deneme dashboard'ı, (giriş tamamsa) soru bankasını, hatırlatıcı/yanlış
   // listelerini ve gerçek işaret durumunu birlikte tazeler.
   function afterAuthStateChange(cb) {
+    remoteInitPracticeOwner();
+    remoteFlushPracticeQueue();
     var pending = 0, done = false;
     function finish() { pending--; if (pending <= 0 && !done) { done = true; if (cb) cb(); } }
     if (remoteAuth.isActive) { pending++; remoteRefreshDashboard(finish); }
@@ -2141,7 +2233,7 @@
     var flashDogruMu = idx === q.cevapIdx;
     currentFlash.oturum.push({ konu: q.konu, dogru: flashDogruMu });
     if (currentFlash.kaynak === "practice") {
-      recordPratikStat(q.guid, flashDogruMu); // pStats'e yazar + veriDegisti()
+      recordPratikStat(q.guid, flashDogruMu, q.siklar[idx]); // metin, karıştırılmış indeksten bağımsız
       STATE.pFlashOzet.gosterim++;
       if (flashDogruMu) STATE.pFlashOzet.dogru++;
       lsKaydet();
@@ -2183,13 +2275,14 @@
   }
 
   // ------------------------------------------------- Konu Çalışma / Tekrar --
-  function recordPratikStat(guid, dogruMu) {
+  function recordPratikStat(guid, dogruMu, selectedAnswer) {
     if (!STATE.pStats[guid]) STATE.pStats[guid] = { gosterim: 0, dogru: 0, yanlis: 0, sonSonucDogruMu: null, sonGorulme: null };
     var s = STATE.pStats[guid];
     s.gosterim++;
     s.sonGorulme = new Date().toISOString();
     if (dogruMu) { s.dogru++; s.sonSonucDogruMu = true; } else { s.yanlis++; s.sonSonucDogruMu = false; }
     veriDegisti(); // localStorage'a anında yazar, yayını 25 sn'ye erteler — reload akışı bölmesin
+    remoteQueuePractice({ action: "practice-answer", questionGuid: guid, selectedAnswer: selectedAnswer }, dogruMu, false);
   }
 
   // --- yarım kalan oturum (modül başına bir slot) ---
@@ -2206,9 +2299,17 @@
       soruKayitlari: currentPratik.soruKayitlari,
       cevaplar: currentPratik.cevaplar, savedAtISO: new Date().toISOString()
     };
+    remoteSavePracticeLocal();
+    remoteQueuePractice({ action: "practice-session-save", konu: currentPratik.konu, modul: currentPratik.modul,
+      payload: STATE.pausedPratik[pratikSlotKey(currentPratik.konu, currentPratik.modul)] }, null, true);
   }
 
-  function pratikSlotSil(konu, modul) { delete STATE.pausedPratik[pratikSlotKey(konu, modul)]; }
+  function pratikSlotSil(konu, modul) {
+    delete STATE.pausedPratik[pratikSlotKey(konu, modul)];
+    delete remotePracticeSessions[pratikSlotKey(konu, modul)];
+    remoteSavePracticeLocal();
+    remoteQueuePractice({ action: "practice-session-delete", konu: konu, modul: modul }, null, false);
+  }
 
   function startPratikOturum(konu, modul, mod) {
     if (!konu || !modul) return;
@@ -2225,7 +2326,17 @@
 
   function devamPratikOturum(konu, modul) {
     var slot = pratikSlotOku(konu, modul);
-    if (!slot) return;
+    if (!slot) {
+      showBanner("Yarım oturum yükleniyor…", false);
+      remoteFetch("/api/exam", "POST", { action: "practice-session-load", konu: konu, modul: modul }).then(function (r) {
+        if (!r.ok) throw new Error((r.data && r.data.error) || "Oturum yüklenemedi.");
+        if (!r.data.payload) { delete remotePracticeSessions[pratikSlotKey(konu, modul)]; showBanner("Kayıtlı yarım oturum bulunamadı.", true); render(); return; }
+        STATE.pausedPratik[pratikSlotKey(konu, modul)] = r.data.payload;
+        remoteSavePracticeLocal();
+        devamPratikOturum(konu, modul);
+      }).catch(function (e) { showBanner(e.message || "Oturum yüklenemedi.", true); });
+      return;
+    }
     // Banka güncellenmiş olabilir: artık havuzda olmayan guid'leri kuyruktan düşür.
     var gecerli = slot.kuyruk.filter(function (g) { return !!oturumSorusu(slot, STATE.practiceBank, g); });
     if (gecerli.length === 0) { pratikSlotSil(konu, modul); showBanner("Yarım kalan oturumun soruları artık havuzda yok.", true); veriDegisti(); render(); return; }
@@ -2267,7 +2378,7 @@
     currentPratik.secilen = idx;
     currentPratik.cevaplandi = true;
     currentPratik.cevaplar[q.guid] = idx; // oturuma özel skor (Modül bitti ekranında x doğru/y yanlış için)
-    recordPratikStat(q.guid, idx === q.cevapIdx); // içinde veriDegisti() var
+    recordPratikStat(q.guid, idx === q.cevapIdx, q.siklar[idx]);
     pratikSlotYaz();                              // ...ve konum da aynı yazımda kalıcı olsun
     lsKaydet();
     render();
@@ -3142,6 +3253,8 @@ function pratikEnIyiHtml(konu, modulKey) {
     var havuz2 = pratikHavuz(konu, modulKey);
     var yanlisSayisi = havuz2.filter(function (q) { return STATE.pStats[q.guid] && STATE.pStats[q.guid].sonSonucDogruMu === false; }).length;
     var slot = pratikSlotOku(konu, modulKey);
+    var remoteSlot = remotePracticeSessions[pratikSlotKey(konu, modulKey)];
+    var devamButon = '<button class="btn primary" data-action="devam-pratik" data-konu="' + escapeHtml(konu) + '" data-modul="' + escapeHtml(modulKey) + '">Kaldığım Yerden Devam Et</button>';
     var devamHtml = slot
       ? '<div class="card" style="grid-column:1/-1;border-left:4px solid var(--accent)">' +
         '<div class="title">▶ Yarım kalan oturum</div>' +
@@ -3151,7 +3264,7 @@ function pratikEnIyiHtml(konu, modulKey) {
         '<button class="btn primary" data-action="devam-pratik" data-konu="' + escapeHtml(konu) + '" data-modul="' + escapeHtml(modulKey) + '">Kaldığım Yerden Devam Et</button>' +
         '<button class="btn ghost" data-action="pratik-slot-at" data-konu="' + escapeHtml(konu) + '" data-modul="' + escapeHtml(modulKey) + '">Sil</button>' +
         "</div></div>"
-      : "";
+      : remoteSlot ? '<div class="card" style="grid-column:1/-1"><div class="title">▶ Yarım kalan oturum</div><div class="desc">' + fmtTarih(remoteSlot.updatedAt) + '</div>' + devamButon + '</div>' : "";
     return devamHtml + '<div class="card" style="grid-column:1/-1"><div class="section-title">' +
       (slot ? "…ya da baştan başla" : "Nasıl çalışmak istersin?") + "</div>" +
       '<div class="mode-grid">' +
@@ -3600,7 +3713,7 @@ function pratikEnIyiHtml(konu, modulKey) {
       var secilenModul = t.getAttribute("data-modul");
       // Yarım kalan oturum varsa doğrudan başlatma — "Devam Et"i göstermek için modülü seç,
       // yoksa eskisi gibi tek tıkla "Sırayla" başlar.
-      if (secilenModul === PRATIK_TUM_MODULLER || pratikSlotOku(pratikSeciliKonu, secilenModul)) {
+      if (secilenModul === PRATIK_TUM_MODULLER || pratikSlotOku(pratikSeciliKonu, secilenModul) || remotePracticeSessions[pratikSlotKey(pratikSeciliKonu, secilenModul)]) {
         pratikSeciliModul = (pratikSeciliModul === secilenModul) ? null : secilenModul; render();
       } else startPratikOturum(pratikSeciliKonu, secilenModul, "siray");
     }
