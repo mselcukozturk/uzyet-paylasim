@@ -1178,6 +1178,9 @@
   // gösterilir, "Sınava Başla" ile aynı kod (dolayısıyla "rastgele" modda aynı 50
   // soru) sunucuda oluşturulur. {mode, seed, kod} veya null.
   var denemeKodOnizleme = null;
+  // Ana ekranda tek "🆕 Yeni Deneme" butonu var; buna basınca alttaki 4 tür
+  // (rastgele/azgorulen/yanlislar/zor) açılır — dört ayrı buton hâlinde durmaz.
+  var denemeTurSecimiAcik = false;
 
   function remoteToken() { try { return localStorage.getItem(REMOTE_TOKEN_KEY); } catch (e) { return null; } }
   function remoteSetToken(t) { try { if (t) localStorage.setItem(REMOTE_TOKEN_KEY, t); } catch (e) { /* localStorage kapalıysa oturum sekme kapanana kadar bellekte kalır */ } }
@@ -1538,6 +1541,7 @@
     remoteReminderGuids = null;
     remoteWrongGuids = null;
     remoteFlagsLoaded = false;
+    denemeTurSecimiAcik = false;
     render();
   }
 
@@ -1589,6 +1593,7 @@
     if (!denemeKodOnizleme) return;
     var d = denemeKodOnizleme;
     denemeKodOnizleme = null;
+    denemeTurSecimiAcik = false;
     startExamRemote(d.mode, d.kod);
   }
 
@@ -1862,18 +1867,28 @@
         '<button class="btn ghost" data-action="cancel-exam-kod-onizleme">Vazgeç</button>' +
         "</div></div>";
     }
-    var modes = ["rastgele", "azgorulen", "yanlislar", "zor"].map(function (mode) {
-      var titles = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar", zor: "Zor Deneme" };
-      var descs = {
-        rastgele: "Resmi dağılıma göre 50 soruluk rastgele deneme.",
-        azgorulen: "Aynı dağılım, öncelik en az karşılaştığın sorularda.",
-        yanlislar: "Aynı dağılım, öncelik son denemesinde yanlış yaptıkların.",
-        zor: "Aynı dağılım, öncelik tüm kullanıcılar arasında en çok yanlış yapılan sorularda."
-      };
-      var renk = MOD_RENK[mode];
-      return '<button class="mode-btn" style="border-left:4px solid ' + renk + '" data-action="prepare-exam-remote" data-mode="' + mode + '">' +
-        '<div class="title"><span class="mode-dot" style="background:' + renk + '"></span>' + titles[mode] + '</div><div class="desc">' + descs[mode] + "</div></button>";
-    }).join("");
+    var yeniDenemeHtml;
+    if (!denemeTurSecimiAcik) {
+      yeniDenemeHtml = '<button class="mode-btn" style="border-left:4px solid ' + MOD_RENK.rastgele + '" data-action="ac-yeni-deneme-turleri">' +
+        '<div class="title"><span class="mode-dot" style="background:' + MOD_RENK.rastgele + '"></span>🆕 Yeni Deneme</div>' +
+        '<div class="desc">Resmi dağılıma göre 50 soruluk deneme başlat — türünü sonraki adımda seçersin.</div></button>';
+    } else {
+      var modes = ["rastgele", "azgorulen", "yanlislar", "zor"].map(function (mode) {
+        var titles = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar", zor: "Zor Deneme" };
+        var descs = {
+          rastgele: "Resmi dağılıma göre 50 soruluk rastgele deneme.",
+          azgorulen: "Aynı dağılım, öncelik en az karşılaştığın sorularda.",
+          yanlislar: "Aynı dağılım, öncelik son denemesinde yanlış yaptıkların.",
+          zor: "Aynı dağılım, öncelik tüm kullanıcılar arasında en çok yanlış yapılan sorularda."
+        };
+        var renk = MOD_RENK[mode];
+        return '<button class="mode-btn" style="border-left:4px solid ' + renk + '" data-action="prepare-exam-remote" data-mode="' + mode + '">' +
+          '<div class="title"><span class="mode-dot" style="background:' + renk + '"></span>' + titles[mode] + '</div><div class="desc">' + descs[mode] + "</div></button>";
+      }).join("");
+      yeniDenemeHtml = '<div class="link-row" style="margin-bottom:10px">' +
+        '<button class="btn ghost" data-action="kapat-yeni-deneme-turleri">← Vazgeç</button></div>' +
+        '<div class="mode-grid">' + modes + "</div>";
+    }
     var koduCardHtml = '<div class="card" style="margin-top:14px">' +
       '<div class="section-title" style="font-size:1rem;margin-bottom:6px">🔑 Kod ile Çöz</div>' +
       '<div class="muted" style="margin-bottom:10px">Bir denemenin sonuç ekranındaki kodu buraya girersen aynı soruları yeniden çözersin (Yeni Sınav kodları herkes için aynı soruları verir; Az Görülenler/Yanlışlar kişisel istatistiğe bağlıdır).</div>' +
@@ -1881,7 +1896,7 @@
       '<input type="text" id="exam-code-input" placeholder="ör. UZY-R1K2M3P" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body)">' +
       '<button class="btn primary" data-action="start-exam-code">Kodla Başla</button>' +
       "</div></div>";
-    return '<div class="mode-grid">' + modes + "</div>" + koduCardHtml;
+    return (denemeTurSecimiAcik ? yeniDenemeHtml : '<div class="mode-grid">' + yeniDenemeHtml + "</div>") + koduCardHtml;
   }
 
   function startExam(mode, seedOverride) {
@@ -3747,6 +3762,8 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "start-deneme-konu-flash") startFlash("bank", t.getAttribute("data-konu"));
     else if (action === "start-exam") startExam(t.getAttribute("data-mode"));
     else if (action === "start-exam-code") startExamWithCode();
+    else if (action === "ac-yeni-deneme-turleri") { denemeTurSecimiAcik = true; render(); }
+    else if (action === "kapat-yeni-deneme-turleri") { denemeTurSecimiAcik = false; render(); }
     else if (action === "prepare-exam-remote") prepareExamRemote(t.getAttribute("data-mode"));
     else if (action === "baslat-exam-kod-onizleme") baslatExamKodOnizleme();
     else if (action === "cancel-exam-kod-onizleme") cancelExamKodOnizleme();
