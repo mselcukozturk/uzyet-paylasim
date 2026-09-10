@@ -33,6 +33,16 @@ export async function rejectUserAction(userId: string) {
   return { ok: true };
 }
 
+export async function toggleAiAccessAction(userId: string, next: boolean) {
+  const admin = await requireAdmin();
+  if (!admin) return { ok: false, message: 'Yönetici girişi gerekli.' };
+  const db = getDb();
+  await db.update(schema.profiles).set({ canSeeAiSources: next, updatedAt: new Date() })
+    .where(eq(schema.profiles.userId, userId));
+  revalidatePath('/admin');
+  return { ok: true };
+}
+
 export async function deleteUserAction(userId: string) {
   const admin = await requireAdmin();
   if (!admin) return { ok: false, message: 'Yönetici girişi gerekli.' };
