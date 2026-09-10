@@ -2046,14 +2046,16 @@
       var q = hatirlaticiSoruBul(g);
       children.push(new d.Paragraph({
         spacing: { before: 240 },
+        keepNext: true,
         children: [new d.TextRun({ text: (i + 1) + ". " + q.konu, bold: true })]
       }));
-      children.push(new d.Paragraph({ text: q.soru, spacing: { after: 80 } }));
+      children.push(new d.Paragraph({ text: q.soru, spacing: { after: 80 }, keepNext: true }));
       q.siklar.forEach(function (s, idx) {
-        if (s) children.push(new d.Paragraph({ text: harfler[idx] + ") " + s }));
+        if (s) children.push(new d.Paragraph({ text: harfler[idx] + ") " + s, keepNext: q.siklar.slice(idx + 1).some(Boolean) }));
       });
     });
-    children.push(new d.Paragraph({ text: "Cevaplar ve Açıklamalar", heading: d.HeadingLevel.HEADING_1, pageBreakBefore: true }));
+    var questionChildren = children;
+    children = [new d.Paragraph({ text: "Cevaplar ve Açıklamalar", heading: d.HeadingLevel.HEADING_1 })];
     guids.forEach(function (g, i) {
       var q = hatirlaticiSoruBul(g);
       var dogruHarf = harfler[q.cevapIdx] || "";
@@ -2064,7 +2066,10 @@
       }));
       if (q.aciklama) children.push(new d.Paragraph({ text: q.aciklama, spacing: { after: 80 } }));
     });
-    return new d.Document({ sections: [{ children: children }] });
+    return new d.Document({ sections: [
+      { properties: { column: { count: 2, space: 720 } }, children: questionChildren },
+      { properties: { type: d.SectionType.NEXT_PAGE, column: { count: 1 } }, children: children }
+    ] });
   }
 
   function exportHatirlaticiWord() {
