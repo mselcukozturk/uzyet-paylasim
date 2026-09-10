@@ -8,6 +8,36 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!--
+  ⚠ BU DOSYA ANA KAYNAKTIR — ELLE DÜZENLENİR. Üretilen bir çıktı DEĞİLDİR.
+
+  9 Eyl 2026'ya kadar G: sürücüsündeki `uzyet_quiz.html` şablonundan
+  `build_quiz_dist.py --sadece-deneme` ile derleniyordu ve "elle düzenlenmez" kuralı
+  vardı. Kişisel Artifact (claude.ai üzerindeki `uzyet_quiz_dist.html`) emekliye
+  ayrıldığı için o şablon ve o derleme yolu tarihsel hâle geldi. Şablonu düzenleyip
+  yeniden derleme; buradaki değişiklikler geri gelmez.
+
+  SORU BANKASI BU DOSYAYA HİÇ GÖMÜLMEZ. Aşağıdaki `app-state` JSON'unda
+  `bank`, `practiceBank` ve `checkpoints` boş dizi olarak başlar; sayfa kaynağı
+  görüntülense bile hiçbir soru/cevap okunamaz. Gerçek içerik yalnız giriş + yönetici
+  onayı + disclaimer tamamlanmış bir oturuma sunucudan gelir:
+    · Deneme bankası      → POST /api/exam {action:"bank"}
+    · AI kaynakları       → POST /api/exam {action:"practice-bank" | "checkpoints"}
+                            (ayrıca `profiles.can_see_ai_sources` gerektirir)
+
+  İKİ BAYRAK:
+  · STATE.sadeceDeneme (kalıcı, app-state içinde true) — bu dosya Deneme portalı
+    kabuğudur: `render()` Test/Checkpoint/Ayarlar/İçe aktarma VIEW'lerini `menuDeneme`'ye
+    zorlar, kayıt hedefi localStorage değil sunucudur.
+  · aiModu (bellek içi, STATE'e YAZILMAZ) — "🤖 Yapay Zekâ Kaynakları" uyarısı kabul
+    edilince açılır ve o kapıyı yalnız pratik/checkpoint ekranları için gevşetir
+    (`settings` ve `import` yine kapalı). Sayfa yenilenince kapanır; kalıcı olması
+    istenmedi, kullanıcı her zaman Deneme ekranıyla karşılaşsın diye.
+
+  Yerel doğrulama: `cd portal && npx tsc --noEmit && npm test` — `tests/*.test.ts`
+  bu dosyanın script bloğunu okuyup söz dizimini ve davranış kurallarını sınar.
+  Ayrıntı: portal/README.md
+-->
 <style id="app-style">
   :root {
     --bg: #f6f3ec;
