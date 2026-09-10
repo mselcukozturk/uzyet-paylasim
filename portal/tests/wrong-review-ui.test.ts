@@ -37,6 +37,10 @@ void test('tekrar testi Rastgele Soru mekaniğini kullanır: ileri/geri gezinme 
   const prev = script.match(/function prevTekrarSoru\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   assert.doesNotMatch(next, /secilen = null/);
   assert.match(prev, /currentTekrar\.konum--/);
+  // 🔖 Hatırlatıcı / 🚩 hatalı bildirimi her iki tekrar turunda da, cevaplamadan önce
+  // de görünür — hatırlatıcı turu salt gözden geçirme olduğu için işaret kaldırılabilmeli.
+  assert.match(render, /flagBarHtml\(kayit\.guid\)/);
+  assert.doesNotMatch(render, /answered \? flagBarHtml/);
   // Oturum, Rastgele Soru gibi ders kırılımlı bir özetle biter.
   const finish = script.match(/function finishTekrarTest\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   assert.match(finish, /VIEW = "tekrarSonuc"/);

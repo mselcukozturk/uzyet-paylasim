@@ -2812,7 +2812,9 @@
       ". soru</span><span>" + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span></div>" +
       '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
       optionsHtml + sonucHtml +
-      (answered ? flagBarHtml(kayit.guid) : "") +
+      // Cevaplamadan da görünür (renderExam gibi, Rastgele Soru'dan farklı): hatırlatıcı
+      // turu salt gözden geçirmedir — soruyu çözmeden 🔖 işaretini kaldırabilmek gerekir.
+      flagBarHtml(kayit.guid) +
       navHtml +
       "</div>";
   }
