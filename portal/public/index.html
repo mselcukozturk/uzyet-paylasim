@@ -1167,7 +1167,7 @@
   var REMOTE_TOKEN_KEY = "uzyet_portal_token";
   // TODO: kullanıcı gerçek metni verince buraya yazılacak — şimdilik yer tutucu.
   var DISCLAIMER_METNI = "Bu, gerçek sınavın simülasyonudur; sorular ve açıklamalar UZYET ekibi tarafından hazırlanmıştır, resmi kaynak yerine geçmez. Kendi sorumluluğunda kullan.";
-  var remoteAuth = { checked: false, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false, canSeeAiSources: false };
+  var remoteAuth = { checked: false, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
   var remoteDash = null;
   var remoteBusy = false;
   // Kayıt formu her render()'da sıfırdan kurulduğu için, hatalı gönderim sonrası
@@ -1419,19 +1419,19 @@
 
   function remoteCheckStatus(cb) {
     if (!remoteToken()) {
-      remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false, canSeeAiSources: false };
+      remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
       if (cb) cb();
       return;
     }
     remoteAuth.checking = true;
     remoteFetch("/api/access", "GET").then(function (r) {
       if (r.ok && r.data && r.data.authenticated) {
-        remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, disclaimerAccepted: !!r.data.disclaimerAccepted, canSeeAiSources: r.data.canSeeAiSources === true };
+        remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, isAdmin: !!r.data.isAdmin, disclaimerAccepted: !!r.data.disclaimerAccepted, canSeeAiSources: r.data.canSeeAiSources === true, aiDisclaimerAccepted: !!r.data.aiDisclaimerAccepted };
       } else {
-        remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false, canSeeAiSources: false };
+        remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
       }
     }).catch(function () {
-      remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false, canSeeAiSources: false };
+      remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
     }).then(function () {
       afterAuthStateChange(cb);
     });
@@ -1446,6 +1446,10 @@
 
   function openAiSources() {
     if (!remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true) return;
+    // Uyarı yalnız ilk girişte gösterilir (10 Eyl 2026 kullanıcı kararı — sunucuda
+    // kalıcı onay tutulur, remoteAuth.aiDisclaimerAccepted); zaten kabul edilmişse
+    // doğrudan bölüm açılır.
+    if (remoteAuth.aiDisclaimerAccepted) { acceptAiSources(); return; }
     aiUyariAcik = true;
     render();
     var button = document.getElementById("ai-uyari-anladim");
@@ -1456,8 +1460,13 @@
   function closeAiUyari() { aiUyariAcik = false; render(); }
   function acceptAiSources() {
     if (!remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true) return;
+    var ilkKabul = aiUyariAcik && !remoteAuth.aiDisclaimerAccepted;
     aiUyariAcik = false; aiModu = true; aiYukleniyor = true; VIEW = "menu";
     render();
+    if (ilkKabul) {
+      remoteAuth.aiDisclaimerAccepted = true;
+      remoteFetch("/api/access", "POST", { acceptAiDisclaimer: true }).catch(function () {});
+    }
     Promise.all([remoteLoadPracticeBankIfNeeded(), remoteLoadCheckpointsIfNeeded(), remoteLoadPracticeStats()]).then(function (results) {
       aiYukleniyor = false;
       if (!aiModu) return;
@@ -1489,7 +1498,7 @@
       if (!r.ok) { showBanner((r.data && r.data.error) || "Kayıt başarısız.", true); render(); return; }
       denemeIsimTaslak = ""; denemePinTaslak = "";
       if (r.data.token) remoteSetToken(r.data.token);
-      remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, disclaimerAccepted: !!r.data.disclaimerAccepted, canSeeAiSources: r.data.canSeeAiSources === true };
+      remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, isAdmin: !!r.data.isAdmin, disclaimerAccepted: !!r.data.disclaimerAccepted, canSeeAiSources: r.data.canSeeAiSources === true, aiDisclaimerAccepted: !!r.data.aiDisclaimerAccepted };
       render();
       afterAuthStateChange(render);
     }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası — internet bağlantını kontrol et.", true); render(); });
@@ -1521,7 +1530,7 @@
     currentPratik = null; currentFlash = null;
     clearTimeout(remotePracticeRetryTimer);
     localStorage.removeItem(REMOTE_TOKEN_KEY);
-    remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, disclaimerAccepted: false, canSeeAiSources: false };
+    remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
     denemeIsimTaslak = "";
     denemePinTaslak = "";
     remoteDash = null;
@@ -3091,11 +3100,13 @@
   // Hatırlatıcı ve 🚩 hatalı bildirimi (kategori seçimiyle) her bağlamda aynı: Deneme
   // sınavı, sınav sonucu incelemesi, Rastgele Soru, Konu Konu Bak — hepsi aynı guid'i
   // paylaştığından (STATE.sadeceDeneme'de tek banka, sunucudan gelir) hepsi aynı şekilde
-  // sunucuya senkronlanır (bkz. remoteFlagSync). showPratikExtras yalnız Test sayfasının
-  // pratik havuzunda (kişisel Artifact, ayrı bir site) anlamlı.
+  // sunucuya senkronlanır (bkz. remoteFlagSync). showPratikExtras yalnız pratik/AI
+  // Kaynakları sorularında anlamlı; "sınav bankasına aday" ve "kapsam dışı" işaretleri
+  // yalnız yönetici hesabı görür (10 Eyl 2026 kullanıcı kararı — diğer kullanıcılar bu
+  // kararları veremez).
   function flagBarHtml(guid, showPratikExtras) {
     var f = STATE.flags[guid] || bosFlagKaydi();
-    var pratikExtraBtns = showPratikExtras
+    var pratikExtraBtns = (showPratikExtras && remoteAuth.isAdmin)
       ? '<button class="flag-btn' + (f.begenildi ? " active-star" : "") + '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="begenildi">⭐ Beğendim — sınav bankasına aday</button>' +
         '<button class="flag-btn' + (f.kapsamDisi ? " active-outofscope" : "") + '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="kapsamDisi">🗑️ Kapsam dışı</button>'
       : "";

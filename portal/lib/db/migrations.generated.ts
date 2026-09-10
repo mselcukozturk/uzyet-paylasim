@@ -49,4 +49,8 @@ export const MIGRATIONS: readonly Migration[] = [
     name: "0010_practice_answer_receipts.sql",
     content: "CREATE TABLE IF NOT EXISTS \"practice_answer_receipts\" (\n  \"user_id\" text NOT NULL,\n  \"request_id\" text NOT NULL,\n  \"question_guid\" text NOT NULL,\n  \"selected_answer\" text NOT NULL,\n  \"response\" jsonb NOT NULL,\n  \"created_at\" timestamp with time zone DEFAULT now() NOT NULL,\n  CONSTRAINT \"practice_answer_receipts_user_request_unique\" UNIQUE (\"user_id\", \"request_id\")\n);\n",
   },
+  {
+    name: "0011_ai_disclaimer.sql",
+    content: "ALTER TABLE \"profiles\" ADD COLUMN IF NOT EXISTS \"ai_disclaimer_accepted_at\" timestamp with time zone;\n",
+  },
 ];

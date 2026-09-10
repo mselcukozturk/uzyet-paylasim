@@ -27,6 +27,7 @@ export const profiles = pgTable('profiles', {
   isAdmin: boolean('is_admin').notNull().default(false),
   canSeeAiSources: boolean('can_see_ai_sources').notNull().default(false),
   disclaimerAcceptedAt: timestamp('disclaimer_accepted_at', { withTimezone: true }),
+  aiDisclaimerAcceptedAt: timestamp('ai_disclaimer_accepted_at', { withTimezone: true }),
   pinEncrypted: text('pin_encrypted'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

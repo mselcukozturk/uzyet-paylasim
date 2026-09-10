@@ -81,8 +81,10 @@ export async function getSessionProfile(request: Request) {
     username: schema.profiles.username,
     displayName: schema.profiles.displayName,
     isActive: schema.profiles.isActive,
+    isAdmin: schema.profiles.isAdmin,
     canSeeAiSources: schema.profiles.canSeeAiSources,
     disclaimerAcceptedAt: schema.profiles.disclaimerAcceptedAt,
+    aiDisclaimerAcceptedAt: schema.profiles.aiDisclaimerAcceptedAt,
   }).from(schema.userSessions)
     .innerJoin(schema.profiles, eq(schema.userSessions.userId, schema.profiles.userId))
     .where(eq(schema.userSessions.tokenHash, tokenHash)).limit(1);
