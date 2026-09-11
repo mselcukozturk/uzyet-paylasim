@@ -146,6 +146,9 @@ export const examAttempts = pgTable('exam_attempts', {
   check('exam_attempts_elapsed_check', sql`${table.elapsedSeconds} >= 0`),
   check('exam_attempts_score_check', sql`${table.scorePercent} is null or ${table.scorePercent} between 0 and 100`),
   index('exam_attempts_user_updated_idx').on(table.userId, table.updatedAt),
+  // Paylaşılan bir kod açılırken "bu koda ait ilk deneme" aranır (bkz. /api/exam "start"),
+  // UNIQUE değil (satır ~131 yorumu) ama sık sorgulandığı için sade bir index yeterli.
+  index('exam_attempts_exam_code_idx').on(table.examCode),
 ]);
 
 export const examAttemptQuestions = pgTable('exam_attempt_questions', {

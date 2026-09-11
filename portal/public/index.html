@@ -1893,12 +1893,9 @@
     }
     if (denemeKodOnizleme) {
       var dko = denemeKodOnizleme;
-      var farkliCikabilirNotu = (dko.mode === "azgorulen" || dko.mode === "yanlislar")
-        ? " (Az Görülenler/Yanlışlar kişisel istatistiğine bağlı olduğu için başkasında tam olarak aynı soruları vermeyebilir)"
-        : "";
       return '<div class="card">' +
         '<div class="section-title" style="font-size:1rem;margin-bottom:6px">' + (MOD_ADI[dko.mode] || dko.mode) + " — kod hazır</div>" +
-        '<div class="muted" style="margin-bottom:10px">Sınava başlamadan önce bu kodu arkadaşınla paylaşabilirsin' + farkliCikabilirNotu + ". Başladığında 60 dakikalık süre işlemeye başlar." + "</div>" +
+        '<div class="muted" style="margin-bottom:10px">Sınava başlamadan önce bu kodu arkadaşınla paylaşabilirsin. Başladığında 60 dakikalık süre işlemeye başlar.</div>' +
         '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">' +
         '<b style="font-family:var(--font-display);font-size:1.3rem;letter-spacing:0.03em">' + dko.kod + '</b>' +
         '<button class="btn ghost" data-action="copy-exam-code" data-kod="' + dko.kod + '">📋 Kopyala</button>' +
@@ -1932,7 +1929,7 @@
     }
     var koduCardHtml = '<div class="card" style="margin-top:14px">' +
       '<div class="section-title" style="font-size:1rem;margin-bottom:6px">🔑 Kod ile Çöz</div>' +
-      '<div class="muted" style="margin-bottom:10px">Bir denemenin sonuç ekranındaki kodu buraya girersen aynı soruları yeniden çözersin (Yeni Sınav kodları herkes için aynı soruları verir; Az Görülenler/Yanlışlar kişisel istatistiğe bağlıdır).</div>' +
+      '<div class="muted" style="margin-bottom:10px">Bir denemenin sonuç ekranındaki kodu buraya girersen aynı 50 soruyu (kim açarsa açsın) yeniden çözersin.</div>' +
       '<div class="link-row">' +
       '<input type="text" id="exam-code-input" placeholder="ör. UZY-R1K2M3P" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body)">' +
       '<button class="btn primary" data-action="start-exam-code">Kodla Başla</button>' +
@@ -3818,7 +3815,7 @@ function pratikEnIyiHtml(konu, modulKey) {
 
     var kod = r.examCode || examKoduUret(r.tip, r.seed);
     var koduAciklama = r.uzak
-      ? 'Bu kod bu resmi denemenin kaydıdır — "Kod ile Çöz" alanına girersen aynı soruları (Yeni Sınav modunda herkes için, diğerlerinde kişisel istatistiğe göre) yeniden çözersin.'
+      ? 'Bu kod bu resmi denemenin kaydıdır — "Kod ile Çöz" alanına girersen aynı 50 soruyu (kim açarsa açsın) yeniden çözersin.'
       : 'Bu kodu Deneme sayfasındaki "Kod ile Çöz" alanına girersen aynı soruları tekrar çözersin.';
     var koduHtml = kod
       ? '<div class="muted" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">Deneme kodu: ' +
