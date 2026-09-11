@@ -2702,7 +2702,11 @@
     });
   }
   function fmtTarih(iso) {
-    try { var d = new Date(iso); return d.toLocaleDateString("tr-TR") + " " + d.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }); }
+    try {
+      var d = new Date(iso);
+      return d.toLocaleDateString("tr-TR", { timeZone: "Europe/Istanbul" }) + " " +
+        d.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" });
+    }
     catch (e) { return iso; }
   }
 

@@ -4,7 +4,7 @@ import { useFormStatus } from 'react-dom';
 
 function SilButonu() {
   const { pending } = useFormStatus();
-  return <button type="submit" disabled={pending}>{pending ? 'Siliniyor…' : 'Sil'}</button>;
+  return <button className="btn danger" type="submit" disabled={pending}>{pending ? 'Siliniyor…' : 'Sil'}</button>;
 }
 
 export default function KullaniciSilFormu({ action, kullaniciAdi }: {
