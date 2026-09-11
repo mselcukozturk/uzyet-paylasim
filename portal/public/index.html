@@ -2224,6 +2224,42 @@
     }, function () { showBanner("Word kütüphanesi yüklenemedi — internet bağlantısını kontrol et.", true); });
   }
 
+  // Checkpoint hatırlatıcıları soru/cevap değil düz madde metni olduğundan
+  // hatirlaticiDocxOlustur'daki iki bölümlü (soru/cevap) yapı yerine tek bölüm,
+  // ders → checkpoint başlığı kırılımlı başlıklarla üretilir.
+  function checkpointHatirlaticiDocxOlustur(items) {
+    var d = window.docx;
+    var children = [new d.Paragraph({ text: "Checkpoint Hatırlatıcılarım", heading: d.HeadingLevel.HEADING_1 })];
+    var sonKonu = null, sonBaslik = null;
+    items.forEach(function (it) {
+      if (it.c.konu !== sonKonu) {
+        children.push(new d.Paragraph({ text: it.c.konu, heading: d.HeadingLevel.HEADING_2, spacing: { before: 240 } }));
+        sonKonu = it.c.konu; sonBaslik = null;
+      }
+      if (it.c.title !== sonBaslik) {
+        children.push(new d.Paragraph({ text: it.c.title, heading: d.HeadingLevel.HEADING_3, spacing: { before: 120 } }));
+        sonBaslik = it.c.title;
+      }
+      children.push(new d.Paragraph({ text: htmlDenDuzMetin(it.text), bullet: { level: 0 }, spacing: { after: 80 } }));
+    });
+    return new d.Document({ sections: [{ children: children }] });
+  }
+
+  function exportCheckpointHatirlaticiWord() {
+    var items = checkpointHatirlaticiListesi();
+    if (!items.length) { showBanner("İşaretli checkpoint maddesi bulunamadı.", true); return; }
+    showBanner("Word belgesi hazırlanıyor…");
+    docxKutuphaneYukle(function () {
+      window.docx.Packer.toBlob(checkpointHatirlaticiDocxOlustur(items)).then(function (blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = "checkpoint-hatirlaticilarim.docx";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      }).catch(function () { showBanner("Word belgesi oluşturulamadı.", true); });
+    }, function () { showBanner("Word kütüphanesi yüklenemedi — internet bağlantısını kontrol et.", true); });
+  }
+
   function finishExam() {
     if (currentExam && currentExam.uzak) { finishExamRemote(); return; }
     var res = scoreExam(STATE.bank, currentExam.sorular, currentExam.cevaplar, currentExam.soruKayitlari);
@@ -2997,6 +3033,34 @@
     return listItems.map(function (item) { return item.innerHTML; }).filter(function (html) { return html.trim() !== ""; });
   }
 
+  // Checkpoint maddelerinin kendi guid'i yok (c.html'den index'e göre türetiliyor) —
+  // 🔖 Hatırlatıcı işaretlemesi STATE.flags'te aynı guid altında tutulur, bu yüzden
+  // her madde için sentetik bir guid üretilir/çözülür.
+  function checkpointGuid(c, index) { return "cp:" + c.id + ":" + index; }
+  function checkpointGuidCoz(guid) {
+    if (typeof guid !== "string" || guid.indexOf("cp:") !== 0) return null;
+    var son = guid.lastIndexOf(":");
+    if (son <= 2) return null;
+    var c = checkpointBul(guid.slice(3, son));
+    var index = parseInt(guid.slice(son + 1), 10);
+    if (!c || isNaN(index)) return null;
+    return { c: c, index: index };
+  }
+  // 🔖 ile işaretlenmiş checkpoint maddelerini (ders → checkpoint başlığı sırasıyla
+  // kullanılmak üzere) düz bir listeye çevirir.
+  function checkpointHatirlaticiListesi() {
+    var out = [];
+    Object.keys(STATE.flags).forEach(function (guid) {
+      if (!STATE.flags[guid].hatirlatici) return;
+      var coz = checkpointGuidCoz(guid);
+      if (!coz) return;
+      var sorular = checkpointSorular(coz.c);
+      if (coz.index < 0 || coz.index >= sorular.length) return;
+      out.push({ guid: guid, c: coz.c, index: coz.index, text: sorular[coz.index] });
+    });
+    return out;
+  }
+
   function checkpointOturumKonusu(c) { return "__checkpoint__:" + c.konu; }
   function checkpointSlotAnahtari(c) { return pratikSlotKey(checkpointOturumKonusu(c), c.id); }
   function checkpointSlotOku(c) { return STATE.pausedCheckpoints[c.id] || null; }
@@ -3105,9 +3169,17 @@
           '<div class="title">' + konuDotHtml(konu) + escapeHtml(konu) + "</div>" +
           '<div class="desc">' + liste.length + " bölüm özeti" + (toplamMadde ? " · ~" + toplamMadde + " checkpoint" : "") + "</div></button>";
       }).join("");
+      var hatirlaticiSayisi = checkpointHatirlaticiListesi().length;
+      var hatirlaticiKart = '<div class="card" style="margin-bottom:14px">' +
+        '<div class="section-title" style="font-size:1rem;margin-bottom:6px">🔖 Checkpoint Hatırlatıcılarım (' + hatirlaticiSayisi + ')</div>' +
+        (hatirlaticiSayisi
+          ? '<div class="link-row"><button class="btn ghost" data-action="open-checkpoint-hatirlatici">Aç</button></div>'
+          : '<div class="muted">Bir checkpoint maddesinin altındaki 🔖 Hatırlatıcı butonuna basarak buraya ekleyebilirsin.</div>') +
+        "</div>";
       return '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button></div>' +
         '<div class="section-title">📌 Checkpoint</div>' +
         '<div class="muted" style="margin-bottom:16px">Bölümün tamamını numaralı checkpoint\'ler hâlinde tarayan özetler. Hangi dersle çalışmak istersin?</div>' +
+        hatirlaticiKart +
         '<div class="mode-grid">' + tiles + "</div>";
     }
     var konu = checkpointSeciliKonu;
@@ -3149,12 +3221,53 @@
         '<div class="link-row" style="margin-top:14px"><button class="btn primary" data-action="start-checkpoint" data-id="' + escapeHtml(c.id) + '">Tekrar Başlat</button><button class="btn" data-action="checkpoint-kaydet-cik">Özetlere Dön</button></div></div>';
     }
     var index = Math.min(currentCheckpoint.index, sorular.length - 1);
+    var guid = checkpointGuid(c, index);
+    var f = STATE.flags[guid] || bosFlagKaydi();
+    var hatirlaticiBtn = '<div class="flag-bar"><button class="flag-btn' + (f.hatirlatici ? " active-bookmark" : "") +
+      '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="hatirlatici">🔖 Hatırlatıcı</button></div>';
     var cikis = '<div class="link-row" style="margin-bottom:10px"><button class="btn primary" data-action="checkpoint-kaydet-cik">💾 Kaydet ve Çık</button><span class="muted" style="font-size:0.82rem;align-self:center">İlerleme her adımda otomatik kaydediliyor</span></div>';
     return cikis + '<div class="card"><div class="q-meta"><span>Checkpoint · ' + (index + 1) + " / " + sorular.length + '</span><span>' + konuDotHtml(c.konu) + escapeHtml(c.konu) + "</span></div>" +
+      '<div class="link-row" style="margin:-4px 0 8px"><button class="btn ghost" style="padding:3px 10px;font-size:0.78rem" data-action="copy-checkpoint-soru">📋 Kopyala</button></div>' +
       '<div class="cp-content">' + sorular[index] + "</div>" +
+      hatirlaticiBtn +
       '<div class="link-row" style="margin-top:20px">' +
       (index > 0 ? '<button class="btn" data-action="checkpoint-onceki">← Önceki Soru</button>' : "") +
       '<button class="btn primary" data-action="checkpoint-sonraki">' + (index < sorular.length - 1 ? "Sonraki Soru →" : "Tamamla →") + "</button></div></div>";
+  }
+
+  // Ders → checkpoint başlığı kırılımlı "Hatırlatıcılarım" ekranı (checkpoint akışına
+  // özel — mevcut hatirlaticiSoruBul yalnız STATE.bank'ta arar, checkpoint guid'lerini
+  // görmez, bu yüzden ayrı bir liste/dışa aktarım gerekiyor — kullanıcı isteği).
+  function renderCheckpointHatirlaticilar() {
+    var items = checkpointHatirlaticiListesi();
+    var gruplar = {};
+    items.forEach(function (it) {
+      gruplar[it.c.konu] = gruplar[it.c.konu] || {};
+      gruplar[it.c.konu][it.c.title] = gruplar[it.c.konu][it.c.title] || [];
+      gruplar[it.c.konu][it.c.title].push(it);
+    });
+    var konular = Object.keys(gruplar).sort(function (a, b) {
+      var ia = KONU_SIRA.indexOf(a), ib = KONU_SIRA.indexOf(b);
+      if (ia === -1) ia = 999; if (ib === -1) ib = 999;
+      return ia - ib || a.localeCompare(b, "tr");
+    });
+    var body = konular.map(function (konu) {
+      var basliklarHtml = Object.keys(gruplar[konu]).map(function (baslik) {
+        var maddelerHtml = gruplar[konu][baslik].map(function (it) {
+          return '<div style="margin-top:8px"><div class="desc">' + escapeHtml(htmlDenDuzMetin(it.text).slice(0, 220)) + '</div>' +
+            '<div class="link-row" style="margin-top:4px"><button class="btn ghost" style="padding:3px 10px;font-size:0.78rem" data-action="toggle-flag" data-guid="' + it.guid + '" data-kind="hatirlatici">Kaldır</button></div></div>';
+        }).join("");
+        return '<div style="margin-top:12px"><div class="muted" style="font-weight:600">' + escapeHtml(baslik) + "</div>" + maddelerHtml + "</div>";
+      }).join("");
+      return '<div class="card" style="margin-top:12px">' +
+        '<div class="section-title" style="font-size:1rem;margin-bottom:0">' + konuDotHtml(konu) + escapeHtml(konu) + "</div>" +
+        basliklarHtml + "</div>";
+    }).join("");
+    return '<div class="link-row"><button class="btn ghost" data-action="open-checkpoint-liste">← Checkpoint</button></div>' +
+      '<div class="section-title">🔖 Checkpoint Hatırlatıcılarım (' + items.length + ')</div>' +
+      (items.length
+        ? '<div class="link-row"><button class="btn ghost" data-action="export-checkpoint-hatirlatici-word">📄 Word\'e Aktar</button></div>' + body
+        : '<div class="muted">Henüz işaretlediğin bir checkpoint maddesi yok — bir checkpoint kartındaki 🔖 Hatırlatıcı butonuna basarak buraya ekleyebilirsin.</div>');
   }
 
   // Soruyu (soru + şıklar + varsa kaynak) düz metin olarak panoya kopyalar —
@@ -3176,6 +3289,14 @@
     } else {
       showBanner("Bu tarayıcıda panoya kopyalama desteklenmiyor.", true);
     }
+  }
+
+  // Checkpoint maddeleri (ve bunlardan üretilen Word içeriği) yapılandırılmış
+  // {soru,siklar,kaynak} değil, ham HTML — kopyalama/dışa aktarma için düz metne çevrilir.
+  function htmlDenDuzMetin(html) {
+    var div = document.createElement("div");
+    div.innerHTML = html || "";
+    return (div.textContent || div.innerText || "").replace(/\s+/g, " ").trim();
   }
 
   function cssVar(name) {
@@ -3269,6 +3390,13 @@
     return '<div class="link-row" style="margin:-4px 0 8px">' +
       '<button class="btn ghost" style="padding:3px 10px;font-size:0.78rem" data-action="copy-soru" data-scope="' + scope + '">📋 Soruyu Kopyala</button>' +
       "</div>";
+  }
+
+  function kopyalaCheckpointMaddesi() {
+    var c = currentCheckpoint && checkpointBul(currentCheckpoint.id), sorular = c && checkpointSorular(c);
+    if (!c || !sorular.length) { showBanner("Kopyalanacak içerik bulunamadı.", true); return; }
+    var index = Math.min(currentCheckpoint.index, sorular.length - 1);
+    kopyalaPano(htmlDenDuzMetin(sorular[index]));
   }
 
   // Hatırlatıcı ve 🚩 hatalı bildirimi (kategori seçimiyle) her bağlamda aynı: Deneme
@@ -3861,7 +3989,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     var html = "";
     if (aiModu && (!remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true)) { aiModu = false; VIEW = "menuDeneme"; }
     if (STATE.sadeceDeneme && !aiModu && (VIEW === "menu" || VIEW === "menuTest" || VIEW === "pratikModul" || VIEW === "pratikSoru" ||
-      VIEW === "checkpointListe" || VIEW === "checkpointDetay" || VIEW === "checkpointSoru" || VIEW === "settings" || VIEW === "import")) VIEW = "menuDeneme";
+      VIEW === "checkpointListe" || VIEW === "checkpointDetay" || VIEW === "checkpointSoru" || VIEW === "checkpointHatirlatici" || VIEW === "settings" || VIEW === "import")) VIEW = "menuDeneme";
     if (STATE.sadeceDeneme && (VIEW === "settings" || VIEW === "import")) VIEW = aiModu ? "menu" : "menuDeneme";
     if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult" || VIEW === "gecmisUzak" || VIEW === "tekrarTest" || VIEW === "tekrarSonuc")) VIEW = "menuDeneme";
     if (VIEW === "menu") html = renderMenu();
@@ -3882,6 +4010,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (VIEW === "checkpointListe") html = renderCheckpointListe();
     else if (VIEW === "checkpointDetay") html = renderCheckpointDetay();
     else if (VIEW === "checkpointSoru") html = renderCheckpointSoru();
+    else if (VIEW === "checkpointHatirlatici") html = renderCheckpointHatirlaticilar();
     else if (VIEW === "gecmisUzak") html = renderGecmisUzak();
     else if (VIEW === "tekrarTest") html = renderTekrarTest();
     else if (VIEW === "tekrarSonuc") html = renderTekrarSonuc();
@@ -3996,6 +4125,9 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "checkpoint-onceki") checkpointOnceki();
     else if (action === "checkpoint-sonraki") checkpointSonraki();
     else if (action === "checkpoint-kaydet-cik") checkpointKaydetVeCik();
+    else if (action === "copy-checkpoint-soru") kopyalaCheckpointMaddesi();
+    else if (action === "open-checkpoint-hatirlatici") { VIEW = "checkpointHatirlatici"; render(); }
+    else if (action === "export-checkpoint-hatirlatici-word") exportCheckpointHatirlaticiWord();
     else if (action === "select-pratik-modul") {
       var secilenModul = t.getAttribute("data-modul");
       // Yarım kalan oturum varsa doğrudan başlatma — "Devam Et"i göstermek için modülü seç,

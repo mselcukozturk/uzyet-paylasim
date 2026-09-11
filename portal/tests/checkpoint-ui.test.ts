@@ -30,3 +30,20 @@ void test('checkpoint yarım oturumu kullanıcıya ait yerel yedekte de tutulur'
   assert.match(load, /saved\.pausedCheckpoints/);
   assert.match(script, /"pausedCheckpoints"/);
 });
+
+void test('checkpoint kartında kopyala ve hatırlatıcı butonu, ayrı gruplu hatırlatıcılar bölümü ve Word dışa aktarımı var', () => {
+  assert.match(fn('renderCheckpointSoru'), /data-action="copy-checkpoint-soru"/);
+  assert.match(fn('renderCheckpointSoru'), /data-action="toggle-flag" data-guid="' \+ guid \+ '" data-kind="hatirlatici"/);
+  assert.match(fn('kopyalaCheckpointMaddesi'), /htmlDenDuzMetin/);
+  assert.match(fn('checkpointGuidCoz'), /checkpointBul/);
+  assert.match(fn('checkpointHatirlaticiListesi'), /STATE\.flags/);
+  assert.match(fn('renderCheckpointHatirlaticilar'), /it\.c\.konu/);
+  assert.match(fn('renderCheckpointHatirlaticilar'), /it\.c\.title/);
+  assert.match(fn('renderCheckpointHatirlaticilar'), /data-action="export-checkpoint-hatirlatici-word"/);
+  assert.match(fn('exportCheckpointHatirlaticiWord'), /checkpointHatirlaticiDocxOlustur/);
+  assert.match(fn('renderCheckpointListe'), /data-action="open-checkpoint-hatirlatici"/);
+  assert.match(script, /else if \(action === "copy-checkpoint-soru"\) kopyalaCheckpointMaddesi\(\);/);
+  assert.match(script, /else if \(action === "open-checkpoint-hatirlatici"\)/);
+  assert.match(script, /else if \(action === "export-checkpoint-hatirlatici-word"\) exportCheckpointHatirlaticiWord\(\);/);
+  assert.match(script, /VIEW === "checkpointHatirlatici"/);
+});
