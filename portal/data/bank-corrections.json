@@ -1043,5 +1043,50 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "Genel Ekonomi — Güncelleme Karşılaştırması (Ağu 2026).md Tablo A",
   "tarihISO": "2026-09-10T23:09:18.580869+00:00"
+ },
+ {
+  "id": "gece-20260912-8ad8c0e4e180",
+  "guid": "8ad8c0e4e180",
+  "konu": "Genel Ekonomi",
+  "soru": "Bankamızın 1H2026 (Haziran 2026) verilerine göre aşağıdakilerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Genel Ekonomi — Güncelleme Karşılaştırması (Ağu 2026).md Tablo D (#22) · YatirimciSunumu.pdf sl.7-8",
+  "tarihISO": "2026-09-11T23:12:27.603430+00:00"
+ },
+ {
+  "id": "gece-20260912-3639fde11ab5",
+  "guid": "3639fde11ab5",
+  "konu": "Hukuk",
+  "soru": "Akdi faiz oranı %5 olarak belirlenmiş olan bir belirli süreli tüketici kredisi sözleşmesinin borçlusunun borcunu ödeyememesi durumunda en fazla % kaç temerrüt faizi uygulanabilir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026.pdf s.180 (kitap s.163)",
+  "tarihISO": "2026-09-11T23:12:27.603430+00:00"
+ },
+ {
+  "id": "gece-20260912-50522e2cbf07",
+  "guid": "50522e2cbf07",
+  "konu": "Ürünler",
+  "soru": "Aşağıdaki hesaplardan hangisine ek hesap tanımlanması mümkündür?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026.pdf s.208 (kitap s.191)",
+  "tarihISO": "2026-09-11T23:12:27.603430+00:00"
+ },
+ {
+  "id": "gece-20260912-f9563c6b4f2e",
+  "guid": "f9563c6b4f2e",
+  "konu": "Genel Ekonomi",
+  "soru": "Aşağıdakilerden hangisi 2025 yılında en çok ithalat yaptığımız ülkedir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Genel Ekonomi — Güncelleme Karşılaştırması (Ağu 2026).md Tablo A (#10, 27)",
+  "tarihISO": "2026-09-11T23:12:27.603430+00:00"
+ },
+ {
+  "id": "gece-20260912-ad71c1bdc951",
+  "guid": "ad71c1bdc951",
+  "konu": "Temel İşlemler",
+  "soru": "1–27 gün arası Vadeli TL Mevduat Hesabı açılış alt limiti ne kadardır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Temel Islemler_YYS_2026.pdf s.128 (kitap s.111)",
+  "tarihISO": "2026-09-11T23:12:27.603430+00:00"
  }
 ]
