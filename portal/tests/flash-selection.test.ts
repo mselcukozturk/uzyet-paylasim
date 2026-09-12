@@ -74,6 +74,21 @@ void test('ders altındaki Karışık: Rastgele Soru havuzu yalnız o ders (Arş
   assert.deepEqual(guids(null), ['k', 'h', 'a1', 'a2']);
 });
 
+void test('pratik oturumu: canlıdan kalkan soru, oturum kopyasında dursa bile bulunmaz', () => {
+  const context: Record<string, unknown> = {
+    STATE: { practiceBank: [{ guid: 'canli' }] },
+    currentPratik: { soruKayitlari: { canli: { guid: 'canli' }, silinmis: { guid: 'silinmis' } } },
+  };
+  vm.createContext(context);
+  vm.runInContext([grab('oturumSorusu'), grab('pratikCanliMi'), grab('pratikSoruBul')].join('\n'), context);
+  const bul = vm.runInContext('pratikSoruBul', context) as (g: string) => Soru | undefined;
+  assert.equal(bul('canli')?.guid, 'canli');
+  assert.equal(bul('silinmis'), undefined);
+  // Banka henüz yüklenmemişse kopyaya düşülür; yarım oturum boşalmaz.
+  (context.STATE as { practiceBank: Soru[] }).practiceBank = [];
+  assert.equal(bul('silinmis')?.guid, 'silinmis');
+});
+
 void test('oturum içinde gösterilenler (haric) öncelikli havuzdan da elenir', () => {
   const stats: Record<string, Stat> = {};
   for (let i = 0; i < 18; i += 1) stats[`q${i}`] = { sonSonucDogruMu: true };

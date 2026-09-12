@@ -880,8 +880,14 @@
     return sirali.map(function (q) { return q.guid; });
   }
 
+  // Pratik senkronu soruyu canlıdan kaldırdıysa oturum kopyasında dursa bile "yok" sayılır:
+  // cevabı sunucu 400 ile reddeder (12 Eyl 2026, yeniden üretilen Kredi Dört Bilgi seti).
+  // Banka henüz yüklenmediyse (boş) kopyaya düşülür — yarım oturum yanlışlıkla boşalmasın.
+  function pratikCanliMi(guid) {
+    return !STATE.practiceBank.length || STATE.practiceBank.some(function (q) { return q.guid === guid; });
+  }
   function pratikSoruBul(guid) {
-    return oturumSorusu(currentPratik, STATE.practiceBank, guid);
+    return pratikCanliMi(guid) ? oturumSorusu(currentPratik, STATE.practiceBank, guid) : undefined;
   }
 
   // "Karışık — Tüm Modüller" oturumunda hangi modülden kaç doğru/yanlış yapıldığını
@@ -2597,7 +2603,8 @@
       return;
     }
     // Banka güncellenmiş olabilir: artık havuzda olmayan guid'leri kuyruktan düşür.
-    var gecerli = slot.kuyruk.filter(function (g) { return !!oturumSorusu(slot, STATE.practiceBank, g); });
+    // oturumSorusu önce oturum kopyasına baktığından tek başına hiçbir guid'i düşürmüyordu.
+    var gecerli = slot.kuyruk.filter(function (g) { return pratikCanliMi(g) && !!oturumSorusu(slot, STATE.practiceBank, g); });
     if (gecerli.length === 0) { pratikSlotSil(konu, modul); showBanner("Yarım kalan oturumun soruları artık havuzda yok.", true); veriDegisti(); render(); return; }
     var idx = Math.min(slot.index, gecerli.length - 1);
     currentPratik = {
@@ -2862,12 +2869,16 @@
   // Ana sayfa ve tüm AI ekranlarında birebir aynı üst çubuk — solda 🏠 · 📊 Geçmiş · 🤖,
   // sağda ad · Çıkış. Ekranlar arasında düğmeler yer değiştirmesin diye tek yerden basılır.
   // 🏠 her yerden ana sayfaya (Deneme Sınavı) döner.
-  function ustBarHtml() {
+  // ekranButonlari: o ekranın kendi gezinme düğmeleri (← Konulara Dön vb.) — ayrı satıra
+  // düşmesin diye 🤖'nin sağına eklenir.
+  var EKRAN_UST_SATIR_RE = /^<div class="link-row">((?:<button[^>]*>[^<]*<\/button>)+)<\/div>/;
+  function ustBarHtml(ekranButonlari) {
     if (!remoteGirisTamamMi()) return "";
     return '<div class="link-row" style="align-items:center">' +
       '<button class="btn ghost" data-action="go-home" title="Ana sayfa" aria-label="Ana sayfa">🏠</button>' +
       '<button class="btn ghost" data-action="open-history-remote" title="Geçmiş" aria-label="Geçmiş">📊</button>' +
       (remoteAuth.canSeeAiSources === true ? '<button class="btn ghost" data-action="open-ai-sources">🤖 Yapay Zekâ Kaynakları</button>' : '') +
+      (ekranButonlari || "") +
       '<span style="margin-left:auto;display:flex;align-items:center;gap:10px">' +
       '<span class="muted">' + escapeHtml(remoteAuth.username) + '</span>' +
       '<button class="btn ghost" data-action="deneme-cikis-yap">Çıkış</button></span></div>';
@@ -4139,7 +4150,12 @@ function pratikEnIyiHtml(konu, modulKey) {
     var shellClass = "shell" + (narrowViews[VIEW] ? " narrow" : "");
     if (aiModu) {
       // Üst çubuk (🏠 · 📊 · 🤖 … ad · Çıkış) AI tarafındaki her ekranda sabit dursun.
-      html = ustBarHtml() +
+      // Ekran yalnız düğmelerden oluşan bir satırla başlıyorsa (← Konulara Dön, ← Konular…)
+      // o satır çubuğun içine alınır; alt satıra kaymasın (12 Eyl 2026 kullanıcı isteği).
+      // ponytail: HTML'i regex'le ayırır; ekran başı satırı iç içe etiketli olursa taşınmaz, yerinde kalır.
+      var ekranUstSatir = aiYukleniyor ? null : html.match(EKRAN_UST_SATIR_RE);
+      if (ekranUstSatir) html = html.slice(ekranUstSatir[0].length);
+      html = ustBarHtml(ekranUstSatir ? ekranUstSatir[1] : "") +
         (aiYukleniyor ? '<div class="card" role="status">AI kaynakları yükleniyor…</div>' : html);
     }
     if (aiUyariAcik) html += '<div role="dialog" aria-modal="true" aria-labelledby="ai-uyari-baslik" data-action="close-ai-uyari" style="position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:100;padding:20px">' +

@@ -8,7 +8,7 @@ assert.ok(scriptMatch);
 const script = scriptMatch[1];
 
 function fn(name: string) {
-  return script.match(new RegExp('function ' + name + '\\(\\) \\{[\\s\\S]*?^  \\}', 'm'))?.[0] ?? '';
+  return script.match(new RegExp('function ' + name + '\\([^)]*\\) \\{[\\s\\S]*?^  \\}', 'm'))?.[0] ?? '';
 }
 
 void test('🤖 butonu yalnız yetkili hesapta basılır ve AI modu kalıcı değildir', () => {
@@ -21,6 +21,17 @@ void test('🤖 butonu yalnız yetkili hesapta basılır ve AI modu kalıcı de�
   // Bayrak bellek içi: sayfa yenilenince AI modu kapanır, STATE'e/localStorage'a hiç yazılmaz.
   assert.match(script, /\n  var aiModu = false;/);
   assert.doesNotMatch(script, /STATE\.aiModu|"aiModu"/);
+});
+
+void test('AI ekranının baştaki yalnız-düğme satırı üst çubuğa alınır, metinli satır yerinde kalır', () => {
+  const kaynak = script.match(/var EKRAN_UST_SATIR_RE = (\/.*\/);/)?.[1];
+  assert.ok(kaynak, 'EKRAN_UST_SATIR_RE bulunamadı');
+  const re = new Function('return ' + kaynak)() as RegExp;
+  const moduller = '<div class="link-row"><button class="btn" data-action="pratik-konu-geri">← Konulara Dön</button></div><div class="section-title">Kredi</div>';
+  assert.equal(moduller.match(re)?.[1], '<button class="btn" data-action="pratik-konu-geri">← Konulara Dön</button>');
+  // Kaydet ve Çık satırı stil ve metin içerir — soru ekranının parçası, taşınmaz.
+  assert.equal('<div class="link-row" style="margin-bottom:10px"><button class="btn primary">💾 Kaydet ve Çık</button><span>x</span></div>'.match(re), null);
+  assert.match(fn('render'), /ustBarHtml\(ekranUstSatir \? ekranUstSatir\[1\] : ""\)/);
 });
 
 void test('AI modu yalnız pratik ve checkpoint ekranlarını açar; ayarlar ve import kapalı kalır', () => {
