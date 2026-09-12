@@ -2355,6 +2355,12 @@
   // "practice" (Test sayfası, konu çalışma havuzu). Mantık birebir aynı; yalnız hangi
   // dizinin örneklendiği ve istatistiğin hangi sözlüğe (stats / pStats) yazıldığı değişir.
   function flashHavuzu(kaynak, konuFiltre) {
+    // Test → ders → "Karışık": konuFiltre ders adı, Arşiv'de "__TUMU__@<ders>" — havuz o ders.
+    if (kaynak === "practice" && konuFiltre) {
+      return konuFiltre.indexOf(PRATIK_TUM_MODULLER + "@") === 0
+        ? pratikHavuz(ARSIV_KONU, konuFiltre)
+        : pratikHavuz(konuFiltre, PRATIK_TUM_MODULLER);
+    }
     var havuz = kaynak === "practice" ? STATE.practiceBank.filter(function (q) { return !pratikKapsamDisiMi(q); }) : STATE.bank;
     if (konuFiltre) havuz = havuz.filter(function (q) { return q.konu === konuFiltre; });
     return havuz;
@@ -3587,8 +3593,9 @@
         (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + (q.kaynak ? " — " + escapeHtml(q.kaynak) : "") + "</div>" : "");
     }
 
-    var geriAction = pratikMi ? "open-menu-test" : (konuBakMi ? "open-deneme-konu-sec" : "back-menu");
-    var geriEtiket = pratikMi ? "← Test Sayfası" : (konuBakMi ? "← Konu Seç" : "Ana Menüye Dön");
+    var dersFlashMi = pratikMi && !!currentFlash.konuFiltre;
+    var geriAction = dersFlashMi ? "pratik-listeye-don" : pratikMi ? "open-menu-test" : (konuBakMi ? "open-deneme-konu-sec" : "back-menu");
+    var geriEtiket = dersFlashMi ? "← Modüller" : pratikMi ? "← Test Sayfası" : (konuBakMi ? "← Konu Seç" : "Ana Menüye Dön");
     // Çıkış aksiyonları üstte, sol/sağ ayrık (sol: sayfadan çık, sağ: testi bitir) —
     // devam aksiyonları (Önceki/Sonraki Soru) sticky alt barda ayrı bir grup olarak
     // duruyor; birbirine yakın, karışık bir buton kümesi yerine iki amaç görsel
@@ -3652,8 +3659,9 @@
         '</td><td class="num">' + flashYuzdeHtml(k.yanlis, kToplam) + "</td></tr>";
     }).join("");
 
-    var geriAction = pratikMi ? "open-menu-test" : (konuBakMi ? "open-deneme-konu-sec" : "back-menu");
-    var geriEtiket = pratikMi ? "← Test Sayfası" : (konuBakMi ? "← Konu Seç" : "Ana Menüye Dön");
+    var dersFlashMi = pratikMi && !!r.konuFiltre;
+    var geriAction = dersFlashMi ? "pratik-listeye-don" : pratikMi ? "open-menu-test" : (konuBakMi ? "open-deneme-konu-sec" : "back-menu");
+    var geriEtiket = dersFlashMi ? "← Modüller" : pratikMi ? "← Test Sayfası" : (konuBakMi ? "← Konu Seç" : "Ana Menüye Dön");
     var baslikEk = pratikMi ? " (pratik havuzu)" : (konuBakMi ? " (Konu Konu Bak — " + escapeHtml(r.konuFiltre) + ")" : "");
     var yeniOturumEtiket = konuBakMi ? "Bu Konuda Yeni Oturum" : "Yeni Rastgele Soru Oturumu";
 
@@ -3771,12 +3779,11 @@ function pratikEnIyiHtml(konu, modulKey) {
     var modlar = arsivMi ? arsivDersModulleri(arsivSeciliDers) : (MODUL_TANIMLARI[konu] || []);
     var karisikKey = arsivMi ? PRATIK_TUM_MODULLER + "@" + arsivSeciliDers : PRATIK_TUM_MODULLER;
     var karisikHavuz = pratikHavuz(konu, karisikKey);
-    var karisikSecili = pratikSeciliModul === karisikKey;
-    var karisikTile = '<button class="mode-btn' + (karisikSecili ? " selected" : "") + '" ' + pratikTileStil(konu, karisikKey) + ' data-action="select-pratik-modul" data-modul="' + escapeHtml(karisikKey) + '">' +
+    // Karışık = bu derse sınırlı Rastgele Soru (Test sayfasındakiyle aynı algoritma).
+    var karisikTile = '<button class="mode-btn" style="border-left:4px solid var(--seri-7)" ' + (karisikHavuz.length ? "" : "disabled") +
+      ' data-action="start-pratik-flash" data-konu="' + escapeHtml(arsivMi ? karisikKey : konu) + '">' +
       '<div class="title">🔀 Karışık — Tüm Modüller</div>' +
-      '<div class="desc">' + karisikHavuz.length + " soruluk havuzdan oturum başına " + PRATIK_KARISIK_LIMIT + " soru" + pratikEnIyiHtml(konu, karisikKey) +
-      "</div>" + pratikDevamHtml(konu, karisikKey) + "</button>" +
-      (karisikSecili ? pratikAltSecimHtml(konu, karisikKey) : "");
+      '<div class="desc">' + karisikHavuz.length + " soruluk havuzdan tek soru, anında cevap — önce görülmeyenler ve yanlışlar.</div></button>";
     var tiles = karisikTile + modlar.map(function (m) {
       var havuz = pratikHavuz(konu, m.key);
       var secili = pratikSeciliModul === m.key;
@@ -4264,7 +4271,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     }
     else if (action === "pratik-slot-at") pratikSlotAt(t.getAttribute("data-konu"), t.getAttribute("data-modul"));
     else if (action === "pratik-kaydet-cik") pratikKaydetVeCik();
-    else if (action === "start-pratik-flash") startFlash("practice");
+    else if (action === "start-pratik-flash") startFlash("practice", t.getAttribute("data-konu"));
     else if (action === "start-pratik") startPratikOturum(pratikSeciliKonu, pratikSeciliModul, t.getAttribute("data-mod"));
     else if (action === "select-pratik-option") selectPratikOption(parseInt(t.getAttribute("data-idx"), 10));
     else if (action === "pratik-sonraki") nextPratikSoru();
