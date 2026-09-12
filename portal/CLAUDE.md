@@ -96,6 +96,7 @@ dışında uygulanmış, kaydı yokken sütun vardı).
 
 ## Diğer bakım uçları
 
+- `GET /api/admin/export-bank` — aktif soru bankasını Excel'de açılan CSV olarak döner.
 - `GET/POST /api/admin/flagged-questions` — açık işaretleri döner / çözüldü işaretler.
 - `POST /api/admin/activate-user` — `{"email","username","admin":true}`. Tek fark:
   `FLAGS_EXPORT_TOKEN` değil ayrı bir **`ADMIN_SETUP_TOKEN`** ister; o değişken tanımlı
