@@ -392,7 +392,8 @@
       // ayrı "ARK" modülü kalmadı.
     ],
     // Eski üretim turlarından kalan sorular. Ders arşive alındıkça modülleri buraya eklenir;
-    // modül anahtarları derse göre öneklidir (K/M/U/H), çakışmaz.
+    // modül anahtarları derse göre öneklidir (K/M/U/H), çakışmaz. Arşiv ekranı iki katmanlı:
+    // önce ders (bkz. ARSIV_DERSLERI), sonra o dersin modülleri.
     "Arşiv": [
       { key: "K1", ad: "Kredi · Kredinin Tanımı, Sınıflandırılması ve Kredi Açılabilecek Kişiler" },
       { key: "K2", ad: "Kredi · Bankacılık Kanunu, Kredi Sınırları ve Bankamız Politikaları" },
@@ -431,8 +432,31 @@
     ]
   };
   var PRATIK_TUM_MODULLER = "__TUMU__"; // pseudo-modül: bir Konu'nun tüm modülleri karışık
+  var ARSIV_KONU = "Arşiv";
+  // "Arşiv" konusunun altındaki dersler → o derse ait modül anahtarları. Yeni bir ders
+  // arşive alınınca buraya bir satır + MODUL_TANIMLARI["Arşiv"]'e modülleri eklenir.
+  var ARSIV_DERSLERI = {
+    "Kredi": ["K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8",
+              "K9", "K10", "K11", "K12", "K13", "K14", "K15", "K16"]
+  };
+  function arsivDersModulleri(ders) {
+    var anahtarlar = ARSIV_DERSLERI[ders] || [];
+    return (MODUL_TANIMLARI[ARSIV_KONU] || []).filter(function (m) {
+      return anahtarlar.indexOf(m.key) !== -1;
+    });
+  }
+  function arsivDersiBul(modulKey) {
+    for (var ders in ARSIV_DERSLERI) {
+      if ((ARSIV_DERSLERI[ders] || []).indexOf(modulKey) !== -1) return ders;
+    }
+    return null;
+  }
   function modulAdi(konu, modulKey) {
     if (modulKey === PRATIK_TUM_MODULLER) return "Karışık — Tüm Modüller";
+    // Arşiv'in derse daraltılmış karışık modülü: "__TUMU__@Kredi"
+    if (modulKey && modulKey.indexOf(PRATIK_TUM_MODULLER + "@") === 0) {
+      return modulKey.slice((PRATIK_TUM_MODULLER + "@").length) + " · Karışık — Tüm Modüller";
+    }
     var liste = MODUL_TANIMLARI[konu] || [];
     var bulunan = liste.filter(function (m) { return m.key === modulKey; })[0];
     return bulunan ? bulunan.ad : modulKey;
@@ -480,6 +504,7 @@
   var currentPratik = null;    // {konu, modul, mod, kuyruk:[guid...], index, cevaplandi, secilen, bitti}
   var pratikSeciliKonu = null; // pratikModul ekranında hangi Konu'nun modülleri gösteriliyor
   var pratikSeciliModul = null; // seçili modül (alt-mod seçimi bu modül için gösterilir)
+  var arsivSeciliDers = null;   // "Arşiv" konusu iki katmanlı: önce ders, sonra modül
   var checkpointSeciliKonu = null; // checkpointListe ekranında hangi Konu açık
   var checkpointSeciliId = null;   // checkpointDetay ekranında gösterilen özet
   var currentCheckpoint = null;    // {id, index, bitti} — checkpoint içindeki soru/adım
@@ -785,8 +810,19 @@
   function pratikHavuz(konu, modul) {
     // Kapsam dışı işaretlenen sorular gerçek silme (kullanıcı onayı) gelene kadar
     // havuzdan filtrelenir — tekrar karşısına çıkmasın, ama veri kaybolmasın.
+    // "Karışık" pseudo-modülü Arşiv'de derse göre daraltılır: "__TUMU__::Kredi" yalnız o
+    // dersin modüllerini kapsar, arşivdeki diğer derslerin sorularını karıştırmaz.
+    var karisikDers = null;
+    if (modul && modul.indexOf(PRATIK_TUM_MODULLER + "@") === 0) {
+      karisikDers = modul.slice((PRATIK_TUM_MODULLER + "@").length);
+      modul = PRATIK_TUM_MODULLER;
+    }
     var tumu = modul === PRATIK_TUM_MODULLER
-      ? STATE.practiceBank.filter(function (q) { return q.konu === konu; })
+      ? STATE.practiceBank.filter(function (q) {
+          if (q.konu !== konu) return false;
+          if (!karisikDers) return true;
+          return (ARSIV_DERSLERI[karisikDers] || []).indexOf(q.modul) !== -1;
+        })
       : STATE.practiceBank.filter(function (q) { return q.konu === konu && q.modul === modul; });
     return tumu.filter(function (q) { return !pratikKapsamDisiMi(q); });
   }
@@ -2617,7 +2653,10 @@
     render();
   }
   function pratikSonrakiModul(konu, modul) {
-    var modlar = MODUL_TANIMLARI[konu] || [];
+    // Arşiv'de "sıradaki modül" ders sınırını aşmaz.
+    var modlar = konu === ARSIV_KONU
+      ? arsivDersModulleri(arsivDersiBul(modul))
+      : (MODUL_TANIMLARI[konu] || []);
     for (var i = 0; i < modlar.length; i++) {
       if (modlar[i].key === modul) return modlar[i + 1] || null;
     }
@@ -2787,7 +2826,9 @@
       '<div class="title">📌 Checkpoint</div><div class="desc">Bölüm özetleri — numaralı, kaynak sayfalı checkpoint listeleriyle ufak ufak ezber.</div></button>' +
       "</div>";
 
-    if (aiModu) return '<div class="section-title">🤖 Yapay Zekâ Kaynakları</div>' + checkpointYarimKalanKartlari() + navCards +
+    // Yarım kalan checkpointler buradan (AI ana ekranı) 12 Eyl 2026'da Checkpoint
+    // bölümünün içine alındı — ait olduğu yer orası.
+    if (aiModu) return '<div class="section-title">🤖 Yapay Zekâ Kaynakları</div>' + navCards +
       '<div class="link-row"><button class="btn" data-action="open-flags">İşaretliler (' + hatirlaticiSayisi + ' 🔖 · ' + hataSayisi + ' 🚩)</button></div>';
 
     return '<div class="hero-band"><div class="masthead"><div><h1>UZYET</h1><div class="sub">' + meta + '</div></div></div></div>' +
@@ -2802,6 +2843,18 @@
       "</div>";
   }
 
+  // Her ekranın sağ üstünde duran kullanıcı bloğu: ad · 🏠 · Çıkış.
+  // 🏠 her yerden ana sayfaya (Deneme Sınavı) döner — eskiden her AI ekranının soluna
+  // eklenen "← Deneme'ye Dön" satırının yerini aldı; o satır ekrandaki "← Ana Menü" ile
+  // birlikte iki ayrı geri düğmesi oluşturuyordu.
+  function kullaniciBlokHtml() {
+    if (!remoteGirisTamamMi()) return "";
+    return '<span style="margin-left:auto;display:flex;align-items:center;gap:10px">' +
+      '<span class="muted">' + escapeHtml(remoteAuth.username) + '</span>' +
+      '<button class="btn ghost" data-action="go-home" title="Ana sayfa" aria-label="Ana sayfa">🏠</button>' +
+      '<button class="btn ghost" data-action="deneme-cikis-yap">Çıkış</button></span>';
+  }
+
   function renderMenuDeneme() {
     var toplamSoru = STATE.bank.length;
     var flashDisabled = (toplamSoru === 0 || (STATE.sadeceDeneme && !remoteGirisTamamMi())) ? "disabled" : "";
@@ -2813,11 +2866,7 @@
       '<button class="mode-btn" style="border-left:4px solid var(--seri-8)" ' + flashDisabled + ' data-action="open-deneme-konu-sec">' +
       '<div class="title">📖 Konu Konu Bak</div><div class="desc">Sınav dışında, seçtiğin konudaki sorulara tek tek bak.</div></button>';
 
-    var kullaniciHtml = remoteGirisTamamMi()
-      ? '<span style="margin-left:auto;display:flex;align-items:center;gap:10px">' +
-        '<span class="muted">' + escapeHtml(remoteAuth.username) + '</span>' +
-        '<button class="btn ghost" data-action="deneme-cikis-yap">Çıkış</button></span>'
-      : "";
+    var kullaniciHtml = kullaniciBlokHtml();
 
     return (STATE.sadeceDeneme
       ? (remoteGirisTamamMi() ? '<div class="link-row"><button class="btn ghost" data-action="open-history-remote">Geçmiş</button>' +
@@ -3034,7 +3083,11 @@
       return '<button class="mode-btn" style="border-left:4px solid ' + renk + '" ' + (aktif ? "" : "disabled") +
         ' data-action="select-pratik-konu" data-konu="' + escapeHtml(konu) + '">' +
         '<div class="title">' + konuDotHtml(konu) + escapeHtml(konu) + "</div>" +
-        '<div class="desc">' + (aktif ? soruSayisi + " soru · " + modlar.length + " modül" : "Henüz hazır değil") + "</div></button>";
+        '<div class="desc">' + (aktif
+          ? soruSayisi + " soru · " + (konu === ARSIV_KONU
+              ? Object.keys(ARSIV_DERSLERI).length + " ders"
+              : modlar.length + " modül")
+          : "Henüz hazır değil") + "</div></button>";
     }).join("");
 
     return '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button></div>' +
@@ -3205,7 +3258,8 @@
         "</div>";
       return '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button></div>' +
         '<div class="section-title">📌 Checkpoint</div>' +
-        '<div class="muted" style="margin-bottom:16px">Bölümün tamamını numaralı checkpoint\'ler hâlinde tarayan özetler. Hangi dersle çalışmak istersin?</div>' +
+        checkpointYarimKalanKartlari() +
+        '<div class="muted" style="margin:16px 0">Bölümün tamamını numaralı checkpoint\'ler hâlinde tarayan özetler. Hangi dersle çalışmak istersin?</div>' +
         hatirlaticiKart +
         '<div class="mode-grid">' + tiles + "</div>";
     }
@@ -3694,16 +3748,35 @@ function pratikEnIyiHtml(konu, modulKey) {
       "</div></div>";
   }
 
+  // Arşiv'in ders seçimi — Arşiv → (ders) → modül. Diğer konularda bu katman yok.
+  function renderArsivDersSec() {
+    var tiles = Object.keys(ARSIV_DERSLERI).map(function (ders) {
+      var modlar = arsivDersModulleri(ders);
+      var sayi = pratikHavuz(ARSIV_KONU, PRATIK_TUM_MODULLER + "@" + ders).length;
+      return '<button class="mode-btn" style="border-left:4px solid var(--seri-' + konuSeriIdx(ders) + ')"' +
+        (sayi ? "" : " disabled") + ' data-action="select-arsiv-ders" data-ders="' + escapeHtml(ders) + '">' +
+        '<div class="title">' + konuDotHtml(ders) + escapeHtml(ders) + "</div>" +
+        '<div class="desc">' + sayi + " soru · " + modlar.length + " modül</div></button>";
+    }).join("");
+    return '<div class="link-row"><button class="btn" data-action="pratik-konu-geri">← Konulara Dön</button></div>' +
+      '<div class="section-title">' + konuDotHtml(ARSIV_KONU) + "Arşiv — ders seç</div>" +
+      '<div class="muted" style="margin-bottom:16px">Eski üretim turlarından kalan sorular. Yeni set ilgili dersin kendi kutusunda.</div>' +
+      '<div class="mode-grid">' + tiles + "</div>";
+  }
+
   function renderPratikModul() {
     var konu = pratikSeciliKonu;
-    var modlar = MODUL_TANIMLARI[konu] || [];
-    var karisikHavuz = pratikHavuz(konu, PRATIK_TUM_MODULLER);
-    var karisikSecili = pratikSeciliModul === PRATIK_TUM_MODULLER;
-    var karisikTile = '<button class="mode-btn' + (karisikSecili ? " selected" : "") + '" ' + pratikTileStil(konu, PRATIK_TUM_MODULLER) + ' data-action="select-pratik-modul" data-modul="' + PRATIK_TUM_MODULLER + '">' +
+    var arsivMi = konu === ARSIV_KONU;
+    if (arsivMi && !arsivSeciliDers) return renderArsivDersSec();
+    var modlar = arsivMi ? arsivDersModulleri(arsivSeciliDers) : (MODUL_TANIMLARI[konu] || []);
+    var karisikKey = arsivMi ? PRATIK_TUM_MODULLER + "@" + arsivSeciliDers : PRATIK_TUM_MODULLER;
+    var karisikHavuz = pratikHavuz(konu, karisikKey);
+    var karisikSecili = pratikSeciliModul === karisikKey;
+    var karisikTile = '<button class="mode-btn' + (karisikSecili ? " selected" : "") + '" ' + pratikTileStil(konu, karisikKey) + ' data-action="select-pratik-modul" data-modul="' + escapeHtml(karisikKey) + '">' +
       '<div class="title">🔀 Karışık — Tüm Modüller</div>' +
-      '<div class="desc">' + karisikHavuz.length + " soruluk havuzdan oturum başına " + PRATIK_KARISIK_LIMIT + " soru" + pratikEnIyiHtml(konu, PRATIK_TUM_MODULLER) +
-      "</div>" + pratikDevamHtml(konu, PRATIK_TUM_MODULLER) + "</button>" +
-      (karisikSecili ? pratikAltSecimHtml(konu, PRATIK_TUM_MODULLER) : "");
+      '<div class="desc">' + karisikHavuz.length + " soruluk havuzdan oturum başına " + PRATIK_KARISIK_LIMIT + " soru" + pratikEnIyiHtml(konu, karisikKey) +
+      "</div>" + pratikDevamHtml(konu, karisikKey) + "</button>" +
+      (karisikSecili ? pratikAltSecimHtml(konu, karisikKey) : "");
     var tiles = karisikTile + modlar.map(function (m) {
       var havuz = pratikHavuz(konu, m.key);
       var secili = pratikSeciliModul === m.key;
@@ -3714,9 +3787,15 @@ function pratikEnIyiHtml(konu, modulKey) {
         (secili ? pratikAltSecimHtml(konu, m.key) : "");
     }).join("");
 
-    return '<div class="link-row"><button class="btn" data-action="pratik-konu-geri">← Konulara Dön</button>' +
+    var geri = arsivMi
+      ? '<button class="btn" data-action="arsiv-ders-geri">← Arşiv Dersleri</button>'
+      : '<button class="btn" data-action="pratik-konu-geri">← Konulara Dön</button>';
+    var baslik = arsivMi
+      ? konuDotHtml(arsivSeciliDers) + escapeHtml("Arşiv · " + arsivSeciliDers)
+      : konuDotHtml(konu) + escapeHtml(konu);
+    return '<div class="link-row">' + geri +
       '<button class="btn ghost" data-action="back-menu">Ana Menü</button></div>' +
-      '<div class="section-title">' + konuDotHtml(konu) + escapeHtml(konu) + " — modül seç</div>" +
+      '<div class="section-title">' + baslik + " — modül seç</div>" +
       '<div class="mode-grid">' + tiles + "</div>";
   }
 
@@ -4048,8 +4127,12 @@ function pratikEnIyiHtml(konu, modulKey) {
     var bannerHtml = bannerMsg ? '<div class="banner' + (bannerIsError ? " error" : "") + '">' + escapeHtml(bannerMsg) + "</div>" : "";
     var narrowViews = { settings: true, import: true };
     var shellClass = "shell" + (narrowViews[VIEW] ? " narrow" : "");
-    if (aiModu) html = '<div class="link-row"><button class="btn ghost" data-action="leave-ai-sources">← Deneme\'ye Dön</button></div>' +
-      (aiYukleniyor ? '<div class="card" role="status">AI kaynakları yükleniyor…</div>' : html);
+    if (aiModu) {
+      // Kullanıcı bloğu (ad · 🏠 · Çıkış) AI tarafındaki her ekranda sabit dursun.
+      var ustBar = kullaniciBlokHtml();
+      html = (ustBar ? '<div class="link-row">' + ustBar + "</div>" : "") +
+        (aiYukleniyor ? '<div class="card" role="status">AI kaynakları yükleniyor…</div>' : html);
+    }
     if (aiUyariAcik) html += '<div role="dialog" aria-modal="true" aria-labelledby="ai-uyari-baslik" data-action="close-ai-uyari" style="position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:100;padding:20px">' +
       '<div class="card" data-action="ai-uyari-govde" style="max-width:520px"><h2 id="ai-uyari-baslik">Yapay Zekâ Kaynakları</h2><p>' + escapeHtml(AI_KAYNAK_UYARISI) + '</p>' +
       '<button id="ai-uyari-anladim" class="btn primary" data-action="accept-ai-sources">Anladım</button></div></div>';
@@ -4068,7 +4151,7 @@ function pratikEnIyiHtml(konu, modulKey) {
       return; // "ai-uyari-govde" dahil geri kalan her şey yutulur
     }
     if (action === "open-ai-sources") { openAiSources(); return; }
-    if (action === "leave-ai-sources") { leaveAiSources(); return; }
+    if (action === "leave-ai-sources" || action === "go-home") { leaveAiSources(); return; }
     if (action === "open-menu-deneme") { denemeKodOnizleme = null; openMenuDeneme(); }
     else if (action === "open-menu-test") { VIEW = "menuTest"; render(); }
     else if (action === "copy-soru") kopyalaAktifSoru(t.getAttribute("data-scope"));
@@ -4140,9 +4223,14 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "cancel-delete-history") cancelDeleteHistory();
     else if (action === "select-pratik-konu") {
       var pk = t.getAttribute("data-konu");
-      if (MODUL_TANIMLARI[pk]) { pratikSeciliKonu = pk; pratikSeciliModul = null; VIEW = "pratikModul"; render(); }
+      if (MODUL_TANIMLARI[pk]) { pratikSeciliKonu = pk; pratikSeciliModul = null; arsivSeciliDers = null; VIEW = "pratikModul"; render(); }
     }
-    else if (action === "pratik-konu-geri") { VIEW = "menuTest"; pratikSeciliKonu = null; pratikSeciliModul = null; render(); }
+    else if (action === "select-arsiv-ders") {
+      var ad = t.getAttribute("data-ders");
+      if (ARSIV_DERSLERI[ad]) { arsivSeciliDers = ad; pratikSeciliModul = null; VIEW = "pratikModul"; render(); }
+    }
+    else if (action === "arsiv-ders-geri") { arsivSeciliDers = null; pratikSeciliModul = null; render(); }
+    else if (action === "pratik-konu-geri") { VIEW = "menuTest"; pratikSeciliKonu = null; pratikSeciliModul = null; arsivSeciliDers = null; render(); }
     else if (action === "open-checkpoint-liste") { checkpointSeciliKonu = null; checkpointSeciliId = null; VIEW = "checkpointListe"; render(); }
     else if (action === "select-checkpoint-konu") { checkpointSeciliKonu = t.getAttribute("data-konu"); VIEW = "checkpointListe"; render(); }
     else if (action === "checkpoint-konu-geri") { checkpointSeciliId = null; VIEW = "checkpointListe"; render(); }
@@ -4166,6 +4254,12 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "devam-pratik") {
       var dk = t.getAttribute("data-konu"), dm = t.getAttribute("data-modul");
       pratikSeciliKonu = dk; pratikSeciliModul = dm;
+      // Arşiv oturumundan geri dönünce doğru dersin modül listesine düşsün.
+      if (dk === ARSIV_KONU) {
+        arsivSeciliDers = dm.indexOf(PRATIK_TUM_MODULLER + "@") === 0
+          ? dm.slice((PRATIK_TUM_MODULLER + "@").length)
+          : arsivDersiBul(dm);
+      }
       devamPratikOturum(dk, dm);
     }
     else if (action === "pratik-slot-at") pratikSlotAt(t.getAttribute("data-konu"), t.getAttribute("data-modul"));
