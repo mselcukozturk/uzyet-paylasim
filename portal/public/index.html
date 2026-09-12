@@ -1417,9 +1417,16 @@
     var owner = remoteAuth.username;
     remotePracticeFlushing = true; remotePracticeInFlight = entry.id;
     return remoteFetch("/api/exam", "POST", entry.body).then(function (r) {
-      if (!r.ok) throw new Error((r.data && r.data.error) || "Pratik ilerlemesi henüz sunucuya kaydedilemedi.");
+      // 400 kalıcıdır (ör. "Soru veya cevap geçersiz."): sunucu bu kaydı hiçbir zaman kabul
+      // etmez. Eskiden 15 sn'de bir yeniden denenip banner basıyor ve arkadaki kayıtları kilitliyordu.
+      var kalici = !r.ok && r.status === 400;
+      if (!r.ok && !kalici) throw new Error((r.data && r.data.error) || "Pratik ilerlemesi henüz sunucuya kaydedilemedi.");
       if (owner !== remoteAuth.username) return;
       remoteStorePracticeQueue(remoteReadPracticeQueue().filter(function (item) { return item.id !== entry.id; }));
+      if (kalici) {
+        showBanner(((r.data && r.data.error) || "Kayıt geçersiz.") + " Bu kayıt sunucuya gönderilemeyecek; bekleme kuyruğundan çıkarıldı.", true);
+        return true;
+      }
       if (entry.body.action === "practice-answer" && r.data.stat) {
         STATE.pStats[entry.body.questionGuid] = r.data.stat;
         remotePendingPracticeStats(entry.body.questionGuid);
@@ -3098,8 +3105,7 @@
           : "Henüz hazır değil") + "</div></button>";
     }).join("");
 
-    return '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button></div>' +
-      '<div class="section-title">📚 Test</div>' +
+    return '<div class="section-title">📚 Test</div>' +
       '<div class="stat-grid">' + statCards + "</div>" +
       yarimKalanHtml +
       flashCard +
@@ -3240,8 +3246,7 @@
 
   function renderCheckpointListe() {
     if (STATE.checkpoints.length === 0) {
-      return '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button></div>' +
-        '<div class="section-title">📌 Checkpoint</div>' +
+      return '<div class="section-title">📌 Checkpoint</div>' +
         '<div class="banner">Henüz checkpoint özeti eklenmemiş.</div>';
     }
     if (!checkpointSeciliKonu) {
@@ -3264,8 +3269,7 @@
           ? '<div class="link-row"><button class="btn ghost" data-action="open-checkpoint-hatirlatici">Aç</button></div>'
           : '<div class="muted">Bir checkpoint maddesinin altındaki 🔖 Hatırlatıcı butonuna basarak buraya ekleyebilirsin.</div>') +
         "</div>";
-      return '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button></div>' +
-        '<div class="section-title">📌 Checkpoint</div>' +
+      return '<div class="section-title">📌 Checkpoint</div>' +
         checkpointYarimKalanKartlari() +
         '<div class="muted" style="margin:16px 0">Bölümün tamamını numaralı checkpoint\'ler hâlinde tarayan özetler. Hangi dersle çalışmak istersin?</div>' +
         hatirlaticiKart +
@@ -3802,8 +3806,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     var baslik = arsivMi
       ? konuDotHtml(arsivSeciliDers) + escapeHtml("Arşiv · " + arsivSeciliDers)
       : konuDotHtml(konu) + escapeHtml(konu);
-    return '<div class="link-row">' + geri +
-      '<button class="btn ghost" data-action="back-menu">Ana Menü</button></div>' +
+    return '<div class="link-row">' + geri + '</div>' +
       '<div class="section-title">' + baslik + " — modül seç</div>" +
       '<div class="mode-grid">' + tiles + "</div>";
   }
@@ -3852,11 +3855,10 @@ function pratikEnIyiHtml(konu, modulKey) {
     if (!q) return '<div class="card">Bu soru artık havuzda yok (banka güncellendi). <button class="btn" data-action="pratik-sonraki">Sonraki Soru</button></div>';
 
     var cevaplananSayisi = Object.keys(currentPratik.cevaplar).length;
-    var cikisRow = '<div class="link-row" style="margin-bottom:10px">' +
-      '<button class="btn primary" data-action="pratik-kaydet-cik">💾 Kaydet ve Çık</button>' +
-      '<button class="btn ghost" data-action="pratik-listeye-don">← Modülden Çık</button>' +
-      '<span class="muted" style="font-size:0.82rem;align-self:center">' + cevaplananSayisi + " / " + currentPratik.kuyruk.length +
+    var cikisRow = '<div class="link-row" style="margin-bottom:10px;align-items:center">' +
+      '<span class="muted" style="font-size:0.82rem">' + cevaplananSayisi + " / " + currentPratik.kuyruk.length +
       " cevaplandı · ilerleme her soruda otomatik kaydediliyor</span>" +
+      '<button class="btn primary" style="margin-left:auto" data-action="pratik-kaydet-cik">💾 Kaydet ve Çık</button>' +
       "</div>";
 
     var karisikOnEki = currentPratik.modul === PRATIK_TUM_MODULLER ? "🔀 " : "";
@@ -4071,8 +4073,7 @@ function pratikEnIyiHtml(konu, modulKey) {
       }).join("");
     }
 
-    return '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button></div>' +
-      '<div class="card"><div class="section-title">🔖 Hatırlatıcılarım (' + hatirlaticilar.length + ")</div>" +
+    return '<div class="card"><div class="section-title">🔖 Hatırlatıcılarım (' + hatirlaticilar.length + ")</div>" +
       listHtml(hatirlaticilar, "hatirlatici") + "</div>" +
       '<div class="card" style="margin-top:16px"><div class="section-title">🚩 Hata bildirdiklerim (' + hatalilar.length + ")</div>" +
       listHtml(hatalilar, "hatali") + "</div>" +

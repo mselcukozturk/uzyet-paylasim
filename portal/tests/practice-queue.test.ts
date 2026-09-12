@@ -54,6 +54,21 @@ test('queue is capped at 50 and another account cannot replay it', async () => {
   api.remoteAuth.username = 'someone-else';
   assert.equal(api.remoteReadPracticeQueue().length, 0);
 });
+test('a 400-rejected answer is dropped once instead of retrying and blocking later entries', async () => {
+  const seen: string[] = [];
+  const api = setup(async (_path, _method, body) => {
+    seen.push(body.questionGuid);
+    return body.questionGuid === 'bad'
+      ? { ok: false, status: 400, data: { error: 'Soru veya cevap geçersiz.' } }
+      : { ok: true, status: 200, data: {} };
+  });
+  api.remoteQueuePractice({ action: 'practice-answer', questionGuid: 'bad', selectedAnswer: 'X' }, true, false);
+  await tick();
+  api.remoteQueuePractice({ action: 'practice-answer', questionGuid: 'ok', selectedAnswer: 'A' }, true, false);
+  await tick();
+  assert.deepEqual(seen, ['bad', 'ok']);
+  assert.equal(api.remoteReadPracticeQueue().length, 0);
+});
 test('newer pending answers remain optimistic when an older response arrives', async () => {
   let finish: (value: unknown) => void = () => {};
   const api = setup(() => new Promise((resolve) => { finish = resolve; }));
