@@ -2495,7 +2495,7 @@
     var q = flashSoruBul(currentFlash);
     if (!q) { render(); return; }
     var flashDogruMu = idx === q.cevapIdx;
-    currentFlash.oturum.push({ konu: q.konu, dogru: flashDogruMu });
+    currentFlash.oturum.push({ konu: q.konu, modul: q.modul, dogru: flashDogruMu });
     if (currentFlash.kaynak === "practice") {
       recordPratikStat(q.guid, flashDogruMu, q.siklar[idx]); // metin, karıştırılmış indeksten bağımsız
       STATE.pFlashOzet.gosterim++;
@@ -3642,12 +3642,14 @@
       "</div>";
   }
 
-  function flashSonucKirilimi(oturum) {
-    // {konu: {dogru, yanlis}} — bu oturumda konu bazında kaç doğru/yanlış yapıldı.
+  function flashSonucKirilimi(oturum, alan) {
+    // {konu|modul: {konu, dogru, yanlis}} — bu oturumda ders (varsayılan) ya da modül bazında
+    // kaç doğru/yanlış yapıldı. konu, modül adını bulmak için taşınır.
     var kirilim = {};
     oturum.forEach(function (kayit) {
-      if (!kirilim[kayit.konu]) kirilim[kayit.konu] = { dogru: 0, yanlis: 0 };
-      if (kayit.dogru) kirilim[kayit.konu].dogru++; else kirilim[kayit.konu].yanlis++;
+      var anahtar = kayit[alan || "konu"];
+      if (!kirilim[anahtar]) kirilim[anahtar] = { konu: kayit.konu, dogru: 0, yanlis: 0 };
+      if (kayit.dogru) kirilim[anahtar].dogru++; else kirilim[anahtar].yanlis++;
     });
     return kirilim;
   }
@@ -3664,14 +3666,17 @@
     var toplam = r.oturum.length;
     var dogru = r.oturum.filter(function (k) { return k.dogru; }).length;
     var yanlis = toplam - dogru;
-    var kirilim = flashSonucKirilimi(r.oturum);
+    // Ders içi Karışık (Test → ders → 🔀) tek derstir; kırılım modül bazında gösterilir.
+    var modulBazli = pratikMi && !!r.konuFiltre;
+    var kirilim = flashSonucKirilimi(r.oturum, modulBazli ? "modul" : "konu");
     var konular = Object.keys(kirilim).sort(function (a, b) {
-      return KONU_SIRA.indexOf(a) - KONU_SIRA.indexOf(b);
+      return modulBazli ? a.localeCompare(b, "tr", { numeric: true }) : KONU_SIRA.indexOf(a) - KONU_SIRA.indexOf(b);
     });
     var topicRows = konular.map(function (konu) {
       var k = kirilim[konu];
       var kToplam = k.dogru + k.yanlis;
-      return "<tr><td>" + basariNoktaHtml(k.dogru, kToplam) + escapeHtml(konu) + '</td><td class="num">' + kToplam +
+      var etiket = modulBazli ? konu + " — " + modulAdi(k.konu, konu) : konu;
+      return "<tr><td>" + basariNoktaHtml(k.dogru, kToplam) + escapeHtml(etiket) + '</td><td class="num">' + kToplam +
         '</td><td class="num">' + flashYuzdeHtml(k.dogru, kToplam) +
         '</td><td class="num">' + flashYuzdeHtml(k.yanlis, kToplam) + "</td></tr>";
     }).join("");
@@ -3688,7 +3693,7 @@
       '<span class="pill good">' + flashYuzdeHtml(dogru, toplam) + " doğru</span>" +
       '<span class="pill bad">' + flashYuzdeHtml(yanlis, toplam) + " yanlış</span></div>" +
       (toplam
-        ? '<table class="topic-table"><thead><tr><th>Ders</th><th class="num">Soru</th><th class="num">Doğru</th><th class="num">Yanlış</th></tr></thead><tbody>' +
+        ? '<table class="topic-table"><thead><tr><th>' + (modulBazli ? "Modül" : "Ders") + '</th><th class="num">Soru</th><th class="num">Doğru</th><th class="num">Yanlış</th></tr></thead><tbody>' +
           topicRows + "</tbody></table>"
         : '<div class="muted">Hiç soru cevaplanmadan bitirildi.</div>') +
       '<div class="link-row" style="margin-top:14px">' +
@@ -3743,36 +3748,6 @@ function pratikEnIyiHtml(konu, modulKey) {
       Object.keys(s.cevaplar || {}).length + " / " + s.kuyruk.length + "</div>";
   }
 
-  function pratikAltSecimHtml(konu, modulKey) {
-    // Seçilen modülün ALTINA (grid'in en sonuna değil) açılır — grid-column:1/-1 ile
-    // tam genişlikte kendi satırına düşer, sonraki tile'ları bir alt satıra iter.
-    // Amaç: uzun modül listelerinde "Nasıl çalışmak istersin?" için sayfanın en
-    // altına kadar kaydırma gerekmesin.
-    var havuz2 = pratikHavuz(konu, modulKey);
-    var yanlisSayisi = havuz2.filter(function (q) { return STATE.pStats[q.guid] && STATE.pStats[q.guid].sonSonucDogruMu === false; }).length;
-    var slot = pratikSlotOku(konu, modulKey);
-    var remoteSlot = remotePracticeSessions[pratikSlotKey(konu, modulKey)];
-    var devamButon = '<button class="btn primary" data-action="devam-pratik" data-konu="' + escapeHtml(konu) + '" data-modul="' + escapeHtml(modulKey) + '">Kaldığım Yerden Devam Et</button>';
-    var devamHtml = slot
-      ? '<div class="card" style="grid-column:1/-1;border-left:4px solid var(--accent)">' +
-        '<div class="title">▶ Yarım kalan oturum</div>' +
-        '<div class="desc">' + Object.keys(slot.cevaplar || {}).length + " / " + slot.kuyruk.length +
-          " soru cevaplanmış · " + fmtTarih(slot.savedAtISO) + "</div>" +
-        '<div class="link-row" style="margin-top:10px">' +
-        '<button class="btn primary" data-action="devam-pratik" data-konu="' + escapeHtml(konu) + '" data-modul="' + escapeHtml(modulKey) + '">Kaldığım Yerden Devam Et</button>' +
-        '<button class="btn ghost" data-action="pratik-slot-at" data-konu="' + escapeHtml(konu) + '" data-modul="' + escapeHtml(modulKey) + '">Sil</button>' +
-        "</div></div>"
-      : remoteSlot ? '<div class="card" style="grid-column:1/-1"><div class="title">▶ Yarım kalan oturum</div><div class="desc">' + fmtTarih(remoteSlot.updatedAt) + '</div>' + devamButon + '</div>' : "";
-    return devamHtml + '<div class="card" style="grid-column:1/-1"><div class="section-title">' +
-      (slot ? "…ya da baştan başla" : "Nasıl çalışmak istersin?") + "</div>" +
-      '<div class="mode-grid">' +
-      '<button class="mode-btn" data-action="start-pratik" data-mod="siray"><div class="title">Sırayla</div><div class="desc">Tüm sorular, her seferinde karışık sırada.</div></button>' +
-      '<button class="mode-btn" data-action="start-pratik" data-mod="az"><div class="title">Az Görülenler</div><div class="desc">En az karşılaştıkların — oturum başına en fazla ' +
-        (modulKey === PRATIK_TUM_MODULLER ? PRATIK_KARISIK_LIMIT : PRATIK_AZ_GORULEN_TEK_MODUL_LIMIT) + " soru, her seferinde dönerek.</div></button>" +
-      '<button class="mode-btn" ' + (yanlisSayisi ? "" : "disabled") + ' data-action="start-pratik" data-mod="yanlis"><div class="title">Yanlışlar</div><div class="desc">Önce son denemesinde yanlış yaptıkların (' + yanlisSayisi + ").</div></button>" +
-      "</div></div>";
-  }
-
   // Arşiv'in ders seçimi — Arşiv → (ders) → modül. Diğer konularda bu katman yok.
   function renderArsivDersSec() {
     var tiles = Object.keys(ARSIV_DERSLERI).map(function (ders) {
@@ -3803,12 +3778,10 @@ function pratikEnIyiHtml(konu, modulKey) {
       '<div class="desc">' + karisikHavuz.length + " soruluk havuzdan tek soru, anında cevap — önce görülmeyenler ve yanlışlar.</div></button>";
     var tiles = karisikTile + modlar.map(function (m) {
       var havuz = pratikHavuz(konu, m.key);
-      var secili = pratikSeciliModul === m.key;
-      return '<button class="mode-btn' + (secili ? " selected" : "") + '" ' + pratikTileStil(konu, m.key) + ' data-action="select-pratik-modul" data-modul="' + m.key + '">' +
+      return '<button class="mode-btn" ' + pratikTileStil(konu, m.key) + ' data-action="select-pratik-modul" data-modul="' + m.key + '">' +
         '<div class="title">' + escapeHtml(m.key + " — " + m.ad) + "</div>" +
         '<div class="desc">' + havuz.length + " soru" + pratikEnIyiHtml(konu, m.key) + "</div>" +
-        pratikDevamHtml(konu, m.key) + "</button>" +
-        (secili ? pratikAltSecimHtml(konu, m.key) : "");
+        pratikDevamHtml(konu, m.key) + "</button>";
     }).join("");
 
     var geri = arsivMi
@@ -3853,11 +3826,9 @@ function pratikEnIyiHtml(konu, modulKey) {
         skorHtml + modulKirilimHtml +
         '<div class="link-row" style="margin-top:14px">' +
         (sonrakiModul
-          ? '<button class="btn primary" data-action="pratik-sonraki-modul">Sonraki Modül: ' + escapeHtml(sonrakiModul.key + " — " + sonrakiModul.ad) + " →</button>" +
-            '<button class="btn" data-action="pratik-tekrar">Aynı Şekilde Tekrar Başlat</button>'
-          : '<button class="btn primary" data-action="pratik-tekrar">Aynı Şekilde Tekrar Başlat</button>') +
-        '<button class="btn" data-action="pratik-listeye-don">Modül Listesine Dön</button>' +
-        '<button class="btn ghost" data-action="back-menu">Ana Menüye Dön</button>' +
+          ? '<button class="btn primary" data-action="pratik-sonraki-modul">Sonraki Modül: ' + escapeHtml(sonrakiModul.key + " — " + sonrakiModul.ad) + " →</button>"
+          : "") +
+        '<button class="btn' + (sonrakiModul ? "" : " primary") + '" data-action="pratik-listeye-don">Modül Listesine Dön</button>' +
         "</div></div>";
     }
 
@@ -4270,10 +4241,10 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "export-checkpoint-hatirlatici-word") exportCheckpointHatirlaticiWord();
     else if (action === "select-pratik-modul") {
       var secilenModul = t.getAttribute("data-modul");
-      // Yarım kalan oturum varsa doğrudan başlatma — "Devam Et"i göstermek için modülü seç,
-      // yoksa eskisi gibi tek tıkla "Sırayla" başlar.
-      if (secilenModul === PRATIK_TUM_MODULLER || pratikSlotOku(pratikSeciliKonu, secilenModul) || remotePracticeSessions[pratikSlotKey(pratikSeciliKonu, secilenModul)]) {
-        pratikSeciliModul = (pratikSeciliModul === secilenModul) ? null : secilenModul; render();
+      // Tek tık: yarım kalan oturum varsa kaldığı yerden devam, yoksa "Sırayla" başlar.
+      // Sırayla/Az Görülenler/Yanlışlar seçim paneli 12 Eyl 2026'da kaldırıldı (kullanıcı isteği).
+      if (pratikSlotOku(pratikSeciliKonu, secilenModul) || remotePracticeSessions[pratikSlotKey(pratikSeciliKonu, secilenModul)]) {
+        pratikSeciliModul = secilenModul; devamPratikOturum(pratikSeciliKonu, secilenModul);
       } else startPratikOturum(pratikSeciliKonu, secilenModul, "siray");
     }
     else if (action === "devam-pratik") {
@@ -4290,7 +4261,6 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "pratik-slot-at") pratikSlotAt(t.getAttribute("data-konu"), t.getAttribute("data-modul"));
     else if (action === "pratik-kaydet-cik") pratikKaydetVeCik();
     else if (action === "start-pratik-flash") startFlash("practice", t.getAttribute("data-konu"));
-    else if (action === "start-pratik") startPratikOturum(pratikSeciliKonu, pratikSeciliModul, t.getAttribute("data-mod"));
     else if (action === "select-pratik-option") selectPratikOption(parseInt(t.getAttribute("data-idx"), 10));
     else if (action === "pratik-sonraki") nextPratikSoru();
     else if (action === "pratik-tekrar") pratikTekrarBaslat();

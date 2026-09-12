@@ -89,6 +89,22 @@ void test('pratik oturumu: canlıdan kalkan soru, oturum kopyasında dursa bile 
   assert.equal(bul('silinmis')?.guid, 'silinmis');
 });
 
+void test('Rastgele Soru özeti: ders içi Karışık modül bazında kırılır', () => {
+  const context: Record<string, unknown> = {};
+  vm.createContext(context);
+  vm.runInContext(grab('flashSonucKirilimi'), context);
+  const kirilim = vm.runInContext('flashSonucKirilimi', context) as (o: object[], alan?: string) => Record<string, { konu: string; dogru: number; yanlis: number }>;
+  const oturum = [
+    { konu: 'Kredi', modul: 'K10', dogru: true }, { konu: 'Kredi', modul: 'K2', dogru: false },
+    { konu: 'Kredi', modul: 'K2', dogru: true }, { konu: 'Hukuk', modul: 'H1', dogru: true },
+  ];
+  const modul = kirilim(oturum, 'modul');
+  assert.deepEqual({ ...modul.K2 }, { konu: 'Kredi', dogru: 1, yanlis: 1 });
+  assert.deepEqual(Object.keys(modul).sort((a, b) => a.localeCompare(b, 'tr', { numeric: true })), ['H1', 'K2', 'K10']);
+  // Varsayılan hâlâ ders bazında.
+  assert.deepEqual({ ...kirilim(oturum).Kredi }, { konu: 'Kredi', dogru: 2, yanlis: 1 });
+});
+
 void test('oturum içinde gösterilenler (haric) öncelikli havuzdan da elenir', () => {
   const stats: Record<string, Stat> = {};
   for (let i = 0; i < 18; i += 1) stats[`q${i}`] = { sonSonucDogruMu: true };
