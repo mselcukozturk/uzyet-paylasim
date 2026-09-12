@@ -47,7 +47,8 @@ esit(api.arsivDersiBul("M1"), null, "arşivde olmayan modül");
 
 esit(api.modulAdi("Arşiv", "__TUMU__@Kredi"), "Kredi · Karışık — Tüm Modüller", "ders kapsamlı karışık adı");
 esit(api.modulAdi("Arşiv", "__TUMU__"), "Karışık — Tüm Modüller", "genel karışık adı");
-esit(api.modulAdi("Arşiv", "K13"), "Kredi · Teminat Mektuplarının Esasları ve Türleri", "gerçek modül adı");
+// Ders adı ekranın başlığında ("Arşiv · Kredi") duruyor; modül adında tekrarlanmaz.
+esit(api.modulAdi("Arşiv", "K13"), "Teminat Mektuplarının Esasları ve Türleri", "gerçek modül adı");
 
 // Ders sınırı: son modülden sonra başka bir dersin modülüne atlamamalı.
 esit(api.pratikSonrakiModul("Arşiv", "K16"), null, "K16 sonrası");
