@@ -28,5 +28,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "Eski"]
+  "exclude": ["node_modules"]
 }
