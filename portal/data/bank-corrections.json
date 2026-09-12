@@ -1088,5 +1088,122 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "Temel Islemler_YYS_2026.pdf s.128 (kitap s.111)",
   "tarihISO": "2026-09-11T23:12:27.603430+00:00"
+ },
+ {
+  "id": "gece-20260913-01c1f95e9583",
+  "guid": "01c1f95e9583",
+  "konu": "Genel Ekonomi",
+  "soru": "Türkiye'nin en çok ihracat yaptığı ülke aşağıdakilerden hangisidir? (2025 verileriyle)",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/Genel Ekonomi — Güncelleme Karşılaştırması (Ağu 2026).md Tablo A (#38)",
+  "tarihISO": "2026-09-12T23:17:37.393626+00:00"
+ },
+ {
+  "id": "gece-20260913-c52a8d3c6e55",
+  "guid": "c52a8d3c6e55",
+  "konu": "Genel Ekonomi",
+  "soru": "Türkiye İş Bankası'nın 2026/06 (1H2026) dönemi pazar payları ve özel bankalar arasındaki sıralamaları ile ilgili aşağıdakilerden hangileri doğrudur?\n\nI. Toplam Aktiflerde %10,6 pazar payı ile 1. sıradadır.\nII. Tüketici Kredilerinde %13,1 pazar payı ile 3. sıradadır.\nIII. POS Cirosunda %13,0 pazar payı ile 3. sıradadır.\nIV. YP Mevduatta %14,1 pazar payı ile 1. sıradadır.",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/YatirimciSunumu.pdf sl.4",
+  "tarihISO": "2026-09-12T23:17:37.393626+00:00"
+ },
+ {
+  "id": "gece-20260913-a64017531785",
+  "guid": "a64017531785",
+  "konu": "Temel İşlemler",
+  "soru": "Bankamıza 2026 yılında ibraz edilen 26.350 TL bedelli bir çekin karşılığının hesapta hiç bulunmaması ve hamilin 16.350 TL tutarındaki yasal yükümlülük tutarını kabul etmemesi halinde yapılması gereken işlem aşağıdakilerden hangisidir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/Ezber Notu - Çek.pdf",
+  "tarihISO": "2026-09-12T23:17:37.393626+00:00"
+ },
+ {
+  "id": "gece-20260913-4eeb85e998d2",
+  "guid": "4eeb85e998d2",
+  "konu": "Ürünler",
+  "soru": "POS'um Cepte uygulaması ile ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "02 Ürünlerimiz/Ürünlerimiz YYS 2026.pdf s.32, s.80",
+  "tarihISO": "2026-09-12T23:17:37.393626+00:00"
+ },
+ {
+  "id": "gece-20260913-f80163e13fd5",
+  "guid": "f80163e13fd5",
+  "konu": "Temel İşlemler",
+  "soru": "2026 yılı için karşılıksız çıkan bir çek yaprağı için bankanın ödemekle yükümlü olduğu yasal yükümlülük tutarı ne kadardır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/Ezber Notu - Çek.pdf",
+  "tarihISO": "2026-09-12T23:17:37.393626+00:00"
+ },
+ {
+  "id": "gece-20260913-75d8a88c7599",
+  "guid": "75d8a88c7599",
+  "konu": "Kredi",
+  "soru": "Entegre skorlama modelinde 'içsel davranış modülü' kapsamında aşağıdakilerden hangisi değerlendirilen kriterlerden biri değildir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "04 Kredi/Kredi YYS 2026.pdf s.49",
+  "tarihISO": "2026-09-12T23:17:37.393626+00:00"
+ },
+ {
+  "id": "gece-20260913-7c4396790567",
+  "guid": "7c4396790567",
+  "konu": "Temel İşlemler",
+  "soru": "Ahmet Bey'in A Bankası Kadıköy Şubesinde 600.000 TL, aynı bankanın Beşiktaş Şubesinde 80.000 TL ve KKTC Lefkoşa Şubesinde 150.000 TL mevduatı bulunmaktadır. Bu durumda Ahmet Bey'in mevduatının ne kadarlık kısmı TMSF garantisi (mevduat sigortası) kapsamındadır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "06 Döviz Temel İşlemler/Temel Islemler_YYS_2026.pdf s.8, s.25",
+  "tarihISO": "2026-09-12T23:17:37.393626+00:00"
+ },
+ {
+  "id": "gece-20260913-7a2e87691a4b",
+  "guid": "7a2e87691a4b",
+  "konu": "Ürünler",
+  "soru": "Bankamatiklerden kartsız para çekme yöntemleri arasında aşağıdakilerden hangisi yer alır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "02 Ürünlerimiz/Ürünlerimiz YYS 2026.pdf s.21",
+  "tarihISO": "2026-09-12T23:17:37.393626+00:00"
+ },
+ {
+  "id": "gece-20260913-a3a5d5fc4275",
+  "guid": "a3a5d5fc4275",
+  "konu": "Mali Analiz",
+  "soru": "Mali analizde işletmenin alacaklarını bir yılda ortalama kaç defa tahsil ettiğini gösteren faaliyet oranı aşağıdakilerden hangisidir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "05 İstihbarat/istihbarat_TKR_2026.pdf s.270",
+  "tarihISO": "2026-09-12T23:17:37.393626+00:00"
+ },
+ {
+  "id": "gece-20260913-1d551bfc9d91",
+  "guid": "1d551bfc9d91",
+  "konu": "Ürünler",
+  "soru": "Mobil temassız ödeme işlemleri ile ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "02 Ürünlerimiz/Ürünlerimiz YYS 2026.pdf s.27",
+  "tarihISO": "2026-09-12T23:17:37.393626+00:00"
+ },
+ {
+  "id": "gece-20260913-7c0e2cbd297e",
+  "guid": "7c0e2cbd297e",
+  "konu": "Mali Analiz",
+  "soru": "Bir işletmenin Dönen Varlıkları 1.200.000 TL, Duran Varlıkları 800.000 TL, Kısa Vadeli Yabancı Kaynakları 300.000 TL ve Uzun Vadeli Yabancı Kaynakları 500.000 TL ise, bu işletmenin Net İşletme Sermayesi (NİS) kaç TL'dir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "05 İstihbarat/istihbarat_TKR_2026.pdf s.210",
+  "tarihISO": "2026-09-12T23:17:37.393626+00:00"
+ },
+ {
+  "id": "gece-20260913-ec4feb375d37",
+  "guid": "ec4feb375d37",
+  "konu": "Ürünler",
+  "soru": "Konut finansmanı kredilerinde alınacak teminatlar kredinin taksitler toplamının en az yüzde kaç fazlası olmalıdır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "02 Ürünlerimiz/Ürünlerimiz YYS 2026.pdf s.174",
+  "tarihISO": "2026-09-12T23:17:37.393626+00:00"
+ },
+ {
+  "id": "gece-20260913-9b5ad58d479f",
+  "guid": "9b5ad58d479f",
+  "konu": "Kredi",
+  "soru": "Bankamız uygulamasında Entegre Skoru 1-7 arasında olan müşterilere kefilsiz ve teminatsız (açık) olarak kullandırılabilecek azami gayrinakdi çek kredisi limiti ne kadardır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/Ezber Notu - Çek.pdf",
+  "tarihISO": "2026-09-12T23:17:37.393626+00:00"
  }
 ]
