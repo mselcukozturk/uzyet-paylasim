@@ -92,7 +92,8 @@ export async function getSessionProfile(request: Request) {
 
   await db.update(schema.userSessions).set({ lastSeenAt: new Date() })
     .where(eq(schema.userSessions.tokenHash, tokenHash));
-  return row;
+  // Çağıran, çereze düşüp localStorage'ı kaybetmiş istemciyi bu token'la onarabilsin.
+  return { ...row, token: raw };
 }
 
 export async function clearUserSession() {

@@ -1437,14 +1437,12 @@
   }
 
   function remoteCheckStatus(cb) {
-    if (!remoteToken()) {
-      remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
-      if (cb) cb();
-      return;
-    }
+    // localStorage token'ı yoksa bile isteği yine de yollarız — çerez (uzy_session) hâlâ
+    // geçerliyse sunucu tanır ve bize taze bir token döner, localStorage kendini onarır.
     remoteAuth.checking = true;
     remoteFetch("/api/access", "GET").then(function (r) {
       if (r.ok && r.data && r.data.authenticated) {
+        if (r.data.token) remoteSetToken(r.data.token);
         remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, isAdmin: !!r.data.isAdmin, disclaimerAccepted: !!r.data.disclaimerAccepted, canSeeAiSources: r.data.canSeeAiSources === true, aiDisclaimerAccepted: !!r.data.aiDisclaimerAccepted };
       } else {
         remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
@@ -1543,6 +1541,7 @@
   }
 
   function denemeCikisYap() {
+    if (!confirm("Çıkış yapmak istediğine emin misin?")) return;
     aiModu = false; aiUyariAcik = false; aiYukleniyor = false;
     STATE.practiceBank = []; STATE.checkpoints = []; STATE.pStats = {}; STATE.pausedPratik = {}; STATE.pausedCheckpoints = {};
     remotePracticeBankLoaded = false; remoteCheckpointsLoaded = false; remotePracticeSessions = {};

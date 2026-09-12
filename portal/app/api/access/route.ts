@@ -37,7 +37,7 @@ export async function OPTIONS() {
 export async function GET(request: Request) {
   const profile = await getSessionProfile(request);
   if (!profile) return withCors(NextResponse.json({ authenticated: false }));
-  return withCors(NextResponse.json(statusPayload(profile)));
+  return withCors(NextResponse.json(statusPayload(profile, profile.token)));
 }
 
 export async function POST(request: Request) {
@@ -50,15 +50,15 @@ export async function POST(request: Request) {
       const db = getDb();
       await db.update(schema.profiles).set({ disclaimerAcceptedAt: new Date(), updatedAt: new Date() })
         .where(eq(schema.profiles.userId, existing.userId));
-      return withCors(NextResponse.json(statusPayload({ ...existing, disclaimerAcceptedAt: new Date() })));
+      return withCors(NextResponse.json(statusPayload({ ...existing, disclaimerAcceptedAt: new Date() }, existing.token)));
     }
     if (body?.acceptAiDisclaimer) {
       const db = getDb();
       await db.update(schema.profiles).set({ aiDisclaimerAcceptedAt: new Date(), updatedAt: new Date() })
         .where(eq(schema.profiles.userId, existing.userId));
-      return withCors(NextResponse.json(statusPayload({ ...existing, aiDisclaimerAcceptedAt: new Date() })));
+      return withCors(NextResponse.json(statusPayload({ ...existing, aiDisclaimerAcceptedAt: new Date() }, existing.token)));
     }
-    return withCors(NextResponse.json(statusPayload(existing)));
+    return withCors(NextResponse.json(statusPayload(existing, existing.token)));
   }
 
   const username = body?.username?.trim().toLocaleLowerCase('tr-TR') ?? '';
