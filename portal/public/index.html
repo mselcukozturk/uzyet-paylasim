@@ -1523,6 +1523,8 @@
 
   function openAiSources() {
     if (!remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true) return;
+    // Zaten AI içindeyken 🤖 = AI ana menüsü; yarım pratik/checkpoint önce kaydedilir.
+    if (aiModu) leaveAiSources();
     // Uyarı yalnız ilk girişte gösterilir (10 Eyl 2026 kullanıcı kararı — sunucuda
     // kalıcı onay tutulur, remoteAuth.aiDisclaimerAccepted); zaten kabul edilmişse
     // doğrudan bölüm açılır.
@@ -1766,6 +1768,7 @@
   }
 
   function openHistoryRemote() {
+    if (aiModu) leaveAiSources(); // üst çubuktaki 📊 AI ekranından da basılabilir
     VIEW = "gecmisUzak";
     render();
     remoteRefreshDashboard(render);
@@ -2849,16 +2852,18 @@
       "</div>";
   }
 
-  // Her ekranın sağ üstünde duran kullanıcı bloğu: ad · 🏠 · Çıkış.
-  // 🏠 her yerden ana sayfaya (Deneme Sınavı) döner — eskiden her AI ekranının soluna
-  // eklenen "← Deneme'ye Dön" satırının yerini aldı; o satır ekrandaki "← Ana Menü" ile
-  // birlikte iki ayrı geri düğmesi oluşturuyordu.
-  function kullaniciBlokHtml() {
+  // Ana sayfa ve tüm AI ekranlarında birebir aynı üst çubuk — solda 🏠 · 📊 Geçmiş · 🤖,
+  // sağda ad · Çıkış. Ekranlar arasında düğmeler yer değiştirmesin diye tek yerden basılır.
+  // 🏠 her yerden ana sayfaya (Deneme Sınavı) döner.
+  function ustBarHtml() {
     if (!remoteGirisTamamMi()) return "";
-    return '<span style="margin-left:auto;display:flex;align-items:center;gap:10px">' +
-      '<span class="muted">' + escapeHtml(remoteAuth.username) + '</span>' +
+    return '<div class="link-row" style="align-items:center">' +
       '<button class="btn ghost" data-action="go-home" title="Ana sayfa" aria-label="Ana sayfa">🏠</button>' +
-      '<button class="btn ghost" data-action="deneme-cikis-yap">Çıkış</button></span>';
+      '<button class="btn ghost" data-action="open-history-remote" title="Geçmiş" aria-label="Geçmiş">📊</button>' +
+      (remoteAuth.canSeeAiSources === true ? '<button class="btn ghost" data-action="open-ai-sources">🤖 Yapay Zekâ Kaynakları</button>' : '') +
+      '<span style="margin-left:auto;display:flex;align-items:center;gap:10px">' +
+      '<span class="muted">' + escapeHtml(remoteAuth.username) + '</span>' +
+      '<button class="btn ghost" data-action="deneme-cikis-yap">Çıkış</button></span></div>';
   }
 
   function renderMenuDeneme() {
@@ -2872,13 +2877,10 @@
       '<button class="mode-btn" style="border-left:4px solid var(--seri-8)" ' + flashDisabled + ' data-action="open-deneme-konu-sec">' +
       '<div class="title">📖 Konu Konu Bak</div><div class="desc">Sınav dışında, seçtiğin konudaki sorulara tek tek bak.</div></button>';
 
-    var kullaniciHtml = kullaniciBlokHtml();
-
     return (STATE.sadeceDeneme
-      ? (remoteGirisTamamMi() ? '<div class="link-row"><button class="btn ghost" data-action="open-history-remote">Geçmiş</button>' +
-        (remoteAuth.canSeeAiSources === true ? '<button class="btn ghost" data-action="open-ai-sources">🤖 Yapay Zekâ Kaynakları</button>' : '') + kullaniciHtml + '</div>' : "")
+      ? ustBarHtml()
       : '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button>' +
-        '<button class="btn" data-action="open-history">Geçmiş</button>' + kullaniciHtml + '</div>') +
+        '<button class="btn" data-action="open-history">Geçmiş</button></div>') +
       '<div class="section-title">📝 Deneme Sınavı</div>' +
       renderDenemeUzakBolum() +
       hatirlaticiBolumHtml() +
@@ -4135,9 +4137,8 @@ function pratikEnIyiHtml(konu, modulKey) {
     var narrowViews = { settings: true, import: true };
     var shellClass = "shell" + (narrowViews[VIEW] ? " narrow" : "");
     if (aiModu) {
-      // Kullanıcı bloğu (ad · 🏠 · Çıkış) AI tarafındaki her ekranda sabit dursun.
-      var ustBar = kullaniciBlokHtml();
-      html = (ustBar ? '<div class="link-row">' + ustBar + "</div>" : "") +
+      // Üst çubuk (🏠 · 📊 · 🤖 … ad · Çıkış) AI tarafındaki her ekranda sabit dursun.
+      html = ustBarHtml() +
         (aiYukleniyor ? '<div class="card" role="status">AI kaynakları yükleniyor…</div>' : html);
     }
     if (aiUyariAcik) html += '<div role="dialog" aria-modal="true" aria-labelledby="ai-uyari-baslik" data-action="close-ai-uyari" style="position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:100;padding:20px">' +

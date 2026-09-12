@@ -12,7 +12,9 @@ function fn(name: string) {
 }
 
 void test('🤖 butonu yalnız yetkili hesapta basılır ve AI modu kalıcı değildir', () => {
-  const menuDeneme = fn('renderMenuDeneme');
+  // Buton, ana sayfa ve AI ekranlarının ortak üst çubuğunda (ustBarHtml) basılır.
+  assert.match(fn('renderMenuDeneme'), /ustBarHtml\(\)/);
+  const menuDeneme = fn('ustBarHtml');
   assert.match(menuDeneme, /canSeeAiSources === true \? '<button[^']*data-action="open-ai-sources"/);
   // Buton görünürlük katmanı; gerçek kontrol sunucuda. İstemci yine de kapıyı iki yerde tutar.
   assert.match(fn('openAiSources'), /remoteAuth\.canSeeAiSources !== true\) return;/);
