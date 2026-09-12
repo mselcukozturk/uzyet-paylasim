@@ -305,7 +305,11 @@
     "Mali Analiz": 5, "Kambiyo": 3, "Sermaye Piyasaları ve Hazine": 3, "İK Politikaları": 2,
     // Ağırlık 0: resmi 50 soruluk test dağılımının parçası değil (yazılı sınav konusu),
     // yalnızca "Konu Çalışma" (pratik) menüsünde ayrı bir ders kutusu açmak için burada.
-    "Finansal Sunum": 0
+    "Finansal Sunum": 0,
+    // Ağırlık 0: eski üretim turundan kalan pratik soruları. 12 Eyl 2026'da Kredi yeni
+    // "Dört Bilgi" şablonuyla sıfırdan üretilince eskiler silinmedi, buraya taşındı —
+    // çözülmüş geçmiş (practice_stats) GUID'e bağlı olduğu için taşınma onu bozmaz.
+    "Arşiv": 0
   };
   var MOD_ADI = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar", zor: "Zor Deneme" };
   var MOD_RENK = { rastgele: "var(--seri-6)", azgorulen: "var(--seri-5)", yanlislar: "var(--seri-3)", zor: "var(--seri-7)" };
@@ -386,6 +390,26 @@
       { key: "K16", ad: "YP Gayrinakdi Krediler" }
       // Arkadaş seti sorusu (31 Ağu 2026) 2 Eyl 2026'da gerçek K1-K16 modüllerine dağıtıldı,
       // ayrı "ARK" modülü kalmadı.
+    ],
+    // Eski üretim turlarından kalan sorular. Ders arşive alındıkça modülleri buraya eklenir;
+    // modül anahtarları derse göre öneklidir (K/M/U/H), çakışmaz.
+    "Arşiv": [
+      { key: "K1", ad: "Kredi · Kredinin Tanımı, Sınıflandırılması ve Kredi Açılabilecek Kişiler" },
+      { key: "K2", ad: "Kredi · Bankacılık Kanunu, Kredi Sınırları ve Bankamız Politikaları" },
+      { key: "K3", ad: "Kredi · Segment, Skorlama ve Kredi Karar Sistemleri" },
+      { key: "K4", ad: "Kredi · Kredinin Tahsisi ve GNGKS" },
+      { key: "K5", ad: "Kredi · Kredi Riski, Erken Uyarı ve Alacakların Sınıflandırılması" },
+      { key: "K6", ad: "Kredi · Teminat Yönetimi, İpotek ve Taşınır Rehni" },
+      { key: "K7", ad: "Kredi · Kefalet, Alacağın Devri ve Diğer Teminatlar" },
+      { key: "K8", ad: "Kredi · KGF ve İGE Kefaleti" },
+      { key: "K9", ad: "Kredi · BCH Türleri ve Diğer Ticari Krediler" },
+      { key: "K10", ad: "Kredi · DBS, Çek, Fatura ve Alacak Finansmanı" },
+      { key: "K11", ad: "Kredi · Tarım, Yenilenebilir Enerji ve Orta-Uzun Vadeli Krediler" },
+      { key: "K12", ad: "Kredi · Dış Ticaretin Finansmanına Yönelik TL Krediler" },
+      { key: "K13", ad: "Kredi · Teminat Mektuplarının Esasları ve Türleri" },
+      { key: "K14", ad: "Kredi · Teminat Mektubunda Sona Erme, Tazmin ve Diğer Gayrinakdi Krediler" },
+      { key: "K15", ad: "Kredi · Döviz Kredileri ve Döviz Geliri Esasları" },
+      { key: "K16", ad: "Kredi · YP Gayrinakdi Krediler" }
     ],
     "Hukuk": [
       { key: "H1", ad: "Gerçek Kişiler, Hak ve Fiil Ehliyeti" },
@@ -2938,7 +2962,9 @@
   }
 
   function renderDenemeKonuSec() {
-    var tiles = KONU_SIRA.map(function (konu) {
+    // "Arşiv" yalnız pratik tarafının bir kutusudur; deneme bankasında karşılığı yok,
+    // burada "Henüz hazır değil" diye görünmesi yanıltıcı olurdu.
+    var tiles = KONU_SIRA.filter(function (k) { return k !== "Arşiv"; }).map(function (konu) {
       var havuz = STATE.bank.filter(function (q) { return q.konu === konu; });
       var yanlis = havuz.filter(function (q) { return STATE.stats[q.guid] && STATE.stats[q.guid].sonSonucDogruMu === false; }).length;
       var aktif = havuz.length > 0;
