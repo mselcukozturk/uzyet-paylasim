@@ -176,6 +176,10 @@
   .mode-btn .title { display: flex; align-items: center; font-weight: 700; font-size: 1.08rem; margin-bottom: 4px; }
   .mode-btn .desc { color: var(--text-muted); font-size: 0.86rem; }
   .link-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .ust-bar { flex-wrap: nowrap; align-items: center; gap: 8px; }
+  .ust-bar .btn { padding: 9px 12px; flex-shrink: 0; }
+  .ust-bar-hesap { margin-left: auto; display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .ust-bar-hesap .muted { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
   .btn {
     font-family: var(--font-body); font-weight: 600; font-size: 0.92rem;
     padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border);
@@ -2992,16 +2996,18 @@
   // ekranButonlari: o ekranın kendi gezinme düğmeleri (← Konulara Dön vb.) — ayrı satıra
   // düşmesin diye 🤖'nin sağına eklenir.
   var EKRAN_UST_SATIR_RE = /^<div class="link-row">((?:<button[^>]*>[^<]*<\/button>)+)<\/div>/;
+  // Mobilde tek satıra sığsın diye çubuk yalnız emoji taşır (13 Eyl 2026 kullanıcı isteği);
+  // metin title/aria-label'da kalır. "← X" geri düğmeleri ⬅️ olur; metin zaten kaçışlı.
   function ustBarHtml(ekranButonlari) {
     if (!remoteGirisTamamMi()) return "";
-    return '<div class="link-row" style="align-items:center">' +
+    return '<div class="link-row ust-bar">' +
       '<button class="btn ghost" data-action="go-home" title="Ana sayfa" aria-label="Ana sayfa">🏠</button>' +
       '<button class="btn ghost" data-action="open-history-remote" title="Geçmiş" aria-label="Geçmiş">📊</button>' +
-      (remoteAuth.canSeeAiSources === true ? '<button class="btn ghost" data-action="open-ai-sources">🤖 Yapay Zekâ Kaynakları</button>' : '') +
-      (ekranButonlari || "") +
-      '<span style="margin-left:auto;display:flex;align-items:center;gap:10px">' +
+      (remoteAuth.canSeeAiSources === true ? '<button class="btn ghost" data-action="open-ai-sources" title="Yapay Zekâ Kaynakları" aria-label="Yapay Zekâ Kaynakları">🤖</button>' : '') +
+      (ekranButonlari || "").replace(/(<button[^>]*)>← ([^<]*)<\/button>/g, '$1 title="$2" aria-label="$2">⬅️</button>') +
+      '<span class="ust-bar-hesap">' +
       '<span class="muted">' + escapeHtml(remoteAuth.username) + '</span>' +
-      '<button class="btn ghost" data-action="deneme-cikis-yap">Çıkış</button></span></div>';
+      '<button class="btn ghost" data-action="deneme-cikis-yap" title="Çıkış" aria-label="Çıkış">🚪</button></span></div>';
   }
 
   function renderMenuDeneme() {

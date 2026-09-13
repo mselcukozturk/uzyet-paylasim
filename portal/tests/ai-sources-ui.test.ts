@@ -34,6 +34,17 @@ void test('AI ekranının baştaki yalnız-düğme satırı üst çubuğa alın�
   assert.match(fn('render'), /ustBarHtml\(ekranUstSatir \? ekranUstSatir\[1\] : ""\)/);
 });
 
+void test('üst çubuk mobilde tek satır: 🤖, geri ve çıkış yalnız emoji, metin erişilebilir etikette', () => {
+  const ustBar = new Function('remoteGirisTamamMi', 'remoteAuth', 'escapeHtml',
+    fn('ustBarHtml') + '\nreturn ustBarHtml;')(() => true, { canSeeAiSources: true, username: 'selcuk' }, (s: string) => s);
+  const bar = ustBar('<button class="btn" data-action="pratik-konu-geri">← Konulara Dön</button>');
+  assert.match(bar, /data-action="open-ai-sources" title="Yapay Zekâ Kaynakları" aria-label="Yapay Zekâ Kaynakları">🤖<\/button>/);
+  assert.match(bar, /data-action="pratik-konu-geri" title="Konulara Dön" aria-label="Konulara Dön">⬅️<\/button>/);
+  assert.match(bar, /data-action="deneme-cikis-yap" title="Çıkış" aria-label="Çıkış">🚪<\/button>/);
+  assert.doesNotMatch(bar, />[^<]*(Yapay Zekâ Kaynakları|Çıkış|←)[^<]*<\/button>/);
+  assert.match(html, /\.ust-bar \{ flex-wrap: nowrap;/);
+});
+
 void test('AI modu yalnız pratik ve checkpoint ekranlarını açar; ayarlar ve import kapalı kalır', () => {
   const render = fn('render');
   assert.match(render, /STATE\.sadeceDeneme && !aiModu && \(VIEW === "menu"/);
