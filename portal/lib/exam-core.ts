@@ -1,3 +1,5 @@
+import { createHmac } from 'node:crypto';
+
 export type ExamMode = 'rastgele' | 'azgorulen' | 'yanlislar' | 'zor';
 
 export const OFFICIAL_DISTRIBUTION: Record<string, number> = {
@@ -40,6 +42,18 @@ export function mulberry32(seed: number) {
 export function examCode(mode: ExamMode, seed: number) {
   const prefix = { rastgele: 'R', azgorulen: 'A', yanlislar: 'Y', zor: 'Z' }[mode];
   return `UZY-${prefix}${(seed >>> 0).toString(36).toUpperCase()}`;
+}
+
+// Günün denemesi İstanbul saatiyle 07:00'de değişir (UTC+3, yaz saati yok → UTC 04:00).
+export function dailyExamDay(now = new Date()) {
+  return new Date(now.getTime() - 4 * 3600 * 1000).toISOString().slice(0, 10);
+}
+
+// Repo public: tohum düz tarihten türeseydi yarının soruları önceden hesaplanabilirdi.
+// Sunucudaki gizli anahtarla HMAC'lenir; kodu yalnız sunucu üretir. Aynı kodu açan herkes
+// aynı 50 soruyu alır (/api/exam "start" kod paylaşım dalı).
+export function dailyExamCode(day: string, secret = process.env.PIN_ENCRYPTION_KEY ?? '') {
+  return examCode('rastgele', createHmac('sha256', secret).update(`gunun-denemesi:${day}`).digest().readUInt32BE(0));
 }
 
 export function parseExamCode(value: string): { mode: ExamMode; seed: number } | null {

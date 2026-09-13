@@ -6,6 +6,7 @@ import { PGlite } from '@electric-sql/pglite';
 import { drizzle } from 'drizzle-orm/pglite';
 import * as orm from 'drizzle-orm';
 import * as schema from '../lib/db/schema.ts';
+import * as examCore from '../lib/exam-core.ts';
 import ts from 'typescript';
 
 // Geçmiş ekranındaki "Konu bazlı ortalama" kartının verisi: bitmiş denemelerde
@@ -60,7 +61,7 @@ test('dashboard examTopicStats: bitmiş denemelerde konu başına ortalama doğr
       'next/server': { NextResponse: { json: (data: unknown) => new Response(JSON.stringify(data)) } },
       'drizzle-orm': orm, '@/lib/db': { getDb: () => db, schema },
       '@/lib/auth/session': { getSessionProfile: async () => ({ userId: 'ben', isActive: true, canSeeAiSources: true, disclaimerAcceptedAt: new Date() }) },
-      '@/lib/cors': { withCors: (r: Response) => r }, '@/lib/exam-core': {}, '@/lib/practice-core': {},
+      '@/lib/cors': { withCors: (r: Response) => r }, '@/lib/exam-core': examCore, '@/lib/practice-core': {},
       '@/data/bank-corrections.json': [],
     };
     const exports: { POST?: (r: Request) => Promise<Response> } = {};

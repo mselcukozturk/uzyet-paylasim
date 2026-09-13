@@ -54,6 +54,8 @@ export type DashboardData = {
   // ve ortalama kaç doğru yapıldığı (Geçmiş ekranındaki "Konu bazlı ortalama" kartı).
   examTopicStats: Array<{ topic: string; asked: number; correct: number; avgAsked: number; avgCorrect: number; percent: number }>;
   examStats: { count: number; avgPercent: number; avgCorrect: number; avgSeconds: number } | null;
+  // Günün denemesi: myPercent/avgPercent yalnız kullanıcı çözdüyse dolu.
+  daily: { day: string; code: string; solvedCount: number; myPercent: number | null; avgPercent: number | null };
 };
 
 export type PracticeQuestion = {
@@ -102,7 +104,7 @@ export type ExamApiRequest =
   | { action: 'checkpoints' }
   | { action: 'practice-stats' }
   | { action: 'dashboard' }
-  | { action: 'start'; mode: ExamMode; examCode?: string }
+  | { action: 'start'; mode: ExamMode; examCode?: string; daily?: boolean }
   | { action: 'resume'; attemptId: string }
   | { action: 'answer'; attemptId: string; questionId: string; selectedIndex: number }
   | { action: 'pause'; attemptId: string }
