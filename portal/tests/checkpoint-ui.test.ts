@@ -37,6 +37,14 @@ void test('checkpoint ekranı pratik sorusuyla aynı üst bloğu kullanır ve ge
   assert.doesNotMatch(ekran, /Soru →|Önceki Soru|soru\/adım|otomatik kaydediliyor/);
 });
 
+void test('checkpoint maddeleri ok tuşlarıyla gezilir; Kaydet ve Çık AI ana sayfasına döner', () => {
+  assert.match(script, /else if \(VIEW === "checkpointSoru" && currentCheckpoint && !currentCheckpoint\.bitti\) \{[\s\S]*?"ArrowRight"\) \{ e\.preventDefault\(\); checkpointSonraki\(\); \}[\s\S]*?"ArrowLeft"\) \{ e\.preventDefault\(\); checkpointOnceki\(\); \}/);
+  const cik = fn('checkpointKaydetVeCik');
+  assert.match(cik, /checkpointSlotYaz\(\); veriDegisti\(true\);/);
+  assert.match(cik, /VIEW = "menu"; render\(\);/);
+  assert.doesNotMatch(cik, /checkpointDetay/);
+});
+
 void test('checkpoint yarım oturumu kullanıcıya ait yerel yedekte de tutulur', () => {
   const save = fn('remoteSavePracticeLocal');
   const load = fn('remoteInitPracticeOwner');

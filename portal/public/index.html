@@ -3405,7 +3405,9 @@
   }
   function checkpointKaydetVeCik() {
     if (currentCheckpoint && !currentCheckpoint.bitti) { checkpointSlotYaz(); veriDegisti(true); }
-    currentCheckpoint = null; VIEW = "checkpointDetay"; render();
+    // Kaydedip doğrudan 🤖 Yapay Zekâ Kaynakları ana sayfasına döner (13 Eyl 2026 kullanıcı isteği).
+    currentCheckpoint = null; checkpointSeciliKonu = null; checkpointSeciliId = null;
+    VIEW = "menu"; render();
   }
   function checkpointKonular() {
     var konular = [];
@@ -4512,6 +4514,10 @@ function pratikEnIyiHtml(konu, modulKey) {
       } else if (e.key === "ArrowLeft") {
         e.preventDefault(); prevTekrarSoru();
       }
+    } else if (VIEW === "checkpointSoru" && currentCheckpoint && !currentCheckpoint.bitti) {
+      // Ok tuşları maddeler arasında gezer; → son maddede düğme gibi "Tamamla" olur.
+      if (e.key === "ArrowRight") { e.preventDefault(); checkpointSonraki(); }
+      else if (e.key === "ArrowLeft") { e.preventDefault(); checkpointOnceki(); }
     }
   });
 
