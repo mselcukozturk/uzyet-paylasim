@@ -26,6 +26,17 @@ void test('checkpoint maddeleri ileri-geri gezilen ve kaldığı yerden devam ed
   assert.match(fn('renderMenu'), /checkpointYarimKalanKartlari\(\)/);
 });
 
+void test('checkpoint ekranı pratik sorusuyla aynı üst bloğu kullanır ve gezinme "Madde" der', () => {
+  const ekran = fn('renderCheckpointSoru');
+  assert.match(ekran, /'<div class="pratik-ust"><div class="pratik-ust-bilgi">'/);
+  assert.match(ekran, /konuDotHtml\(c\.konu\) \+ escapeHtml\(c\.konu\) \+ " \| " \+ \(index \+ 1\) \+ " \/ " \+ sorular\.length/);
+  assert.match(ekran, /data-action="copy-checkpoint-soru" title="Maddeyi kopyala" aria-label="Maddeyi kopyala">📋<\/button>'/);
+  assert.match(ekran, /aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık<\/span><\/button>'/);
+  assert.match(ekran, /← Önceki Madde/);
+  assert.match(ekran, /Sonraki Madde →/);
+  assert.doesNotMatch(ekran, /Soru →|Önceki Soru|soru\/adım|otomatik kaydediliyor/);
+});
+
 void test('checkpoint yarım oturumu kullanıcıya ait yerel yedekte de tutulur', () => {
   const save = fn('remoteSavePracticeLocal');
   const load = fn('remoteInitPracticeOwner');

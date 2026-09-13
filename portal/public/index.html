@@ -3473,7 +3473,7 @@
       '<div class="card">' +
       '<div class="section-title" style="margin-bottom:2px">' + escapeHtml(c.title) + "</div>" +
       '<div class="muted" style="margin-bottom:18px">' + escapeHtml(c.subtitle) + "</div>" +
-      '<div class="desc">' + soruSayisi + " soru/adım. İleri geri gezebilir, çıkınca kaldığın yerden devam edebilirsin." + ilerleme + "</div>" +
+      '<div class="desc">' + soruSayisi + " madde. İleri geri gezebilir, çıkınca kaldığın yerden devam edebilirsin." + ilerleme + "</div>" +
       '<div class="link-row" style="margin-top:20px">' +
       (devamVar ? '<button class="btn primary" data-action="devam-checkpoint" data-id="' + escapeHtml(c.id) + '">Kaldığım Yerden Devam Et</button>' : '<button class="btn primary" data-action="start-checkpoint" data-id="' + escapeHtml(c.id) + '">Başlat</button>') +
       (devamVar ? '<button class="btn" data-action="start-checkpoint" data-id="' + escapeHtml(c.id) + '">Baştan Başla</button>' : "") +
@@ -3486,7 +3486,7 @@
     var c = checkpointBul(currentCheckpoint.id), sorular = checkpointSorular(c);
     if (!c || !sorular.length) { currentCheckpoint = null; return '<div class="card">Checkpoint artık bulunamadı. <button class="btn" data-action="open-checkpoint-liste">Listeye Dön</button></div>'; }
     if (currentCheckpoint.bitti) {
-      return '<div class="card"><div class="section-title">Checkpoint bitti 🎉</div><div class="muted">' + escapeHtml(c.title) + " içindeki " + sorular.length + " soru/adımı tamamladın.</div>" +
+      return '<div class="card"><div class="section-title">Checkpoint bitti 🎉</div><div class="muted">' + escapeHtml(c.title) + " içindeki " + sorular.length + " maddeyi tamamladın.</div>" +
         '<div class="link-row" style="margin-top:14px"><button class="btn primary" data-action="start-checkpoint" data-id="' + escapeHtml(c.id) + '">Tekrar Başlat</button><button class="btn" data-action="checkpoint-kaydet-cik">Özetlere Dön</button></div></div>';
     }
     var index = Math.min(currentCheckpoint.index, sorular.length - 1);
@@ -3494,14 +3494,20 @@
     var f = STATE.flags[guid] || bosFlagKaydi();
     var hatirlaticiBtn = '<div class="flag-bar"><button class="flag-btn' + (f.hatirlatici ? " active-bookmark" : "") +
       '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="hatirlatici">🔖 Hatırlatıcı</button></div>';
-    var cikis = '<div class="link-row" style="margin-bottom:10px"><button class="btn primary" data-action="checkpoint-kaydet-cik">💾 Kaydet ve Çık</button><span class="muted" style="font-size:0.82rem;align-self:center">İlerleme her adımda otomatik kaydediliyor</span></div>';
-    return cikis + '<div class="card"><div class="q-meta"><span>Checkpoint · ' + (index + 1) + " / " + sorular.length + '</span><span>' + konuDotHtml(c.konu) + escapeHtml(c.konu) + "</span></div>" +
-      '<div class="link-row" style="margin:-4px 0 8px"><button class="btn ghost" style="padding:3px 10px;font-size:0.78rem" data-action="copy-checkpoint-soru">📋 Kopyala</button></div>' +
+    // Pratik soru ekranıyla aynı üst blok (13 Eyl 2026 kullanıcı isteği): solda "• Ders | sıra" ve
+    // checkpoint başlığı, sağda 📋 ve 💾. Checkpoint maddesi soru değildir; gezinme "Madde" der.
+    var ustHtml = '<div class="pratik-ust"><div class="pratik-ust-bilgi">' +
+      '<div class="muted" style="font-size:0.82rem">' + konuDotHtml(c.konu) + escapeHtml(c.konu) + " | " + (index + 1) + " / " + sorular.length + "</div>" +
+      '<div class="q-meta"><span>' + escapeHtml(c.title) + "</span></div></div>" +
+      '<button class="btn ghost" data-action="copy-checkpoint-soru" title="Maddeyi kopyala" aria-label="Maddeyi kopyala">📋</button>' +
+      '<button class="btn primary" data-action="checkpoint-kaydet-cik" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>' +
+      "</div>";
+    return '<div class="card">' + ustHtml +
       '<div class="cp-content">' + sorular[index] + "</div>" +
       hatirlaticiBtn +
       '<div class="link-row" style="margin-top:20px">' +
-      (index > 0 ? '<button class="btn" data-action="checkpoint-onceki">← Önceki Soru</button>' : "") +
-      '<button class="btn primary" data-action="checkpoint-sonraki">' + (index < sorular.length - 1 ? "Sonraki Soru →" : "Tamamla →") + "</button></div></div>";
+      (index > 0 ? '<button class="btn" data-action="checkpoint-onceki">← Önceki Madde</button>' : "") +
+      '<button class="btn primary" data-action="checkpoint-sonraki">' + (index < sorular.length - 1 ? "Sonraki Madde →" : "Tamamla →") + "</button></div></div>";
   }
 
   // Ders → checkpoint başlığı kırılımlı "Hatırlatıcılarım" ekranı (checkpoint akışına
