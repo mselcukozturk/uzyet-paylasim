@@ -932,14 +932,11 @@
     // eşitlikte daha çok soru cevaplanan oturum tercih edilir.
     var skor = pratikOturumSkoru(cp);
     var toplam = skor.dogru + skor.yanlis;
-    if (toplam === 0) return;
+    var yeni = { dogru: skor.dogru, yanlis: skor.yanlis, toplam: toplam, tarihISO: new Date().toISOString() };
+    if (!pratikBestDahaIyi(yeni, STATE.pBest[cp.konu] && STATE.pBest[cp.konu][cp.modul])) return;
     if (!STATE.pBest[cp.konu]) STATE.pBest[cp.konu] = {};
-    var mevcut = STATE.pBest[cp.konu][cp.modul];
-    var yeniPct = skor.dogru / toplam;
-    var mevcutPct = mevcut ? mevcut.dogru / (mevcut.dogru + mevcut.yanlis) : -1;
-    if (!mevcut || yeniPct > mevcutPct || (yeniPct === mevcutPct && toplam > (mevcut.dogru + mevcut.yanlis))) {
-      STATE.pBest[cp.konu][cp.modul] = { dogru: skor.dogru, yanlis: skor.yanlis, toplam: toplam, tarihISO: new Date().toISOString() };
-    }
+    STATE.pBest[cp.konu][cp.modul] = yeni;
+    remoteSavePracticeBest();
   }
 
   function mergeBankOnImport(state, yeniSatirlar) {
@@ -1376,22 +1373,86 @@
     if (!remoteAuth.username) return;
     try {
       localStorage.setItem("uzyet_practice_local_v1:" + remoteAuth.username, JSON.stringify({
-        pausedPratik: STATE.pausedPratik, pausedCheckpoints: STATE.pausedCheckpoints
+        pausedPratik: STATE.pausedPratik, pausedCheckpoints: STATE.pausedCheckpoints, pBest: STATE.pBest
       }));
     } catch (e) {}
   }
   function remoteInitPracticeOwner() {
     if (remotePracticeOwner === remoteAuth.username) return;
     remotePracticeOwner = remoteAuth.username;
-    STATE.pStats = {}; STATE.pausedPratik = {}; STATE.pausedCheckpoints = {};
+    var tarayiciBest = STATE.pBest || {};
+    STATE.pStats = {}; STATE.pausedPratik = {}; STATE.pausedCheckpoints = {}; STATE.pBest = {};
+    remotePracticeBestLoaded = false;
     if (remotePracticeOwner) {
       try {
         var saved = JSON.parse(localStorage.getItem("uzyet_practice_local_v1:" + remotePracticeOwner) || "{}");
         // Eski yalnız-pratik biçimini de okuyarak mevcut kullanıcıların oturumlarını koru.
         STATE.pausedPratik = saved.pausedPratik || saved;
         STATE.pausedCheckpoints = saved.pausedCheckpoints || {};
+        if (saved.pBest) STATE.pBest = saved.pBest;
+        else if (!localStorage.getItem(PBEST_TARAYICI_SAHIBI)) {
+          // 13 Eyl 2026 öncesi pBest hesaba değil tarayıcıya yazılıyordu; o tarayıcıda ilk
+          // giren hesaba bir kez geçer, sonraki hesaplar başkasının sonucunu devralmaz.
+          STATE.pBest = tarayiciBest;
+          localStorage.setItem(PBEST_TARAYICI_SAHIBI, remotePracticeOwner);
+          remoteSavePracticeLocal();
+        }
       } catch (e) {}
     }
+  }
+
+  // Modül kartındaki "en iyi sonuç" (pBest) cihazlar arası görünsün diye pratik oturum
+  // tablosunda ayrılmış bir satırda tutulur (13 Eyl 2026). Artifact emekliye ayrılınca
+  // yalnız localStorage'da kalmıştı; şema/sunucu değişikliği gerekmez.
+  // ponytail: iki cihaz aynı anda sonuç yazarsa son yazan kazanır; eksik kalan cihaz
+  // sonraki açılışta birleştirip kendi daha iyi sonucunu yeniden yazar.
+  var PBEST_SLOT = "__pBest__";
+  var PBEST_TARAYICI_SAHIBI = "uzyet_pbest_tarayici_sahibi_v1";
+  var remotePracticeBestLoaded = false;
+  // Doğruluk yüzdesi yüksek olan; eşitlikte daha çok soru cevaplanan sonuç daha iyidir.
+  function pratikBestDahaIyi(yeni, mevcut) {
+    var yeniToplam = yeni ? yeni.dogru + yeni.yanlis : 0;
+    if (!(yeniToplam > 0)) return false;
+    var mevcutToplam = mevcut ? mevcut.dogru + mevcut.yanlis : 0;
+    if (!(mevcutToplam > 0)) return true;
+    var yeniPct = yeni.dogru / yeniToplam, mevcutPct = mevcut.dogru / mevcutToplam;
+    return yeniPct > mevcutPct || (yeniPct === mevcutPct && yeniToplam > mevcutToplam);
+  }
+  // Sunucudaki sonuçları yerele katar; yerelde sunucudakinden iyi/eksik sonuç varsa true.
+  function pratikBestBirlestir(yerel, uzak) {
+    var uzagaYaz = false;
+    Object.keys(yerel).forEach(function (konu) {
+      Object.keys(yerel[konu] || {}).forEach(function (modul) {
+        if (pratikBestDahaIyi(yerel[konu][modul], uzak[konu] && uzak[konu][modul])) uzagaYaz = true;
+      });
+    });
+    Object.keys(uzak).forEach(function (konu) {
+      Object.keys(uzak[konu] || {}).forEach(function (modul) {
+        if (!pratikBestDahaIyi(uzak[konu][modul], yerel[konu] && yerel[konu][modul])) return;
+        (yerel[konu] = yerel[konu] || {})[modul] = uzak[konu][modul];
+      });
+    });
+    return uzagaYaz;
+  }
+  function remoteSavePracticeBest() {
+    remoteSavePracticeLocal();
+    // Sunucudaki sonuçlar okunmadan yazmak başka cihazın sonuçlarını ezer; okunana dek yerelde bekler.
+    if (remotePracticeBestLoaded) {
+      remoteQueuePractice({ action: "practice-session-save", konu: PBEST_SLOT, modul: PBEST_SLOT, payload: STATE.pBest }, null, false);
+    }
+  }
+  // Hata AI bölümünü kapatmaz (true döner): sonuçlar yerelde kalır, sonraki açılışta yeniden denenir.
+  function remoteLoadPracticeBest() {
+    var owner = remoteAuth.username;
+    return remoteFetch("/api/exam", "POST", { action: "practice-session-load", konu: PBEST_SLOT, modul: PBEST_SLOT }).then(function (r) {
+      if (!r.ok || owner !== remoteAuth.username) return true;
+      var uzak = r.data && r.data.payload;
+      var uzagaYaz = pratikBestBirlestir(STATE.pBest, uzak && typeof uzak === "object" ? uzak : {});
+      remotePracticeBestLoaded = true;
+      lsKaydet();
+      if (uzagaYaz) remoteSavePracticeBest(); else remoteSavePracticeLocal();
+      return true;
+    }).catch(function () { return true; });
   }
   function remotePendingPracticeStats(onlyGuid) {
     remoteReadPracticeQueue().forEach(function (entry) {
@@ -1570,7 +1631,7 @@
       remoteAuth.aiDisclaimerAccepted = true;
       remoteFetch("/api/access", "POST", { acceptAiDisclaimer: true }).catch(function () {});
     }
-    Promise.all([remoteLoadPracticeBankIfNeeded(), remoteLoadCheckpointsIfNeeded(), remoteLoadPracticeStats()]).then(function (results) {
+    Promise.all([remoteLoadPracticeBankIfNeeded(), remoteLoadCheckpointsIfNeeded(), remoteLoadPracticeStats(), remoteLoadPracticeBest()]).then(function (results) {
       aiYukleniyor = false;
       if (!aiModu) return;
       if (results.some(function (ok) { return !ok; })) { aiModu = false; VIEW = "menuDeneme"; }
@@ -1629,8 +1690,8 @@
   function denemeCikisYap() {
     if (!confirm("Çıkış yapmak istediğine emin misin?")) return;
     aiModu = false; aiUyariAcik = false; aiYukleniyor = false;
-    STATE.practiceBank = []; STATE.checkpoints = []; STATE.pStats = {}; STATE.pausedPratik = {}; STATE.pausedCheckpoints = {};
-    remotePracticeBankLoaded = false; remoteCheckpointsLoaded = false; remotePracticeSessions = {};
+    STATE.practiceBank = []; STATE.checkpoints = []; STATE.pStats = {}; STATE.pausedPratik = {}; STATE.pausedCheckpoints = {}; STATE.pBest = {};
+    remotePracticeBankLoaded = false; remoteCheckpointsLoaded = false; remotePracticeSessions = {}; remotePracticeBestLoaded = false;
     remotePracticeOwner = null;
     currentPratik = null; currentCheckpoint = null; currentFlash = null;
     clearTimeout(remotePracticeRetryTimer);
