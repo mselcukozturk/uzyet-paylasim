@@ -45,6 +45,15 @@ void test('üst çubuk mobilde tek satır: 🤖, geri ve çıkış yalnız emoji
   assert.match(html, /\.ust-bar \{ flex-wrap: nowrap;/);
 });
 
+void test('pratik soru üst bloğu: bilgi solda, 📋 ve 💾 sağda aynı satırda; mobilde yazılar gizlenir', () => {
+  const soru = fn('renderPratikSoru');
+  assert.match(soru, /'<div class="pratik-ust"><div class="pratik-ust-bilgi">'/);
+  assert.match(soru, /data-action="copy-soru" data-scope="pratik" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋<\/button>'/);
+  assert.match(soru, /aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık<\/span><\/button>'/);
+  assert.doesNotMatch(soru, /kopyalaButonHtml\("pratik"\)/);
+  assert.match(html, /@media \(max-width: 560px\) \{ \.genis-etiket \{ display: none; \} \}/);
+});
+
 void test('AI modu yalnız pratik ve checkpoint ekranlarını açar; ayarlar ve import kapalı kalır', () => {
   const render = fn('render');
   assert.match(render, /STATE\.sadeceDeneme && !aiModu && \(VIEW === "menu"/);

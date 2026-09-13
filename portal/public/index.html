@@ -194,6 +194,11 @@
   .progressbar { height: 6px; border-radius: 4px; background: var(--surface-2); overflow: hidden; margin-bottom: 18px; }
   .progressbar > div { height: 100%; background: var(--accent); }
   .q-meta { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.84rem; margin-bottom: 10px; font-variant-numeric: tabular-nums; }
+  .pratik-ust { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .pratik-ust-bilgi { flex: 1; min-width: 0; display: grid; gap: 4px; }
+  .pratik-ust .q-meta { margin-bottom: 0; flex-wrap: wrap; column-gap: 10px; }
+  .pratik-ust .btn { flex-shrink: 0; }
+  @media (max-width: 560px) { .genis-etiket { display: none; } }
   .exam-timer { font-weight: 700; }
   .q-text { font-family: var(--font-display); font-size: 1.22rem; font-weight: 600; margin-bottom: 18px; white-space: pre-wrap; text-wrap: balance; }
   .option-row {
@@ -3990,15 +3995,17 @@ function pratikEnIyiHtml(konu, modulKey) {
     if (!q) return '<div class="card">Bu soru artık havuzda yok (banka güncellendi). <button class="btn" data-action="pratik-sonraki">Sonraki Soru</button></div>';
 
     var cevaplananSayisi = Object.keys(currentPratik.cevaplar).length;
-    var cikisRow = '<div class="link-row" style="margin-bottom:10px;align-items:center">' +
-      '<span class="muted" style="font-size:0.82rem">' + cevaplananSayisi + " / " + currentPratik.kuyruk.length +
-      " cevaplandı · ilerleme her soruda otomatik kaydediliyor</span>" +
-      '<button class="btn primary" style="margin-left:auto" data-action="pratik-kaydet-cik">💾 Kaydet ve Çık</button>' +
-      "</div>";
-
     var karisikOnEki = currentPratik.modul === PRATIK_TUM_MODULLER ? "🔀 " : "";
-    var meta = '<div class="q-meta"><span>' + karisikOnEki + escapeHtml(q.modul + " — " + modulAdi(q.konu, q.modul)) + " · " +
-      (currentPratik.index + 1) + " / " + currentPratik.kuyruk.length + "</span><span>" + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span></div>";
+    // Üst blok: solda ilerleme + modül satırı, sağda 📋 ve 💾 aynı hizada (13 Eyl 2026 kullanıcı
+    // isteği). Dar ekranda .genis-etiket gizlenir, düğmeler yalnız emojiyle tek satıra sığar.
+    var ustHtml = '<div class="pratik-ust"><div class="pratik-ust-bilgi">' +
+      '<div class="muted" style="font-size:0.82rem">' + cevaplananSayisi + " / " + currentPratik.kuyruk.length +
+      ' cevaplandı<span class="genis-etiket"> · ilerleme her soruda otomatik kaydediliyor</span></div>' +
+      '<div class="q-meta"><span>' + karisikOnEki + escapeHtml(q.modul + " — " + modulAdi(q.konu, q.modul)) + " · " +
+      (currentPratik.index + 1) + " / " + currentPratik.kuyruk.length + "</span><span>" + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span></div></div>" +
+      '<button class="btn ghost" data-action="copy-soru" data-scope="pratik" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋</button>' +
+      '<button class="btn primary" data-action="pratik-kaydet-cik" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>' +
+      "</div>";
 
     var harfler = ["A", "B", "C", "D"];
     var secilen = currentPratik.secilen;
@@ -4033,7 +4040,7 @@ function pratikEnIyiHtml(konu, modulKey) {
         "</div>";
     }
 
-    return '<div class="card">' + cikisRow + meta + kopyalaButonHtml("pratik") + '<div class="q-text">' + escapeHtml(q.soru) + "</div>" + body + kaynakHtml + altNav + "</div>";
+    return '<div class="card">' + ustHtml + '<div class="q-text">' + escapeHtml(q.soru) + "</div>" + body + kaynakHtml + altNav + "</div>";
   }
 
   function renderResult() {
