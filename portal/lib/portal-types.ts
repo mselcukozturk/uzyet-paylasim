@@ -14,6 +14,7 @@ export type AttemptSummary = {
   mode: ExamMode;
   status: 'active' | 'paused' | 'finished';
   examCode: string;
+  isDaily: boolean;
   answeredCount: number;
   totalCount: number;
   elapsedSeconds: number;
@@ -48,7 +49,6 @@ export type DashboardData = {
   overallPercent: number | null;
   lastScore: AttemptSummary['score'] | null;
   activeAttempt: AttemptSummary | null;
-  recentAttempts: AttemptSummary[];
   topicStats: Array<{ topic: string; correct: number; total: number; percent: number }>;
   // Bitmiş resmi denemelerin konu kırılımı: deneme başına ortalama kaç soru geldiği
   // ve ortalama kaç doğru yapıldığı (Geçmiş ekranındaki "Konu bazlı ortalama" kartı).
@@ -57,6 +57,9 @@ export type DashboardData = {
   // Günün denemesi: myCorrect/avgCorrect (50 üzerinden doğru) yalnız kullanıcı çözdüyse dolu.
   daily: { day: string; code: string; solvedCount: number; myCorrect: number | null; avgCorrect: number | null };
 };
+
+// action "history": bitmiş denemeler, en yeniden eskiye, pageSize'lık sayfalar (page 0'dan).
+export type HistoryPage = { attempts: AttemptSummary[]; total: number; page: number; pageSize: number };
 
 export type PracticeQuestion = {
   guid: string;
@@ -111,7 +114,7 @@ export type ExamApiRequest =
   | { action: 'cancel'; attemptId: string }
   | { action: 'delete'; attemptId: string }
   | { action: 'finish'; attemptId: string }
-  | { action: 'history' }
+  | { action: 'history'; page?: number }
   | { action: 'flag'; questionGuid: string; note: string; category?: string | null; reported?: boolean; reminder?: boolean }
   | { action: 'reminders' }
   | { action: 'wrong-questions' }

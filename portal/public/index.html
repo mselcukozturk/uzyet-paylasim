@@ -312,6 +312,7 @@
     "Arşiv": 0
   };
   var MOD_ADI = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar", zor: "Zor Deneme" };
+  function denemeAdi(a) { return a.isDaily ? "☀️ Günün Denemesi" : (MOD_ADI[a.mode] || a.mode); }
   var MOD_RENK = { rastgele: "var(--seri-6)", azgorulen: "var(--seri-5)", yanlislar: "var(--seri-3)", zor: "var(--seri-7)" };
   var KONU_SIRA = Object.keys(RESMI_DAGILIM_DEFAULT);
   function konuSeriIdx(konu) {
@@ -1628,6 +1629,7 @@
     denemeIsimTaslak = "";
     denemePinTaslak = "";
     remoteDash = null;
+    remoteGecmis = null;
     remoteBankLoaded = false;
     remoteReminderGuids = null;
     remoteWrongGuids = null;
@@ -1653,7 +1655,7 @@
 
   function uzakExamKur(d) {
     currentExam = {
-      tip: d.mode, uzak: true, uzakAttemptId: d.id, examCode: d.examCode,
+      tip: d.mode, uzak: true, uzakAttemptId: d.id, examCode: d.examCode, isDaily: !!d.isDaily,
       sorular: d.questions.map(function (q) { return q.guid; }),
       index: 0, cevaplar: d.answers || {}, uyarilar: [], gecenSaniye: d.elapsedSeconds || 0
     };
@@ -1785,8 +1787,21 @@
   function openHistoryRemote() {
     if (aiModu) leaveAiSources(); // üst çubuktaki 📊 AI ekranından da basılabilir
     VIEW = "gecmisUzak";
+    remoteGecmis = null;
     render();
     remoteRefreshDashboard(render);
+    remoteLoadGecmis(0);
+  }
+
+  // Geçmiş sayfa sayfa gelir (sunucu: action "history", 20'şer). Son sayfadaki tek deneme
+  // silinince boş sayfada kalmamak için bir önceki sayfaya düşülür.
+  var remoteGecmis = null;
+  function remoteLoadGecmis(page) {
+    remoteFetch("/api/exam", "POST", { action: "history", page: page }).then(function (r) {
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Geçmiş yüklenemedi.", true); return; }
+      if (page > 0 && !r.data.attempts.length && r.data.total) { remoteLoadGecmis(page - 1); return; }
+      remoteGecmis = r.data;
+    }).catch(function () { showBanner("Bağlantı hatası.", true); }).then(function () { if (VIEW === "gecmisUzak") render(); });
   }
 
   function openGecmisDetay(attemptId) {
@@ -1812,11 +1827,13 @@
       gecmisSilConfirmId = null;
       if (!r.ok) { showBanner((r.data && r.data.error) || "Silinemedi.", true); render(); return; }
       remoteRefreshDashboard(render);
+      remoteLoadGecmis(remoteGecmis ? remoteGecmis.page : 0);
     }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
   }
 
   function renderGecmisUzak() {
-    var list = (remoteDash && remoteDash.recentAttempts) || [];
+    var g = remoteGecmis;
+    var list = (g && g.attempts) || [];
     var es = remoteDash && remoteDash.examStats;
     var ozetHtml = es ? '<div class="stat-grid">' +
       '<div class="stat-card"><div class="num">' + es.count + '</div><div class="lbl">Toplam deneme</div></div>' +
@@ -1837,7 +1854,7 @@
       return '<div class="card" style="border-left:4px solid ' + renk + ';margin-bottom:10px;padding:14px 16px">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">' +
         '<div style="cursor:pointer;flex:1" data-action="open-gecmis-detay" data-id="' + a.id + '">' +
-        '<div class="title" style="font-weight:700">' + (MOD_ADI[a.mode] || a.mode) + '</div>' +
+        '<div class="title" style="font-weight:700">' + denemeAdi(a) + '</div>' +
         '<div class="desc" style="color:var(--text-muted);font-size:0.86rem">' + fmtTarih(a.updatedAt) + " · ⏱ " + fmtSure(a.elapsedSeconds || 0) + " · " + skorTxt + "</div></div>" +
         silBlok +
         "</div></div>";
@@ -1846,7 +1863,18 @@
       '<div class="section-title">📊 Deneme Geçmişi</div>' +
       ozetHtml +
       konuHtml +
-      (list.length ? rows : '<div class="card">Henüz tamamlanmış resmi deneme yok.</div>');
+      (!g ? '<div class="card">Yükleniyor…</div>'
+        : list.length ? rows + gecmisSayfaHtml(g) : '<div class="card">Henüz tamamlanmış resmi deneme yok.</div>');
+  }
+
+  function gecmisSayfaHtml(g) {
+    var sayfaSayisi = Math.ceil(g.total / g.pageSize);
+    if (sayfaSayisi <= 1) return "";
+    return '<div class="link-row" style="justify-content:space-between;align-items:center;margin-top:4px">' +
+      '<button class="btn ghost" data-action="gecmis-sayfa" data-page="' + (g.page - 1) + '"' + (g.page <= 0 ? " disabled" : "") + ">← Daha yeni</button>" +
+      '<span class="muted">Sayfa ' + (g.page + 1) + " / " + sayfaSayisi + " · " + g.total + " deneme</span>" +
+      '<button class="btn ghost" data-action="gecmis-sayfa" data-page="' + (g.page + 1) + '"' + (g.page >= sayfaSayisi - 1 ? " disabled" : "") + ">Daha eski →</button>" +
+      "</div>";
   }
 
   // "Ortalama puan"ın konu kırılımı: bitmiş denemelerde konu başına ortalama kaç
@@ -1964,7 +1992,7 @@
           '<button class="btn ghost" data-action="discard-exam-remote">Sil</button>' +
           "</div>";
       return '<div class="card resume-card">' +
-        '<div class="title">Yarım kalan resmi deneme — ' + MOD_ADI[a.mode] + "</div>" +
+        '<div class="title">Yarım kalan resmi deneme — ' + denemeAdi(a) + "</div>" +
         '<div class="desc">' + a.answeredCount + " / " + a.totalCount + " soru cevaplanmış</div>" +
         aksiyonlar +
         "</div>";
@@ -3583,7 +3611,7 @@
     return uyariHtml +
       '<div class="progressbar"><div style="width:' + progress + '%"></div></div>' +
       '<div class="card">' +
-      '<div class="q-meta"><span>' + MOD_ADI[currentExam.tip] + " · " + (idx + 1) + " / " + currentExam.sorular.length + " · " + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span>" +
+      '<div class="q-meta"><span>' + denemeAdi({ isDaily: currentExam.isDaily, mode: currentExam.tip }) + " · " + (idx + 1) + " / " + currentExam.sorular.length + " · " + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span>" +
       '<span id="exam-timer" class="exam-timer" title="Geçen süre — resmi sınav 50 soru / 60 dk">⏱ ' + fmtSure(currentExam.gecenSaniye || 0) + "</span></div>" +
       kopyalaButonHtml("exam") +
       '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
@@ -4195,6 +4223,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "cancel-discard-exam-remote") cancelDiscardExamRemote();
     else if (action === "open-history-remote") openHistoryRemote();
     else if (action === "open-gecmis-detay") openGecmisDetay(t.getAttribute("data-id"));
+    else if (action === "gecmis-sayfa") remoteLoadGecmis(Number(t.getAttribute("data-page")));
     else if (action === "request-delete-gecmis") requestDeleteGecmis(t.getAttribute("data-id"));
     else if (action === "confirm-delete-gecmis") confirmDeleteGecmis(t.getAttribute("data-id"));
     else if (action === "cancel-delete-gecmis") cancelDeleteGecmis();

@@ -57,6 +57,8 @@ function summary(attempt: Attempt, totalCount: number, answeredCount: number) {
     mode: attempt.mode,
     status: attempt.status,
     examCode: attempt.examCode,
+    // Günün denemesi başladığı günün koduyla açılır; geçmişte ve kartlarda adıyla gösterilir.
+    isDaily: attempt.examCode === dailyExamCode(dailyExamDay(attempt.startedAt)),
     answeredCount,
     totalCount,
     elapsedSeconds: currentElapsed(attempt),
@@ -202,7 +204,6 @@ async function dashboard(userId: string) {
     overallPercent: scoredTotal ? Math.round(scoredCorrect / scoredTotal * 100) : null,
     lastScore: completed.length ? toSummary(completed[0]).score : null,
     activeAttempt: open ? toSummary(open) : null,
-    recentAttempts: completed.slice(0, 6).map(toSummary),
     topicStats,
     examTopicStats,
     examStats: completedCount ? {
@@ -219,6 +220,52 @@ async function dashboard(userId: string) {
       myCorrect: myDaily ? myDaily.correct ?? 0 : null,
       avgCorrect: myDaily ? Math.round(dailyRows.reduce((sum, row) => sum + (row.correct ?? 0), 0) / dailyRows.length * 10) / 10 : null,
     },
+  };
+}
+
+const HISTORY_PAGE_SIZE = 20;
+
+// Geçmiş ekranı: bitmiş denemelerin tamamı, en yeniden eskiye sayfa sayfa.
+async function historyPage(userId: string, page: number) {
+  const db = getDb();
+  const where = and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.status, 'finished'));
+  const [rows, totalRows] = await Promise.all([
+    db.select().from(schema.examAttempts).where(where)
+      .orderBy(desc(schema.examAttempts.finishedAt), desc(schema.examAttempts.id))
+      .limit(HISTORY_PAGE_SIZE).offset(page * HISTORY_PAGE_SIZE),
+    db.select({ value: count() }).from(schema.examAttempts).where(where),
+  ]);
+  return {
+    attempts: rows.map((item) => {
+      const total = (item.correctCount ?? 0) + (item.wrongCount ?? 0) + (item.blankCount ?? 0);
+      return summary(item, total, total - (item.blankCount ?? 0));
+    }),
+    total: Number(totalRows[0]?.value ?? 0),
+    page,
+    pageSize: HISTORY_PAGE_SIZE,
+  };
+}
+
+type DbReader = Pick<ReturnType<typeof getDb>, 'select'>;
+
+// Bir koda ait ilk denemenin 50 soruluk anlık görüntüsü; yoksa null.
+async function codeSnapshot(reader: DbReader, code: string) {
+  const [source] = await reader.select({ id: schema.examAttempts.id, bankId: schema.examAttempts.bankId })
+    .from(schema.examAttempts)
+    .where(eq(schema.examAttempts.examCode, code))
+    .orderBy(asc(schema.examAttempts.startedAt))
+    .limit(1);
+  if (!source) return null;
+  const sourceQuestions = await reader.select().from(schema.examAttemptQuestions)
+    .where(eq(schema.examAttemptQuestions.attemptId, source.id))
+    .orderBy(asc(schema.examAttemptQuestions.position));
+  if (sourceQuestions.length !== 50) return null;
+  return {
+    bankId: source.bankId,
+    snapshots: sourceQuestions.map((item) => ({
+      questionId: item.questionId, questionGuid: item.questionGuid, topic: item.topic,
+      prompt: item.prompt, options: item.options, correctIndex: item.correctIndex, explanation: item.explanation,
+    })),
   };
 }
 
@@ -373,8 +420,12 @@ async function handlePost(request: Request) {
       } satisfies PracticeStatsResponse);
     }
 
-    if (body.action === 'dashboard' || body.action === 'history') {
+    if (body.action === 'dashboard') {
       return NextResponse.json(await dashboard(user.id));
+    }
+
+    if (body.action === 'history') {
+      return NextResponse.json(await historyPage(user.id, Math.max(0, Math.floor(Number(body.page) || 0))));
     }
 
     if (body.action === 'bank') {
@@ -422,36 +473,17 @@ async function handlePost(request: Request) {
       // istatistiğe bağlı modlar da dahil, kodu açan HERKES böylece aynı 50 soruyu görür
       // — kişisel istatistiğe göre yeniden seçim yalnız kodun ilk kullanımında (kodu
       // üretenin kendi başlatması dahil) yapılır.
-      let reusedSnapshots: QuestionSnapshot[] | null = null;
-      let reusedBankId: string | null = null;
-      if (requestedCode) {
-        const canonicalCode = examCode(mode, seed);
-        const [source] = await db.select({ id: schema.examAttempts.id, bankId: schema.examAttempts.bankId })
-          .from(schema.examAttempts)
-          .where(eq(schema.examAttempts.examCode, canonicalCode))
-          .orderBy(asc(schema.examAttempts.startedAt))
-          .limit(1);
-        if (source) {
-          const sourceQuestions = await db.select().from(schema.examAttemptQuestions)
-            .where(eq(schema.examAttemptQuestions.attemptId, source.id))
-            .orderBy(asc(schema.examAttemptQuestions.position));
-          if (sourceQuestions.length === 50) {
-            reusedSnapshots = sourceQuestions.map((item) => ({
-              questionId: item.questionId, questionGuid: item.questionGuid, topic: item.topic,
-              prompt: item.prompt, options: item.options, correctIndex: item.correctIndex, explanation: item.explanation,
-            }));
-            reusedBankId = source.bankId;
-          }
-        }
-      }
+      const code = examCode(mode, seed);
+      const reused = requestedCode ? await codeSnapshot(db, code) : null;
 
-      if (reusedSnapshots && reusedBankId) {
-        bankId = reusedBankId;
-        snapshots = reusedSnapshots;
+      if (reused) {
+        ({ bankId, snapshots } = reused);
       } else {
         const [bank] = await db.select().from(schema.questionBanks).where(eq(schema.questionBanks.isActive, true)).limit(1);
         if (!bank) return fail('Aktif soru bankası bulunamadı.', 503);
-        const questionRows = await db.select().from(schema.questions).where(eq(schema.questions.bankId, bank.id));
+        // guid sırası: Postgres satır sırası garanti değil; aynı kod + aynı banka hep aynı seçimi versin.
+        const questionRows = await db.select().from(schema.questions).where(eq(schema.questions.bankId, bank.id))
+          .orderBy(asc(schema.questions.guid));
         const bankQuestions: BankQuestion[] = questionRows.map((item) => ({
           id: item.id,
           guid: item.guid,
@@ -483,11 +515,18 @@ async function handlePost(request: Request) {
       }
 
       const created = await db.transaction(async (tx) => {
+        if (requestedCode && !reused) {
+          // Aynı koda (ör. günün denemesine) iki kişi aynı anda İLK kez başlarsa kilit onları
+          // sıraya sokar; ikincisi ilkinin kaydettiği görüntüyü alır — banka arada değişse bile.
+          await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${code}))`);
+          const winner = await codeSnapshot(tx, code);
+          if (winner) ({ bankId, snapshots } = winner);
+        }
         const [attempt] = await tx.insert(schema.examAttempts).values({
           userId: user.id,
           bankId,
           mode,
-          examCode: examCode(mode, seed),
+          examCode: code,
         }).returning();
         const insertedQuestions = await tx.insert(schema.examAttemptQuestions).values(snapshots.map((item, index) => ({
           attemptId: attempt.id,
