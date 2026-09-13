@@ -176,6 +176,9 @@
   .mode-btn .title { display: flex; align-items: center; font-weight: 700; font-size: 1.08rem; margin-bottom: 4px; }
   .mode-btn .desc { color: var(--text-muted); font-size: 0.86rem; }
   .link-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .cp-nav { flex-wrap: nowrap; justify-content: space-between; margin-top: 20px; }
+  .cp-nav .btn { padding: 9px 12px; white-space: nowrap; }
+  .cp-nav .btn:last-child { margin-left: auto; }
   .ust-bar { flex-wrap: nowrap; align-items: center; gap: 8px; }
   .ust-bar .btn { padding: 9px 12px; flex-shrink: 0; }
   .ust-bar-hesap { margin-left: auto; display: flex; align-items: center; gap: 8px; min-width: 0; }
@@ -3507,7 +3510,7 @@
     return '<div class="card">' + ustHtml +
       '<div class="cp-content">' + sorular[index] + "</div>" +
       hatirlaticiBtn +
-      '<div class="link-row" style="margin-top:20px">' +
+      '<div class="link-row cp-nav">' +
       (index > 0 ? '<button class="btn" data-action="checkpoint-onceki">← Önceki Madde</button>' : "") +
       '<button class="btn primary" data-action="checkpoint-sonraki">' + (index < sorular.length - 1 ? "Sonraki Madde →" : "Tamamla →") + "</button></div></div>";
   }
