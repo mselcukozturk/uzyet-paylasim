@@ -1661,10 +1661,10 @@
     VIEW = "exam";
   }
 
-  function startExamRemote(mode, examCodeRaw) {
+  function startExamRemote(mode, examCodeRaw, daily) {
     if (remoteBusy) return;
     remoteBusy = true;
-    var body = examCodeRaw ? { action: "start", mode: "rastgele", examCode: examCodeRaw } : { action: "start", mode: mode };
+    var body = daily ? { action: "start", mode: "rastgele", daily: true } : examCodeRaw ?{ action: "start", mode: "rastgele", examCode: examCodeRaw } : { action: "start", mode: mode };
     remoteFetch("/api/exam", "POST", body).then(function (r) {
       remoteBusy = false;
       if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav başlatılamadı.", true); render(); return; }
@@ -1773,6 +1773,8 @@
       uzakSonucKur(r.data);
       currentExam = null;
       remoteDash = null;
+      // Günün denemesiyse sonuç ekranı ortalamayı bu tazelemeden alır.
+      remoteRefreshDashboard(function () { if (VIEW === "result") render(); });
       remoteWrongGuids = null;
       remoteLoadWrongQuestions();
       VIEW = "result";
@@ -2010,7 +2012,26 @@
       '<input type="text" id="exam-code-input" placeholder="ör. UZY-R1K2M3P" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body)">' +
       '<button class="btn primary" data-action="start-exam-code">Kodla Başla</button>' +
       "</div></div>";
-    return (denemeTurSecimiAcik ? yeniDenemeHtml : '<div class="mode-grid">' + yeniDenemeHtml + "</div>") + koduCardHtml;
+    return gununDenemesiHtml() + (denemeTurSecimiAcik ? yeniDenemeHtml : '<div class="mode-grid">' + yeniDenemeHtml + "</div>") + koduCardHtml;
+  }
+
+  // Günün denemesi: kodu sunucu her sabah 07:00'de değiştirir, herkese aynı 50 soru.
+  // Puan ve ortalama yalnız çözdükten sonra gelir; menüye her dönüşte dashboard tazelenir.
+  function gununDenemesiHtml() {
+    var g = remoteDash && remoteDash.daily;
+    if (!g) return "";
+    var tarih = new Date(g.day + "T12:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
+    var govde = g.myPercent === null
+      ? '<div class="muted" style="margin-bottom:10px">Her sabah 07:00\'de yenilenir, herkese aynı 50 soru. ' +
+        (g.solvedCount ? g.solvedCount + " kişi çözdü — ortalamayı çözünce görürsün." : "Bugün henüz çözen yok.") + "</div>" +
+        '<button class="btn primary" data-action="start-daily-exam"' + (remoteBusy ? " disabled" : "") + ">Başla (60 dk)</button>"
+      : '<div class="muted">Puanın <b style="color:' + renkEsigi(g.myPercent) + '">%' + g.myPercent + "</b> · " +
+        gununDenemesiOrtalamaHtml(g) + "</div>";
+    return '<div class="card" style="margin-bottom:14px">' +
+      '<div class="section-title" style="font-size:1rem;margin-bottom:6px">☀️ Günün Denemesi — ' + tarih + "</div>" + govde + "</div>";
+  }
+  function gununDenemesiOrtalamaHtml(g) {
+    return "çözen " + g.solvedCount + " kişinin ortalaması <b>%" + g.avgPercent + "</b>";
   }
 
   function startExam(mode, seedOverride) {
@@ -3935,6 +3956,9 @@ function pratikEnIyiHtml(konu, modulKey) {
       '<span class="pill bad">' + r.skor.yanlis + " yanlış</span>" +
       '<span class="pill warn">' + r.skor.bos + " boş</span>" +
       yuzdeHtml + sureHtml + "</div>" +
+      (r.uzak && remoteDash && remoteDash.daily && remoteDash.daily.avgPercent !== null && r.examCode === remoteDash.daily.code
+        ? '<div class="muted" style="margin:8px 0">☀️ Günün denemesi — ' + gununDenemesiOrtalamaHtml(remoteDash.daily) + "</div>"
+        : "") +
       '<table class="topic-table"><thead><tr><th>Konu</th><th class="num">Doğru</th><th class="num">Yanlış</th><th class="num">Boş</th></tr></thead><tbody>' +
       topicRows + "</tbody></table>" +
       '<div class="link-row" style="margin-top:14px">' +
@@ -4155,6 +4179,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "start-deneme-konu-flash") startFlash("bank", t.getAttribute("data-konu"));
     else if (action === "start-exam") startExam(t.getAttribute("data-mode"));
     else if (action === "start-exam-code") startExamWithCode();
+    else if (action === "start-daily-exam") startExamRemote("rastgele", null, true);
     else if (action === "ac-yeni-deneme-turleri") { denemeTurSecimiAcik = true; render(); }
     else if (action === "kapat-yeni-deneme-turleri") { denemeTurSecimiAcik = false; render(); }
     else if (action === "prepare-exam-remote") prepareExamRemote(t.getAttribute("data-mode"));

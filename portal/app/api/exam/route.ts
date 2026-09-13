@@ -4,6 +4,8 @@ import { getSessionProfile } from '@/lib/auth/session';
 import { corsPreflight, withCors } from '@/lib/cors';
 import { getDb, schema } from '@/lib/db';
 import {
+  dailyExamCode,
+  dailyExamDay,
   examCode,
   mulberry32,
   parseExamCode,
@@ -182,6 +184,17 @@ async function dashboard(userId: string) {
   const avgPercentRaw = avgRows[0]?.avgPercent;
   const avgSecondsRaw = avgRows[0]?.avgSeconds;
 
+  // Günün denemesi: her kullanıcının o koddaki İLK bitmiş denemesi sayılır (tekrar çözen
+  // ortalamayı şişirmesin). Puan ve ortalama yalnız kendisi çözmüş olana döner.
+  const dailyDay = dailyExamDay();
+  const dailyCode = dailyExamCode(dailyDay);
+  const dailyRows = await db.selectDistinctOn([schema.examAttempts.userId], {
+    userId: schema.examAttempts.userId, percent: schema.examAttempts.scorePercent,
+  }).from(schema.examAttempts)
+    .where(and(eq(schema.examAttempts.examCode, dailyCode), eq(schema.examAttempts.status, 'finished')))
+    .orderBy(schema.examAttempts.userId, asc(schema.examAttempts.finishedAt));
+  const myDaily = dailyRows.find((row) => row.userId === userId);
+
   return {
     displayName: profile?.displayName || profile?.username || 'Kullanıcı',
     bankQuestionCount: bank?.questionCount ?? 0,
@@ -198,6 +211,13 @@ async function dashboard(userId: string) {
       avgCorrect: Math.round(Number(avgRows[0]?.avgCorrect ?? 0)),
       avgSeconds: Math.round(Number(avgSecondsRaw ?? 0)),
     } : null,
+    daily: {
+      day: dailyDay,
+      code: dailyCode,
+      solvedCount: dailyRows.length,
+      myPercent: myDaily ? myDaily.percent ?? 0 : null,
+      avgPercent: myDaily ? Math.round(dailyRows.reduce((sum, row) => sum + (row.percent ?? 0), 0) / dailyRows.length) : null,
+    },
   };
 }
 
@@ -381,8 +401,9 @@ async function handlePost(request: Request) {
       let mode: ExamMode = body.mode;
       let seed = crypto.getRandomValues(new Uint32Array(1))[0];
       if (!['rastgele', 'azgorulen', 'yanlislar', 'zor'].includes(mode)) return fail('Sınav modu geçersiz.', 400);
-      if (body.examCode) {
-        const parsed = parseExamCode(body.examCode);
+      const requestedCode = body.daily ? dailyExamCode(dailyExamDay()) : body.examCode;
+      if (requestedCode) {
+        const parsed = parseExamCode(requestedCode);
         if (!parsed) return fail('Deneme kodu geçersiz.', 400);
         mode = parsed.mode;
         seed = parsed.seed;
@@ -402,7 +423,7 @@ async function handlePost(request: Request) {
       // üretenin kendi başlatması dahil) yapılır.
       let reusedSnapshots: QuestionSnapshot[] | null = null;
       let reusedBankId: string | null = null;
-      if (body.examCode) {
+      if (requestedCode) {
         const canonicalCode = examCode(mode, seed);
         const [source] = await db.select({ id: schema.examAttempts.id, bankId: schema.examAttempts.bankId })
           .from(schema.examAttempts)
