@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { and, asc, avg, count, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, avg, count, desc, eq, gte, inArray, sql } from 'drizzle-orm';
 import { getSessionProfile } from '@/lib/auth/session';
 import { corsPreflight, withCors } from '@/lib/cors';
 import { getDb, schema } from '@/lib/db';
@@ -94,7 +94,7 @@ async function loadAttempt(userId: string, attemptId: string) {
 
 async function dashboard(userId: string) {
   const db = getDb();
-  const [profileRows, bankRows, attempts, stats, completedRows, avgRows] = await Promise.all([
+  const [profileRows, bankRows, attempts, stats, completedRows, avgRows, weekRows] = await Promise.all([
     db.select().from(schema.profiles).where(eq(schema.profiles.userId, userId)).limit(1),
     db.select().from(schema.questionBanks).where(eq(schema.questionBanks.isActive, true)).limit(1),
     db.select().from(schema.examAttempts).where(eq(schema.examAttempts.userId, userId)).orderBy(desc(schema.examAttempts.updatedAt)).limit(12),
@@ -102,8 +102,13 @@ async function dashboard(userId: string) {
     db.select({ value: count() }).from(schema.examAttempts).where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.status, 'finished'))),
     db.select({ avgPercent: avg(schema.examAttempts.scorePercent), avgCorrect: avg(schema.examAttempts.correctCount), avgSeconds: avg(schema.examAttempts.elapsedSeconds) })
       .from(schema.examAttempts).where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.status, 'finished'))),
+    // Son dönem performansı: son 7 günde biten denemeler (13 Eyl 2026 kullanıcı isteği).
+    db.select({ count: count(), avgCorrect: avg(schema.examAttempts.correctCount) })
+      .from(schema.examAttempts).where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.status, 'finished'),
+        gte(schema.examAttempts.finishedAt, sql`now() - interval '7 days'`))),
   ]);
   const profile = profileRows[0];
+  const weekCount = Number(weekRows[0]?.count ?? 0);
   const bank = bankRows[0];
   const attemptIds = attempts.map((item) => item.id);
   const questionCounts = attemptIds.length
@@ -211,6 +216,9 @@ async function dashboard(userId: string) {
       avgPercent: Math.round(Number(avgPercentRaw ?? 0)),
       avgCorrect: Math.round(Number(avgRows[0]?.avgCorrect ?? 0)),
       avgSeconds: Math.round(Number(avgSecondsRaw ?? 0)),
+      weekCount,
+      // 50 üzerinden ortalama doğru, tek ondalık; son 7 günde deneme yoksa null.
+      weekAvgCorrect: weekCount ? Math.round(Number(weekRows[0]?.avgCorrect ?? 0) * 10) / 10 : null,
     } : null,
     daily: {
       day: dailyDay,

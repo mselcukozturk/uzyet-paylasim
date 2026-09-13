@@ -53,7 +53,7 @@ export type DashboardData = {
   // Bitmiş resmi denemelerin konu kırılımı: deneme başına ortalama kaç soru geldiği
   // ve ortalama kaç doğru yapıldığı (Geçmiş ekranındaki "Konu bazlı ortalama" kartı).
   examTopicStats: Array<{ topic: string; asked: number; correct: number; avgAsked: number; avgCorrect: number; percent: number }>;
-  examStats: { count: number; avgPercent: number; avgCorrect: number; avgSeconds: number } | null;
+  examStats: { count: number; avgPercent: number; avgCorrect: number; avgSeconds: number; weekCount: number; weekAvgCorrect: number | null } | null;
   // Günün denemesi: myCorrect/avgCorrect (50 üzerinden doğru) yalnız kullanıcı çözdüyse dolu.
   daily: { day: string; code: string; solvedCount: number; myCorrect: number | null; avgCorrect: number | null };
 };

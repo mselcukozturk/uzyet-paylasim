@@ -43,6 +43,12 @@ void test('Geçmiş: konu bazlı ortalama kartı ortalama doğru/soru ve yüzdey
   assert.doesNotMatch(out, /grid-template-columns:[^;"]*auto/);
 });
 
+void test('Geçmiş özeti genel ortalamanın yanında son 7 gün ortalamasını gösterir', () => {
+  const render = script.match(/function renderGecmisUzak\(\) \{[\s\S]*?^  \}/m)![0];
+  assert.match(render, /es\.weekAvgCorrect == null \? "—" : fmtOrt\(es\.weekAvgCorrect\) \+ "\/50"/);
+  assert.match(render, /Son 7 gün · ' \+ \(es\.weekCount \|\| 0\) \+ ' deneme/);
+});
+
 void test('Geçmiş ekranı ayrı geri düğmesi yerine ana ekranla aynı üst çubuğu kullanır', () => {
   const render = script.match(/function renderGecmisUzak\(\) \{[\s\S]*?^  \}/m)![0];
   assert.match(render, /return ustBarHtml\(\) \+/);
