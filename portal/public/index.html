@@ -3256,12 +3256,34 @@
   // kullanıcının kaldığı soru hesabına bağlı olarak saklanır.
   function checkpointBul(id) { return STATE.checkpoints.filter(function (c) { return c.id === id; })[0]; }
 
+  // Maddeler <li>'lerdir; hatırlatıcı guid'i ve yarım oturum konumu bu sıraya bağlı, değişmez.
+  // Liste dışı içerik (tablo, paragraf) hiçbir maddeye girmiyordu (13 Eyl 2026 geri bildirimi:
+  // "tablo var ama gözükmüyor"). Artık maddeden sonra gelen o maddenin altına, başlıkla başlayıp
+  // listeden önce gelen sonraki maddenin üstüne, kendi listesi olmayan başlıklı blok (bölüm özet
+  // tablosu) başlığıyla önceki maddenin altına eklenir. Doğrudan listeye giden başlık eklenmez.
   function checkpointSorular(c) {
     if (!c) return [];
     var doc = new DOMParser().parseFromString(c.html || "", "text/html");
-    var listItems = Array.prototype.slice.call(doc.querySelectorAll("li"));
-    if (!listItems.length) return [doc.body.innerHTML || c.html || ""];
-    return listItems.map(function (item) { return item.innerHTML; }).filter(function (html) { return html.trim() !== ""; });
+    var maddeler = Array.prototype.slice.call(doc.querySelectorAll("li")).filter(function (li) { return li.innerHTML.trim() !== ""; });
+    if (!maddeler.length) return [doc.body.innerHTML || c.html || ""];
+    var once = maddeler.map(function () { return ""; }), sonra = once.slice();
+    var son = -1, baslik = "", blok = "";
+    Array.prototype.forEach.call(doc.body.children, function (el) {
+      var icerdekiler = maddeler.filter(function (li) { return el.contains(li); });
+      if (icerdekiler.length) {
+        if (blok) once[maddeler.indexOf(icerdekiler[0])] += blok;
+        blok = ""; baslik = "";
+        son = maddeler.indexOf(icerdekiler[icerdekiler.length - 1]);
+      } else if (/^H[1-6]$/.test(el.tagName)) {
+        if (blok && son >= 0) { sonra[son] += blok; blok = ""; }
+        if (blok) blok += el.outerHTML; else baslik += el.outerHTML;
+      } else if (el.tagName !== "HR") {
+        if (baslik || blok || son < 0) { blok += baslik + el.outerHTML; baslik = ""; }
+        else sonra[son] += el.outerHTML;
+      }
+    });
+    if (blok) sonra[Math.max(son, 0)] += blok;
+    return maddeler.map(function (li, i) { return once[i] + li.innerHTML + sonra[i]; });
   }
 
   // Checkpoint maddelerinin kendi guid'i yok (c.html'den index'e göre türetiliyor) —

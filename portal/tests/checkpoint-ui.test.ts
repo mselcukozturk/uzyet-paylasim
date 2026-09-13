@@ -11,6 +11,9 @@ function fn(name: string) {
 
 void test('checkpoint maddeleri ileri-geri gezilen ve kaldığı yerden devam eden notlara dönüşür', () => {
   assert.match(fn('checkpointSorular'), /querySelectorAll\("li"\)/);
+  // Liste dışı tablo/paragraflar komşu maddeye eklenir; madde sırası (hatırlatıcı guid'i) değişmez.
+  assert.match(fn('checkpointSorular'), /doc\.body\.children/);
+  assert.match(fn('checkpointSorular'), /return maddeler\.map\(function \(li, i\) \{ return once\[i\] \+ li\.innerHTML \+ sonra\[i\]; \}\)/);
   assert.match(fn('checkpointSlotYaz'), /practice-session-save/);
   assert.match(fn('checkpointDevamEt'), /practice-session-load/);
   assert.match(fn('checkpointSlotSil'), /practice-session-delete/);
