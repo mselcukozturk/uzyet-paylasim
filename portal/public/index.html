@@ -3491,8 +3491,15 @@
     var c = checkpointBul(currentCheckpoint.id), sorular = checkpointSorular(c);
     if (!c || !sorular.length) { currentCheckpoint = null; return '<div class="card">Checkpoint artık bulunamadı. <button class="btn" data-action="open-checkpoint-liste">Listeye Dön</button></div>'; }
     if (currentCheckpoint.bitti) {
+      // "Özetlere Dön" yerine aynı dersin listedeki sonraki bölümü (13 Eyl 2026 kullanıcı isteği);
+      // yarım oturumu varsa kaldığı yerden devam eder, dersin son bölümünde buton yok.
+      var dersListesi = STATE.checkpoints.filter(function (x) { return x.konu === c.konu; });
+      var sonraki = dersListesi[dersListesi.indexOf(c) + 1];
+      var sonrakiBtn = sonraki
+        ? '<button class="btn primary" data-action="' + (checkpointDevamVarMi(sonraki) ? "devam-checkpoint" : "start-checkpoint") + '" data-id="' + escapeHtml(sonraki.id) + '">Sıradaki Bölüm →</button>'
+        : "";
       return '<div class="card"><div class="section-title">Checkpoint bitti 🎉</div><div class="muted">' + escapeHtml(c.title) + " içindeki " + sorular.length + " maddeyi tamamladın.</div>" +
-        '<div class="link-row" style="margin-top:14px"><button class="btn primary" data-action="start-checkpoint" data-id="' + escapeHtml(c.id) + '">Tekrar Başlat</button><button class="btn" data-action="checkpoint-kaydet-cik">Özetlere Dön</button></div></div>';
+        '<div class="link-row' + (sonraki ? " cp-nav" : "") + '" style="margin-top:14px"><button class="btn" data-action="start-checkpoint" data-id="' + escapeHtml(c.id) + '">Tekrar Başlat</button>' + sonrakiBtn + "</div></div>";
     }
     var index = Math.min(currentCheckpoint.index, sorular.length - 1);
     var guid = checkpointGuid(c, index);
