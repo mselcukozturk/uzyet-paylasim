@@ -1918,7 +1918,7 @@
     var konuHtml = konuOrtalamaKartiHtml();
     var rows = list.map(function (a) {
       var toplam = a.score ? (a.score.correct + a.score.wrong + a.score.blank) : a.totalCount;
-      var skorTxt = a.score ? (a.score.correct + " / " + toplam + " · %" + a.score.percent) : "—";
+      var skorTxt = a.score ? (a.score.correct + " / " + toplam) : "—";
       var renk = MOD_RENK[a.mode] || "var(--seri-6)";
       var silBlok = gecmisSilConfirmId === a.id
         ? '<span style="display:flex;gap:4px;flex-shrink:0">' +
@@ -1963,11 +1963,13 @@
     if (!ts.length) return "";
     var satirlar = ts.map(function (t) {
       var pct = t.percent || 0;
-      return '<div class="history-row" style="grid-template-columns:1fr auto 90px 46px">' +
-        '<span>' + konuDotHtml(t.topic) + escapeHtml(t.topic) + "</span>" +
-        '<div class="bar-track" style="max-width:120px"><div class="bar-fill" style="width:' + pct + '%;background:' + renkEsigi(pct) + '"></div></div>' +
-        '<span style="font-variant-numeric:tabular-nums;text-align:right">' + fmtOrt(t.avgCorrect) + " / " + fmtOrt(t.avgAsked) + "</span>" +
-        '<span class="muted" style="text-align:right">%' + pct + "</span></div>";
+      // Her satır ayrı grid: kolonlar içeriğe bağlı olursa uzun konu adında sağdaki sayılar
+      // kayar. Sabit oran + ch genişliği yazı büyütülse de tüm satırlarda aynı hizada kalır.
+      return '<div class="history-row" style="grid-template-columns:minmax(0,2fr) minmax(0,1fr) 9.5ch 4.5ch;gap:10px">' +
+        '<span style="display:flex;align-items:center;min-width:0">' + konuDotHtml(t.topic) + "<span>" + escapeHtml(t.topic) + "</span></span>" +
+        '<div class="bar-track" style="max-width:120px;min-width:0"><div class="bar-fill" style="width:' + pct + '%;background:' + renkEsigi(pct) + '"></div></div>' +
+        '<span style="font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap">' + fmtOrt(t.avgCorrect) + " / " + fmtOrt(t.avgAsked) + "</span>" +
+        '<span class="muted" style="font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap">%' + pct + "</span></div>";
     }).join("");
     return '<div class="card" style="margin-bottom:16px">' +
       '<div class="section-title">Konu bazlı ortalama</div>' +

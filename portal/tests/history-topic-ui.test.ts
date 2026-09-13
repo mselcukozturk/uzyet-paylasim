@@ -38,6 +38,15 @@ void test('Geçmiş: konu bazlı ortalama kartı ortalama doğru/soru ve yüzdey
   assert.match(out, /Mali Analiz<\/span>[\s\S]*?1,6 \/ 5,0/);
   assert.match(out, /%75/);
   assert.match(out, /var\(--bad\)/);
+  // Uzun konu adında sağdaki sayılar kaymasın: kolonlar içeriğe bağlı (auto) değil, her satırda aynı.
+  assert.match(out, /grid-template-columns:minmax\(0,2fr\) minmax\(0,1fr\) 9\.5ch 4\.5ch/);
+  assert.doesNotMatch(out, /grid-template-columns:[^;"]*auto/);
+});
+
+void test('Geçmiş: deneme tarihçesi satırında puan yalnız doğru / toplam, yüzde yok', () => {
+  const render = script.match(/function renderGecmisUzak\(\) \{[\s\S]*?^  \}/m)![0];
+  assert.match(render, /var skorTxt = a\.score \? \(a\.score\.correct \+ " \/ " \+ toplam\) : "—";/);
+  assert.doesNotMatch(render, /score\.percent/);
 });
 
 void test('Geçmiş: veri yokken konu kartı hiç basılmaz', () => {
