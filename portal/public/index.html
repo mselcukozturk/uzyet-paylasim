@@ -3999,10 +3999,10 @@ function pratikEnIyiHtml(konu, modulKey) {
     // Üst blok: solda ilerleme + modül satırı, sağda 📋 ve 💾 aynı hizada (13 Eyl 2026 kullanıcı
     // isteği). Dar ekranda .genis-etiket gizlenir, düğmeler yalnız emojiyle tek satıra sığar.
     var ustHtml = '<div class="pratik-ust"><div class="pratik-ust-bilgi">' +
-      '<div class="muted" style="font-size:0.82rem">' + cevaplananSayisi + " / " + currentPratik.kuyruk.length +
-      ' cevaplandı<span class="genis-etiket"> · ilerleme her soruda otomatik kaydediliyor</span></div>' +
+      '<div class="muted" style="font-size:0.82rem">' + konuDotHtml(q.konu) + escapeHtml(q.konu) + " | " +
+      cevaplananSayisi + " / " + currentPratik.kuyruk.length + " cevaplandı</div>" +
       '<div class="q-meta"><span>' + karisikOnEki + escapeHtml(q.modul + " — " + modulAdi(q.konu, q.modul)) + " · " +
-      (currentPratik.index + 1) + " / " + currentPratik.kuyruk.length + "</span><span>" + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span></div></div>" +
+      (currentPratik.index + 1) + " / " + currentPratik.kuyruk.length + "</span></div></div>" +
       '<button class="btn ghost" data-action="copy-soru" data-scope="pratik" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋</button>' +
       '<button class="btn primary" data-action="pratik-kaydet-cik" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>' +
       "</div>";

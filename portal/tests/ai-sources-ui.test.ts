@@ -51,6 +51,9 @@ void test('pratik soru üst bloğu: bilgi solda, 📋 ve 💾 sağda aynı satı
   assert.match(soru, /data-action="copy-soru" data-scope="pratik" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋<\/button>'/);
   assert.match(soru, /aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık<\/span><\/button>'/);
   assert.doesNotMatch(soru, /kopyalaButonHtml\("pratik"\)/);
+  // Üst satır "• Ders | x / y cevaplandı"; otomatik kayıt açıklaması gösterilmez.
+  assert.match(soru, /konuDotHtml\(q\.konu\) \+ escapeHtml\(q\.konu\) \+ " \| " \+\s*cevaplananSayisi \+ " \/ " \+ currentPratik\.kuyruk\.length \+ " cevaplandı<\/div>"/);
+  assert.doesNotMatch(soru, /otomatik kaydediliyor/);
   assert.match(html, /@media \(max-width: 560px\) \{ \.genis-etiket \{ display: none; \} \}/);
 });
 
