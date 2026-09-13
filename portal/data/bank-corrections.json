@@ -1205,5 +1205,59 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "07 Diğer Konular/Ezber Notu - Çek.pdf",
   "tarihISO": "2026-09-12T23:17:37.393626+00:00"
+ },
+ {
+  "id": "gece-20260914-cae39b12e281",
+  "guid": "cae39b12e281",
+  "konu": "Temel İşlemler",
+  "soru": "Aşağıdaki şubelerden hangisi yurtdışı şubelerimiz arasında yer almaz?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "06 Döviz Temel İşlemler/markdown/06-yurt-disi-orgutumuz.md satır 187 (s.147, PDF s.161) / Temel Islemler_YYS_2026.pdf s.81",
+  "tarihISO": "2026-09-13T23:09:51.655231+00:00"
+ },
+ {
+  "id": "gece-20260914-6cf111bd68d3",
+  "guid": "6cf111bd68d3",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 döneminde Bankamızın Ödeme Sistemlerinden elde ettiği net komisyon tutarı yaklaşık ne kadardır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/Genel Ekonomi — Güncelleme Karşılaştırması (Ağu 2026).md satır 69 / YatirimciSunumu.pdf sl.13",
+  "tarihISO": "2026-09-13T23:09:51.655231+00:00"
+ },
+ {
+  "id": "gece-20260914-5931b234985a",
+  "guid": "5931b234985a",
+  "konu": "Ürünler",
+  "soru": "İlk İmza hesaplarında hangisi yapılamaz ?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "02 Ürünlerimiz/Ürünlerimiz YYS 2026.pdf s.228 (PDF s.245) / 02 Ürünlerimiz/markdown/05-diger-bireysel-bankacilik-urunlerimiz.md",
+  "tarihISO": "2026-09-13T23:09:51.655231+00:00"
+ },
+ {
+  "id": "gece-20260914-ab69c597875d",
+  "guid": "ab69c597875d",
+  "konu": "Ürünler",
+  "soru": "Sabit faizli konut kredisinde kalan vade 35 ay ise erken ödenen anapara üzerinden alınabilecek azami erken ödeme tazminatı oranı nedir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "02 Ürünlerimiz/Ürünlerimiz YYS 2026.pdf s.162 (PDF s.179) / 02 Ürünlerimiz/markdown/04-bireysel-krediler.md satır 611",
+  "tarihISO": "2026-09-13T23:09:51.655231+00:00"
+ },
+ {
+  "id": "gece-20260914-04540176c578",
+  "guid": "04540176c578",
+  "konu": "Hukuk",
+  "soru": "Kollektif şirketin sermayesi ile ilgili hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "01 Hukuk/Hukuk_TKR_2026.pdf s.121 (PDF s.140) / 01 Hukuk/markdown/03-ticaret-hukuku.md",
+  "tarihISO": "2026-09-13T23:09:51.655231+00:00"
+ },
+ {
+  "id": "gece-20260914-0de1c23bb831",
+  "guid": "0de1c23bb831",
+  "konu": "Mali Analiz",
+  "soru": "Bir firmanın değerlendirmeye esas segmentinin İşletme olabilmesi için son 2 yıl cirosunun hangi aralıkta olması gerekir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "05 İstihbarat/istihbarat_TKR_2026.pdf s.18 (PDF s.35) / 05 İstihbarat/markdown/01-istihbarat-ve-finansal-analiz-calismalarina-iliskin-genel-esaslar.md",
+  "tarihISO": "2026-09-13T23:09:51.655231+00:00"
  }
 ]
