@@ -189,7 +189,7 @@ async function dashboard(userId: string) {
   const dailyDay = dailyExamDay();
   const dailyCode = dailyExamCode(dailyDay);
   const dailyRows = await db.selectDistinctOn([schema.examAttempts.userId], {
-    userId: schema.examAttempts.userId, percent: schema.examAttempts.scorePercent,
+    userId: schema.examAttempts.userId, correct: schema.examAttempts.correctCount,
   }).from(schema.examAttempts)
     .where(and(eq(schema.examAttempts.examCode, dailyCode), eq(schema.examAttempts.status, 'finished')))
     .orderBy(schema.examAttempts.userId, asc(schema.examAttempts.finishedAt));
@@ -215,8 +215,9 @@ async function dashboard(userId: string) {
       day: dailyDay,
       code: dailyCode,
       solvedCount: dailyRows.length,
-      myPercent: myDaily ? myDaily.percent ?? 0 : null,
-      avgPercent: myDaily ? Math.round(dailyRows.reduce((sum, row) => sum + (row.percent ?? 0), 0) / dailyRows.length) : null,
+      // Puan 50 üzerinden doğru sayısıdır; ortalama tek ondalıklı (ör. 32.5).
+      myCorrect: myDaily ? myDaily.correct ?? 0 : null,
+      avgCorrect: myDaily ? Math.round(dailyRows.reduce((sum, row) => sum + (row.correct ?? 0), 0) / dailyRows.length * 10) / 10 : null,
     },
   };
 }

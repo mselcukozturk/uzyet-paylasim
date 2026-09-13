@@ -2021,17 +2021,17 @@
     var g = remoteDash && remoteDash.daily;
     if (!g) return "";
     var tarih = new Date(g.day + "T12:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
-    var govde = g.myPercent === null
+    var govde = g.myCorrect === null
       ? '<div class="muted" style="margin-bottom:10px">Her sabah 07:00\'de yenilenir, herkese aynı 50 soru. ' +
         (g.solvedCount ? g.solvedCount + " kişi çözdü — ortalamayı çözünce görürsün." : "Bugün henüz çözen yok.") + "</div>" +
         '<button class="btn primary" data-action="start-daily-exam"' + (remoteBusy ? " disabled" : "") + ">Başla (60 dk)</button>"
-      : '<div class="muted">Puanın <b style="color:' + renkEsigi(g.myPercent) + '">%' + g.myPercent + "</b> · " +
+      : '<div class="muted">Puanın <b style="color:' + renkEsigi(g.myCorrect * 2) + '">' + g.myCorrect + " / 50</b> · " +
         gununDenemesiOrtalamaHtml(g) + "</div>";
     return '<div class="card" style="margin-bottom:14px">' +
       '<div class="section-title" style="font-size:1rem;margin-bottom:6px">☀️ Günün Denemesi — ' + tarih + "</div>" + govde + "</div>";
   }
   function gununDenemesiOrtalamaHtml(g) {
-    return "çözen " + g.solvedCount + " kişinin ortalaması <b>%" + g.avgPercent + "</b>";
+    return "çözen " + g.solvedCount + " kişinin ortalaması <b>" + String(g.avgCorrect).replace(".", ",") + " / 50</b>";
   }
 
   function startExam(mode, seedOverride) {
@@ -3956,7 +3956,7 @@ function pratikEnIyiHtml(konu, modulKey) {
       '<span class="pill bad">' + r.skor.yanlis + " yanlış</span>" +
       '<span class="pill warn">' + r.skor.bos + " boş</span>" +
       yuzdeHtml + sureHtml + "</div>" +
-      (r.uzak && remoteDash && remoteDash.daily && remoteDash.daily.avgPercent !== null && r.examCode === remoteDash.daily.code
+      (r.uzak && remoteDash && remoteDash.daily && remoteDash.daily.avgCorrect !== null && r.examCode === remoteDash.daily.code
         ? '<div class="muted" style="margin:8px 0">☀️ Günün denemesi — ' + gununDenemesiOrtalamaHtml(remoteDash.daily) + "</div>"
         : "") +
       '<table class="topic-table"><thead><tr><th>Konu</th><th class="num">Doğru</th><th class="num">Yanlış</th><th class="num">Boş</th></tr></thead><tbody>' +
