@@ -59,19 +59,19 @@ test('günün denemesi: herkese aynı sorular; ortalama kişi başı ilk bitmiş
       return { code: started.data.examCode as string, guids: rows.map((row) => row.questionGuid) };
     };
 
-    const alice = await solve(40); // %80
+    const alice = await solve(40); // 40/50
     user.current = 'bob';
     const bobBefore = (await post({ action: 'dashboard' })).data.daily;
-    assert.deepEqual(bobBefore, { day: examCore.dailyExamDay(), code: alice.code, solvedCount: 1, myPercent: null, avgPercent: null });
+    assert.deepEqual(bobBefore, { day: examCore.dailyExamDay(), code: alice.code, solvedCount: 1, myCorrect: null, avgCorrect: null });
 
-    const bob = await solve(20); // %40
+    const bob = await solve(21); // 21/50 → ortalama 30,5
     assert.deepEqual(bob.guids, alice.guids);
 
     user.current = 'alice';
     await solve(50); // tekrar çözüm ortalamayı değiştirmemeli
     const aliceDaily = (await post({ action: 'dashboard' })).data.daily;
     assert.equal(aliceDaily.solvedCount, 2);
-    assert.equal(aliceDaily.myPercent, 80);
-    assert.equal(aliceDaily.avgPercent, 60);
+    assert.equal(aliceDaily.myCorrect, 40);
+    assert.equal(aliceDaily.avgCorrect, 30.5);
   } finally { await pg.close(); }
 });
