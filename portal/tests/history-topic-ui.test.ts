@@ -43,6 +43,12 @@ void test('Geçmiş: konu bazlı ortalama kartı ortalama doğru/soru ve yüzdey
   assert.doesNotMatch(out, /grid-template-columns:[^;"]*auto/);
 });
 
+void test('Geçmiş ekranı ayrı geri düğmesi yerine ana ekranla aynı üst çubuğu kullanır', () => {
+  const render = script.match(/function renderGecmisUzak\(\) \{[\s\S]*?^  \}/m)![0];
+  assert.match(render, /return ustBarHtml\(\) \+/);
+  assert.doesNotMatch(render, /data-action="open-menu-deneme"/);
+});
+
 void test('Geçmiş: deneme tarihçesi satırında puan yalnız doğru / toplam, yüzde yok', () => {
   const render = script.match(/function renderGecmisUzak\(\) \{[\s\S]*?^  \}/m)![0];
   assert.match(render, /var skorTxt = a\.score \? \(a\.score\.correct \+ " \/ " \+ toplam\) : "—";/);
