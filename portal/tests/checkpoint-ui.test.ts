@@ -23,7 +23,7 @@ void test('checkpoint maddeleri ileri-geri gezilen ve kaldığı yerden devam ed
   assert.match(fn('renderCheckpointSoru'), /data-action="checkpoint-sonraki"/);
   assert.match(fn('renderCheckpointDetay'), /Kaldığım Yerden Devam Et/);
   assert.match(fn('checkpointYarimKalanKartlari'), /Kaldığım Yerden Devam Et/);
-  assert.match(fn('renderMenu'), /checkpointYarimKalanKartlari\(\)/);
+  assert.match(fn('renderMenuTest'), /checkpointYarimKalanKartlari\(\)/);
 });
 
 void test('checkpoint ekranı pratik sorusuyla aynı üst bloğu kullanır ve gezinme "Madde" der', () => {
@@ -37,11 +37,11 @@ void test('checkpoint ekranı pratik sorusuyla aynı üst bloğu kullanır ve ge
   assert.doesNotMatch(ekran, /Soru →|Önceki Soru|soru\/adım|otomatik kaydediliyor/);
 });
 
-void test('checkpoint maddeleri ok tuşlarıyla gezilir; Kaydet ve Çık AI ana sayfasına döner', () => {
+void test('checkpoint maddeleri ok tuşlarıyla gezilir; Kaydet ve Çık AI ders listesine döner', () => {
   assert.match(script, /else if \(VIEW === "checkpointSoru" && currentCheckpoint && !currentCheckpoint\.bitti\) \{[\s\S]*?"ArrowRight"\) \{ e\.preventDefault\(\); checkpointSonraki\(\); \}[\s\S]*?"ArrowLeft"\) \{ e\.preventDefault\(\); checkpointOnceki\(\); \}/);
   const cik = fn('checkpointKaydetVeCik');
   assert.match(cik, /checkpointSlotYaz\(\); veriDegisti\(true\);/);
-  assert.match(cik, /VIEW = "menu"; render\(\);/);
+  assert.match(cik, /VIEW = "menuTest"; render\(\);/);
   assert.doesNotMatch(cik, /checkpointDetay/);
 });
 

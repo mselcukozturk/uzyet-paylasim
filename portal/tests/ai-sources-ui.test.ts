@@ -60,20 +60,16 @@ void test('pratik soru üst bloğu: bilgi solda, 📋 ve 💾 sağda aynı satı
 void test('AI modu yalnız pratik ve checkpoint ekranlarını açar; ayarlar ve import kapalı kalır', () => {
   const render = fn('render');
   assert.match(render, /STATE\.sadeceDeneme && !aiModu && \(VIEW === "menu"/);
-  assert.match(render, /VIEW === "settings" \|\| VIEW === "import"\)\) VIEW = aiModu \? "menu" : "menuDeneme"/);
+  assert.match(render, /VIEW === "settings" \|\| VIEW === "import"\)\) VIEW = aiModu \? "menuTest" : "menuDeneme"/);
   // Yetki sonradan düşerse (oturum yenilenince) AI modu kendini kapatır.
   assert.match(render, /if \(aiModu && \(!remoteGirisTamamMi\(\) \|\| remoteAuth\.canSeeAiSources !== true\)\)/);
-  assert.match(render, /data-action="leave-ai-sources"/);
+  assert.match(fn('ustBarHtml'), /data-action="go-home"/);
 });
 
-void test('AI menüsü ayarlar, banka içe aktarma ve kişisel düzeltme listesini göstermez', () => {
-  const menu = fn('renderMenu');
-  const aiDal = menu.slice(menu.indexOf('if (aiModu)'), menu.indexOf('hero-band'));
-  // navCards = 📚 Test + 📌 Checkpoint; ana menüyle aynı kartlar, tek fark çevresi.
-  assert.match(menu, /var navCards =[\s\S]*?data-action="open-menu-test"[\s\S]*?data-action="open-checkpoint-liste"/);
-  assert.ok(aiDal.includes('navCards'));
-  assert.ok(aiDal.includes('open-flags')); // guid bazlı çalıştığı için pratikte de doğru
-  assert.doesNotMatch(aiDal, /open-settings|open-import|open-duzeltmeler/);
+void test('AI ders listesi ayarlar, içe aktarma ve düzeltme listesini göstermez', () => {
+  const menu = fn('renderMenuTest');
+  assert.match(menu, /data-action="select-pratik-konu"/);
+  assert.doesNotMatch(menu, /open-settings|open-import|open-duzeltmeler|open-checkpoint-liste/);
 });
 
 void test('uyarı yalnız ilk girişte gösterilir, kabul sunucuya kalıcı yazılır ve kapatılabilir', () => {

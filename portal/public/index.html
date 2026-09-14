@@ -285,6 +285,9 @@
   .cp-list-item:hover { border-color: var(--accent); }
   .cp-list-item .title { font-weight: 700; font-size: 1rem; margin-bottom: 3px; }
   .cp-list-item .desc { color: var(--text-muted); font-size: 0.84rem; }
+  .ders-sekmeler { display: flex; gap: 8px; margin: 0 0 18px; border-bottom: 1px solid var(--border); }
+  .ders-sekmeler .btn { border-radius: var(--radius) var(--radius) 0 0; margin-bottom: -1px; }
+  .ders-sekmeler .active { border-bottom: 3px solid var(--accent); font-weight: 700; }
   .cp-konu-group { margin-bottom: 24px; }
   .cp-konu-heading { display: flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; margin-bottom: 10px; }
   .cp-content { font-size: 0.96rem; line-height: 1.6; }
@@ -469,6 +472,49 @@
     "Kredi": ["K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8",
               "K9", "K10", "K11", "K12", "K13", "K14", "K15", "K16"]
   };
+  // Bölüm özetleri baz testlerden daha geniştir; her özetin en ilgili tek modülü seçilir.
+  // Ürünler'de UR seti yayına geçene dek eski U modülü yedek hedef olarak kullanılır.
+  // Finansal Sunum'un testi yok; konsolide Kritik Süreler için tek bir doğru modül yok.
+  var CHECKPOINT_TEST_MODULLERI = {
+    "ark_n-medeni": ["Hukuk", "H1"],
+    "ark_n-borclar": ["Hukuk", "H3"],
+    "ark_n-ticaret": ["Hukuk", "H6"],
+    "ark_n-kambiyo": ["Hukuk", "H8"],
+    "ark_n-banka": ["Kredi", "K2"],
+    "ark_n-dijital": ["Ürünler", "UR2", "U18"],
+    "ark_n-kart": ["Ürünler", "UR5", "U21"],
+    "ark_n-menkul": ["Ürünler", "UR7", "U23"],
+    "ark_n-krediler": ["Ürünler", "UR10", "U1"],
+    "ark_n-diger": ["Ürünler", "UR14", "U12"],
+    "ark_n-uluslararasi": ["Kambiyo", "DT1"],
+    "ark_n-pesin": ["Kambiyo", "DT2"],
+    "ark_n-akreditif": ["Kambiyo", "DT4"],
+    "ark_n-belgeler": ["Kambiyo", "DT7"],
+    "ark_n-ithalat": ["Kambiyo", "DT9"],
+    "ark_n-ihracat": ["Kambiyo", "DT11"],
+    "ark_n-kredigenel": ["Kredi", "K1"],
+    "ark_n-kredisurec": ["Kredi", "K4"],
+    "ark_n-krediteminat": ["Kredi", "K6"],
+    "ark_n-kreditl": ["Kredi", "K9"],
+    "ark_n-kredigayrinakdi": ["Kredi", "K13"],
+    "ark_n-krediyp": ["Kredi", "K15"],
+    "ark_n-temelgiris": ["Temel İşlemler", "M1"],
+    "ark_n-kurefektif": ["Temel İşlemler", "M5"],
+    "ark_n-mevduathesap": ["Temel İşlemler", "M6"],
+    "ark_n-havaleislem": ["Temel İşlemler", "M9"],
+    "ark_n-cekbono": ["Temel İşlemler", "M10"]
+  };
+  function checkpointDersi(c) { return c.konu === "İthalat İhracat" ? "Kambiyo" : c.konu; }
+  function checkpointTestHedefi(id) {
+    var adaylar = CHECKPOINT_TEST_MODULLERI[id];
+    if (!adaylar) return null;
+    for (var i = 1; i < adaylar.length; i++) {
+      if (STATE.practiceBank.some(function (q) { return q.konu === adaylar[0] && q.modul === adaylar[i]; })) {
+        return { konu: adaylar[0], modul: adaylar[i] };
+      }
+    }
+    return null;
+  }
   function arsivDersModulleri(ders) {
     var anahtarlar = ARSIV_DERSLERI[ders] || [];
     return (MODUL_TANIMLARI[ARSIV_KONU] || []).filter(function (m) {
@@ -533,6 +579,7 @@
   var lastFlashResult = null;  // {kaynak, oturum} — "Testi Bitir" sonrası özet ekranı için
   var currentPratik = null;    // {konu, modul, mod, kuyruk:[guid...], index, cevaplandi, secilen, bitti}
   var pratikSeciliKonu = null; // pratikModul ekranında hangi Konu'nun modülleri gösteriliyor
+  var dersSekmesi = "konu";    // ders içindeki Konu / Test seçimi
   var pratikSeciliModul = null; // seçili modül (alt-mod seçimi bu modül için gösterilir)
   var arsivSeciliDers = null;   // "Arşiv" konusu iki katmanlı: önce ders, sonra modül
   var checkpointSeciliKonu = null; // checkpointListe ekranında hangi Konu açık
@@ -559,6 +606,7 @@
         lastFlashResult = p.lastFlashResult || null;
         currentPratik = p.currentPratik || null;
         pratikSeciliKonu = p.pratikSeciliKonu || null;
+        dersSekmesi = p.dersSekmesi || "konu";
         pratikSeciliModul = p.pratikSeciliModul || null;
         currentCheckpoint = p.currentCheckpoint || null;
         checkpointSeciliKonu = p.checkpointSeciliKonu || null;
@@ -1217,7 +1265,7 @@
       sessionStorage.setItem("uzyet_pending_view", JSON.stringify({
         view: VIEW, lastResult: lastResult, currentExam: currentExam, currentFlash: currentFlash,
         lastFlashResult: lastFlashResult,
-        currentPratik: currentPratik, pratikSeciliKonu: pratikSeciliKonu, pratikSeciliModul: pratikSeciliModul,
+        currentPratik: currentPratik, pratikSeciliKonu: pratikSeciliKonu, dersSekmesi: dersSekmesi, pratikSeciliModul: pratikSeciliModul,
         currentCheckpoint: currentCheckpoint, checkpointSeciliKonu: checkpointSeciliKonu, checkpointSeciliId: checkpointSeciliId
       }));
     } catch (e) { /* sessionStorage kullanılamıyor olabilir, sorun değil */ }
@@ -1644,7 +1692,7 @@
   function acceptAiSources() {
     if (!remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true) return;
     var ilkKabul = aiUyariAcik && !remoteAuth.aiDisclaimerAccepted;
-    aiUyariAcik = false; aiModu = true; aiYukleniyor = true; VIEW = "menu";
+    aiUyariAcik = false; aiModu = true; aiYukleniyor = true; VIEW = "menuTest";
     render();
     if (ilkKabul) {
       remoteAuth.aiDisclaimerAccepted = true;
@@ -2674,8 +2722,8 @@
   function backToMenu() {
     if (currentPratik && !currentPratik.bitti) { pratikSlotYaz(); bumpRev(); lsKaydet(); pendingSaveDirty = true; }
     if (currentCheckpoint && !currentCheckpoint.bitti) { checkpointSlotYaz(); bumpRev(); lsKaydet(); pendingSaveDirty = true; }
-    VIEW = aiModu ? "menu" : STATE.sadeceDeneme ? "menuDeneme" : "menu"; currentExam = null; lastResult = null; currentFlash = null; lastFlashResult = null;
-    currentPratik = null; currentCheckpoint = null; pratikSeciliKonu = null; pratikSeciliModul = null;
+    VIEW = aiModu ? "menuTest" : STATE.sadeceDeneme ? "menuDeneme" : "menu"; currentExam = null; lastResult = null; currentFlash = null; lastFlashResult = null;
+    currentPratik = null; currentCheckpoint = null; pratikSeciliKonu = null; dersSekmesi = "konu"; pratikSeciliModul = null;
     checkpointSeciliKonu = null; checkpointSeciliId = null;
     pausedDeleteConfirm = false; deletingHistoryId = null; denemeKodOnizleme = null;
     render();
@@ -2724,6 +2772,7 @@
     if (!konu || !modul) return;
     var kuyruk = pratikKuyrukOlustur(konu, modul, mod);
     if (kuyruk.length === 0) { showBanner("Bu modülde henüz soru yok.", true); return; }
+    dersSekmesi = "test";
     pratikSlotSil(konu, modul); // yeni oturum yarım kalanın yerine geçer
     currentPratik = { konu: konu, modul: modul, mod: mod, kuyruk: kuyruk, index: 0, cevaplandi: false, secilen: null, bitti: false, cevaplar: {} };
     currentPratik.soruKayitlari = soruKayitlari(STATE.practiceBank, kuyruk);
@@ -2734,6 +2783,7 @@
   }
 
   function devamPratikOturum(konu, modul) {
+    dersSekmesi = "test";
     var slot = pratikSlotOku(konu, modul);
     if (!slot) {
       showBanner("Yarım oturum yükleniyor…", false);
@@ -2993,11 +3043,6 @@
       '<div class="title">📌 Checkpoint</div><div class="desc">Bölüm özetleri — numaralı, kaynak sayfalı checkpoint listeleriyle ufak ufak ezber.</div></button>' +
       "</div>";
 
-    // Yarım kalan checkpointler buradan (AI ana ekranı) 12 Eyl 2026'da Checkpoint
-    // bölümünün içine alındı — ait olduğu yer orası.
-    if (aiModu) return '<div class="section-title">🤖 Yapay Zekâ Kaynakları</div>' + navCards +
-      '<div class="link-row"><button class="btn" data-action="open-flags">İşaretliler (' + hatirlaticiSayisi + ' 🔖 · ' + hataSayisi + ' 🚩)</button></div>';
-
     return '<div class="hero-band"><div class="masthead"><div><h1>UZYET</h1><div class="sub">' + meta + '</div></div></div></div>' +
       (toplamSoru === 0 ? '<div class="banner">Önce bir soru bankası içe aktarmalısın. Aşağıdan "Soru Bankasını Güncelle"yi kullan.</div>' : "") +
       pausedCard +
@@ -3250,24 +3295,27 @@
     var tiles = KONU_SIRA.map(function (konu) {
       var modlar = MODUL_TANIMLARI[konu];
       var soruSayisi = modlar ? STATE.practiceBank.filter(function (q) { return q.konu === konu; }).length : 0;
-      var aktif = modlar && soruSayisi > 0;
+      var checkpointSayisi = STATE.checkpoints.filter(function (c) { return checkpointDersi(c) === konu; }).length;
+      var aktif = (modlar && soruSayisi > 0) || checkpointSayisi > 0;
       var renk = "var(--seri-" + konuSeriIdx(konu) + ")";
       return '<button class="mode-btn" style="border-left:4px solid ' + renk + '" ' + (aktif ? "" : "disabled") +
         ' data-action="select-pratik-konu" data-konu="' + escapeHtml(konu) + '">' +
         '<div class="title">' + konuDotHtml(konu) + escapeHtml(konu) + "</div>" +
         '<div class="desc">' + (aktif
-          ? soruSayisi + " soru · " + (konu === ARSIV_KONU
+          ? (checkpointSayisi ? checkpointSayisi + " konu · " : "") + soruSayisi + " soru" + (modlar && soruSayisi ? " · " + (konu === ARSIV_KONU
               ? Object.keys(ARSIV_DERSLERI).length + " ders"
-              : modlar.length + " modül")
+              : modlar.length + " modül") : "")
           : "Henüz hazır değil") + "</div></button>";
     }).join("");
 
     return '<div class="section-title">📚 Test</div>' +
       '<div class="stat-grid">' + statCards + "</div>" +
       yarimKalanHtml +
+      checkpointYarimKalanKartlari() +
       flashCard +
       '<div class="section-title">Hangi dersle çalışmak istersin?</div>' +
-      '<div class="mode-grid">' + tiles + "</div>";
+      '<div class="mode-grid">' + tiles + "</div>" +
+      '<div class="link-row"><button class="btn" data-action="open-flags">İşaretliler</button></div>';
   }
 
   // ------------------------------------------------------------ Checkpoint --
@@ -3373,6 +3421,7 @@
   function checkpointBaslat(id) {
     var c = checkpointBul(id), sorular = checkpointSorular(c);
     if (!c || !sorular.length) { showBanner("Bu checkpoint'te gösterilecek soru bulunamadı.", true); return; }
+    pratikSeciliKonu = checkpointDersi(c); dersSekmesi = "konu";
     checkpointSlotSil(c);
     currentCheckpoint = { id: c.id, index: 0, bitti: false };
     checkpointSlotYaz(); checkpointSeciliId = c.id; VIEW = "checkpointSoru";
@@ -3381,6 +3430,7 @@
   function checkpointDevamEt(id) {
     var c = checkpointBul(id), slot = c && checkpointSlotOku(c);
     if (!c) return;
+    pratikSeciliKonu = checkpointDersi(c); dersSekmesi = "konu";
     if (!slot) {
       showBanner("Kayıtlı checkpoint yükleniyor…", false);
       remoteFetch("/api/exam", "POST", { action: "practice-session-load", konu: checkpointOturumKonusu(c), modul: c.id }).then(function (r) {
@@ -3408,9 +3458,9 @@
   }
   function checkpointKaydetVeCik() {
     if (currentCheckpoint && !currentCheckpoint.bitti) { checkpointSlotYaz(); veriDegisti(true); }
-    // Kaydedip doğrudan 🤖 Yapay Zekâ Kaynakları ana sayfasına döner (13 Eyl 2026 kullanıcı isteği).
+    // Kaydedip AI ders listesine döner.
     currentCheckpoint = null; checkpointSeciliKonu = null; checkpointSeciliId = null;
-    VIEW = "menu"; render();
+    VIEW = "menuTest"; render();
   }
   function checkpointKonular() {
     var konular = [];
@@ -3474,7 +3524,7 @@
     var slot = checkpointSlotOku(c);
     var devamVar = checkpointDevamVarMi(c);
     var ilerleme = slot ? " · " + Math.min((slot.index || 0) + 1, soruSayisi) + " / " + soruSayisi + ". soruda kaldın" : "";
-    return '<div class="link-row"><button class="btn ghost" data-action="checkpoint-konu-geri">← ' + escapeHtml(c.konu) + " Özetleri</button></div>" +
+    return '<div class="link-row"><button class="btn ghost" data-action="checkpoint-konu-geri">← ' + escapeHtml(checkpointDersi(c)) + " Konuları</button></div>" +
       '<div class="card">' +
       '<div class="section-title" style="margin-bottom:2px">' + escapeHtml(c.title) + "</div>" +
       '<div class="muted" style="margin-bottom:18px">' + escapeHtml(c.subtitle) + "</div>" +
@@ -3498,8 +3548,12 @@
       var sonrakiBtn = sonraki
         ? '<button class="btn primary" data-action="' + (checkpointDevamVarMi(sonraki) ? "devam-checkpoint" : "start-checkpoint") + '" data-id="' + escapeHtml(sonraki.id) + '">Sıradaki Bölüm →</button>'
         : "";
+      var testHedefi = checkpointTestHedefi(c.id);
+      var testBtn = testHedefi
+        ? '<button class="btn primary" data-action="checkpoint-testi-coz" data-konu="' + escapeHtml(testHedefi.konu) + '" data-modul="' + escapeHtml(testHedefi.modul) + '">Testi Çöz</button>'
+        : "";
       return '<div class="card"><div class="section-title">Checkpoint bitti 🎉</div><div class="muted">' + escapeHtml(c.title) + " içindeki " + sorular.length + " maddeyi tamamladın.</div>" +
-        '<div class="link-row' + (sonraki ? " cp-nav" : "") + '" style="margin-top:14px"><button class="btn" data-action="start-checkpoint" data-id="' + escapeHtml(c.id) + '">Tekrar Başlat</button>' + sonrakiBtn + "</div></div>";
+        '<div class="link-row' + (sonraki ? " cp-nav" : "") + '" style="margin-top:14px"><button class="btn" data-action="start-checkpoint" data-id="' + escapeHtml(c.id) + '">Tekrar Başlat</button>' + testBtn + sonrakiBtn + "</div></div>";
     }
     var index = Math.min(currentCheckpoint.index, sorular.length - 1);
     var guid = checkpointGuid(c, index);
@@ -3550,7 +3604,7 @@
         '<div class="section-title" style="font-size:1rem;margin-bottom:0">' + konuDotHtml(konu) + escapeHtml(konu) + "</div>" +
         basliklarHtml + "</div>";
     }).join("");
-    return '<div class="link-row"><button class="btn ghost" data-action="open-checkpoint-liste">← Checkpoint</button></div>' +
+    return '<div class="link-row"><button class="btn ghost" data-action="checkpoint-hatirlatici-geri">← Konulara Dön</button></div>' +
       '<div class="section-title">🔖 Checkpoint Hatırlatıcılarım (' + items.length + ')</div>' +
       (items.length
         ? '<div class="link-row"><button class="btn ghost" data-action="export-checkpoint-hatirlatici-word">📄 Word\'e Aktar</button></div>' + body
@@ -3941,41 +3995,58 @@ function pratikEnIyiHtml(konu, modulKey) {
         '<div class="title">' + konuDotHtml(ders) + escapeHtml(ders) + "</div>" +
         '<div class="desc">' + sayi + " soru · " + modlar.length + " modül</div></button>";
     }).join("");
-    return '<div class="link-row"><button class="btn" data-action="pratik-konu-geri">← Konulara Dön</button></div>' +
-      '<div class="section-title">' + konuDotHtml(ARSIV_KONU) + "Arşiv — ders seç</div>" +
-      '<div class="muted" style="margin-bottom:16px">Eski üretim turlarından kalan sorular. Yeni set ilgili dersin kendi kutusunda.</div>' +
+    return '<div class="muted" style="margin-bottom:16px">Eski üretim turlarından kalan sorular. Yeni set ilgili dersin kendi kutusunda.</div>' +
       '<div class="mode-grid">' + tiles + "</div>";
   }
 
   function renderPratikModul() {
     var konu = pratikSeciliKonu;
     var arsivMi = konu === ARSIV_KONU;
-    if (arsivMi && !arsivSeciliDers) return renderArsivDersSec();
-    var modlar = arsivMi ? arsivDersModulleri(arsivSeciliDers) : (MODUL_TANIMLARI[konu] || []);
-    var karisikKey = arsivMi ? PRATIK_TUM_MODULLER + "@" + arsivSeciliDers : PRATIK_TUM_MODULLER;
-    var karisikHavuz = pratikHavuz(konu, karisikKey);
-    // Karışık = bu derse sınırlı Rastgele Soru (Test sayfasındakiyle aynı algoritma).
-    var karisikTile = '<button class="mode-btn" style="border-left:4px solid var(--seri-7)" ' + (karisikHavuz.length ? "" : "disabled") +
-      ' data-action="start-pratik-flash" data-konu="' + escapeHtml(arsivMi ? karisikKey : konu) + '">' +
-      '<div class="title">🔀 Karışık — Tüm Modüller</div>' +
-      '<div class="desc">' + karisikHavuz.length + " soruluk havuzdan tek soru, anında cevap — önce görülmeyenler ve yanlışlar.</div></button>";
-    var tiles = karisikTile + modlar.map(function (m) {
-      var havuz = pratikHavuz(konu, m.key);
-      return '<button class="mode-btn" ' + pratikTileStil(konu, m.key) + ' data-action="select-pratik-modul" data-modul="' + m.key + '">' +
-        '<div class="title">' + escapeHtml(m.key + " — " + m.ad) + "</div>" +
-        '<div class="desc">' + havuz.length + " soru" + pratikEnIyiHtml(konu, m.key) + "</div>" +
-        pratikDevamHtml(konu, m.key) + "</button>";
-    }).join("");
-
-    var geri = arsivMi
+    var geri = arsivMi && arsivSeciliDers
       ? '<button class="btn" data-action="arsiv-ders-geri">← Arşiv Dersleri</button>'
       : '<button class="btn" data-action="pratik-konu-geri">← Konulara Dön</button>';
-    var baslik = arsivMi
+    var baslik = arsivMi && arsivSeciliDers
       ? konuDotHtml(arsivSeciliDers) + escapeHtml("Arşiv · " + arsivSeciliDers)
       : konuDotHtml(konu) + escapeHtml(konu);
+    var sekmeler = '<div class="ders-sekmeler" role="tablist" aria-label="Ders bölümleri">' +
+      '<button class="btn' + (dersSekmesi === "konu" ? " active" : "") + '" role="tab" aria-selected="' + (dersSekmesi === "konu") + '" tabindex="' + (dersSekmesi === "konu" ? "0" : "-1") + '" data-action="select-ders-sekmesi" data-sekme="konu">Konu</button>' +
+      '<button class="btn' + (dersSekmesi === "test" ? " active" : "") + '" role="tab" aria-selected="' + (dersSekmesi === "test") + '" tabindex="' + (dersSekmesi === "test" ? "0" : "-1") + '" data-action="select-ders-sekmesi" data-sekme="test">Test</button></div>';
+    if (dersSekmesi === "konu") {
+      var checkpointler = STATE.checkpoints.filter(function (c) { return checkpointDersi(c) === konu; });
+      var cpHtml = checkpointler.length ? checkpointler.map(function (c) {
+        return '<button class="cp-list-item" data-action="open-checkpoint-detay" data-id="' + escapeHtml(c.id) + '">' +
+          '<div class="title">' + escapeHtml(c.title) + '</div><div class="desc">' + escapeHtml(c.subtitle) + "</div></button>";
+      }).join("") : '<div class="muted">Bu ders için henüz checkpoint yok.</div>';
+      return '<div class="link-row">' + geri + '</div><div class="section-title">' + baslik + '</div>' + sekmeler +
+        '<div role="tabpanel" id="ders-konu-panel">' +
+        '<div class="link-row"><button class="btn ghost" data-action="open-checkpoint-hatirlatici">🔖 Checkpoint Hatırlatıcılarım (' + checkpointHatirlaticiListesi().length + ')</button></div>' +
+        cpHtml + '</div>';
+    }
+    var testHtml = "";
+    if (arsivMi && !arsivSeciliDers) testHtml = renderArsivDersSec();
+    else {
+      var modlar = (arsivMi ? arsivDersModulleri(arsivSeciliDers) : (MODUL_TANIMLARI[konu] || [])).filter(function (m) {
+        return pratikHavuz(konu, m.key).length > 0;
+      });
+      var karisikKey = arsivMi ? PRATIK_TUM_MODULLER + "@" + arsivSeciliDers : PRATIK_TUM_MODULLER;
+      var karisikHavuz = pratikHavuz(konu, karisikKey);
+      // Karışık = bu derse sınırlı Rastgele Soru (Test sayfasındakiyle aynı algoritma).
+      var karisikTile = '<button class="mode-btn" style="border-left:4px solid var(--seri-7)" ' + (karisikHavuz.length ? "" : "disabled") +
+        ' data-action="start-pratik-flash" data-konu="' + escapeHtml(arsivMi ? karisikKey : konu) + '">' +
+        '<div class="title">🔀 Karışık — Tüm Modüller</div>' +
+        '<div class="desc">' + karisikHavuz.length + " soruluk havuzdan tek soru, anında cevap — önce görülmeyenler ve yanlışlar.</div></button>";
+      var tiles = karisikTile + modlar.map(function (m) {
+        var havuz = pratikHavuz(konu, m.key);
+        return '<button class="mode-btn" ' + pratikTileStil(konu, m.key) + ' data-action="select-pratik-modul" data-modul="' + m.key + '">' +
+          '<div class="title">' + escapeHtml(m.key + " — " + m.ad) + "</div>" +
+          '<div class="desc">' + havuz.length + " soru" + pratikEnIyiHtml(konu, m.key) + "</div>" +
+          pratikDevamHtml(konu, m.key) + "</button>";
+      }).join("");
+      testHtml = modlar.length ? '<div class="mode-grid">' + tiles + '</div>' : '<div class="muted">Bu ders için henüz test yok.</div>';
+    }
     return '<div class="link-row">' + geri + '</div>' +
-      '<div class="section-title">' + baslik + " — modül seç</div>" +
-      '<div class="mode-grid">' + tiles + "</div>";
+      '<div class="section-title">' + baslik + '</div>' + sekmeler +
+      '<div role="tabpanel" id="ders-test-panel">' + testHtml + '</div>';
   }
 
   function renderPratikSoru() {
@@ -4274,9 +4345,10 @@ function pratikEnIyiHtml(konu, modulKey) {
   function render() {
     var html = "";
     if (aiModu && (!remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true)) { aiModu = false; VIEW = "menuDeneme"; }
+    if (aiModu && VIEW === "menu") VIEW = "menuTest";
     if (STATE.sadeceDeneme && !aiModu && (VIEW === "menu" || VIEW === "menuTest" || VIEW === "pratikModul" || VIEW === "pratikSoru" ||
       VIEW === "checkpointListe" || VIEW === "checkpointDetay" || VIEW === "checkpointSoru" || VIEW === "checkpointHatirlatici" || VIEW === "settings" || VIEW === "import")) VIEW = "menuDeneme";
-    if (STATE.sadeceDeneme && (VIEW === "settings" || VIEW === "import")) VIEW = aiModu ? "menu" : "menuDeneme";
+    if (STATE.sadeceDeneme && (VIEW === "settings" || VIEW === "import")) VIEW = aiModu ? "menuTest" : "menuDeneme";
     if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult" || VIEW === "gecmisUzak" || VIEW === "tekrarTest" || VIEW === "tekrarSonuc")) VIEW = "menuDeneme";
     if (VIEW === "menu") html = renderMenu();
     else if (VIEW === "menuDeneme") html = renderMenuDeneme();
@@ -4301,7 +4373,8 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (VIEW === "tekrarTest") html = renderTekrarTest();
     else if (VIEW === "tekrarSonuc") html = renderTekrarSonuc();
     if (!html) { // eski bir sekmede kalkan artık var olmayan bir VIEW (ör. kaldırılmış "pratikKonu") gelirse boş ekran yerine ana ekrana düş
-      if (STATE.sadeceDeneme) { VIEW = "menuDeneme"; html = renderMenuDeneme(); }
+      if (aiModu) { VIEW = "menuTest"; html = renderMenuTest(); }
+      else if (STATE.sadeceDeneme) { VIEW = "menuDeneme"; html = renderMenuDeneme(); }
       else { VIEW = "menu"; html = renderMenu(); }
     }
     var bannerHtml = bannerMsg ? '<div class="banner' + (bannerIsError ? " error" : "") + '">' + escapeHtml(bannerMsg) + "</div>" : "";
@@ -4409,25 +4482,45 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "cancel-delete-history") cancelDeleteHistory();
     else if (action === "select-pratik-konu") {
       var pk = t.getAttribute("data-konu");
-      if (MODUL_TANIMLARI[pk]) { pratikSeciliKonu = pk; pratikSeciliModul = null; arsivSeciliDers = null; VIEW = "pratikModul"; render(); }
+      if (KONU_SIRA.indexOf(pk) !== -1) {
+        pratikSeciliKonu = pk; dersSekmesi = STATE.checkpoints.some(function (c) { return checkpointDersi(c) === pk; }) ? "konu" : "test";
+        pratikSeciliModul = null; arsivSeciliDers = null; VIEW = "pratikModul"; render();
+      }
+    }
+    else if (action === "select-ders-sekmesi") {
+      var sekme = t.getAttribute("data-sekme");
+      if (VIEW === "pratikModul" && (sekme === "konu" || sekme === "test")) { dersSekmesi = sekme; render(); }
     }
     else if (action === "select-arsiv-ders") {
       var ad = t.getAttribute("data-ders");
       if (ARSIV_DERSLERI[ad]) { arsivSeciliDers = ad; pratikSeciliModul = null; VIEW = "pratikModul"; render(); }
     }
     else if (action === "arsiv-ders-geri") { arsivSeciliDers = null; pratikSeciliModul = null; render(); }
-    else if (action === "pratik-konu-geri") { VIEW = "menuTest"; pratikSeciliKonu = null; pratikSeciliModul = null; arsivSeciliDers = null; render(); }
+    else if (action === "pratik-konu-geri") { VIEW = "menuTest"; pratikSeciliKonu = null; dersSekmesi = "konu"; pratikSeciliModul = null; arsivSeciliDers = null; render(); }
     else if (action === "open-checkpoint-liste") { checkpointSeciliKonu = null; checkpointSeciliId = null; VIEW = "checkpointListe"; render(); }
     else if (action === "select-checkpoint-konu") { checkpointSeciliKonu = t.getAttribute("data-konu"); VIEW = "checkpointListe"; render(); }
-    else if (action === "checkpoint-konu-geri") { checkpointSeciliId = null; VIEW = "checkpointListe"; render(); }
-    else if (action === "open-checkpoint-detay") { checkpointSeciliId = t.getAttribute("data-id"); VIEW = "checkpointDetay"; render(); }
+    else if (action === "checkpoint-konu-geri") { checkpointSeciliId = null; VIEW = pratikSeciliKonu ? "pratikModul" : "checkpointListe"; render(); }
+    else if (action === "open-checkpoint-detay") {
+      checkpointSeciliId = t.getAttribute("data-id");
+      var secilenCheckpoint = checkpointBul(checkpointSeciliId);
+      if (secilenCheckpoint) { checkpointSeciliKonu = secilenCheckpoint.konu; pratikSeciliKonu = checkpointDersi(secilenCheckpoint); dersSekmesi = "konu"; VIEW = "checkpointDetay"; render(); }
+    }
     else if (action === "start-checkpoint") checkpointBaslat(t.getAttribute("data-id"));
     else if (action === "devam-checkpoint") checkpointDevamEt(t.getAttribute("data-id"));
     else if (action === "checkpoint-onceki") checkpointOnceki();
     else if (action === "checkpoint-sonraki") checkpointSonraki();
+    else if (action === "checkpoint-testi-coz") {
+      var hedef = currentCheckpoint && checkpointTestHedefi(currentCheckpoint.id);
+      if (hedef && hedef.konu === t.getAttribute("data-konu") && hedef.modul === t.getAttribute("data-modul")) {
+        currentCheckpoint = null; pratikSeciliKonu = hedef.konu; dersSekmesi = "test"; pratikSeciliModul = hedef.modul;
+        if (pratikSlotOku(hedef.konu, hedef.modul) || remotePracticeSessions[pratikSlotKey(hedef.konu, hedef.modul)]) devamPratikOturum(hedef.konu, hedef.modul);
+        else startPratikOturum(hedef.konu, hedef.modul, "siray");
+      }
+    }
     else if (action === "checkpoint-kaydet-cik") checkpointKaydetVeCik();
     else if (action === "copy-checkpoint-soru") kopyalaCheckpointMaddesi();
     else if (action === "open-checkpoint-hatirlatici") { VIEW = "checkpointHatirlatici"; render(); }
+    else if (action === "checkpoint-hatirlatici-geri") { VIEW = pratikSeciliKonu ? "pratikModul" : "menuTest"; dersSekmesi = "konu"; render(); }
     else if (action === "export-checkpoint-hatirlatici-word") exportCheckpointHatirlaticiWord();
     else if (action === "select-pratik-modul") {
       var secilenModul = t.getAttribute("data-modul");
@@ -4475,6 +4568,15 @@ function pratikEnIyiHtml(konu, modulKey) {
   document.addEventListener("keydown", function (e) {
     if (aiUyariAcik) {
       if (e.key === "Escape") { e.preventDefault(); closeAiUyari(); }
+      return;
+    }
+    if (VIEW === "pratikModul" && document.activeElement.getAttribute("role") === "tab" &&
+      (e.key === "ArrowRight" || e.key === "ArrowLeft")) {
+      e.preventDefault();
+      dersSekmesi = dersSekmesi === "konu" ? "test" : "konu";
+      render();
+      var aktifSekme = document.querySelector('.ders-sekmeler [aria-selected="true"]');
+      if (aktifSekme) aktifSekme.focus();
       return;
     }
     var tag = document.activeElement && document.activeElement.tagName;
