@@ -52,16 +52,15 @@ void test('öncelikli havuz tükenince doğru çözülmüşlere düşülür', ()
   assert.ok(havuz.some((q) => q.guid === secilen.guid), 'havuz tamamen doğruyken de bir soru dönmeli');
 });
 
-void test('ders altındaki Karışık: Rastgele Soru havuzu yalnız o ders (Arşiv\'de o arşiv dersi)', () => {
+void test('ders altındaki Karışık: Rastgele Soru havuzu yalnız o ders', () => {
   const context: Record<string, unknown> = {
-    PRATIK_TUM_MODULLER: '__TUMU__', ARSIV_KONU: 'Arşiv', ARSIV_DERSLERI: { Kredi: ['K1'] },
+    PRATIK_TUM_MODULLER: '__TUMU__',
     STATE: {
       flags: { x: { kapsamDisi: true } },
       bank: [],
       practiceBank: [
         { guid: 'k', konu: 'Kredi', modul: 'M1' }, { guid: 'x', konu: 'Kredi', modul: 'M1' },
         { guid: 'h', konu: 'Hukuk', modul: 'M1' },
-        { guid: 'a1', konu: 'Arşiv', modul: 'K1' }, { guid: 'a2', konu: 'Arşiv', modul: 'H9' },
       ],
     },
   };
@@ -70,8 +69,7 @@ void test('ders altındaki Karışık: Rastgele Soru havuzu yalnız o ders (Arş
   const fh = vm.runInContext('flashHavuzu', context) as (k: string, f: string | null) => Soru[];
   const guids = (f: string | null) => fh('practice', f).map((q) => q.guid);
   assert.deepEqual(guids('Kredi'), ['k']);
-  assert.deepEqual(guids('__TUMU__@Kredi'), ['a1']);
-  assert.deepEqual(guids(null), ['k', 'h', 'a1', 'a2']);
+  assert.deepEqual(guids(null), ['k', 'h']);
 });
 
 void test('pratik oturumu: canlıdan kalkan soru, oturum kopyasında dursa bile bulunmaz', () => {

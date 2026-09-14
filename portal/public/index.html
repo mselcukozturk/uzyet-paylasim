@@ -318,14 +318,7 @@
 
   var RESMI_DAGILIM_DEFAULT = {
     "Ürünler": 8, "Hukuk": 8, "Temel İşlemler": 8, "Kredi": 8, "Genel Ekonomi": 5,
-    "Mali Analiz": 5, "Kambiyo": 3, "Sermaye Piyasaları ve Hazine": 3, "İK Politikaları": 2,
-    // Ağırlık 0: resmi 50 soruluk test dağılımının parçası değil (yazılı sınav konusu),
-    // yalnızca "Konu Çalışma" (pratik) menüsünde ayrı bir ders kutusu açmak için burada.
-    "Finansal Sunum": 0,
-    // Ağırlık 0: eski üretim turundan kalan pratik soruları. 12 Eyl 2026'da Kredi yeni
-    // "Dört Bilgi" şablonuyla sıfırdan üretilince eskiler silinmedi, buraya taşındı —
-    // çözülmüş geçmiş (practice_stats) GUID'e bağlı olduğu için taşınma onu bozmaz.
-    "Arşiv": 0
+    "Mali Analiz": 5, "Kambiyo": 3, "Sermaye Piyasaları ve Hazine": 3, "İK Politikaları": 2
   };
   var MOD_ADI = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar", zor: "Zor Deneme" };
   function denemeAdi(a) { return a.isDaily ? "☀️ Günün Denemesi" : (MOD_ADI[a.mode] || a.mode); }
@@ -359,7 +352,8 @@
       // 2026, ayrı kaynak: Temel İşlemler YYS 2026 · Bölüm 1-5) 2 Eyl 2026'da gerçek
       // M1-M11 modüllerine dağıtıldı — ayrı "ARK"/"TZ1-TZ5" modülü kalmadı.
     ],
-    // Dört Bilgi seti, Ürünlerimiz kitabı B1–B5 (14 Eyl 2026). Eski U1–U25 seti Arşiv'de.
+    // Dört Bilgi seti, Ürünlerimiz kitabı B1–B5 (14 Eyl 2026). B3 (UR7–UR9) Sermaye Piyasaları
+    // ve Hazine kutusunda.
     "Ürünler": [
       { key: "UR1", ad: "Dijital Bankacılık Kavramları ve Şifre Uygulamaları" },
       { key: "UR2", ad: "Dijital Bankacılık Kanalları ve İşlem Limitleri" },
@@ -367,15 +361,18 @@
       { key: "UR4", ad: "Kredi Kartı Tipleri ve MaxiMil" },
       { key: "UR5", ad: "Kredi Kartı Kullanımı ve Kart Uygulamaları" },
       { key: "UR6", ad: "Üye İşyeri Anlaşmaları" },
-      { key: "UR7", ad: "Sermaye Piyasası Faaliyetleri ve Ürünleri" },
-      { key: "UR8", ad: "Fon, Repo ve Sabit Getirili Kıymet İş Akışları" },
-      { key: "UR9", ad: "Yatırım Hesapları, Pay İşlemleri ve Altın Bankacılığı" },
       { key: "UR10", ad: "Tüketici Kredisi Genel Esasları, Geri Ödeme ve Cayma Hakkı" },
       { key: "UR11", ad: "İhtiyaç, Taşıt ve Konut Kredileri" },
       { key: "UR12", ad: "Şube Dışı Kanal Kredileri ve Ek Hesap" },
       { key: "UR13", ad: "Kredi Bağlantılı Sigorta ve Bireysel Emeklilik" },
       { key: "UR14", ad: "İş Black ve Fatura Tahsilatı" },
       { key: "UR15", ad: "Mevduat Ürünleri ve Emekli Maaş Ödemeleri" }
+    ],
+    // Ürünlerimiz kitabı B3 Menkul Kıymetler (15 Eyl 2026'da Ürünler'den taşındı; GUID aynı).
+    "Sermaye Piyasaları ve Hazine": [
+      { key: "UR7", ad: "Sermaye Piyasası Faaliyetleri ve Ürünleri" },
+      { key: "UR8", ad: "Fon, Repo ve Sabit Getirili Kıymet İş Akışları" },
+      { key: "UR9", ad: "Yatırım Hesapları, Pay İşlemleri ve Altın Bankacılığı" }
     ],
     "Kredi": [
       { key: "K1", ad: "Kredinin Tanımı, Sınıflandırılması ve Kredi Açılabilecek Kişiler" },
@@ -397,69 +394,6 @@
       // Arkadaş seti sorusu (31 Ağu 2026) 2 Eyl 2026'da gerçek K1-K16 modüllerine dağıtıldı,
       // ayrı "ARK" modülü kalmadı.
     ],
-    // Dört Bilgi seti, İthalat İhracat kitabı B1–B6 (13 Eyl 2026).
-    "Kambiyo": [
-      { key: "DT1", ad: "Uluslararası Ticaret ve Incoterms 2020" },
-      { key: "DT2", ad: "Peşin ve Mal Mukabili Ödeme" },
-      { key: "DT3", ad: "Tahsiller: Taraflar, Belgeler ve Sorumluluklar" },
-      { key: "DT4", ad: "Akreditifli Ödemede Taraflar ve Sorumluluklar" },
-      { key: "DT5", ad: "Akreditif Türleri" },
-      { key: "DT6", ad: "Akreditifte Belge İncelemesi ve Bankaların Sorumlulukları" },
-      { key: "DT7", ad: "Taşıma Belgeleri" },
-      { key: "DT8", ad: "Sigorta Belgesi, Fatura, Poliçe ve Diğer Belgeler" },
-      { key: "DT9", ad: "İthalat Mevzuatı, Görevli Kurumlar ve Fonlar" },
-      { key: "DT10", ad: "İthalatta Ödeme Şekilleri ve Bankamız Uygulamaları" },
-      { key: "DT11", ad: "İhracat Mevzuatı ve İhracat Şekilleri" },
-      { key: "DT12", ad: "İhracat Bedellerinin Yurda Getirilmesi ve İhracat Hesaplarının Kapatılması" },
-      { key: "DT13", ad: "İhracatta Ödeme Şekilleri ve Bankamız Uygulamaları" },
-      { key: "DT14", ad: "Poliçe İskontosu, Forfaiting ve Faktoring" }
-    ],
-    // Eski üretim turlarından kalan sorular. Ders arşive alındıkça modülleri buraya eklenir;
-    // modül anahtarları derse göre öneklidir (K/M/U/H), çakışmaz. Arşiv ekranı iki katmanlı:
-    // önce ders (bkz. ARSIV_DERSLERI), sonra o dersin modülleri.
-    "Arşiv": [
-      { key: "K1", ad: "Kredinin Tanımı, Sınıflandırılması ve Kredi Açılabilecek Kişiler" },
-      { key: "K2", ad: "Bankacılık Kanunu, Kredi Sınırları ve Bankamız Politikaları" },
-      { key: "K3", ad: "Segment, Skorlama ve Kredi Karar Sistemleri" },
-      { key: "K4", ad: "Kredinin Tahsisi ve GNGKS" },
-      { key: "K5", ad: "Kredi Riski, Erken Uyarı ve Alacakların Sınıflandırılması" },
-      { key: "K6", ad: "Teminat Yönetimi, İpotek ve Taşınır Rehni" },
-      { key: "K7", ad: "Kefalet, Alacağın Devri ve Diğer Teminatlar" },
-      { key: "K8", ad: "KGF ve İGE Kefaleti" },
-      { key: "K9", ad: "BCH Türleri ve Diğer Ticari Krediler" },
-      { key: "K10", ad: "DBS, Çek, Fatura ve Alacak Finansmanı" },
-      { key: "K11", ad: "Tarım, Yenilenebilir Enerji ve Orta-Uzun Vadeli Krediler" },
-      { key: "K12", ad: "Dış Ticaretin Finansmanına Yönelik TL Krediler" },
-      { key: "K13", ad: "Teminat Mektuplarının Esasları ve Türleri" },
-      { key: "K14", ad: "Teminat Mektubunda Sona Erme, Tazmin ve Diğer Gayrinakdi Krediler" },
-      { key: "K15", ad: "Döviz Kredileri ve Döviz Geliri Esasları" },
-      { key: "K16", ad: "YP Gayrinakdi Krediler" },
-      { key: "U1", ad: "Tüketici Kredisi Genel Çerçeve" },
-      { key: "U2", ad: "Faiz / Vergi / Fon ve Geri Ödeme" },
-      { key: "U3", ad: "Taşıt Kredisi" },
-      { key: "U4", ad: "Konut Finansmanı" },
-      { key: "U5", ad: "Anında Kredi / Hazır Limit / İş'te Limit" },
-      { key: "U6", ad: "Dijital Alışveriş Kredileri" },
-      { key: "U7", ad: "Ek Hesap ve Taksitli Ek Hesap" },
-      { key: "U8", ad: "Kredi Destek Sigortası (KDS)" },
-      { key: "U9", ad: "Cayma Hakkı" },
-      { key: "U10", ad: "Bireysel Emeklilik Sistemi (BES)" },
-      { key: "U11", ad: "Çocuğum İçin BES" },
-      { key: "U12", ad: "İş Black" },
-      { key: "U13", ad: "Fatura Tahsilatı" },
-      { key: "U14", ad: "SOS / Maksimum Hesap / Maksimum Vadeli Hesap" },
-      { key: "U15", ad: "Günlük Kazandıran ve Vade Bekleyen Hesap" },
-      { key: "U16", ad: "Emekli Maaş Ödemeleri ve Promosyon" },
-      { key: "U17", ad: "Dijital Bankacılık — Temel Kavramlar ve Şifre Uygulamaları" },
-      { key: "U18", ad: "Dijital Bankacılık Kanalları (Bankamatik/İşCep/Maximum Mobil)" },
-      { key: "U19", ad: "Banka Kartları ve Ön Ödemeli Kartlar" },
-      { key: "U20", ad: "Kredi Kartı Tipleri ve MaxiMil/MaxiPuan Sistemi" },
-      { key: "U21", ad: "Kredi Kartı Kullanımı ve Uygulamaları" },
-      { key: "U22", ad: "Üye İşyeri Anlaşmaları" },
-      { key: "U23", ad: "Sermaye Piyasası Araçları" },
-      { key: "U24", ad: "Yatırım Fonları ve Talimatlar" },
-      { key: "U25", ad: "Yatırım Hesapları, Kredili İşlemler ve Altın Bankacılığı" }
-    ],
     "Hukuk": [
       { key: "H1", ad: "Gerçek Kişiler, Hak ve Fiil Ehliyeti" },
       { key: "H2", ad: "Tüzel Kişiler, Ölüm, Gaiplik ve Miras" },
@@ -473,41 +407,22 @@
       { key: "H10", ad: "Çek" }
       // Arkadaş seti sorusu (31 Ağu 2026) 2 Eyl 2026'da gerçek H1-H10 modüllerine dağıtıldı,
       // ayrı "ARK" modülü kalmadı.
-    ],
-    "Finansal Sunum": [
-      // Yatırımcı Sunumu (2026/6) — yazılı sınav hazırlığı, resmi 50 soruluk teste dahil değil.
-      { key: "ARK", ad: "🤝 Arkadaş Seti — Yatırımcı Sunumu 2026/6" }
     ]
   };
   var PRATIK_TUM_MODULLER = "__TUMU__"; // pseudo-modül: bir Konu'nun tüm modülleri karışık
-  var ARSIV_KONU = "Arşiv";
-  // "Arşiv" konusunun altındaki dersler → o derse ait modül anahtarları. Yeni bir ders
-  // arşive alınınca buraya bir satır + MODUL_TANIMLARI["Arşiv"]'e modülleri eklenir.
-  var ARSIV_DERSLERI = {
-    "Kredi": ["K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8",
-              "K9", "K10", "K11", "K12", "K13", "K14", "K15", "K16"],
-    "Ürünler": ["U1", "U2", "U3", "U4", "U5", "U6", "U7", "U8", "U9", "U10", "U11", "U12", "U13", "U14", "U15", "U16", "U17", "U18", "U19", "U20", "U21", "U22", "U23", "U24", "U25"]
-  };
   // Bölüm özetleri baz testlerden daha geniştir; her özetin en ilgili tek modülü seçilir.
-  // Ürünler'de UR seti yayına geçene dek eski U modülü yedek hedef olarak kullanılır.
-  // Finansal Sunum'un testi yok; konsolide Kritik Süreler için tek bir doğru modül yok.
+  // Kambiyo ve Genel Ekonomi'nin testi yok; konsolide Kritik Süreler için tek bir doğru modül yok.
   var CHECKPOINT_TEST_MODULLERI = {
     "ark_n-medeni": ["Hukuk", "H1"],
     "ark_n-borclar": ["Hukuk", "H3"],
     "ark_n-ticaret": ["Hukuk", "H6"],
     "ark_n-kambiyo": ["Hukuk", "H8"],
     "ark_n-banka": ["Kredi", "K2"],
-    "ark_n-dijital": ["Ürünler", "UR2", "U18"],
-    "ark_n-kart": ["Ürünler", "UR5", "U21"],
-    "ark_n-menkul": ["Ürünler", "UR7", "U23"],
-    "ark_n-krediler": ["Ürünler", "UR10", "U1"],
-    "ark_n-diger": ["Ürünler", "UR14", "U12"],
-    "ark_n-uluslararasi": ["Kambiyo", "DT1"],
-    "ark_n-pesin": ["Kambiyo", "DT2"],
-    "ark_n-akreditif": ["Kambiyo", "DT4"],
-    "ark_n-belgeler": ["Kambiyo", "DT7"],
-    "ark_n-ithalat": ["Kambiyo", "DT9"],
-    "ark_n-ihracat": ["Kambiyo", "DT11"],
+    "ark_n-dijital": ["Ürünler", "UR2"],
+    "ark_n-kart": ["Ürünler", "UR5"],
+    "ark_n-menkul": ["Sermaye Piyasaları ve Hazine", "UR7"],
+    "ark_n-krediler": ["Ürünler", "UR10"],
+    "ark_n-diger": ["Ürünler", "UR14"],
     "ark_n-kredigenel": ["Kredi", "K1"],
     "ark_n-kredisurec": ["Kredi", "K4"],
     "ark_n-krediteminat": ["Kredi", "K6"],
@@ -531,24 +446,8 @@
     }
     return null;
   }
-  function arsivDersModulleri(ders) {
-    var anahtarlar = ARSIV_DERSLERI[ders] || [];
-    return (MODUL_TANIMLARI[ARSIV_KONU] || []).filter(function (m) {
-      return anahtarlar.indexOf(m.key) !== -1;
-    });
-  }
-  function arsivDersiBul(modulKey) {
-    for (var ders in ARSIV_DERSLERI) {
-      if ((ARSIV_DERSLERI[ders] || []).indexOf(modulKey) !== -1) return ders;
-    }
-    return null;
-  }
   function modulAdi(konu, modulKey) {
     if (modulKey === PRATIK_TUM_MODULLER) return "Karışık — Tüm Modüller";
-    // Arşiv'in derse daraltılmış karışık modülü: "__TUMU__@Kredi"
-    if (modulKey && modulKey.indexOf(PRATIK_TUM_MODULLER + "@") === 0) {
-      return modulKey.slice((PRATIK_TUM_MODULLER + "@").length) + " · Karışık — Tüm Modüller";
-    }
     var liste = MODUL_TANIMLARI[konu] || [];
     var bulunan = liste.filter(function (m) { return m.key === modulKey; })[0];
     return bulunan ? bulunan.ad : modulKey;
@@ -597,7 +496,6 @@
   var pratikSeciliKonu = null; // pratikModul ekranında hangi Konu'nun modülleri gösteriliyor
   var dersSekmesi = "konu";    // ders içindeki Konu / Test seçimi
   var pratikSeciliModul = null; // seçili modül (alt-mod seçimi bu modül için gösterilir)
-  var arsivSeciliDers = null;   // "Arşiv" konusu iki katmanlı: önce ders, sonra modül
   var checkpointSeciliKonu = null; // checkpointListe ekranında hangi Konu açık
   var checkpointSeciliId = null;   // checkpointDetay ekranında gösterilen özet
   var currentCheckpoint = null;    // {id, index, bitti} — checkpoint içindeki soru/adım
@@ -904,19 +802,8 @@
   function pratikHavuz(konu, modul) {
     // Kapsam dışı işaretlenen sorular gerçek silme (kullanıcı onayı) gelene kadar
     // havuzdan filtrelenir — tekrar karşısına çıkmasın, ama veri kaybolmasın.
-    // "Karışık" pseudo-modülü Arşiv'de derse göre daraltılır: "__TUMU__::Kredi" yalnız o
-    // dersin modüllerini kapsar, arşivdeki diğer derslerin sorularını karıştırmaz.
-    var karisikDers = null;
-    if (modul && modul.indexOf(PRATIK_TUM_MODULLER + "@") === 0) {
-      karisikDers = modul.slice((PRATIK_TUM_MODULLER + "@").length);
-      modul = PRATIK_TUM_MODULLER;
-    }
     var tumu = modul === PRATIK_TUM_MODULLER
-      ? STATE.practiceBank.filter(function (q) {
-          if (q.konu !== konu) return false;
-          if (!karisikDers) return true;
-          return (ARSIV_DERSLERI[karisikDers] || []).indexOf(q.modul) !== -1;
-        })
+      ? STATE.practiceBank.filter(function (q) { return q.konu === konu; })
       : STATE.practiceBank.filter(function (q) { return q.konu === konu && q.modul === modul; });
     return tumu.filter(function (q) { return !pratikKapsamDisiMi(q); });
   }
@@ -2579,12 +2466,8 @@
   // "practice" (Test sayfası, konu çalışma havuzu). Mantık birebir aynı; yalnız hangi
   // dizinin örneklendiği ve istatistiğin hangi sözlüğe (stats / pStats) yazıldığı değişir.
   function flashHavuzu(kaynak, konuFiltre) {
-    // Test → ders → "Karışık": konuFiltre ders adı, Arşiv'de "__TUMU__@<ders>" — havuz o ders.
-    if (kaynak === "practice" && konuFiltre) {
-      return konuFiltre.indexOf(PRATIK_TUM_MODULLER + "@") === 0
-        ? pratikHavuz(ARSIV_KONU, konuFiltre)
-        : pratikHavuz(konuFiltre, PRATIK_TUM_MODULLER);
-    }
+    // Test → ders → "Karışık": konuFiltre ders adı — havuz o ders.
+    if (kaynak === "practice" && konuFiltre) return pratikHavuz(konuFiltre, PRATIK_TUM_MODULLER);
     var havuz = kaynak === "practice" ? STATE.practiceBank.filter(function (q) { return !pratikKapsamDisiMi(q); }) : STATE.bank;
     if (konuFiltre) havuz = havuz.filter(function (q) { return q.konu === konuFiltre; });
     return havuz;
@@ -2886,10 +2769,7 @@
     render();
   }
   function pratikSonrakiModul(konu, modul) {
-    // Arşiv'de "sıradaki modül" ders sınırını aşmaz.
-    var modlar = konu === ARSIV_KONU
-      ? arsivDersModulleri(arsivDersiBul(modul))
-      : (MODUL_TANIMLARI[konu] || []);
+    var modlar = MODUL_TANIMLARI[konu] || [];
     for (var i = 0; i < modlar.length; i++) {
       if (modlar[i].key === modul) return modlar[i + 1] || null;
     }
@@ -3244,9 +3124,7 @@
   }
 
   function renderDenemeKonuSec() {
-    // "Arşiv" yalnız pratik tarafının bir kutusudur; deneme bankasında karşılığı yok,
-    // burada "Henüz hazır değil" diye görünmesi yanıltıcı olurdu.
-    var tiles = KONU_SIRA.filter(function (k) { return k !== "Arşiv"; }).map(function (konu) {
+    var tiles = KONU_SIRA.map(function (konu) {
       var havuz = STATE.bank.filter(function (q) { return q.konu === konu; });
       var yanlis = havuz.filter(function (q) { return STATE.stats[q.guid] && STATE.stats[q.guid].sonSonucDogruMu === false; }).length;
       var aktif = havuz.length > 0;
@@ -3318,9 +3196,7 @@
         ' data-action="select-pratik-konu" data-konu="' + escapeHtml(konu) + '">' +
         '<div class="title">' + konuDotHtml(konu) + escapeHtml(konu) + "</div>" +
         '<div class="desc">' + (aktif
-          ? (checkpointSayisi ? checkpointSayisi + " konu · " : "") + soruSayisi + " soru" + (modlar && soruSayisi ? " · " + (konu === ARSIV_KONU
-              ? Object.keys(ARSIV_DERSLERI).length + " ders"
-              : modlar.length + " modül") : "")
+          ? (checkpointSayisi ? checkpointSayisi + " konu · " : "") + soruSayisi + " soru" + (modlar && soruSayisi ? " · " + modlar.length + " modül" : "")
           : "Henüz hazır değil") + "</div></button>";
     }).join("");
 
@@ -4001,29 +3877,10 @@ function pratikEnIyiHtml(konu, modulKey) {
       Object.keys(s.cevaplar || {}).length + " / " + s.kuyruk.length + "</div>";
   }
 
-  // Arşiv'in ders seçimi — Arşiv → (ders) → modül. Diğer konularda bu katman yok.
-  function renderArsivDersSec() {
-    var tiles = Object.keys(ARSIV_DERSLERI).map(function (ders) {
-      var modlar = arsivDersModulleri(ders);
-      var sayi = pratikHavuz(ARSIV_KONU, PRATIK_TUM_MODULLER + "@" + ders).length;
-      return '<button class="mode-btn" style="border-left:4px solid var(--seri-' + konuSeriIdx(ders) + ')"' +
-        (sayi ? "" : " disabled") + ' data-action="select-arsiv-ders" data-ders="' + escapeHtml(ders) + '">' +
-        '<div class="title">' + konuDotHtml(ders) + escapeHtml(ders) + "</div>" +
-        '<div class="desc">' + sayi + " soru · " + modlar.length + " modül</div></button>";
-    }).join("");
-    return '<div class="muted" style="margin-bottom:16px">Eski üretim turlarından kalan sorular. Yeni set ilgili dersin kendi kutusunda.</div>' +
-      '<div class="mode-grid">' + tiles + "</div>";
-  }
-
   function renderPratikModul() {
     var konu = pratikSeciliKonu;
-    var arsivMi = konu === ARSIV_KONU;
-    var geri = arsivMi && arsivSeciliDers
-      ? '<button class="btn" data-action="arsiv-ders-geri">← Arşiv Dersleri</button>'
-      : '<button class="btn" data-action="pratik-konu-geri">← Konulara Dön</button>';
-    var baslik = arsivMi && arsivSeciliDers
-      ? konuDotHtml(arsivSeciliDers) + escapeHtml("Arşiv · " + arsivSeciliDers)
-      : konuDotHtml(konu) + escapeHtml(konu);
+    var geri = '<button class="btn" data-action="pratik-konu-geri">← Konulara Dön</button>';
+    var baslik = konuDotHtml(konu) + escapeHtml(konu);
     var sekmeler = '<div class="ders-sekmeler" role="tablist" aria-label="Ders bölümleri">' +
       '<button class="btn' + (dersSekmesi === "konu" ? " active" : "") + '" role="tab" aria-selected="' + (dersSekmesi === "konu") + '" tabindex="' + (dersSekmesi === "konu" ? "0" : "-1") + '" data-action="select-ders-sekmesi" data-sekme="konu">Konu</button>' +
       '<button class="btn' + (dersSekmesi === "test" ? " active" : "") + '" role="tab" aria-selected="' + (dersSekmesi === "test") + '" tabindex="' + (dersSekmesi === "test" ? "0" : "-1") + '" data-action="select-ders-sekmesi" data-sekme="test">Test</button></div>';
@@ -4038,28 +3895,23 @@ function pratikEnIyiHtml(konu, modulKey) {
         '<div class="link-row"><button class="btn ghost" data-action="open-checkpoint-hatirlatici">🔖 Checkpoint Hatırlatıcılarım (' + checkpointHatirlaticiListesi().length + ')</button></div>' +
         cpHtml + '</div>';
     }
-    var testHtml = "";
-    if (arsivMi && !arsivSeciliDers) testHtml = renderArsivDersSec();
-    else {
-      var modlar = (arsivMi ? arsivDersModulleri(arsivSeciliDers) : (MODUL_TANIMLARI[konu] || [])).filter(function (m) {
-        return pratikHavuz(konu, m.key).length > 0;
-      });
-      var karisikKey = arsivMi ? PRATIK_TUM_MODULLER + "@" + arsivSeciliDers : PRATIK_TUM_MODULLER;
-      var karisikHavuz = pratikHavuz(konu, karisikKey);
-      // Karışık = bu derse sınırlı Rastgele Soru (Test sayfasındakiyle aynı algoritma).
-      var karisikTile = '<button class="mode-btn" style="border-left:4px solid var(--seri-7)" ' + (karisikHavuz.length ? "" : "disabled") +
-        ' data-action="start-pratik-flash" data-konu="' + escapeHtml(arsivMi ? karisikKey : konu) + '">' +
-        '<div class="title">🔀 Karışık — Tüm Modüller</div>' +
-        '<div class="desc">' + karisikHavuz.length + " soruluk havuzdan tek soru, anında cevap — önce görülmeyenler ve yanlışlar.</div></button>";
-      var tiles = karisikTile + modlar.map(function (m) {
-        var havuz = pratikHavuz(konu, m.key);
-        return '<button class="mode-btn" ' + pratikTileStil(konu, m.key) + ' data-action="select-pratik-modul" data-modul="' + m.key + '">' +
-          '<div class="title">' + escapeHtml(m.key + " — " + m.ad) + "</div>" +
-          '<div class="desc">' + havuz.length + " soru" + pratikEnIyiHtml(konu, m.key) + "</div>" +
-          pratikDevamHtml(konu, m.key) + "</button>";
-      }).join("");
-      testHtml = modlar.length ? '<div class="mode-grid">' + tiles + '</div>' : '<div class="muted">Bu ders için henüz test yok.</div>';
-    }
+    var modlar = (MODUL_TANIMLARI[konu] || []).filter(function (m) {
+      return pratikHavuz(konu, m.key).length > 0;
+    });
+    var karisikHavuz = pratikHavuz(konu, PRATIK_TUM_MODULLER);
+    // Karışık = bu derse sınırlı Rastgele Soru (Test sayfasındakiyle aynı algoritma).
+    var karisikTile = '<button class="mode-btn" style="border-left:4px solid var(--seri-7)" ' + (karisikHavuz.length ? "" : "disabled") +
+      ' data-action="start-pratik-flash" data-konu="' + escapeHtml(konu) + '">' +
+      '<div class="title">🔀 Karışık — Tüm Modüller</div>' +
+      '<div class="desc">' + karisikHavuz.length + " soruluk havuzdan tek soru, anında cevap — önce görülmeyenler ve yanlışlar.</div></button>";
+    var tiles = karisikTile + modlar.map(function (m) {
+      var havuz = pratikHavuz(konu, m.key);
+      return '<button class="mode-btn" ' + pratikTileStil(konu, m.key) + ' data-action="select-pratik-modul" data-modul="' + m.key + '">' +
+        '<div class="title">' + escapeHtml(m.key + " — " + m.ad) + "</div>" +
+        '<div class="desc">' + havuz.length + " soru" + pratikEnIyiHtml(konu, m.key) + "</div>" +
+        pratikDevamHtml(konu, m.key) + "</button>";
+    }).join("");
+    var testHtml = modlar.length ? '<div class="mode-grid">' + tiles + '</div>' : '<div class="muted">Bu ders için henüz test yok.</div>';
     return '<div class="link-row">' + geri + '</div>' +
       '<div class="section-title">' + baslik + '</div>' + sekmeler +
       '<div role="tabpanel" id="ders-test-panel">' + testHtml + '</div>';
@@ -4500,19 +4352,14 @@ function pratikEnIyiHtml(konu, modulKey) {
       var pk = t.getAttribute("data-konu");
       if (KONU_SIRA.indexOf(pk) !== -1) {
         pratikSeciliKonu = pk; dersSekmesi = STATE.checkpoints.some(function (c) { return checkpointDersi(c) === pk; }) ? "konu" : "test";
-        pratikSeciliModul = null; arsivSeciliDers = null; VIEW = "pratikModul"; render();
+        pratikSeciliModul = null; VIEW = "pratikModul"; render();
       }
     }
     else if (action === "select-ders-sekmesi") {
       var sekme = t.getAttribute("data-sekme");
       if (VIEW === "pratikModul" && (sekme === "konu" || sekme === "test")) { dersSekmesi = sekme; render(); }
     }
-    else if (action === "select-arsiv-ders") {
-      var ad = t.getAttribute("data-ders");
-      if (ARSIV_DERSLERI[ad]) { arsivSeciliDers = ad; pratikSeciliModul = null; VIEW = "pratikModul"; render(); }
-    }
-    else if (action === "arsiv-ders-geri") { arsivSeciliDers = null; pratikSeciliModul = null; render(); }
-    else if (action === "pratik-konu-geri") { VIEW = "menuTest"; pratikSeciliKonu = null; dersSekmesi = "konu"; pratikSeciliModul = null; arsivSeciliDers = null; render(); }
+    else if (action === "pratik-konu-geri") { VIEW = "menuTest"; pratikSeciliKonu = null; dersSekmesi = "konu"; pratikSeciliModul = null; render(); }
     else if (action === "open-checkpoint-liste") { checkpointSeciliKonu = null; checkpointSeciliId = null; VIEW = "checkpointListe"; render(); }
     else if (action === "select-checkpoint-konu") { checkpointSeciliKonu = t.getAttribute("data-konu"); VIEW = "checkpointListe"; render(); }
     else if (action === "checkpoint-konu-geri") { checkpointSeciliId = null; VIEW = pratikSeciliKonu ? "pratikModul" : "checkpointListe"; render(); }
@@ -4549,12 +4396,6 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "devam-pratik") {
       var dk = t.getAttribute("data-konu"), dm = t.getAttribute("data-modul");
       pratikSeciliKonu = dk; pratikSeciliModul = dm;
-      // Arşiv oturumundan geri dönünce doğru dersin modül listesine düşsün.
-      if (dk === ARSIV_KONU) {
-        arsivSeciliDers = dm.indexOf(PRATIK_TUM_MODULLER + "@") === 0
-          ? dm.slice((PRATIK_TUM_MODULLER + "@").length)
-          : arsivDersiBul(dm);
-      }
       devamPratikOturum(dk, dm);
     }
     else if (action === "pratik-slot-at") pratikSlotAt(t.getAttribute("data-konu"), t.getAttribute("data-modul"));
