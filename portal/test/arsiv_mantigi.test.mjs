@@ -55,6 +55,14 @@ esit(api.pratikSonrakiModul("Arşiv", "K16"), null, "K16 sonrası");
 esit(api.pratikSonrakiModul("Arşiv", "K1").key, "K2", "arşivde sıradaki modül");
 esit(api.pratikSonrakiModul("Kredi", "K1").key, "K2", "normal konu bozulmadı");
 
+// Ürünler (14 Eyl 2026): eski U1–U25 arşivde, yeni set UR1–UR15.
+const urun = api.arsivDersModulleri("Ürünler");
+esit(urun.length, 25, "Ürünler arşiv modül sayısı");
+esit(urun[0].key, "U1", "Ürünler ilk arşiv modülü");
+esit(api.arsivDersiBul("U12"), "Ürünler", "U12 hangi ders");
+esit(api.arsivDersiBul("UR1"), null, "yeni Ürünler modülü arşivde değil");
+esit(api.pratikSonrakiModul("Ürünler", "UR1").key, "UR2", "yeni Ürünler sırası");
+
 // Slot anahtarı "konu::modul" ile ayrıştırılıyor; sözde modül "::" içermemeli.
 if (Object.keys(api.ARSIV_DERSLERI).some((d) => ("__TUMU__@" + d).includes("::"))) {
   throw new Error("sözde modül anahtarı slot ayracıyla çakışıyor");
