@@ -231,6 +231,7 @@
   .resume-card { border-color: var(--accent); margin-bottom: 18px; }
   .resume-card .title { font-weight: 700; margin-bottom: 4px; }
   .resume-card .desc { color: var(--text-muted); font-size: 0.86rem; }
+  .resume-section > summary { cursor: pointer; padding: 8px 0; }
   .option-row.correct { border-color: var(--good); background: var(--good-bg); }
   .option-row.wrong { border-color: var(--bad); background: var(--bad-bg); }
   .exam-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; gap: 10px; flex-wrap: wrap; }
@@ -3269,7 +3270,7 @@
     });
     var yarimKalanHtml = "";
     if (slotKeys.length) {
-      yarimKalanHtml = '<div class="section-title">▶ Yarım kalan çalışmalar</div><div class="mode-grid">' +
+      yarimKalanHtml = '<details class="resume-section"><summary class="section-title">Yarım kalan testler</summary><div class="mode-grid">' +
         slotKeys.map(function (key) {
           var s = STATE.pausedPratik[key];
           var parts = key.split("::"), konu = parts[0], modul = parts[1];
@@ -3283,7 +3284,7 @@
             '<button class="btn primary" data-action="devam-pratik" data-konu="' + escapeHtml(konu) + '" data-modul="' + escapeHtml(modul) + '">Devam Et</button>' +
             '<button class="btn ghost" data-action="pratik-slot-at" data-konu="' + escapeHtml(konu) + '" data-modul="' + escapeHtml(modul) + '">Sil</button>' +
             "</div></div>";
-        }).join("") + "</div>";
+        }).join("") + "</div></details>";
     }
 
     var flashDisabled = pratikHavuzToplam === 0 ? "disabled" : "";
@@ -3408,7 +3409,7 @@
       return (bSlot.savedAtISO || bSlot.updatedAt || "").localeCompare(aSlot.savedAtISO || aSlot.updatedAt || "");
     });
     if (!checkpoints.length) return "";
-    return '<div class="section-title" style="margin-top:18px">▶ Yarım kalan checkpointler</div><div class="mode-grid">' + checkpoints.map(function (c) {
+    return '<details class="resume-section"><summary class="section-title">Yarım kalan checkpointler</summary><div class="mode-grid">' + checkpoints.map(function (c) {
       var slot = checkpointSlotOku(c) || remotePracticeSessions[checkpointSlotAnahtari(c)] || {};
       var toplam = checkpointSorular(c).length;
       var index = Math.min((slot.index || 0) + 1, toplam || 1);
@@ -3416,7 +3417,7 @@
         '<div class="title">' + konuDotHtml(c.konu) + escapeHtml(c.title) + '</div>' +
         '<div class="desc">' + index + " / " + toplam + ". soruda kaldın" + ((slot.savedAtISO || slot.updatedAt) ? " · " + fmtTarih(slot.savedAtISO || slot.updatedAt) : "") + '</div>' +
         '<div class="link-row" style="margin-top:10px"><button class="btn primary" data-action="devam-checkpoint" data-id="' + escapeHtml(c.id) + '">Kaldığım Yerden Devam Et</button></div></div>';
-    }).join("") + "</div>";
+    }).join("") + "</div></details>";
   }
   function checkpointBaslat(id) {
     var c = checkpointBul(id), sorular = checkpointSorular(c);
