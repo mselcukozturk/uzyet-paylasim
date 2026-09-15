@@ -1259,5 +1259,77 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "05 İstihbarat/istihbarat_TKR_2026.pdf s.18 (PDF s.35) / 05 İstihbarat/markdown/01-istihbarat-ve-finansal-analiz-calismalarina-iliskin-genel-esaslar.md",
   "tarihISO": "2026-09-13T23:09:51.655231+00:00"
+ },
+ {
+  "id": "gece-20260915-33ae1e23e76b",
+  "guid": "33ae1e23e76b",
+  "konu": "Hukuk",
+  "soru": "Kira sözleşmesi hangi şekilde düzenlenebilir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Hukuk_TKR_2026.pdf s.92 (kitap s.73)",
+  "tarihISO": "2026-09-15T03:56:12.888723+00:00"
+ },
+ {
+  "id": "gece-20260915-46a6f3ad1017",
+  "guid": "46a6f3ad1017",
+  "konu": "Temel İşlemler",
+  "soru": "Zorunlu Karşılıklara faiz ödenmesine ilişkin ifadelerden hangisi doğrudur?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Temel Islemler_YYS_2026.pdf s.23 (kitap s.7)",
+  "tarihISO": "2026-09-15T03:56:12.888723+00:00"
+ },
+ {
+  "id": "gece-20260915-a7caf5be98b0",
+  "guid": "a7caf5be98b0",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 itibarıyla bankamız kredi portföyünde yer alan tüketici kredi türleri / oran eşleşmesi aşağıdakilerden hangisinde yanlış verilmiştir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "YatirimciSunumu.pdf sl.8",
+  "tarihISO": "2026-09-15T03:56:12.888723+00:00"
+ },
+ {
+  "id": "gece-20260915-d3920f71b259",
+  "guid": "d3920f71b259",
+  "konu": "Kredi",
+  "soru": "Alacak tutarının belli olmaması halinde Bankanın müşterisine ait taşınmaz üzerine ipotek tesis edebilmesi ile ilgili hangisi doğrudur?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026.pdf s.114 (kitap s.97)",
+  "tarihISO": "2026-09-15T03:56:12.888723+00:00"
+ },
+ {
+  "id": "gece-20260915-c45b964e3c82",
+  "guid": "c45b964e3c82",
+  "konu": "Temel İşlemler",
+  "soru": "Bilgi suistimali ve piyasa dolandırıcılığı suçlarına dair şüpheli işlemlere ilişkin bildirim süreleri ile ilgili hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Temel Islemler_YYS_2026.pdf s.55 (kitap s.39)",
+  "tarihISO": "2026-09-15T03:56:12.888723+00:00"
+ },
+ {
+  "id": "gece-20260915-f6136e7814df",
+  "guid": "f6136e7814df",
+  "konu": "Ürünler",
+  "soru": "Hangisi Ortak ATM Platformu'nda Bankamatik kartı ile yapılabilecek işlemlerden değildir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026.pdf s.63 (kitap s.46)",
+  "tarihISO": "2026-09-15T03:56:12.888723+00:00"
+ },
+ {
+  "id": "gece-20260915-e65390628fbf",
+  "guid": "e65390628fbf",
+  "konu": "Hukuk",
+  "soru": "Tam ehliyetsizler ile ilgili hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Hukuk_TKR_2026.pdf s.29 (kitap s.10)",
+  "tarihISO": "2026-09-15T03:56:12.888723+00:00"
+ },
+ {
+  "id": "gece-20260915-1fd033f297c4",
+  "guid": "1fd033f297c4",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 bankacılık sektör verilerine göre, kredileri paylarına göre büyükten küçüğe sıralayınız.\n I-Bireysel Krediler\n II-Kobi Kredileri\n III-Ticari ve Kurumsal Krediler",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Bankacılık Sektörü - Haziran 2026.pdf sl.12",
+  "tarihISO": "2026-09-15T03:56:12.888723+00:00"
  }
 ]
