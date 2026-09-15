@@ -1331,5 +1331,41 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "Bankacılık Sektörü - Haziran 2026.pdf sl.12",
   "tarihISO": "2026-09-15T03:56:12.888723+00:00"
+ },
+ {
+  "id": "gece-20260916-6a26d8a48beb",
+  "guid": "6a26d8a48beb",
+  "konu": "Temel İşlemler",
+  "soru": "Para çekme ekranından yapılan nakit para çekme işlem anı onay limiti ne kadardır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "06 Döviz Temel İşlemler/Temel Islemler_YYS_2026.pdf s.75 (kitap s.59)",
+  "tarihISO": "2026-09-15T23:21:28.389898+00:00"
+ },
+ {
+  "id": "gece-20260916-9a9d5f46cf7c",
+  "guid": "9a9d5f46cf7c",
+  "konu": "Temel İşlemler",
+  "soru": "Altın Havalesi'ne ilişkin verilen ifadelerden hangisi doğrudur?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "06 Döviz Temel İşlemler/Temel Islemler_YYS_2026.pdf s.138 (kitap s.121)",
+  "tarihISO": "2026-09-15T23:21:28.389898+00:00"
+ },
+ {
+  "id": "gece-20260916-2f09e7045d83",
+  "guid": "2f09e7045d83",
+  "konu": "Temel İşlemler",
+  "soru": "Dijital İşim Hesabı ürünü ile ilgili hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "06 Döviz Temel İşlemler/Temel Islemler_YYS_2026.pdf s.126 (kitap s.109)",
+  "tarihISO": "2026-09-15T23:21:28.389898+00:00"
+ },
+ {
+  "id": "gece-20260916-04cfef67c1a1",
+  "guid": "04cfef67c1a1",
+  "konu": "Kredi",
+  "soru": "Donuk bir alacağın canlı alacak olarak yeniden sınıflandırılabilmesi için aşağıdaki koşullardan hangisinin/hangilerinin sağlanmış olması gerekmektedir?\n1. Gecikmiş ödemelerinin tamamının teminatlara başvurulmaksızın tahsil edilmiş olması.\n2. Ödemesi gecikmiş herhangi bir alacağın bulunmaması.\n3. Birinci veya ikinci grupta sınıflandırma koşullarının sağlanmış olması.",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "04 Kredi/Kredi YYS 2026.pdf s.105 (kitap s.88)",
+  "tarihISO": "2026-09-15T23:21:28.389898+00:00"
  }
 ]
