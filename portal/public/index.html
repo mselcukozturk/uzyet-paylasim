@@ -279,6 +279,19 @@
   .import-summary { display: flex; gap: 18px; flex-wrap: wrap; margin: 14px 0 20px; }
   .import-summary .chip { background: var(--surface-2); border-radius: 8px; padding: 10px 14px; font-size: 0.9rem; }
   .import-summary .chip b { font-variant-numeric: tabular-nums; font-size: 1.1rem; display: block; }
+  .duyurular { margin-bottom: 14px; }
+  .duyuru-bas { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+  .duyuru-bas .section-title { margin: 0; font-size: 1rem; }
+  .duyuru-oklar { display: flex; gap: 6px; }
+  .duyuru-oklar .btn { padding: 4px 12px; font-size: 1.15rem; line-height: 1.2; }
+  .duyuru-iz { display: grid; grid-auto-flow: column; grid-auto-columns: 88%; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; padding-bottom: 6px; scrollbar-width: thin; }
+  .duyuru-iz:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .duyuru { scroll-snap-align: start; background: var(--surface-2); border-radius: 8px; padding: 14px 16px; }
+  .duyuru-tarih { display: block; color: var(--text-muted); font-size: 0.8rem; margin-bottom: 4px; }
+  .duyuru-etiket { margin-left: 6px; }
+  .duyuru h3 { font-family: var(--font-display); font-size: 1.02rem; line-height: 1.3; margin: 0 0 6px; }
+  .duyuru p { margin: 0; font-size: 0.9rem; line-height: 1.55; }
+  @media (min-width: 700px) { .duyuru-iz { grid-auto-columns: calc(50% - 6px); } }
   .section-title { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; margin: 0 0 12px; }
   .muted { color: var(--text-muted); }
   .history-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: center; font-size: 0.9rem; }
@@ -2259,7 +2272,58 @@
       '<input type="text" id="exam-code-input" placeholder="ör. UZY-R1K2M3P" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body)">' +
       '<button class="btn primary" data-action="start-exam-code">Kodla Başla</button>' +
       "</div></div>";
-    return gununDenemesiHtml() + (denemeTurSecimiAcik ? yeniDenemeHtml : '<div class="mode-grid">' + yeniDenemeHtml + "</div>") + koduCardHtml;
+    return duyurularHtml() + gununDenemesiHtml() + (denemeTurSecimiAcik ? yeniDenemeHtml : '<div class="mode-grid">' + yeniDenemeHtml + "</div>") + koduCardHtml;
+  }
+
+  // Duyurular (15 Eyl 2026): siteye eklenen içerikler, en yeni başta. Altyapı ve algoritma
+  // değişiklikleri buraya yazılmaz. ai: true olanlar yalnız Yapay Zekâ Kaynakları açık hesapta görünür.
+  var DUYURULAR = [
+    { tarih: "2026-09-15", baslik: "Mali Analiz'e Selçuk Bayraktar'ın soruları eklendi",
+      metin: "Selçuk Bayraktar'ın İstihbarat ve Mali Analiz notlarındaki sorulardan 359'u Deneme bankasına eklendi; Mali Analiz havuzu 261'den 620 soruya çıktı. Bilanço ve gelir tablosu içeren sorular tablo olarak görünüyor." },
+    { tarih: "2026-09-15", ai: true, baslik: "Mali Analiz testi: 369 soru",
+      metin: "Selçuk Bayraktar'ın 369 sorusu Test ekranında Mali Analiz altında beş modül halinde. Her sorunun kısa bir açıklaması ve İstihbarat kitabından sayfa numarası var." },
+    { tarih: "2026-09-14", ai: true, baslik: "Ürünler testi yenilendi",
+      metin: "Ürünlerimiz kitabından hazırlanan 150 soruluk yeni set Test ekranında. Menkul kıymet modülleri Sermaye Piyasaları ve Hazine altında." },
+    { tarih: "2026-09-13", baslik: "Günün Denemesi",
+      metin: "Her sabah 07:00'de herkese aynı 50 soruluk deneme açılıyor. Çözdükten sonra puanını ve çözenlerin ortalamasını görürsün." },
+    { tarih: "2026-09-12", ai: true, baslik: "Kredi testi yenilendi",
+      metin: "Kredi dersinden hazırlanan 212 soruluk yeni set 16 modül halinde Test ekranında." },
+    { tarih: "2026-09-10", ai: true, baslik: "Test ve Checkpoint sitede",
+      metin: "Konu testleri ve checkpoint özetleri 🤖 düğmesiyle açılıyor. İlerlemen hesabına kaydediliyor, başka cihazdan kaldığın yerden devam edebilirsin." },
+    { tarih: "2026-09-10", baslik: "Zor Deneme ve konu ortalamaları",
+      metin: "Yeni Deneme altında, kullanıcıların en çok yanlış yaptığı sorulardan oluşan Zor Deneme seçilebiliyor. Geçmiş ekranında her konudaki ortalamanı görürsün." },
+    { tarih: "2026-09-09", baslik: "Yanlış Sorular ve Düzeltilenler",
+      metin: "Denemelerde yanlış yaptığın sorular ana ekranda ayrı bir kartta toplanıyor; doğru çözünce listeden çıkıyor. Düzeltilen soruların listesi ana ekranın en altında." },
+    { tarih: "2026-09-08", baslik: "Hatırlatıcı",
+      metin: "Sınavda 🔖 ile işaretlediğin sorular ana ekranda listeleniyor. Bunlarla tekrar testi çözebilir ya da Word belgesi olarak indirebilirsin." }
+  ];
+  function duyurularHtml() {
+    var liste = DUYURULAR.filter(function (d) { return !d.ai || remoteAuth.canSeeAiSources === true; });
+    if (!liste.length) return "";
+    var slaytlar = liste.map(function (d, i) {
+      var tarih = new Date(d.tarih + "T12:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+      return '<article class="duyuru" aria-roledescription="slayt" aria-label="' + (i + 1) + " / " + liste.length + '">' +
+        '<span class="duyuru-tarih"><time datetime="' + d.tarih + '">' + tarih + "</time>" +
+        (d.ai ? '<span class="duyuru-etiket" title="Yapay Zekâ Kaynakları">🤖</span>' : "") + "</span>" +
+        "<h3>" + escapeHtml(d.baslik) + "</h3><p>" + escapeHtml(d.metin) + "</p></article>";
+    }).join("");
+    return '<section class="card duyurular" aria-roledescription="karosel" aria-label="Duyurular">' +
+      '<div class="duyuru-bas"><div class="section-title">📣 Duyurular</div>' +
+      '<div class="duyuru-oklar">' +
+      '<button class="btn ghost" data-action="duyuru-kaydir" data-yon="-1" aria-label="Önceki duyuru">‹</button>' +
+      '<button class="btn ghost" data-action="duyuru-kaydir" data-yon="1" aria-label="Sonraki duyuru">›</button>' +
+      "</div></div>" +
+      '<div class="duyuru-iz" tabindex="0">' + slaytlar + "</div></section>";
+  }
+  function duyuruKaydir(yon) {
+    var iz = document.querySelector(".duyuru-iz");
+    if (!iz) return;
+    var adim = iz.firstElementChild ? iz.firstElementChild.getBoundingClientRect().width + 12 : iz.clientWidth;
+    var sonda = yon > 0 && iz.scrollLeft + iz.clientWidth >= iz.scrollWidth - 2;
+    var basta = yon < 0 && iz.scrollLeft <= 2;
+    var hedef = sonda ? 0 : basta ? iz.scrollWidth : iz.scrollLeft + yon * adim;
+    var azHareket = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    iz.scrollTo({ left: hedef, behavior: azHareket ? "auto" : "smooth" });
   }
 
   // Günün denemesi: kodu sunucu her sabah 07:00'de değiştirir, herkese aynı 50 soru.
@@ -4551,6 +4615,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "confirm-delete-gecmis") confirmDeleteGecmis(t.getAttribute("data-id"));
     else if (action === "cancel-delete-gecmis") cancelDeleteGecmis();
     else if (action === "copy-exam-code") kopyalaPano(t.getAttribute("data-kod"));
+    else if (action === "duyuru-kaydir") duyuruKaydir(parseInt(t.getAttribute("data-yon"), 10));
     else if (action === "copy-result-image") sonucGorseliKopyala();
     else if (action === "select-option") selectOption(t.getAttribute("data-guid"), parseInt(t.getAttribute("data-idx"), 10));
     else if (action === "next-q") nextQuestion();
