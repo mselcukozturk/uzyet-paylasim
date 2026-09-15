@@ -253,6 +253,11 @@
   .review-item { border-top: 1px solid var(--border); padding: 14px 0; }
   .review-item:first-of-type { border-top: none; }
   .review-q { font-weight: 600; margin-bottom: 8px; white-space: pre-wrap; }
+  .q-table-wrap { overflow-x: auto; margin: 8px 0 12px; }
+  .q-table { border-collapse: collapse; font-family: var(--font-body); font-size: 0.82rem; font-weight: 400; white-space: normal; text-wrap: wrap; }
+  .q-table th, .q-table td { border: 1px solid var(--border); padding: 4px 8px; text-align: right; }
+  .q-table th:first-child, .q-table td:first-child { text-align: left; }
+  .q-table th { font-weight: 600; background: var(--surface-2); }
   .review-opt { padding: 6px 10px; border-radius: 6px; margin-bottom: 4px; font-size: 0.92rem; }
   .review-opt.correct { background: var(--good-bg); color: var(--good); }
   .review-opt.wrong { background: var(--bad-bg); color: var(--bad); }
@@ -373,6 +378,14 @@
       { key: "UR7", ad: "Sermaye Piyasası Faaliyetleri ve Ürünleri" },
       { key: "UR8", ad: "Fon, Repo ve Sabit Getirili Kıymet İş Akışları" },
       { key: "UR9", ad: "Yatırım Hesapları, Pay İşlemleri ve Altın Bankacılığı" }
+    ],
+    // BASİSEN İstihbarat Not ve Soruları 2026, s.27–103 (15 Eyl 2026). Kaynağın bölümleri modüldür.
+    "Mali Analiz": [
+      { key: "MA1", ad: "Genel Hususlar" },
+      { key: "MA2", ad: "Temel Muhasebe Bilgisi ve Uygulamaları" },
+      { key: "MA3", ad: "Düzeltme Kalemleri ve Mali Analiz" },
+      { key: "MA4", ad: "Nakit Akım" },
+      { key: "MA5", ad: "Faaliyet Kaldıracı" }
     ],
     "Kredi": [
       { key: "K1", ad: "Kredinin Tanımı, Sınıflandırılması ve Kredi Açılabilecek Kişiler" },
@@ -3071,6 +3084,33 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c];
     });
   }
+  // Soru metnindeki "| a | b |" satırlarını tabloya çevirir (Mali Analiz BASİSEN seti, 15 Eyl 2026).
+  // İlk satırın ilk hücresi boşsa ya da satırda rakam yoksa başlık satırı sayılır.
+  function soruHtml(s) {
+    var html = "", metin = [], tablo = [];
+    function metniYaz() { if (metin.length) { html += escapeHtml(metin.join("\n")); metin = []; } }
+    function tabloyuYaz() {
+      if (!tablo.length) return;
+      html += '<div class="q-table-wrap"><table class="q-table">' + tablo.map(function (r, i) {
+        var h = i === 0 && (r[0] === "" || !/\d/.test(r.join(""))) ? "th" : "td";
+        return "<tr>" + r.map(function (c) { return "<" + h + ">" + escapeHtml(c) + "</" + h + ">"; }).join("") + "</tr>";
+      }).join("") + "</table></div>";
+      tablo = [];
+    }
+    String(s == null ? "" : s).split("\n").forEach(function (satir) {
+      var t = satir.trim();
+      if (t.length > 1 && t.charAt(0) === "|" && t.charAt(t.length - 1) === "|") {
+        metniYaz();
+        tablo.push(t.slice(1, -1).split("|").map(function (c) { return c.trim(); }));
+      } else {
+        tabloyuYaz();
+        if (t) metin.push(satir);
+      }
+    });
+    metniYaz();
+    tabloyuYaz();
+    return html;
+  }
   function fmtTarih(iso) {
     try {
       var d = new Date(iso);
@@ -3271,7 +3311,7 @@
       (cevaplanan ? '<button class="btn primary" data-action="finish-tekrar-test" title="Testi Bitir" aria-label="Testi Bitir">✅<span class="genis-etiket"> Testi Bitir</span></button>' : "")
     );
     return '<div class="card">' + ustHtml +
-      '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
+      '<div class="q-text">' + soruHtml(q.soru) + "</div>" +
       optionsHtml + sonucHtml +
       // Cevaplamadan da görünür (renderExam gibi, Rastgele Soru'dan farklı): hatırlatıcı
       // turu salt gözden geçirmedir — soruyu çözmeden 🔖 işaretini kaldırabilmek gerekir.
@@ -3901,7 +3941,7 @@
       '<div class="progressbar"><div style="width:' + progress + '%"></div></div>' +
       '<div class="card">' +
       ustHtml +
-      '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
+      '<div class="q-text">' + soruHtml(q.soru) + "</div>" +
       optionsHtml +
       flagBarHtml(guid) +
       '<div class="qgrid">' + qgrid + "</div>" +
@@ -3971,7 +4011,7 @@
     );
     return '<div class="card">' +
       ustHtml +
-      '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
+      '<div class="q-text">' + soruHtml(q.soru) + "</div>" +
       optionsHtml + sonucHtml +
       (answered ? flagBarHtml(q.guid, pratikMi) : "") +
       navHtml +
@@ -4210,7 +4250,7 @@ function pratikEnIyiHtml(konu, modulKey) {
         "</div>";
     }
 
-    return '<div class="card">' + ustHtml + '<div class="q-text">' + escapeHtml(q.soru) + "</div>" + body + kaynakHtml + altNav + "</div>";
+    return '<div class="card">' + ustHtml + '<div class="q-text">' + soruHtml(q.soru) + "</div>" + body + kaynakHtml + altNav + "</div>";
   }
 
   function renderResult() {
@@ -4238,7 +4278,7 @@ function pratikEnIyiHtml(konu, modulKey) {
       }).join("");
       var bosHtml = (secilen === undefined || secilen === null) ? '<div class="review-opt wrong">Boş bırakıldı</div>' : "";
       var badge = q.dogrulanmis === false ? '<span class="badge unverified">doğrulanmamış</span>' : "";
-      return '<div class="review-item"><div class="review-q">' + escapeHtml(q.soru) + badge + "</div>" +
+      return '<div class="review-item"><div class="review-q">' + soruHtml(q.soru) + badge + "</div>" +
         bosHtml + optionsHtml +
         (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + (q.kaynak ? " — " + escapeHtml(q.kaynak) : "") + "</div>" : "") +
         flagBarHtml(guid) +
@@ -4379,7 +4419,7 @@ function pratikEnIyiHtml(konu, modulKey) {
       return list.map(function (g) {
         var q = soruByGuid(g);
         var f = STATE.flags[g];
-        return '<div class="review-item"><div class="review-q">' + escapeHtml(q.soru) +
+        return '<div class="review-item"><div class="review-q">' + soruHtml(q.soru) +
           '<span class="badge unverified">' + escapeHtml(konuEtiketi(g)) + "</span></div>" +
           (kind === "hatali" && f.hataNotu ? '<div class="review-expl">' + escapeHtml(f.hataNotu) + "</div>" : "") +
           '<div class="link-row" style="margin-top:8px">' +
