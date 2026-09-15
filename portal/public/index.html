@@ -490,7 +490,6 @@
   var bannerIsError = false;
   var pausedDeleteConfirm = false;   // "Sil" iki adımlı onay — window.confirm() Artifact sandbox'ında çalışmıyor
   var currentFlash = null;     // {guid, secilen, kaynak, oturum:[{konu,dogru}...]} — Rastgele Soru modu: tek soru, anında cevap
-  var flashSayac = 0;          // bu oturumda kaç rastgele soru görüldü (kalıcı değil, sayfa yenilenince sıfırlanır)
   var lastFlashResult = null;  // {kaynak, oturum} — "Testi Bitir" sonrası özet ekranı için
   var currentPratik = null;    // {konu, modul, mod, kuyruk:[guid...], index, cevaplandi, secilen, bitti}
   var pratikSeciliKonu = null; // pratikModul ekranında hangi Konu'nun modülleri gösteriliyor
@@ -808,7 +807,7 @@
     return tumu.filter(function (q) { return !pratikKapsamDisiMi(q); });
   }
 
-  function azGorulenSirala(havuz) {
+  function azGorulenSirala(havuz, statlar, rnd) {
     // ⚠ Önce GÖSTERİM SAYISINA göre sıralanmıştı (en az gösterim önce) — ama gerçek veride
     // sayı TAM SAYI olduğu için sorular "tier" halinde kümeleniyor (ör. 6 tanesi gösterim=1,
     // 9 tanesi gösterim=2 gibi). Bir oturumda seçilen sorular yalnız BİR ARTTIĞI için bir
@@ -822,10 +821,12 @@
     // bağlı değil) — havuz daha küçükse de mümkün olan en az çakışmayı verir. Hiç görülmemiş
     // sorular (sonGorulme yok) en düşük anahtarla (0) en önde çıkar; eşitlik (yalnız
     // "hiç görülmemiş" grubunda olur) rastgele kırılır.
+    statlar = statlar || STATE.pStats;
+    rnd = rnd || Math.random;
     var withKeys = havuz.map(function (q) {
-      var s = STATE.pStats[q.guid];
+      var s = statlar[q.guid];
       var t = (s && s.sonGorulme) ? Date.parse(s.sonGorulme) : 0;
-      return { q: q, t: t, r: Math.random() };
+      return { q: q, t: t, r: rnd() };
     });
     withKeys.sort(function (a, b) { return (a.t - b.t) || (a.r - b.r); });
     return withKeys.map(function (x) { return x.q; });
@@ -1256,15 +1257,169 @@
   }
 
   var remoteBankLoaded = false;
+  var remoteBankGeneration = 0;
+  var remoteStudyOwner = null;
+  var remoteStudyFlushing = false;
+  var remoteStudyRetryTimer = null;
+  var remoteStudyInFlight = null;
+  var remoteStudyConfirmedStats = {};
+  var remoteStudyOwnerGeneration = 0;
+  function remoteCloneStudyStat(stat) {
+    return stat ? {
+      gosterim: stat.gosterim || 0, dogru: stat.dogru || 0, yanlis: stat.yanlis || 0,
+      sonSonucDogruMu: stat.sonSonucDogruMu == null ? null : !!stat.sonSonucDogruMu,
+      sonGorulme: stat.sonGorulme || null
+    } : null;
+  }
+  function remoteStudyQueueKey() { return "uzyet_study_queue_v1:" + remoteAuth.username; }
+  function remoteReadStudyQueue() {
+    try { var q = JSON.parse(localStorage.getItem(remoteStudyQueueKey()) || "[]"); return Array.isArray(q) ? q : []; }
+    catch (e) { return []; }
+  }
+  function remoteStoreStudyQueue(queue) {
+    try { localStorage.setItem(remoteStudyQueueKey(), JSON.stringify(queue)); }
+    catch (e) { showBanner("Yerel kayıt alanı dolu; soru ilerlemesini kaydetmek için bağlantını kontrol et.", true); }
+  }
+  function remotePendingStudyStats(onlyGuid) {
+    remoteReadStudyQueue().forEach(function (entry) {
+      var guid = entry.body.questionGuid;
+      if (onlyGuid && guid !== onlyGuid) return;
+      var s = STATE.stats[guid] || { gosterim: 0, dogru: 0, yanlis: 0, sonSonucDogruMu: null, sonGorulme: null };
+      s.gosterim++;
+      if (entry.correct) s.dogru++; else s.yanlis++;
+      s.sonSonucDogruMu = !!entry.correct;
+      s.sonGorulme = entry.seenAt;
+      STATE.stats[guid] = s;
+    });
+  }
+  function remoteApplyConfirmedStudyStat(guid) {
+    STATE.stats[guid] = remoteCloneStudyStat(remoteStudyConfirmedStats[guid]) ||
+      { gosterim: 0, dogru: 0, yanlis: 0, sonSonucDogruMu: null, sonGorulme: null };
+    remotePendingStudyStats(guid);
+  }
+  function remoteScheduleStudyRetry() {
+    if (remoteStudyRetryTimer) clearTimeout(remoteStudyRetryTimer);
+    remoteStudyRetryTimer = setTimeout(function () {
+      remoteStudyRetryTimer = null;
+      remoteFlushStudyQueue();
+    }, 15000);
+  }
+  function remoteFlushStudyQueue() {
+    if (remoteStudyFlushing || !remoteGirisTamamMi() || !remoteAuth.username) return remoteStudyInFlight || Promise.resolve(false);
+    var queue = remoteReadStudyQueue();
+    if (!queue.length) return Promise.resolve(true);
+    var entry = queue[0];
+    var owner = remoteAuth.username;
+    var ownerGeneration = remoteStudyOwnerGeneration;
+    remoteStudyFlushing = true;
+    var flight = remoteFetch("/api/exam", "POST", entry.body).then(function (r) {
+      if (owner !== remoteAuth.username || ownerGeneration !== remoteStudyOwnerGeneration || remoteStudyInFlight !== flight) return false;
+      if (!r.ok) {
+        if (r.status === 400 || r.status === 404 || r.status === 409 || r.status === 422) {
+          remoteStoreStudyQueue(remoteReadStudyQueue().filter(function (x) { return x.id !== entry.id; }));
+          remoteApplyConfirmedStudyStat(entry.body.questionGuid);
+          bumpRev(); lsKaydet();
+          showBanner((r.data && r.data.error) || "Cevap kaydedilemedi.", true);
+          return true;
+        }
+        throw new Error((r.data && r.data.error) || "Cevap kaydedilemedi.");
+      }
+      remoteStoreStudyQueue(remoteReadStudyQueue().filter(function (x) { return x.id !== entry.id; }));
+      if (r.data && r.data.stat) {
+        remoteStudyConfirmedStats[entry.body.questionGuid] = remoteCloneStudyStat(r.data.stat);
+        STATE.stats[entry.body.questionGuid] = remoteCloneStudyStat(r.data.stat);
+        remotePendingStudyStats(entry.body.questionGuid);
+        bumpRev(); lsKaydet();
+      }
+      return true;
+    }).catch(function () {
+      if (owner === remoteAuth.username && ownerGeneration === remoteStudyOwnerGeneration && remoteStudyInFlight === flight) {
+        showBanner("Cevap bağlantı gelince otomatik kaydedilecek.", true);
+        remoteScheduleStudyRetry();
+      }
+      return false;
+    }).then(function (ok) {
+      if (owner === remoteAuth.username && ownerGeneration === remoteStudyOwnerGeneration && remoteStudyInFlight === flight) {
+        remoteStudyFlushing = false;
+        remoteStudyInFlight = null;
+        if (ok && remoteReadStudyQueue().length) setTimeout(remoteFlushStudyQueue, 0);
+      }
+      return ok;
+    });
+    remoteStudyInFlight = flight;
+    return flight;
+  }
+  function remoteQueueStudyAnswer(body, correct) {
+    if (!STATE.sadeceDeneme || !remoteGirisTamamMi() || !remoteAuth.username) return;
+    var id = "study_" + crypto.randomUUID();
+    body.requestId = id;
+    var queue = remoteReadStudyQueue();
+    queue.push({ id: id, body: body, correct: !!correct, seenAt: new Date().toISOString() });
+    if (queue.length === 51) showBanner("Çevrimdışı cevap kuyruğu büyüdü; bağlantını kontrol et. Hiçbir cevap silinmedi.", true);
+    remoteStoreStudyQueue(queue);
+    remoteFlushStudyQueue();
+  }
+  function remoteInitStudyOwner() {
+    if (remoteStudyOwner === remoteAuth.username) return;
+    remoteStudyOwner = remoteAuth.username;
+    remoteStudyOwnerGeneration++;
+    remoteBankGeneration++;
+    remoteBankLoaded = false;
+    STATE.bank = [];
+    STATE.stats = {};
+    if (remoteStudyRetryTimer) clearTimeout(remoteStudyRetryTimer);
+    remoteStudyRetryTimer = null;
+    remoteStudyFlushing = false;
+    remoteStudyInFlight = null;
+    remoteStudyConfirmedStats = {};
+    if (remoteStudyOwner) remoteFlushStudyQueue();
+  }
   // sadeceDeneme derlemesi soru bankasını HTML'e hiç gömmez (bkz. build_quiz_dist.py
   // --sadece-deneme) — Rastgele Soru/Konu Konu Bak'ın çalışması için giriş+onay+disclaimer
   // tamamlanınca sunucudan (cevaplarıyla birlikte) çekilir. Onaysız/girişsiz ziyaretçi
   // view-source yapsa bile STATE.bank boş kalır.
   function remoteLoadBankIfNeeded(cb) {
-    if (!STATE.sadeceDeneme || remoteBankLoaded || !remoteGirisTamamMi()) { if (cb) cb(); return; }
-    remoteFetch("/api/exam", "POST", { action: "bank" }).then(function (r) {
-      if (r.ok && r.data && r.data.questions) { STATE.bank = r.data.questions; remoteBankLoaded = true; }
-    }).catch(function () {}).then(function () { if (cb) cb(); });
+    if (!STATE.sadeceDeneme || !remoteGirisTamamMi()) { if (cb) cb(false); return; }
+    if (remoteBankLoaded) { if (cb) cb(true); return; }
+    var owner = remoteAuth.username;
+    var generation = remoteBankGeneration;
+    var applied = false;
+    return remoteFetch("/api/exam", "POST", { action: "bank" }).then(function (r) {
+      if (owner === remoteAuth.username && generation === remoteBankGeneration && r.ok && r.data && r.data.questions) {
+        STATE.bank = r.data.questions;
+        var activeGuids = {};
+        STATE.bank.forEach(function (q) { activeGuids[q.guid] = true; });
+        var loadedStats = {};
+        Object.keys(r.data.stats || {}).forEach(function (guid) { loadedStats[guid] = remoteCloneStudyStat(r.data.stats[guid]); });
+        Object.keys(remoteStudyConfirmedStats).forEach(function (guid) {
+          if (!activeGuids[guid]) return;
+          var confirmed = remoteStudyConfirmedStats[guid];
+          var loaded = loadedStats[guid];
+          if (!loaded || confirmed.gosterim > loaded.gosterim ||
+            (confirmed.gosterim === loaded.gosterim && String(confirmed.sonGorulme || "") >= String(loaded.sonGorulme || ""))) {
+            loadedStats[guid] = remoteCloneStudyStat(confirmed);
+          }
+        });
+        remoteStudyConfirmedStats = {};
+        STATE.stats = {};
+        Object.keys(loadedStats).forEach(function (guid) {
+          remoteStudyConfirmedStats[guid] = remoteCloneStudyStat(loadedStats[guid]);
+          STATE.stats[guid] = remoteCloneStudyStat(loadedStats[guid]);
+        });
+        remotePendingStudyStats();
+        remoteBankLoaded = true;
+        applied = true;
+        bumpRev(); lsKaydet();
+      }
+    }).catch(function () {}).then(function () { if (cb) cb(applied); return applied; });
+  }
+
+  function remoteRefreshStudyStats() {
+    if (!STATE.sadeceDeneme || !remoteGirisTamamMi()) return Promise.resolve(false);
+    remoteStudyConfirmedStats = {};
+    remoteBankGeneration++;
+    remoteBankLoaded = false;
+    return remoteLoadBankIfNeeded();
   }
 
   var remotePracticeBankLoaded = false;
@@ -1539,7 +1694,9 @@
   // Deneme dashboard'ı, (giriş tamamsa) soru bankasını, hatırlatıcı/yanlış
   // listelerini ve gerçek işaret durumunu birlikte tazeler.
   function afterAuthStateChange(cb) {
+    remoteInitStudyOwner();
     remoteInitPracticeOwner();
+    remoteFlushStudyQueue();
     remoteFlushPracticeQueue();
     var pending = 0, done = false;
     function finish() { pending--; if (pending <= 0 && !done) { done = true; if (cb) cb(); } }
@@ -1660,11 +1817,12 @@
   function denemeCikisYap() {
     if (!confirm("Çıkış yapmak istediğine emin misin?")) return;
     aiModu = false; aiUyariAcik = false; aiYukleniyor = false;
-    STATE.practiceBank = []; STATE.checkpoints = []; STATE.pStats = {}; STATE.pausedPratik = {}; STATE.pausedCheckpoints = {}; STATE.pBest = {};
+    STATE.bank = []; STATE.stats = {}; STATE.practiceBank = []; STATE.checkpoints = []; STATE.pStats = {}; STATE.pausedPratik = {}; STATE.pausedCheckpoints = {}; STATE.pBest = {};
     remotePracticeBankLoaded = false; remoteCheckpointsLoaded = false; remotePracticeSessions = {}; remotePracticeBestLoaded = false;
+    remoteStudyOwner = null; remoteStudyOwnerGeneration++; remoteBankGeneration++;
     remotePracticeOwner = null;
     currentPratik = null; currentCheckpoint = null; currentFlash = null;
-    clearTimeout(remotePracticeRetryTimer);
+    clearTimeout(remoteStudyRetryTimer); clearTimeout(remotePracticeRetryTimer);
     localStorage.removeItem(REMOTE_TOKEN_KEY);
     remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
     denemeIsimTaslak = "";
@@ -1816,6 +1974,7 @@
       uzakSonucKur(r.data);
       currentExam = null;
       remoteDash = null;
+      remoteRefreshStudyStats();
       // Günün denemesiyse sonuç ekranı ortalamayı bu tazelemeden alır.
       remoteRefreshDashboard(function () { if (VIEW === "result") render(); });
       remoteWrongGuids = null;
@@ -1867,6 +2026,7 @@
       remoteBusy = false;
       gecmisSilConfirmId = null;
       if (!r.ok) { showBanner((r.data && r.data.error) || "Silinemedi.", true); render(); return; }
+      remoteRefreshStudyStats();
       remoteRefreshDashboard(render);
       remoteLoadGecmis(remoteGecmis ? remoteGecmis.page : 0);
     }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
@@ -2286,6 +2446,7 @@
       }
       kayit.kayit = "tamam";
       if (r.data && r.data.guids) remoteWrongGuids = r.data.guids;
+      remoteRefreshStudyStats();
       render();
     }).catch(function () {
       kayit.kayit = "hata";
@@ -2510,6 +2671,21 @@
     return weightedOrder(aktifHavuz, function (q) { return soruAgirligi(q.guid, statlar); })[0];
   }
 
+  // Konu Konu Bak, AI konu testleri gibi oturum başında sabit ve tekrarsız bir
+  // kuyruk kurar. Önce hiç görülmemiş/son cevabı yanlış olanlar, sonra doğru
+  // çözülenler gelir; her katmanda en uzun süredir görülmeyen soru öne çıkar.
+  function flashKuyrukOlustur(havuz, kaynak, rnd) {
+    var statlar = kaynak === "practice" ? STATE.pStats : STATE.stats;
+    var oncelikli = havuz.filter(function (q) {
+      var s = statlar[q.guid];
+      return !s || s.sonSonucDogruMu !== true;
+    });
+    var dogru = havuz.filter(function (q) {
+      return statlar[q.guid] && statlar[q.guid].sonSonucDogruMu === true;
+    });
+    return azGorulenSirala(oncelikli, statlar, rnd).concat(azGorulenSirala(dogru, statlar, rnd));
+  }
+
   // Havuzun tamamından (konuFiltre yokken) çekerken hangi konudan geleceğini resmi
   // sınav dağılımına (STATE.settings.dagilim) göre ağırlıklandırır — böylece Rastgele
   // Soru, gerçek sınavın konu oranlarını taklit eden ufak bir simülasyon gibi çalışır.
@@ -2535,19 +2711,32 @@
     if (STATE.sadeceDeneme && !remoteGirisTamamMi()) return;
     kaynak = kaynak === "practice" ? "practice" : "bank";
     konuFiltre = konuFiltre || null;
+    if (STATE.sadeceDeneme && kaynak === "bank" && !remoteBankLoaded) {
+      showBanner("Soru geçmişin yenileniyor…");
+      remoteLoadBankIfNeeded(function (applied) {
+        if (applied && remoteBankLoaded) startFlash(kaynak, konuFiltre);
+        else showBanner("Soru geçmişi yüklenemedi; tekrar dene.", true);
+      });
+      return;
+    }
     var havuz = flashHavuzu(kaynak, konuFiltre);
     if (havuz.length === 0) { showBanner("Havuzda hiç soru yok.", true); return; }
-    flashSayac = 0;
+    var sabitKuyruk = kaynak === "bank" && !!konuFiltre;
+    var kuyruk = sabitKuyruk ? flashKuyrukOlustur(havuz, kaynak) : null;
     var secimHavuzu = konuFiltre ? havuz : (agirlikliHavuzSec(havuz) || havuz);
-    var q0 = flashSecimYap(secimHavuzu, kaynak, []);
-    shuffleSiklarInPlace(q0);
+    var q0 = sabitKuyruk ? kuyruk[0] : flashSecimYap(secimHavuzu, kaynak, []);
+    if (sabitKuyruk) kuyruk.forEach(function (q) { shuffleSiklarInPlace(q); });
+    else shuffleSiklarInPlace(q0);
     // oturum: bu Rastgele Soru oturumunda cevaplanan her sorunun {konu, dogruMu} kaydı —
     // "Testi Bitir" ekranındaki ders bazlı dağılım buradan hesaplanır, kalıcı istatistikten değil.
     // gecmis/konum: bu oturumda gösterilen her sorunun {guid,secilen} kaydı ve şu an
     // hangisinin ekranda olduğu — "Önceki/Sonraki Soru" ile geçmişte gezinmeyi sağlar.
     currentFlash = {
       guid: q0.guid, secilen: null, kaynak: kaynak, konuFiltre: konuFiltre, oturum: [],
-      gecmis: [{ guid: q0.guid, secilen: null }], konum: 0
+      gecmis: sabitKuyruk
+        ? kuyruk.map(function (q) { return { guid: q.guid, secilen: null }; })
+        : [{ guid: q0.guid, secilen: null }],
+      konum: 0, sabitKuyruk: sabitKuyruk
     };
     VIEW = "flash";
     render();
@@ -2557,10 +2746,11 @@
     if (currentFlash.konum < currentFlash.gecmis.length - 1) {
       // Daha önce "Önceki Soru" ile geri gidilmiş — yeni soru üretmeden ileri sar.
       currentFlash.konum++;
+    } else if (currentFlash.sabitKuyruk) {
+      finishFlash(); return;
     } else {
       var havuz = flashHavuzu(currentFlash.kaynak, currentFlash.konuFiltre);
       if (havuz.length === 0) { backToMenu(); return; }
-      flashSayac++;
       var secimHavuzu = currentFlash.konuFiltre ? havuz : (agirlikliHavuzSec(havuz) || havuz);
       var gorulmus = currentFlash.gecmis.map(function (x) { return x.guid; });
       var q1 = flashSecimYap(secimHavuzu, currentFlash.kaynak, gorulmus);
@@ -2601,6 +2791,11 @@
       STATE.flashOzet.gosterim++;
       if (flashDogruMu) STATE.flashOzet.dogru++;
       veriDegisti();
+      if (STATE.sadeceDeneme && remoteGirisTamamMi()) {
+        remoteQueueStudyAnswer({
+          action: "study-answer", questionGuid: q.guid, selectedAnswer: q.siklar[idx]
+        }, flashDogruMu);
+      }
     }
     render();
   }
@@ -3032,17 +3227,14 @@
     var q = kayit && hatirlaticiSoruBul(kayit.guid);
     var cevaplanan = currentTekrar.kayitlar.filter(function (k) { return k.secilen !== null; }).length;
     var sonSoruda = currentTekrar.konum >= currentTekrar.kuyruk.length - 1;
-    var cikisRow = '<div class="link-row" style="justify-content:space-between;margin-bottom:10px">' +
-      '<button class="btn ghost" data-action="tekrar-cik">← Çık</button>' +
-      (cevaplanan ? '<button class="btn" data-action="finish-tekrar-test">✅ Testi Bitir (' + cevaplanan + ")</button>" : "") +
-      "</div>";
     var navHtml = '<div class="sticky-next-bar link-row">' +
       '<button class="btn ghost" data-action="prev-tekrar-soru"' + (currentTekrar.konum <= 0 ? " disabled" : "") + ">← Önceki Soru</button>" +
       '<button class="btn' + (kayit && kayit.secilen !== null ? " primary" : "") + '" data-action="next-tekrar-soru"' +
       (sonSoruda ? " disabled" : "") + ">Sonraki Soru →</button>" +
       "</div>";
     if (!q) {
-      return cikisRow + '<div class="card"><div class="muted">Bu soru artık bankada yok.</div>' + navHtml + "</div>";
+      return '<div class="card"><button class="btn ghost" data-action="tekrar-cik">← Çık</button>' +
+        '<div class="muted">Bu soru artık bankada yok.</div>' + navHtml + "</div>";
     }
     var harfler = ["A", "B", "C", "D"];
     var secilen = kayit.secilen;
@@ -3071,10 +3263,14 @@
         (kayit.kayit === "hata" ? '<div class="banner error" style="margin-top:8px">' + escapeHtml(kayit.kayitHatasi) +
           ' <button class="btn ghost" data-action="retry-tekrar-kayit">Tekrar Dene</button></div>' : "");
     }
-    return cikisRow +
-      '<div class="card">' +
-      '<div class="q-meta"><span>' + cfg.etiket + " · " + (currentTekrar.konum + 1) + " / " + currentTekrar.kuyruk.length +
-      ". soru</span><span>" + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span></div>" +
+    var ustHtml = soruUstBlokHtml(
+      konuDotHtml(q.konu) + escapeHtml(q.konu) + " | " + cevaplanan + " / " + currentTekrar.kuyruk.length + " cevaplandı",
+      '<span>' + cfg.etiket + " · " + (currentTekrar.konum + 1) + " / " + currentTekrar.kuyruk.length + ". soru</span>",
+      '<button class="btn ghost" data-action="copy-soru" data-scope="tekrar" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋</button>' +
+      '<button class="btn" data-action="tekrar-cik" title="Çık" aria-label="Çık">🚪<span class="genis-etiket"> Çık</span></button>' +
+      (cevaplanan ? '<button class="btn primary" data-action="finish-tekrar-test" title="Testi Bitir" aria-label="Testi Bitir">✅<span class="genis-etiket"> Testi Bitir</span></button>' : "")
+    );
+    return '<div class="card">' + ustHtml +
       '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
       optionsHtml + sonucHtml +
       // Cevaplamadan da görünür (renderExam gibi, Rastgele Soru'dan farklı): hatırlatıcı
@@ -3454,12 +3650,12 @@
       '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="hatirlatici">🔖 Hatırlatıcı</button></div>';
     // Pratik soru ekranıyla aynı üst blok (13 Eyl 2026 kullanıcı isteği): solda "• Ders | sıra" ve
     // checkpoint başlığı, sağda 📋 ve 💾. Checkpoint maddesi soru değildir; gezinme "Madde" der.
-    var ustHtml = '<div class="pratik-ust"><div class="pratik-ust-bilgi">' +
-      '<div class="muted" style="font-size:0.82rem">' + konuDotHtml(c.konu) + escapeHtml(c.konu) + " | " + (index + 1) + " / " + sorular.length + "</div>" +
-      '<div class="q-meta"><span>' + escapeHtml(c.title) + "</span></div></div>" +
+    var ustHtml = soruUstBlokHtml(
+      konuDotHtml(c.konu) + escapeHtml(c.konu) + " | " + (index + 1) + " / " + sorular.length,
+      '<span>' + escapeHtml(c.title) + "</span>",
       '<button class="btn ghost" data-action="copy-checkpoint-soru" title="Maddeyi kopyala" aria-label="Maddeyi kopyala">📋</button>' +
-      '<button class="btn primary" data-action="checkpoint-kaydet-cik" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>' +
-      "</div>";
+      '<button class="btn primary" data-action="checkpoint-kaydet-cik" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>'
+    );
     return '<div class="card">' + ustHtml +
       '<div class="cp-content">' + sorular[index] + "</div>" +
       hatirlaticiBtn +
@@ -3614,15 +3810,20 @@
       q = flashSoruBul(currentFlash);
     } else if (scope === "pratik" && currentPratik && !currentPratik.bitti) {
       q = pratikSoruBul(currentPratik.kuyruk[currentPratik.index]);
+    } else if (scope === "tekrar" && currentTekrar) {
+      var tekrarKaydi = tekrarAktifKayit();
+      q = tekrarKaydi && hatirlaticiSoruBul(tekrarKaydi.guid);
     }
     if (!q) { showBanner("Kopyalanacak soru bulunamadı.", true); return; }
     kopyalaPano(kopyalaSoruMetni(q));
   }
 
-  function kopyalaButonHtml(scope) {
-    return '<div class="link-row" style="margin:-4px 0 8px">' +
-      '<button class="btn ghost" style="padding:3px 10px;font-size:0.78rem" data-action="copy-soru" data-scope="' + scope + '">📋 Soruyu Kopyala</button>' +
-      "</div>";
+  // Bütün soru/madde ekranlarında aynı bilgi hiyerarşisi: ilerleme solda,
+  // bağlama özel kopyala/kaydet/çık işlemleri sağda ve mobilde tek satır.
+  function soruUstBlokHtml(bilgiHtml, metaHtml, aksiyonHtml) {
+    return '<div class="pratik-ust"><div class="pratik-ust-bilgi">' +
+      '<div class="muted" style="font-size:0.82rem">' + bilgiHtml + "</div>" +
+      '<div class="q-meta">' + metaHtml + "</div></div>" + aksiyonHtml + "</div>";
   }
 
   function kopyalaCheckpointMaddesi() {
@@ -3687,13 +3888,19 @@
     var progress = Math.round(((idx + 1) / currentExam.sorular.length) * 100);
     var isLast = idx === currentExam.sorular.length - 1;
     var cevapsizSayisi = currentExam.sorular.length - Object.keys(currentExam.cevaplar).length;
+    var cevaplananSayisi = currentExam.sorular.length - cevapsizSayisi;
+    var ustHtml = soruUstBlokHtml(
+      konuDotHtml(q.konu) + escapeHtml(q.konu) + " | " + cevaplananSayisi + " / " + currentExam.sorular.length + " cevaplandı",
+      '<span>' + denemeAdi({ isDaily: currentExam.isDaily, mode: currentExam.tip }) + " · " + (idx + 1) + " / " + currentExam.sorular.length + "</span>" +
+      '<span id="exam-timer" class="exam-timer" title="Geçen süre — resmi sınav 50 soru / 60 dk">⏱ ' + fmtSure(currentExam.gecenSaniye || 0) + "</span>",
+      '<button class="btn ghost" data-action="copy-soru" data-scope="exam" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋</button>' +
+      '<button class="btn primary" data-action="pause-exam" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>'
+    );
 
     return uyariHtml +
       '<div class="progressbar"><div style="width:' + progress + '%"></div></div>' +
       '<div class="card">' +
-      '<div class="q-meta"><span>' + denemeAdi({ isDaily: currentExam.isDaily, mode: currentExam.tip }) + " · " + (idx + 1) + " / " + currentExam.sorular.length + " · " + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span>" +
-      '<span id="exam-timer" class="exam-timer" title="Geçen süre — resmi sınav 50 soru / 60 dk">⏱ ' + fmtSure(currentExam.gecenSaniye || 0) + "</span></div>" +
-      kopyalaButonHtml("exam") +
+      ustHtml +
       '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
       optionsHtml +
       flagBarHtml(guid) +
@@ -3704,7 +3911,6 @@
       (isLast ? "" : '<button class="btn" data-action="next-q">Sonraki →</button>') +
       "</div>" +
       '<div class="link-row">' +
-      '<button class="btn ghost" data-action="pause-exam">Kaydet ve Çık</button>' +
       '<button class="btn primary" data-action="finish-exam">' + (isLast ? "Sınavı Bitir" : "Erken Bitir") +
       (cevapsizSayisi ? " (" + cevapsizSayisi + " boş)" : "") + "</button>" +
       "</div></div></div>";
@@ -3742,17 +3948,10 @@
     var dersFlashMi = pratikMi && !!currentFlash.konuFiltre;
     var geriAction = dersFlashMi ? "pratik-listeye-don" : pratikMi ? "open-menu-test" : (konuBakMi ? "open-deneme-konu-sec" : "back-menu");
     var geriEtiket = dersFlashMi ? "← Modüller" : pratikMi ? "← Test Sayfası" : (konuBakMi ? "← Konu Seç" : "Ana Menüye Dön");
-    // Çıkış aksiyonları üstte, sol/sağ ayrık (sol: sayfadan çık, sağ: testi bitir) —
-    // devam aksiyonları (Önceki/Sonraki Soru) sticky alt barda ayrı bir grup olarak
-    // duruyor; birbirine yakın, karışık bir buton kümesi yerine iki amaç görsel
-    // olarak ayrışıyor (7 Eyl 2026, kullanıcı isteği).
-    var cikisRow = '<div class="link-row" style="justify-content:space-between;margin-bottom:10px">' +
-      '<button class="btn ghost" data-action="' + geriAction + '">' + geriEtiket + "</button>" +
-      (currentFlash.oturum.length ? '<button class="btn" data-action="finish-flash">✅ Testi Bitir (' + currentFlash.oturum.length + ")</button>" : "") +
-      "</div>";
+    var sonSoruda = currentFlash.sabitKuyruk && currentFlash.konum >= currentFlash.gecmis.length - 1;
     var navHtml = '<div class="sticky-next-bar link-row">' +
       '<button class="btn ghost" data-action="prev-flash"' + (currentFlash.konum <= 0 ? " disabled" : "") + ">← Önceki Soru</button>" +
-      '<button class="btn' + (answered ? " primary" : "") + '" data-action="next-flash">Sonraki Soru →</button>' +
+      '<button class="btn' + (answered ? " primary" : "") + '" data-action="next-flash">' + (sonSoruda ? "Testi Bitir →" : "Sonraki Soru →") + "</button>" +
       "</div>";
 
     var kaynakEtiket = pratikMi
@@ -3760,10 +3959,18 @@
       : konuBakMi
         ? "📖 Konu Konu Bak · " + escapeHtml(currentFlash.konuFiltre)
         : "🎲 Rastgele Soru";
+    var siraEtiketi = currentFlash.sabitKuyruk
+      ? (currentFlash.konum + 1) + " / " + currentFlash.gecmis.length + ". soru"
+      : "bu oturumda " + (currentFlash.konum + 1) + ". soru";
+    var ustHtml = soruUstBlokHtml(
+      konuDotHtml(q.konu) + escapeHtml(q.konu) + " | " + currentFlash.oturum.length + " cevaplandı",
+      '<span>' + kaynakEtiket + " · " + siraEtiketi + "</span>",
+      '<button class="btn ghost" data-action="copy-soru" data-scope="flash" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋</button>' +
+      '<button class="btn" data-action="' + geriAction + '" title="' + escapeHtml(geriEtiket) + '" aria-label="' + escapeHtml(geriEtiket) + '">🚪<span class="genis-etiket"> Çık</span></button>' +
+      (currentFlash.oturum.length ? '<button class="btn primary" data-action="finish-flash" title="Testi Bitir" aria-label="Testi Bitir">✅<span class="genis-etiket"> Testi Bitir</span></button>' : "")
+    );
     return '<div class="card">' +
-      cikisRow +
-      '<div class="q-meta"><span>' + kaynakEtiket + " · bu oturumda " + (flashSayac + 1) + ". soru</span><span>" + konuDotHtml(q.konu) + escapeHtml(q.konu) + "</span></div>" +
-      kopyalaButonHtml("flash") +
+      ustHtml +
       '<div class="q-text">' + escapeHtml(q.soru) + "</div>" +
       optionsHtml + sonucHtml +
       (answered ? flagBarHtml(q.guid, pratikMi) : "") +
@@ -3962,14 +4169,13 @@ function pratikEnIyiHtml(konu, modulKey) {
     var karisikOnEki = currentPratik.modul === PRATIK_TUM_MODULLER ? "🔀 " : "";
     // Üst blok: solda ilerleme + modül satırı, sağda 📋 ve 💾 aynı hizada (13 Eyl 2026 kullanıcı
     // isteği). Dar ekranda .genis-etiket gizlenir, düğmeler yalnız emojiyle tek satıra sığar.
-    var ustHtml = '<div class="pratik-ust"><div class="pratik-ust-bilgi">' +
-      '<div class="muted" style="font-size:0.82rem">' + konuDotHtml(q.konu) + escapeHtml(q.konu) + " | " +
-      cevaplananSayisi + " / " + currentPratik.kuyruk.length + " cevaplandı</div>" +
-      '<div class="q-meta"><span>' + karisikOnEki + escapeHtml(q.modul + " — " + modulAdi(q.konu, q.modul)) + " · " +
-      (currentPratik.index + 1) + " / " + currentPratik.kuyruk.length + "</span></div></div>" +
+    var ustHtml = soruUstBlokHtml(
+      konuDotHtml(q.konu) + escapeHtml(q.konu) + " | " + cevaplananSayisi + " / " + currentPratik.kuyruk.length + " cevaplandı",
+      '<span>' + karisikOnEki + escapeHtml(q.modul + " — " + modulAdi(q.konu, q.modul)) + " · " +
+      (currentPratik.index + 1) + " / " + currentPratik.kuyruk.length + "</span>",
       '<button class="btn ghost" data-action="copy-soru" data-scope="pratik" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋</button>' +
-      '<button class="btn primary" data-action="pratik-kaydet-cik" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>' +
-      "</div>";
+      '<button class="btn primary" data-action="pratik-kaydet-cik" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>'
+    );
 
     var harfler = ["A", "B", "C", "D"];
     var secilen = currentPratik.secilen;

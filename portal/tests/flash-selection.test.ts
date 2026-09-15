@@ -110,3 +110,32 @@ void test('oturum içinde gösterilenler (haric) öncelikli havuzdan da elenir',
   const sec = kur(stats);
   for (let i = 0; i < 50; i += 1) assert.equal(sec(havuz, ['q18']).guid, 'q19');
 });
+
+void test('Konu Konu Bak kuyruğu görülmemiş ve yanlışları öne alır, yakın zamanda görüleni geriye atar', () => {
+  const context: Record<string, unknown> = {
+    STATE: {
+      stats: {
+        eskiYanlis: { sonSonucDogruMu: false, sonGorulme: '2026-08-01T00:00:00Z' },
+        yeniYanlis: { sonSonucDogruMu: false, sonGorulme: '2026-09-14T00:00:00Z' },
+        eskiDogru: { sonSonucDogruMu: true, sonGorulme: '2026-07-01T00:00:00Z' },
+        yeniDogru: { sonSonucDogruMu: true, sonGorulme: '2026-09-13T00:00:00Z' },
+      },
+      pStats: {},
+    },
+  };
+  vm.createContext(context);
+  vm.runInContext([grab('azGorulenSirala'), grab('flashKuyrukOlustur')].join('\n'), context);
+  const olustur = vm.runInContext('flashKuyrukOlustur', context) as
+    (h: Soru[], k: string, r: () => number) => Soru[];
+  const sorular = ['yeniDogru', 'yeniYanlis', 'gorulmemis', 'eskiDogru', 'eskiYanlis'].map((guid) => ({ guid }));
+  const sonuc = olustur(sorular, 'bank', () => 0.5).map((q) => q.guid);
+
+  assert.deepEqual(sonuc, ['gorulmemis', 'eskiYanlis', 'yeniYanlis', 'eskiDogru', 'yeniDogru']);
+  assert.equal(new Set(sonuc).size, sorular.length, 'bir konu kuyruğunda aynı soru tekrarlanmamalı');
+});
+
+void test('istatistik yenilenirken Konu Konu Bak testi eski sırayla başlamaz', () => {
+  const start = script.match(/function startFlash\(kaynak, konuFiltre\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  assert.match(start, /!remoteBankLoaded/);
+  assert.match(start, /remoteLoadBankIfNeeded/);
+});

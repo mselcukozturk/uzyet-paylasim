@@ -47,14 +47,23 @@ void test('üst çubuk mobilde tek satır: 🤖, geri ve çıkış yalnız emoji
 
 void test('pratik soru üst bloğu: bilgi solda, 📋 ve 💾 sağda aynı satırda; mobilde yazılar gizlenir', () => {
   const soru = fn('renderPratikSoru');
-  assert.match(soru, /'<div class="pratik-ust"><div class="pratik-ust-bilgi">'/);
+  assert.match(soru, /soruUstBlokHtml\(/);
   assert.match(soru, /data-action="copy-soru" data-scope="pratik" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋<\/button>'/);
   assert.match(soru, /aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık<\/span><\/button>'/);
   assert.doesNotMatch(soru, /kopyalaButonHtml\("pratik"\)/);
   // Üst satır "• Ders | x / y cevaplandı"; otomatik kayıt açıklaması gösterilmez.
-  assert.match(soru, /konuDotHtml\(q\.konu\) \+ escapeHtml\(q\.konu\) \+ " \| " \+\s*cevaplananSayisi \+ " \/ " \+ currentPratik\.kuyruk\.length \+ " cevaplandı<\/div>"/);
+  assert.match(soru, /konuDotHtml\(q\.konu\) \+ escapeHtml\(q\.konu\) \+ " \| " \+ cevaplananSayisi \+ " \/ " \+ currentPratik\.kuyruk\.length \+ " cevaplandı"/);
   assert.doesNotMatch(soru, /otomatik kaydediliyor/);
   assert.match(html, /@media \(max-width: 560px\) \{ \.genis-etiket \{ display: none; \} \}/);
+});
+
+void test('tüm etkileşimli soru ekranları AI konu testiyle aynı ortak üst bloğu kullanır', () => {
+  const ortak = fn('soruUstBlokHtml');
+  assert.ok(ortak, 'ortak soru üst bloğu bulunamadı');
+  assert.match(ortak, /'<div class="pratik-ust"><div class="pratik-ust-bilgi">'/);
+  for (const ad of ['renderExam', 'renderFlash', 'renderTekrarTest', 'renderPratikSoru', 'renderCheckpointSoru']) {
+    assert.match(fn(ad), /soruUstBlokHtml\(/, ad + ' ortak soru üst bloğunu kullanmalı');
+  }
 });
 
 void test('AI modu yalnız pratik ve checkpoint ekranlarını açar; ayarlar ve import kapalı kalır', () => {

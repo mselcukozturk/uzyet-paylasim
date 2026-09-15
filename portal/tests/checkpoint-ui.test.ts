@@ -28,7 +28,7 @@ void test('checkpoint maddeleri ileri-geri gezilen ve kaldığı yerden devam ed
 
 void test('checkpoint ekranı pratik sorusuyla aynı üst bloğu kullanır ve gezinme "Madde" der', () => {
   const ekran = fn('renderCheckpointSoru');
-  assert.match(ekran, /'<div class="pratik-ust"><div class="pratik-ust-bilgi">'/);
+  assert.match(ekran, /soruUstBlokHtml\(/);
   assert.match(ekran, /konuDotHtml\(c\.konu\) \+ escapeHtml\(c\.konu\) \+ " \| " \+ \(index \+ 1\) \+ " \/ " \+ sorular\.length/);
   assert.match(ekran, /data-action="copy-checkpoint-soru" title="Maddeyi kopyala" aria-label="Maddeyi kopyala">📋<\/button>'/);
   assert.match(ekran, /aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık<\/span><\/button>'/);

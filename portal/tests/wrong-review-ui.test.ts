@@ -28,10 +28,13 @@ void test('tekrar testi karışık başlar ve doğru cevap hatırlatıcı işare
 void test('tekrar testi Rastgele Soru mekaniğini kullanır: ileri/geri gezinme ve Testi Bitir', () => {
   const render = script.match(/function renderTekrarTest\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   // Rastgele Soru ile aynı düzen: üstte Testi Bitir, altta Önceki/Sonraki Soru.
-  assert.match(render, /data-action="finish-tekrar-test">✅ Testi Bitir/);
+  assert.match(render, /data-action="finish-tekrar-test"/);
   assert.match(render, /data-action="prev-tekrar-soru"/);
   assert.match(render, /data-action="next-tekrar-soru"/);
   assert.match(render, /sticky-next-bar/);
+  assert.match(render, /data-action="tekrar-cik"/);
+  assert.doesNotMatch(render, /\(cevaplanan\s*\?[\s\S]*data-action="finish-tekrar-test"[\s\S]*data-action="tekrar-cik"/,
+    'çık ve testi bitir aynı anda görünmeli');
   // Geri dönünce verilen cevap korunur: cevap kuyruk kaydında tutulur, tek tek sıfırlanmaz.
   const next = script.match(/function nextTekrarSoru\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   const prev = script.match(/function prevTekrarSoru\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
@@ -60,4 +63,20 @@ void test('yanlış sorular hatırlatıcıların altında gösterilir ve cevap s
   const turler = script.match(/var TEKRAR_TUR = \{[\s\S]*?^  \};/m)?.[0] ?? '';
   assert.match(turler, /hatirlatici: \{[\s\S]*?kaydeder: false/);
   assert.match(turler, /yanlis: \{[\s\S]*?kaydeder: true/);
+});
+
+void test('resmî istatistiği değiştiren işlemler Konu Konu Bak geçmişini yeniler', () => {
+  const finish = script.match(/function finishExamRemote\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  const remove = script.match(/function confirmDeleteGecmis\(id\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  const wrong = script.match(/function tekrarCevapKaydet\(kayit\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  assert.match(finish, /remoteRefreshStudyStats\(\)/);
+  assert.match(remove, /remoteRefreshStudyStats\(\)/);
+  assert.match(wrong, /remoteRefreshStudyStats\(\)/);
+});
+
+void test('Rastgele Soru üstünde çıkış ve testi bitirme ayrı kontrollerdir', () => {
+  const render = script.match(/function renderFlash\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  assert.match(render, /data-action="finish-flash"/);
+  assert.doesNotMatch(render, /\(currentFlash\.oturum\.length\s*\?[\s\S]*data-action="finish-flash"[\s\S]*data-action="' \+ geriAction/,
+    'çıkış cevaptan sonra kaybolmamalı');
 });

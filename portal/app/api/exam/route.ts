@@ -14,7 +14,14 @@ import {
   type BankQuestion,
   type ExamMode,
 } from '@/lib/exam-core';
-import type { ExamApiRequest, PracticeBankResponse, PracticeCheckpointsResponse, PracticeStatsResponse } from '@/lib/portal-types';
+import type {
+  ExamApiRequest,
+  PracticeBankResponse,
+  PracticeCheckpointsResponse,
+  PracticeStatsResponse,
+  StudyAnswerResponse,
+  StudyBankResponse,
+} from '@/lib/portal-types';
 import bankCorrections from '@/data/bank-corrections.json';
 import { validatePracticeAnswer } from '@/lib/practice-core';
 
@@ -441,8 +448,27 @@ async function handlePost(request: Request) {
       // gömmez; giriş yapmış+onaylı kullanıcı bunu burada, cevaplarıyla birlikte çeker.
       const [activeBank] = await db.select().from(schema.questionBanks).where(eq(schema.questionBanks.isActive, true)).limit(1);
       if (!activeBank) return fail('Aktif soru bankası bulunamadı.', 503);
-      const rows = await db.select().from(schema.questions).where(eq(schema.questions.bankId, activeBank.id));
+      const [rows, statRows] = await Promise.all([
+        db.select().from(schema.questions).where(eq(schema.questions.bankId, activeBank.id)),
+        db.select({
+          questionGuid: schema.questionStats.questionGuid,
+          shownCount: schema.questionStats.shownCount,
+          correctCount: schema.questionStats.correctCount,
+          wrongCount: schema.questionStats.wrongCount,
+          lastResult: schema.questionStats.lastResult,
+          lastSeenAt: schema.questionStats.lastSeenAt,
+        }).from(schema.questionStats)
+          .innerJoin(schema.questions, eq(schema.questionStats.questionGuid, schema.questions.guid))
+          .where(and(eq(schema.questionStats.userId, user.id), eq(schema.questions.bankId, activeBank.id))),
+      ]);
       const harfler = ['A', 'B', 'C', 'D'];
+      const stats: StudyBankResponse['stats'] = {};
+      for (const row of statRows) {
+        stats[row.questionGuid] = {
+          gosterim: row.shownCount, dogru: row.correctCount, yanlis: row.wrongCount,
+          sonSonucDogruMu: row.lastResult, sonGorulme: row.lastSeenAt?.toISOString() ?? null,
+        };
+      }
       return NextResponse.json({
         questions: rows.map((q) => ({
           guid: q.guid, konu: q.topic, soru: q.prompt, siklar: q.options,
@@ -450,7 +476,67 @@ async function handlePost(request: Request) {
           cevapMetni: q.options[q.correctIndex] || '', aciklama: q.explanation,
           kaynak: q.source, donem: '', dogrulanmis: q.verified,
         })),
+        stats,
+      } satisfies StudyBankResponse);
+    }
+
+    if (body.action === 'study-answer') {
+      if (typeof body.questionGuid !== 'string' || !body.questionGuid.trim()) return fail('Soru kimliği eksik.', 400);
+      if (body.requestId !== undefined && (typeof body.requestId !== 'string' || !/^[a-zA-Z0-9_-]{8,80}$/.test(body.requestId))) {
+        return fail('İstek kimliği geçersiz.', 400);
+      }
+      const [question] = await db.select({
+        options: schema.questions.options,
+        correctIndex: schema.questions.correctIndex,
+      }).from(schema.questions)
+        .innerJoin(schema.questionBanks, eq(schema.questions.bankId, schema.questionBanks.id))
+        .where(and(
+          eq(schema.questions.guid, body.questionGuid),
+          eq(schema.questionBanks.isActive, true),
+        )).limit(1);
+      let correct: boolean;
+      try { correct = validatePracticeAnswer(question, body.selectedAnswer); }
+      catch { return fail('Soru veya cevap geçersiz.', 400); }
+      const receiptRequestId = body.requestId ? `study:${body.requestId}` : null;
+      const response = await db.transaction(async (tx) => {
+        if (receiptRequestId) {
+          await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${user.id + ':' + receiptRequestId}, 0))`);
+          const [receipt] = await tx.select().from(schema.practiceAnswerReceipts)
+            .where(and(eq(schema.practiceAnswerReceipts.userId, user.id), eq(schema.practiceAnswerReceipts.requestId, receiptRequestId))).limit(1);
+          if (receipt) {
+            if (receipt.questionGuid !== body.questionGuid || receipt.selectedAnswer !== body.selectedAnswer) throw new Error('REQUEST_CONFLICT');
+            return receipt.response as StudyAnswerResponse;
+          }
+        }
+        const now = new Date();
+        const [stat] = await tx.insert(schema.questionStats).values({
+          userId: user.id, questionGuid: body.questionGuid, shownCount: 1,
+          correctCount: correct ? 1 : 0, wrongCount: correct ? 0 : 1, lastResult: correct, lastSeenAt: now,
+        }).onConflictDoUpdate({
+          target: [schema.questionStats.userId, schema.questionStats.questionGuid],
+          set: {
+            shownCount: sql`${schema.questionStats.shownCount} + 1`,
+            correctCount: sql`${schema.questionStats.correctCount} + ${correct ? 1 : 0}`,
+            wrongCount: sql`${schema.questionStats.wrongCount} + ${correct ? 0 : 1}`,
+            lastResult: correct,
+            lastSeenAt: now,
+          },
+        }).returning();
+        const result: StudyAnswerResponse = {
+          ok: true,
+          correct,
+          stat: {
+            gosterim: stat.shownCount, dogru: stat.correctCount, yanlis: stat.wrongCount,
+            sonSonucDogruMu: stat.lastResult, sonGorulme: stat.lastSeenAt?.toISOString() ?? null,
+          },
+        };
+        if (receiptRequestId) await tx.insert(schema.practiceAnswerReceipts).values({
+          userId: user.id, requestId: receiptRequestId, questionGuid: body.questionGuid,
+          selectedAnswer: body.selectedAnswer, response: result,
+        });
+        return result;
       });
+      return NextResponse.json(response);
     }
 
     if (body.action === 'start') {

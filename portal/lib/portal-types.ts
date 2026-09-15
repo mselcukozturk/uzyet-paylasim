@@ -82,13 +82,15 @@ export type PracticeCheckpoint = {
   html: string;
 };
 
-export type PracticeStat = {
+export type QuestionStat = {
   gosterim: number;
   dogru: number;
   yanlis: number;
   sonSonucDogruMu: boolean | null;
   sonGorulme: string | null;
 };
+
+export type PracticeStat = QuestionStat;
 
 export type PracticeBankResponse = { questions: PracticeQuestion[] };
 export type PracticeAnswerResponse = { ok: true; correct: boolean; stat: PracticeStat };
@@ -98,7 +100,27 @@ export type PracticeStatsResponse = {
   sessions: Array<{ konu: string; modul: string; updatedAt: string }>;
 };
 
+export type StudyBankResponse = {
+  questions: Array<{
+    guid: string;
+    konu: string;
+    soru: string;
+    siklar: string[];
+    cevapIdx: number;
+    cevapHarf: string;
+    cevapMetni: string;
+    aciklama: string;
+    kaynak: string;
+    donem: string;
+    dogrulanmis: boolean;
+  }>;
+  stats: Record<string, QuestionStat>;
+};
+
+export type StudyAnswerResponse = { ok: true; correct: boolean; stat: QuestionStat };
+
 export type ExamApiRequest =
+  | { action: 'study-answer'; questionGuid: string; selectedAnswer: string; requestId?: string }
   | { action: 'practice-answer'; questionGuid: string; selectedAnswer: string; requestId?: string }
   | { action: 'practice-session-save'; konu: string; modul: string; payload: unknown }
   | { action: 'practice-session-load'; konu: string; modul: string }

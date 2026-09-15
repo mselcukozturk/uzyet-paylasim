@@ -8,6 +8,7 @@ import { drizzle } from 'drizzle-orm/pglite';
 import * as orm from 'drizzle-orm';
 import * as schema from '../lib/db/schema.ts';
 import * as examCore from '../lib/exam-core.ts';
+import { validatePracticeAnswer } from '../lib/practice-core.ts';
 import ts from 'typescript';
 
 test('günün denemesi 07:00 (İstanbul) sınırında değişir, kod gizli anahtara bağlıdır', () => {
@@ -32,7 +33,7 @@ async function kur() {
 
   const mocks: Record<string, unknown> = {
     'next/server': { NextResponse: Response }, 'drizzle-orm': orm,
-    '@/lib/db': { getDb: () => db, schema }, '@/lib/exam-core': examCore, '@/lib/practice-core': {},
+    '@/lib/db': { getDb: () => db, schema }, '@/lib/exam-core': examCore, '@/lib/practice-core': { validatePracticeAnswer },
     '@/lib/auth/session': {
       getSessionProfile: async (request: Request) => ({
         userId: request.headers.get('x-user'), isActive: true, canSeeAiSources: true, disclaimerAcceptedAt: new Date(),
@@ -118,5 +119,60 @@ test('geçmiş: bitmiş denemelerin tamamı 20şer sayfa, en yeniden eskiye; bit
     assert.equal(last.attempts.length, 5);
     assert.equal(last.attempts[4].score.correct, 0);
     assert.equal((await page(3)).attempts.length, 0);
+  } finally { await pg.close(); }
+});
+
+test('Konu Konu Bak sunucudaki kişisel geçmişi yükler ve cevapları aynı istatistiğe yazar', async () => {
+  const { pg, db, bank, post } = await kur();
+  try {
+    const [question] = await db.select().from(schema.questions).where(orm.eq(schema.questions.bankId, bank.id)).limit(1);
+    await db.insert(schema.questionStats).values([
+      {
+        userId: 'owner', questionGuid: question.guid, shownCount: 2, correctCount: 1, wrongCount: 1,
+        lastResult: false, lastSeenAt: new Date('2026-09-01T10:00:00Z'),
+      },
+      {
+        userId: 'other', questionGuid: question.guid, shownCount: 99, correctCount: 99, wrongCount: 0,
+        lastResult: true, lastSeenAt: new Date('2026-09-02T10:00:00Z'),
+      },
+      {
+        userId: 'owner', questionGuid: 'eski-banka-sorusu', shownCount: 25, correctCount: 0, wrongCount: 25,
+        lastResult: false, lastSeenAt: new Date('2026-08-01T10:00:00Z'),
+      },
+    ]);
+
+    const bankResponse = await post('owner', { action: 'bank' });
+    assert.equal(bankResponse.status, 200);
+    assert.deepEqual(bankResponse.data.stats[question.guid], {
+      gosterim: 2, dogru: 1, yanlis: 1, sonSonucDogruMu: false, sonGorulme: '2026-09-01T10:00:00.000Z',
+    });
+    assert.equal(bankResponse.data.stats['eski-banka-sorusu'], undefined);
+
+    const correct = await post('owner', {
+      action: 'study-answer', questionGuid: question.guid, selectedAnswer: question.options[question.correctIndex],
+      requestId: 'study_same_answer_1',
+    });
+    assert.equal(correct.status, 200, JSON.stringify(correct.data));
+    assert.deepEqual(correct.data.stat, {
+      gosterim: 3, dogru: 2, yanlis: 1, sonSonucDogruMu: true,
+      sonGorulme: correct.data.stat.sonGorulme,
+    });
+
+    const retried = await post('owner', {
+      action: 'study-answer', questionGuid: question.guid, selectedAnswer: question.options[question.correctIndex],
+      requestId: 'study_same_answer_1',
+    });
+    assert.deepEqual(retried.data, correct.data, 'aynı istek yeniden gelince sayaç ikinci kez artmamalı');
+    assert.equal((await post('owner', {
+      action: 'study-answer', questionGuid: question.guid, selectedAnswer: question.options[(question.correctIndex + 1) % 4],
+      requestId: 'study_same_answer_1',
+    })).status, 409);
+
+    assert.equal((await post('owner', {
+      action: 'study-answer', questionGuid: question.guid, selectedAnswer: 'havuzda-yok',
+    })).status, 400);
+    assert.equal((await post('owner', {
+      action: 'study-answer', questionGuid: 'olmayan-soru', selectedAnswer: 'A',
+    })).status, 400);
   } finally { await pg.close(); }
 });
