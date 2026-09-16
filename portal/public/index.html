@@ -197,9 +197,13 @@
   .progressbar { height: 6px; border-radius: 4px; background: var(--surface-2); overflow: hidden; margin-bottom: 18px; }
   .progressbar > div { height: 100%; background: var(--accent); }
   .q-meta { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.84rem; margin-bottom: 10px; font-variant-numeric: tabular-nums; }
-  .pratik-ust { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-  .pratik-ust-bilgi { flex: 1; min-width: 0; display: grid; gap: 4px; }
-  .pratik-ust .q-meta { margin-bottom: 0; flex-wrap: wrap; column-gap: 10px; }
+  /* Düğmeler sağ ÜSTE sabitlenir: flex-start olmasaydı, uzun konu adı sarınca (mobil)
+     düğmeler blogun dikey ortasında havada kalıyordu (16 Eyl 2026). */
+  .pratik-ust { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px; }
+  .pratik-ust-bilgi { flex: 1; min-width: 0; display: grid; gap: 4px; font-variant-numeric: tabular-nums; }
+  .pratik-ust .q-meta { margin-bottom: 0; column-gap: 10px; }
+  /* İkinci satır dar ekranda sarmaz, kırpılır — üst blok en fazla 2 satır tutsun. */
+  .pratik-ust .q-meta > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pratik-ust .btn { flex-shrink: 0; }
   @media (max-width: 560px) { .genis-etiket { display: none; } }
   .exam-timer { font-weight: 700; }
@@ -3370,8 +3374,8 @@
           ' <button class="btn ghost" data-action="retry-tekrar-kayit">Tekrar Dene</button></div>' : "");
     }
     var ustHtml = soruUstBlokHtml(
-      konuDotHtml(q.konu) + escapeHtml(q.konu) + " | " + cevaplanan + " / " + currentTekrar.kuyruk.length + " cevaplandı",
-      '<span>' + cfg.etiket + " · " + (currentTekrar.konum + 1) + " / " + currentTekrar.kuyruk.length + ". soru</span>",
+      q.konu, (currentTekrar.konum + 1) + " / " + currentTekrar.kuyruk.length,
+      '<span>' + cfg.etiket + "</span>",
       '<button class="btn ghost" data-action="copy-soru" data-scope="tekrar" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋</button>' +
       '<button class="btn" data-action="tekrar-cik" title="Çık" aria-label="Çık">🚪<span class="genis-etiket"> Çık</span></button>' +
       (cevaplanan ? '<button class="btn primary" data-action="finish-tekrar-test" title="Testi Bitir" aria-label="Testi Bitir">✅<span class="genis-etiket"> Testi Bitir</span></button>' : "")
@@ -3757,7 +3761,7 @@
     // Pratik soru ekranıyla aynı üst blok (13 Eyl 2026 kullanıcı isteği): solda "• Ders | sıra" ve
     // checkpoint başlığı, sağda 📋 ve 💾. Checkpoint maddesi soru değildir; gezinme "Madde" der.
     var ustHtml = soruUstBlokHtml(
-      konuDotHtml(c.konu) + escapeHtml(c.konu) + " | " + (index + 1) + " / " + sorular.length,
+      c.konu, (index + 1) + " / " + sorular.length,
       '<span>' + escapeHtml(c.title) + "</span>",
       '<button class="btn ghost" data-action="copy-checkpoint-soru" title="Maddeyi kopyala" aria-label="Maddeyi kopyala">📋</button>' +
       '<button class="btn primary" data-action="checkpoint-kaydet-cik" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>'
@@ -3926,10 +3930,18 @@
 
   // Bütün soru/madde ekranlarında aynı bilgi hiyerarşisi: ilerleme solda,
   // bağlama özel kopyala/kaydet/çık işlemleri sağda ve mobilde tek satır.
-  function soruUstBlokHtml(bilgiHtml, metaHtml, aksiyonHtml) {
+  // Satır 1 = konu noktası + konu + TEK sayaç (bulunulan konum). Satır 2 = yalnız ek bilgi
+  // (modül, checkpoint başlığı, mod adı, süre) varsa basılır, yoksa hiç yazılmaz.
+  // 16 Eyl 2026 sadeleştirmesi: eskiden satır 1 "cevaplanan / toplam cevaplandı", satır 2
+  // "konum / toplam" diyordu — aynı testte 7/14 ile 8/14 yan yana çıkıyor, mobilde uzun konu
+  // adıyla birlikte üst blok 8 satıra kadar şişiyordu. Cevaplanan sayısı kaybolmadı: sınavda
+  // soru ızgarasında ve "Sınavı Bitir (N boş)" düğmesinde, pratikte bitiş özetinde duruyor.
+  function soruUstBlokHtml(konu, sayac, metaHtml, aksiyonHtml) {
     return '<div class="pratik-ust"><div class="pratik-ust-bilgi">' +
-      '<div class="muted" style="font-size:0.82rem">' + bilgiHtml + "</div>" +
-      '<div class="q-meta">' + metaHtml + "</div></div>" + aksiyonHtml + "</div>";
+      '<div class="muted" style="font-size:0.82rem">' + konuDotHtml(konu) + escapeHtml(konu) +
+      (sayac ? " · " + escapeHtml(sayac) : "") + "</div>" +
+      (metaHtml ? '<div class="q-meta">' + metaHtml + "</div>" : "") +
+      "</div>" + aksiyonHtml + "</div>";
   }
 
   function kopyalaCheckpointMaddesi() {
@@ -3994,10 +4006,9 @@
     var progress = Math.round(((idx + 1) / currentExam.sorular.length) * 100);
     var isLast = idx === currentExam.sorular.length - 1;
     var cevapsizSayisi = currentExam.sorular.length - Object.keys(currentExam.cevaplar).length;
-    var cevaplananSayisi = currentExam.sorular.length - cevapsizSayisi;
     var ustHtml = soruUstBlokHtml(
-      konuDotHtml(q.konu) + escapeHtml(q.konu) + " | " + cevaplananSayisi + " / " + currentExam.sorular.length + " cevaplandı",
-      '<span>' + denemeAdi({ isDaily: currentExam.isDaily, mode: currentExam.tip }) + " · " + (idx + 1) + " / " + currentExam.sorular.length + "</span>" +
+      q.konu, (idx + 1) + " / " + currentExam.sorular.length,
+      '<span>' + denemeAdi({ isDaily: currentExam.isDaily, mode: currentExam.tip }) + "</span>" +
       '<span id="exam-timer" class="exam-timer" title="Geçen süre — resmi sınav 50 soru / 60 dk">⏱ ' + fmtSure(currentExam.gecenSaniye || 0) + "</span>",
       '<button class="btn ghost" data-action="copy-soru" data-scope="exam" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋</button>' +
       '<button class="btn primary" data-action="pause-exam" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>'
@@ -4060,17 +4071,15 @@
       '<button class="btn' + (answered ? " primary" : "") + '" data-action="next-flash">' + (sonSoruda ? "Testi Bitir →" : "Sonraki Soru →") + "</button>" +
       "</div>";
 
-    var kaynakEtiket = pratikMi
-      ? "🎲 Rastgele Soru · pratik havuzu · " + escapeHtml(q.modul + " — " + modulAdi(q.konu, q.modul))
-      : konuBakMi
-        ? "📖 Konu Konu Bak · " + escapeHtml(currentFlash.konuFiltre)
-        : "🎲 Rastgele Soru";
+    // Mod adı ("🎲 Rastgele Soru", "📖 Konu Konu Bak") ve konu filtresi satır 2'den kalktı:
+    // kullanıcı o ekranı kendisi açtı, konu zaten satır 1'de. Kalan tek ek bilgi modül adı.
+    var kaynakEtiket = pratikMi ? escapeHtml(q.modul + " · " + modulAdi(q.konu, q.modul)) : "";
     var siraEtiketi = currentFlash.sabitKuyruk
-      ? (currentFlash.konum + 1) + " / " + currentFlash.gecmis.length + ". soru"
-      : "bu oturumda " + (currentFlash.konum + 1) + ". soru";
+      ? (currentFlash.konum + 1) + " / " + currentFlash.gecmis.length
+      : (currentFlash.konum + 1) + ". soru";
     var ustHtml = soruUstBlokHtml(
-      konuDotHtml(q.konu) + escapeHtml(q.konu) + " | " + currentFlash.oturum.length + " cevaplandı",
-      '<span>' + kaynakEtiket + " · " + siraEtiketi + "</span>",
+      q.konu, siraEtiketi,
+      kaynakEtiket ? "<span>" + kaynakEtiket + "</span>" : "",
       '<button class="btn ghost" data-action="copy-soru" data-scope="flash" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋</button>' +
       '<button class="btn" data-action="' + geriAction + '" title="' + escapeHtml(geriEtiket) + '" aria-label="' + escapeHtml(geriEtiket) + '">🚪<span class="genis-etiket"> Çık</span></button>' +
       (currentFlash.oturum.length ? '<button class="btn primary" data-action="finish-flash" title="Testi Bitir" aria-label="Testi Bitir">✅<span class="genis-etiket"> Testi Bitir</span></button>' : "")
@@ -4271,14 +4280,12 @@ function pratikEnIyiHtml(konu, modulKey) {
     var q = pratikSoruBul(guid);
     if (!q) return '<div class="card">Bu soru artık havuzda yok (banka güncellendi). <button class="btn" data-action="pratik-sonraki">Sonraki Soru</button></div>';
 
-    var cevaplananSayisi = Object.keys(currentPratik.cevaplar).length;
     var karisikOnEki = currentPratik.modul === PRATIK_TUM_MODULLER ? "🔀 " : "";
     // Üst blok: solda ilerleme + modül satırı, sağda 📋 ve 💾 aynı hizada (13 Eyl 2026 kullanıcı
     // isteği). Dar ekranda .genis-etiket gizlenir, düğmeler yalnız emojiyle tek satıra sığar.
     var ustHtml = soruUstBlokHtml(
-      konuDotHtml(q.konu) + escapeHtml(q.konu) + " | " + cevaplananSayisi + " / " + currentPratik.kuyruk.length + " cevaplandı",
-      '<span>' + karisikOnEki + escapeHtml(q.modul + " — " + modulAdi(q.konu, q.modul)) + " · " +
-      (currentPratik.index + 1) + " / " + currentPratik.kuyruk.length + "</span>",
+      q.konu, (currentPratik.index + 1) + " / " + currentPratik.kuyruk.length,
+      '<span>' + karisikOnEki + escapeHtml(q.modul + " · " + modulAdi(q.konu, q.modul)) + "</span>",
       '<button class="btn ghost" data-action="copy-soru" data-scope="pratik" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋</button>' +
       '<button class="btn primary" data-action="pratik-kaydet-cik" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>'
     );
