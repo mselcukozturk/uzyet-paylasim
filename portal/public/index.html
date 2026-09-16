@@ -345,9 +345,9 @@
     "Ürünler": 8, "Hukuk": 8, "Temel İşlemler": 8, "Kredi": 8, "Genel Ekonomi": 5,
     "Mali Analiz": 5, "Kambiyo": 3, "Sermaye Piyasaları ve Hazine": 3, "İK Politikaları": 2
   };
-  var MOD_ADI = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar", zor: "Zor Deneme" };
+  var MOD_ADI = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar", zor: "Zor Deneme", ai: "🤖 AI Denemesi" };
   function denemeAdi(a) { return a.isDaily ? "☀️ Günün Denemesi" : (MOD_ADI[a.mode] || a.mode); }
-  var MOD_RENK = { rastgele: "var(--seri-6)", azgorulen: "var(--seri-5)", yanlislar: "var(--seri-3)", zor: "var(--seri-7)" };
+  var MOD_RENK = { rastgele: "var(--seri-6)", azgorulen: "var(--seri-5)", yanlislar: "var(--seri-3)", zor: "var(--seri-7)", ai: "var(--seri-2)" };
   var KONU_SIRA = Object.keys(RESMI_DAGILIM_DEFAULT);
   function konuSeriIdx(konu) {
     var i = KONU_SIRA.indexOf(konu);
@@ -795,6 +795,67 @@
     var seed = parseInt(seedStr, 36);
     if (!isFinite(seed) || seed < 0) return null;
     return { mode: mode, seed: seed >>> 0 };
+  }
+
+  // ---- AI Denemesi (Yapay Zekâ Kaynakları) -------------------------------
+  // Resmi denemenin sadeleştirilmiş kardeşi (16 Eyl 2026, kullanıcı kararı): tek mod
+  // (rastgele), geçmiş yok, konu seçimi yok, Az Görülenler/Yanlışlar/Zor yok — yalnız
+  // 50 soru/60 dk + paylaşılabilir kod. Sunucuda oturum AÇILMAZ; yeni tablo, migration
+  // veya API ucu yoktur. Seçim, puanlama ve süre tamamen istemcide, resmi denemeden
+  // kalan yerel motorla (pickExamQuestions kardeşi, mulberry32, renderExam, renderResult).
+  //
+  // Kodun öneki UZA- (resmi deneme UZY-), tek mod olduğu için mod harfi yoktur. Kod soru
+  // listesini TAŞIMAZ, seçimi aynı seed'le yeniden çalıştırır; bu yüzden determinizm iki
+  // şarta bağlıdır ve ikisi de aşağıda zorlanır:
+  //   1) havuz guid'e göre sıralanır — /api/exam "practice-bank" ve "bank" ORDER BY'sız
+  //      döner, Postgres satır sırası garanti değildir;
+  //   2) kotalar STATE.settings.dagilim değil RESMI_DAGILIM_DEFAULT'tan okunur ve yalnız
+  //      yerelde duran "kapsam dışı" işaretleri seçime karıştırılmaz — ikisi de kullanıcıya
+  //      göre değişir, karışsalardı aynı kod iki cihazda farklı deneme üretirdi.
+  // Havuz sync-practice ile değişirse eski kod farklı soru getirebilir: resmi denemedeki
+  // sunucu anlık görüntüsü (exam_attempt_questions) garantisi burada yoktur, kabul edilen sınır.
+  function aiKoduUret(seed) {
+    if (typeof seed !== "number" || !isFinite(seed)) return null;
+    return "UZA-" + (seed >>> 0).toString(36).toUpperCase();
+  }
+  function aiKoduCoz(kodHam) {
+    if (!kodHam) return null;
+    var temiz = String(kodHam).trim().toUpperCase().replace(/^UZA-?/, "");
+    if (!temiz || !/^[0-9A-Z]+$/.test(temiz)) return null;
+    var seed = parseInt(temiz, 36);
+    if (!isFinite(seed) || seed < 0) return null;
+    return seed >>> 0;
+  }
+
+  function aiGuidSirali(havuz) {
+    return havuz.slice().sort(function (a, b) { return a.guid < b.guid ? -1 : a.guid > b.guid ? 1 : 0; });
+  }
+
+  // Konu kotası önce pratik havuzundan doldurulur; o konuda yeterli pratik sorusu yoksa
+  // eksik Deneme bankasından tamamlanır. Kural konuya gömülü DEĞİL: bugün Kambiyo (3) ve
+  // Genel Ekonomi (5) pratik havuzunda hiç soru taşımadığı için 8 soru bankadan gelir,
+  // o konulara pratik seti eklendiği gün kural kendiliğinden susar. Aynı guid iki havuzda
+  // da bulunabildiği için (ör. Sermaye Piyasaları setleri) banka tarafı seçilenlerden elenir.
+  function pickAiExamQuestions(practiceBank, bank, dagilim, rnd) {
+    var pratikHavuzu = aiGuidSirali(practiceBank);
+    var bankaHavuzu = aiGuidSirali(bank);
+    var sorular = [];
+    var uyarilar = [];
+    Object.keys(dagilim).forEach(function (konu) {
+      var k = dagilim[konu];
+      if (!k) return;
+      var secim = sampleRandom(pratikHavuzu.filter(function (q) { return q.konu === konu; }), k, rnd);
+      if (secim.length < k) {
+        var secilenGuid = {};
+        secim.forEach(function (q) { secilenGuid[q.guid] = true; });
+        secim = secim.concat(sampleRandom(bankaHavuzu.filter(function (q) {
+          return q.konu === konu && !secilenGuid[q.guid];
+        }), k - secim.length, rnd));
+      }
+      if (secim.length < k) uyarilar.push(konu + ": havuzda yeterli soru yok (" + secim.length + "/" + k + ")");
+      sorular = sorular.concat(secim);
+    });
+    return { sorular: sorular, uyarilar: uyarilar };
   }
 
   // Her oturum kendi soru/şık görüntüsünü korur; havuz güncellemeleri ve
@@ -2285,6 +2346,8 @@
   // Duyurular (15 Eyl 2026): siteye eklenen içerikler, en yeni başta. Altyapı ve algoritma
   // değişiklikleri buraya yazılmaz. ai: true olanlar yalnız Yapay Zekâ Kaynakları açık hesapta görünür.
   var DUYURULAR = [
+    { tarih: "2026-09-16", ai: true, baslik: "AI Denemesi",
+      metin: "Test ekranına 50 soru / 60 dakikalık bir deneme eklendi; sorular pratik havuzundan resmi dağılıma göre rastgele geliyor. Başlamadan önce bir kod alırsın, aynı kodu açan aynı 50 soruyu çözer. Geçmiş tutulmaz — ekrandan çıkarsan deneme silinir." },
     { tarih: "2026-09-16", baslik: "Arkadaş sorularından 63 yeni soru",
       metin: "Emre ve Orhan'ın paylaştığı sorulardan kaynakla doğrulanan 63 tanesi Deneme bankasına eklendi. Yatırımcı Sunumu soruları Genel Ekonomi (havuz 125'ten 141'e), Incoterms ve akreditif soruları Kambiyo (339'dan 358'e), kalanlar Kredi, Temel İşlemler, Ürünler ve Hukuk havuzlarına dağıldı." },
     { tarih: "2026-09-16", baslik: "Sermaye Piyasaları havuzu genişledi",
@@ -2380,30 +2443,94 @@
     if (!cozum) { showBanner("Kod tanınmadı — sonuç ekranındaki kodu olduğu gibi kopyala.", true); return; }
     startExam(cozum.mode, cozum.seed);
   }
+
+  // --- AI Denemesi akışı ---
+  // Yarım kalan kaydı YOKTUR (16 Eyl 2026 kullanıcı kararı): çıkmak denemeyi iptal eder,
+  // bu yüzden cevap seçimi examDegisti() yerine düz render() çağırır ve STATE.pausedExam
+  // hiç yazılmaz. "✕ Vazgeç" iki adımlıdır — 60 dakikalık deneme tek tıkla gitmesin.
+  var aiDenemeKodOnizleme = null;
+  var aiVazgecOnay = false;
+  function prepareAiExam() {
+    var seed = Math.floor(Math.random() * 0xFFFFFFFF) >>> 0;
+    aiDenemeKodOnizleme = { seed: seed, kod: aiKoduUret(seed) };
+    render();
+  }
+  function cancelAiExamKodOnizleme() { aiDenemeKodOnizleme = null; render(); }
+  function baslatAiExamKodOnizleme() {
+    if (!aiDenemeKodOnizleme) return;
+    var seed = aiDenemeKodOnizleme.seed;
+    aiDenemeKodOnizleme = null;
+    startAiExam(seed);
+  }
+  function startAiExamWithCode() {
+    var el = document.getElementById("ai-exam-code-input");
+    var seed = aiKoduCoz(el ? el.value : "");
+    if (seed === null) { showBanner("Kod tanınmadı — sonuç ekranındaki kodu olduğu gibi kopyala (ör. UZA-1K2M3P).", true); return; }
+    startAiExam(seed);
+  }
+  function startAiExam(seed) {
+    if (currentExam) { showBanner("Zaten açık bir deneme var.", true); return; }
+    var rnd = mulberry32(seed);
+    var res = pickAiExamQuestions(STATE.practiceBank, STATE.bank, RESMI_DAGILIM_DEFAULT, rnd);
+    if (!res.sorular.length) { showBanner("Bu deneme için havuzda hiç soru yok.", true); return; }
+    var sirali = sampleRandom(res.sorular, res.sorular.length, rnd); // konu bloklarına göre sabit sırayı kır
+    // Şıklar canlı havuz nesnesi yerine oturum kopyası üzerinde karıştırılır: deneme
+    // Test ekranındaki şık sırasını bozmasın (shuffleSiklarInPlace normalde STATE'teki
+    // gerçek objeyi mutasyona uğratır) ve aynı kod sonra tekrar açılabilsin.
+    var kayitlar = {};
+    sirali.forEach(function (q) {
+      var kopya = JSON.parse(JSON.stringify(q));
+      shuffleSiklarInPlace(kopya, rnd);
+      kayitlar[q.guid] = kopya;
+    });
+    aiVazgecOnay = false;
+    currentExam = {
+      tip: "ai", ai: true, seed: seed, examCode: aiKoduUret(seed),
+      sorular: sirali.map(function (q) { return q.guid; }), index: 0, cevaplar: {},
+      uyarilar: res.uyarilar, gecenSaniye: 0, soruKayitlari: kayitlar
+    };
+    VIEW = "exam";
+    render();
+  }
+  function aiExamVazgec() {
+    if (!aiVazgecOnay) { aiVazgecOnay = true; render(); return; }
+    aiVazgecOnay = false;
+    currentExam = null;
+    VIEW = "menuTest";
+    render();
+  }
   function examSlotYaz() {
     if (!currentExam) return;
     STATE.pausedExam = JSON.parse(JSON.stringify(currentExam));
     STATE.pausedExam.savedAtISO = new Date().toISOString();
   }
   function examDegisti() { examSlotYaz(); veriDegisti(); }
+  // AI denemesi de uzak deneme gibi examDegisti()'yi atlar: uzakta durum sunucuda, AI'da
+  // ise yarım kalan kaydı hiç tutulmuyor (kullanıcı kararı) — ikisinde de STATE.pausedExam
+  // yazılmaz. Soru değiştikçe bekleyen "✕ Vazgeç" onayı da düşer.
+  function aiYerelKayitAtlanir() {
+    if (currentExam.uzak || currentExam.ai) { aiVazgecOnay = false; render(); return true; }
+    return false;
+  }
   function selectOption(guid, idx) {
     currentExam.cevaplar[guid] = idx;
     if (currentExam.uzak) { remoteAnswerSync(guid, idx); render(); return; }
+    if (aiYerelKayitAtlanir()) return;
     examDegisti(); render();
   }
   function nextQuestion() {
     if (currentExam.index < currentExam.sorular.length - 1) currentExam.index++;
-    if (currentExam.uzak) { render(); return; }
+    if (aiYerelKayitAtlanir()) return;
     examDegisti(); render();
   }
   function prevQuestion() {
     if (currentExam.index > 0) currentExam.index--;
-    if (currentExam.uzak) { render(); return; }
+    if (aiYerelKayitAtlanir()) return;
     examDegisti(); render();
   }
   function gotoQuestion(idx) {
     currentExam.index = idx;
-    if (currentExam.uzak) { render(); return; }
+    if (aiYerelKayitAtlanir()) return;
     examDegisti(); render();
   }
 
@@ -2677,8 +2804,39 @@
     }, function () { showBanner("Word kütüphanesi yüklenemedi — internet bağlantısını kontrol et.", true); });
   }
 
+  // AI denemesi bitişi: geçmiş tutulmaz, yalnız sonuç ekranı gösterilir. İstatistik SADECE
+  // pratik havuzundan gelen sorular için yazılır (mevcut recordPratikStat → practice_stats
+  // kuyruğu, requestId ile mükerrer saymaz); Kambiyo/Genel Ekonomi gibi bankadan tamamlanan
+  // sorular hiçbir yere yazılmaz. question_stats'a yazılsalardı resmi Deneme'nin genel
+  // doğruluk oranını ve "Yanlış Sorular" kartını bozarlardı (bkz. portal/CLAUDE.md,
+  // "İki istatistik havuzu — neden ayrı"). Boş bırakılan soru pratik tarafındaki gibi
+  // hiç kaydedilmez.
+  function finishAiExam() {
+    var res = scoreExam(STATE.practiceBank, currentExam.sorular, currentExam.cevaplar, currentExam.soruKayitlari);
+    var pratikGuid = {};
+    STATE.practiceBank.forEach(function (q) { pratikGuid[q.guid] = true; });
+    currentExam.sorular.forEach(function (guid) {
+      var secilen = currentExam.cevaplar[guid];
+      if (secilen === undefined || secilen === null || !pratikGuid[guid]) return;
+      var q = currentExam.soruKayitlari[guid];
+      if (!q) return;
+      recordPratikStat(guid, secilen === q.cevapIdx, q.siklar[secilen]);
+    });
+    lastResult = {
+      id: "ai" + Date.now(), tarihISO: new Date().toISOString(), tip: "ai", ai: true,
+      seed: currentExam.seed, examCode: currentExam.examCode,
+      sorular: currentExam.sorular, cevaplar: currentExam.cevaplar, soruKayitlari: currentExam.soruKayitlari,
+      skor: res.skor, konuKirilim: res.konuKirilim, sureSaniye: currentExam.gecenSaniye || 0
+    };
+    aiVazgecOnay = false;
+    currentExam = null;
+    VIEW = "result";
+    render();
+  }
+
   function finishExam() {
     if (currentExam && currentExam.uzak) { finishExamRemote(); return; }
+    if (currentExam && currentExam.ai) { finishAiExam(); return; }
     var res = scoreExam(STATE.bank, currentExam.sorular, currentExam.cevaplar, currentExam.soruKayitlari);
     var now = new Date().toISOString();
     STATE.pausedExam = null;
@@ -2908,6 +3066,7 @@
     currentPratik = null; currentCheckpoint = null; pratikSeciliKonu = null; dersSekmesi = "konu"; pratikSeciliModul = null;
     checkpointSeciliKonu = null; checkpointSeciliId = null;
     pausedDeleteConfirm = false; deletingHistoryId = null; denemeKodOnizleme = null;
+    aiDenemeKodOnizleme = null; aiVazgecOnay = false;
     render();
     if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
     if (pendingSaveDirty) { pendingSaveDirty = false; saveAndPublish(); }
@@ -3496,6 +3655,34 @@
       ' data-action="start-pratik-flash">' +
       '<div class="title">🎲 Rastgele Soru</div><div class="desc">Pratik havuzunun tamamından tek soru, anında cevap — konu/modül seçmeden hızlı pratik.</div></button></div>';
 
+    // AI Denemesi: resmi deneme akışındaki gibi önce kod önizlemesi, sonra başlat.
+    var aiDenemeHtml;
+    if (aiDenemeKodOnizleme) {
+      aiDenemeHtml = '<div class="card">' +
+        '<div class="section-title" style="font-size:1rem;margin-bottom:6px">🤖 AI Denemesi — kod hazır</div>' +
+        '<div class="muted" style="margin-bottom:10px">Başlamadan önce bu kodu paylaşabilirsin; aynı kodu açan aynı 50 soruyu çözer. Başladığında süre işlemeye başlar.</div>' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">' +
+        '<b style="font-family:var(--font-display);font-size:1.3rem;letter-spacing:0.03em">' + aiDenemeKodOnizleme.kod + '</b>' +
+        '<button class="btn ghost" data-action="copy-exam-code" data-kod="' + aiDenemeKodOnizleme.kod + '">📋 Kopyala</button>' +
+        "</div>" +
+        '<div class="link-row">' +
+        '<button class="btn primary" data-action="baslat-ai-exam-kod-onizleme">Denemeye Başla</button>' +
+        '<button class="btn ghost" data-action="cancel-ai-exam-kod-onizleme">Vazgeç</button>' +
+        "</div></div>";
+    } else {
+      aiDenemeHtml = '<div class="mode-grid"><button class="mode-btn" style="border-left:4px solid ' + MOD_RENK.ai + '" ' +
+        (pratikHavuzToplam === 0 ? "disabled" : "") + ' data-action="prepare-ai-exam">' +
+        '<div class="title"><span class="mode-dot" style="background:' + MOD_RENK.ai + '"></span>📝 AI Denemesi</div>' +
+        '<div class="desc">Resmi dağılıma göre 50 soru / 60 dk, pratik havuzundan rastgele. Geçmiş tutulmaz — çıkarsan deneme silinir.</div></button></div>' +
+        '<div class="card" style="margin-top:14px">' +
+        '<div class="section-title" style="font-size:1rem;margin-bottom:6px">🔑 Kod ile Çöz</div>' +
+        '<div class="muted" style="margin-bottom:10px">Bir AI denemesinin kodunu (UZA- ile başlar) buraya girersen aynı 50 soruyu yeniden çözersin.</div>' +
+        '<div class="link-row">' +
+        '<input type="text" id="ai-exam-code-input" placeholder="ör. UZA-1K2M3P" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body)">' +
+        '<button class="btn primary" data-action="start-ai-exam-code">Kodla Başla</button>' +
+        "</div></div>";
+    }
+
     // Konu (ders) kutuları doğrudan bu ekranda — ayrı bir "Konu Çalışma" giriş ekranı/tıklaması yok.
     var tiles = KONU_SIRA.map(function (konu) {
       var modlar = MODUL_TANIMLARI[konu];
@@ -3515,6 +3702,7 @@
       '<div class="stat-grid">' + statCards + "</div>" +
       yarimKalanHtml +
       checkpointYarimKalanKartlari() +
+      aiDenemeHtml +
       flashCard +
       '<div class="section-title">Hangi dersle çalışmak istersin?</div>' +
       '<div class="mode-grid">' + tiles + "</div>" +
@@ -4016,7 +4204,11 @@
       '<span>' + denemeAdi({ isDaily: currentExam.isDaily, mode: currentExam.tip }) + "</span>" +
       '<span id="exam-timer" class="exam-timer" title="Geçen süre — resmi sınav 50 soru / 60 dk">⏱ ' + fmtSure(currentExam.gecenSaniye || 0) + "</span>",
       '<button class="btn ghost" data-action="copy-soru" data-scope="exam" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋</button>' +
-      '<button class="btn primary" data-action="pause-exam" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>'
+      // AI denemesinin yarım kalan kaydı yok: "Kaydet ve Çık" yerine iki adımlı "Vazgeç".
+      (currentExam.ai
+        ? '<button class="btn ' + (aiVazgecOnay ? "primary" : "ghost") + '" data-action="ai-exam-vazgec" title="Denemeyi bırak" aria-label="Denemeyi bırak">' +
+          (aiVazgecOnay ? '⚠️<span class="genis-etiket"> Emin misin? Silinecek</span>' : '✕<span class="genis-etiket"> Vazgeç</span>') + "</button>"
+        : '<button class="btn primary" data-action="pause-exam" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>')
     );
 
     return uyariHtml +
@@ -4364,9 +4556,11 @@ function pratikEnIyiHtml(konu, modulKey) {
     }).join("");
 
     var kod = r.examCode || examKoduUret(r.tip, r.seed);
-    var koduAciklama = r.uzak
-      ? 'Bu kod bu resmi denemenin kaydıdır — "Kod ile Çöz" alanına girersen aynı 50 soruyu (kim açarsa açsın) yeniden çözersin.'
-      : 'Bu kodu Deneme sayfasındaki "Kod ile Çöz" alanına girersen aynı soruları tekrar çözersin.';
+    var koduAciklama = r.ai
+      ? 'Bu kodu Yapay Zekâ Kaynakları ekranındaki "Kod ile Çöz" alanına girersen aynı 50 soruyu (kim açarsa açsın) yeniden çözersin.'
+      : r.uzak
+        ? 'Bu kod bu resmi denemenin kaydıdır — "Kod ile Çöz" alanına girersen aynı 50 soruyu (kim açarsa açsın) yeniden çözersin.'
+        : 'Bu kodu Deneme sayfasındaki "Kod ile Çöz" alanına girersen aynı soruları tekrar çözersin.';
     var koduHtml = kod
       ? '<div class="muted" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">Deneme kodu: ' +
         '<b style="font-family:var(--font-display);letter-spacing:0.03em">' + kod + '</b> ' +
@@ -4572,6 +4766,13 @@ function pratikEnIyiHtml(konu, modulKey) {
     var bannerHtml = bannerMsg ? '<div class="banner' + (bannerIsError ? " error" : "") + '">' + escapeHtml(bannerMsg) + "</div>" : "";
     var narrowViews = { settings: true, import: true };
     var shellClass = "shell" + (narrowViews[VIEW] ? " narrow" : "");
+    // AI denemesi sürerken üst çubuk gizlenir: 🏠 ve 📊 leaveAiSources() çağırıp yarım
+    // denemeyi sessizce düşürürdü (AI denemesinin yarım kalan kaydı yok). Resmi deneme
+    // ekranında da çubuk yoktur; çıkış yalnız "✕ Vazgeç" onayından geçer.
+    if (aiModu && VIEW === "exam" && currentExam && currentExam.ai) {
+      $app().innerHTML = '<div class="' + shellClass + '">' + bannerHtml + html + "</div>";
+      return;
+    }
     if (aiModu) {
       // Üst çubuk (🏠 · 📊 · 🤖 … ad · Çıkış) AI tarafındaki her ekranda sabit dursun.
       // Ekran yalnız düğmelerden oluşan bir satırla başlıyorsa (← Konulara Dön, ← Konular…)
@@ -4611,6 +4812,11 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "start-daily-exam") startExamRemote("rastgele", null, true);
     else if (action === "ac-yeni-deneme-turleri") { denemeTurSecimiAcik = true; render(); }
     else if (action === "kapat-yeni-deneme-turleri") { denemeTurSecimiAcik = false; render(); }
+    else if (action === "prepare-ai-exam") prepareAiExam();
+    else if (action === "baslat-ai-exam-kod-onizleme") baslatAiExamKodOnizleme();
+    else if (action === "cancel-ai-exam-kod-onizleme") cancelAiExamKodOnizleme();
+    else if (action === "start-ai-exam-code") startAiExamWithCode();
+    else if (action === "ai-exam-vazgec") aiExamVazgec();
     else if (action === "prepare-exam-remote") prepareExamRemote(t.getAttribute("data-mode"));
     else if (action === "baslat-exam-kod-onizleme") baslatExamKodOnizleme();
     else if (action === "cancel-exam-kod-onizleme") cancelExamKodOnizleme();
@@ -4764,6 +4970,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     var tag = document.activeElement && document.activeElement.tagName;
     if (tag === "INPUT" || tag === "TEXTAREA") {
       if (e.key === "Enter" && document.activeElement.id === "exam-code-input") { e.preventDefault(); startExamWithCode(); }
+      if (e.key === "Enter" && document.activeElement.id === "ai-exam-code-input") { e.preventDefault(); startAiExamWithCode(); }
       return;
     }
     if (VIEW === "exam" && currentExam) {
