@@ -80,3 +80,52 @@ void test('Rastgele Soru üstünde çıkış ve testi bitirme ayrı kontrollerdi
   assert.doesNotMatch(render, /\(currentFlash\.oturum\.length\s*\?[\s\S]*data-action="finish-flash"[\s\S]*data-action="' \+ geriAction/,
     'çıkış cevaptan sonra kaybolmamalı');
 });
+
+// AI denemesinde yapılan yanlışlar ve basılan 🔖 işaretleri de ana ekrandaki iki karta
+// akar (kullanıcı isteği, 16 Eyl 2026). Zor yanı: o sorular pratik havuzundan gelebilir,
+// question_flags/question_stats ise yalnız Deneme bankasına bağlıdır — bu yüzden liste
+// sunucu + yerel birleşimidir ve kayıt yolu guid'in kaynağına göre ayrılır.
+void test('AI denemesinin yanlışları ve hatırlatıcıları ana ekrandaki kartlara akar', () => {
+  const hatirlaticiKart = script.match(/function hatirlaticiBolumHtml\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  const yanlisKart = script.match(/function yanlisSorularBolumHtml\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  const turler = script.match(/var TEKRAR_TUR = \{[\s\S]*?^  \};/m)?.[0] ?? '';
+  const bul = script.match(/function hatirlaticiSoruBul\(guid\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  const finishAi = script.match(/function finishAiExam\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  const kaydet = script.match(/function tekrarCevapKaydet\(kayit\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+
+  // Kartlar ve tekrar turları aynı birleşik havuzu okur — biri sunucu listesine düşerse
+  // AI tarafı sessizce görünmez olur.
+  assert.match(hatirlaticiKart, /hatirlaticiGuidListesi\(\)/);
+  assert.match(yanlisKart, /yanlisGuidListesi\(\)/);
+  assert.match(turler, /guidler: hatirlaticiGuidListesi/);
+  assert.match(turler, /guidler: yanlisGuidListesi/);
+  // Soru metni pratik havuzunda olabilir; yalnız STATE.bank'a bakan sürüm guid'i düşürürdü.
+  assert.match(bul, /STATE\.practiceBank/);
+  // AI denemesi bittiğinde yanlışlar yerel havuza yazılır, doğrular düşer.
+  assert.match(finishAi, /aiYanlisKaydet\(guid, dogru\)/);
+  assert.match(finishAi, /if \(pratikGuid\[guid\]\) recordPratikStat/);
+  // Sunucudaki yanlış havuzunda olmayan guid wrong-question-answer'a gitmez (409 dönerdi).
+  assert.match(kaydet, /if \(!remoteWrongGuids \|\| remoteWrongGuids\.indexOf\(kayit\.guid\) === -1\)/);
+  assert.match(kaydet, /if \(pratikGuidMi\(kayit\.guid\)\) recordPratikStat/);
+});
+
+void test('guid birleştirme mükerrer yazmaz, bulunamayan soruyu eler; pratik guid\'i ayırt edilir', () => {
+  const ctx: Record<string, unknown> = {
+    STATE: { bank: [{ guid: 'aabbccddeeff' }], practiceBank: [{ guid: 'h_112233445566' }] },
+    String,
+  };
+  vm.createContext(ctx);
+  vm.runInContext([
+    script.match(/function hatirlaticiSoruBul\(guid\) \{[\s\S]*?^  \}/m)?.[0],
+    script.match(/function pratikGuidMi\(guid\) \{.*\}/)?.[0],
+    script.match(/function guidBirlestir\(uzak, yerel\) \{[\s\S]*?^  \}/m)?.[0],
+  ].join('\n'), ctx);
+
+  const birlesik = vm.runInContext(
+    "guidBirlestir(['aabbccddeeff'], ['aabbccddeeff', 'h_112233445566', 'yok'])", ctx,
+  ) as string[];
+  // vm ayrı realm döndürüyor; deepStrictEqual referansa takılıyor.
+  assert.equal(Array.from(birlesik).join(','), 'aabbccddeeff,h_112233445566');
+  assert.equal(vm.runInContext("pratikGuidMi('h_112233445566')", ctx), true);
+  assert.equal(vm.runInContext("pratikGuidMi('aabbccddeeff')", ctx), false);
+});

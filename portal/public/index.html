@@ -517,6 +517,7 @@
   if (!STATE.arsivPratikIstatistik) STATE.arsivPratikIstatistik = {};
   if (!STATE.meta) STATE.meta = {};
   if (!STATE.flags) STATE.flags = {};              // {[guid]: {hatirlatici, hatali, hataNotu, begenildi}}
+  if (!STATE.aiYanlisGuidler) STATE.aiYanlisGuidler = [];  // AI denemesinde son cevabı yanlış olan guid'ler — ana ekrandaki ❌ kartı bunları da gösterir
   if (!STATE.duzeltmeler) STATE.duzeltmeler = [];  // [{guid, konu, soru, not, tarihISO}] — Claude'un yaptığı veri düzeltmeleri
   if (!STATE.flashOzet) STATE.flashOzet = { gosterim: 0, dogru: 0 }; // Rastgele Soru'nun kendi doğruluk oranı — sınav istatistiğinden ayrı
   if (!STATE.pFlashOzet) STATE.pFlashOzet = { gosterim: 0, dogru: 0 }; // Test sayfasındaki Rastgele Soru (pratik havuzu) — flashOzet'ten ayrı
@@ -590,7 +591,7 @@
   // gelmez — onlar hep yayınlanan HTML'den okunur, yoksa yeni yayınlanan sorular ezilirdi.
   var LS_KEY = "uzyet_state_v1";
   var LS_ALANLAR = ["stats", "pStats", "pBest", "arsivIstatistik", "arsivPratikIstatistik",
-    "flags", "history", "duzeltmeler", "appliedBankCorrections", "flashOzet", "pFlashOzet", "pausedExam", "pausedPratik", "pausedCheckpoints", "settings", "meta"];
+    "flags", "aiYanlisGuidler", "history", "duzeltmeler", "appliedBankCorrections", "flashOzet", "pFlashOzet", "pausedExam", "pausedPratik", "pausedCheckpoints", "settings", "meta"];
   var autosaveTimer = null;
 
   function bumpRev() { STATE.rev = (STATE.rev || 0) + 1; }
@@ -1804,6 +1805,10 @@
 
   // Deneme dashboard'ı, (giriş tamamsa) soru bankasını, hatırlatıcı/yanlış
   // listelerini ve gerçek işaret durumunu birlikte tazeler.
+  function aiIsaretBekliyorMu() {
+    return Object.keys(STATE.flags).some(function (g) { return STATE.flags[g].hatirlatici && pratikGuidMi(g); }) ||
+      STATE.aiYanlisGuidler.some(pratikGuidMi);
+  }
   function afterAuthStateChange(cb) {
     remoteInitStudyOwner();
     remoteInitPracticeOwner();
@@ -1816,6 +1821,12 @@
     if (remoteGirisTamamMi() && remoteReminderGuids === null) { pending++; remoteLoadReminders(finish); }
     if (remoteGirisTamamMi() && remoteWrongGuids === null) { pending++; remoteLoadWrongQuestions(finish); }
     if (remoteGirisTamamMi() && !remoteFlagsLoaded) { pending++; remoteLoadFlagsIfNeeded(finish); }
+    // Ana ekrandaki 🔖/❌ kartları pratik havuzundan gelen AI sorularını da listeliyor;
+    // o guid'lerin metni yalnız practiceBank'te var. Havuz 1MB+ olduğu için yalnız
+    // gerçekten bekleyen bir pratik guid'i varsa çekilir.
+    if (remoteGirisTamamMi() && remoteAuth.canSeeAiSources === true && !remotePracticeBankLoaded && aiIsaretBekliyorMu()) {
+      pending++; remoteLoadPracticeBankIfNeeded(finish);
+    }
     if (pending === 0 && cb) cb();
   }
 
@@ -2626,6 +2637,16 @@
     saveAndPublish();
   }
 
+  // Yanlışsa havuza girer, doğruysa havuzdan düşer — sunucudaki question_stats
+  // "last_result" mantığının yerel karşılığı.
+  function aiYanlisKaydet(guid, dogruMu) {
+    var idx = STATE.aiYanlisGuidler.indexOf(guid);
+    if (!dogruMu && idx === -1) STATE.aiYanlisGuidler.push(guid);
+    else if (dogruMu && idx !== -1) STATE.aiYanlisGuidler.splice(idx, 1);
+    else return;
+    veriDegisti();
+  }
+
   function bosFlagKaydi() { return { hatirlatici: false, hatali: false, hataNotu: "", begenildi: false, kapsamDisi: false }; }
 
   function toggleFlag(guid, kind) {
@@ -2657,18 +2678,41 @@
   // listeleri remoteReminderGuids / remoteWrongGuids'ten gelir. İkisi de kişisel
   // sınav istatistiğine veya deneme geçmişine yazmaz.
   function hatirlaticiSoruBul(guid) {
-    return STATE.bank.filter(function (b) { return b.guid === guid; })[0];
+    return STATE.bank.filter(function (b) { return b.guid === guid; })[0] ||
+      STATE.practiceBank.filter(function (b) { return b.guid === guid; })[0];
+  }
+  // Pratik havuzunun guid'i "<önek>_<12 hane>", Deneme bankasınınki düz 12 hanedir —
+  // alt çizgi ikisini ayırmaya yeter. Sunucuya gitmeden hangi listeye ait olduğunu
+  // bilmek gerekiyor: question_flags/question_stats yalnız Deneme bankasına bağlıdır.
+  function pratikGuidMi(guid) { return String(guid).indexOf("_") !== -1; }
+
+  // Ana ekrandaki iki kartın ve tekrar turlarının havuzu. Sunucudaki liste yalnız
+  // Deneme bankasını kapsar; AI denemesinde/pratikte basılan 🔖 işareti ve AI
+  // denemesinde yapılan yanlışlar sunucuya yazılamadığı için yerelden eklenir
+  // (bkz. remoteFlagSync ve finishAiExam).
+  function guidBirlestir(uzak, yerel) {
+    var out = (uzak || []).slice();
+    (yerel || []).forEach(function (g) { if (out.indexOf(g) === -1) out.push(g); });
+    return out.filter(function (g) { return hatirlaticiSoruBul(g); });
+  }
+  function hatirlaticiGuidListesi() {
+    return guidBirlestir(remoteReminderGuids, Object.keys(STATE.flags).filter(function (g) {
+      return STATE.flags[g].hatirlatici;
+    }));
+  }
+  function yanlisGuidListesi() {
+    return guidBirlestir(remoteWrongGuids, STATE.aiYanlisGuidler);
   }
   var TEKRAR_TUR = {
     hatirlatici: {
       etiket: "🔖 Hatırlatıcı", ozetBaslik: "Hatırlatıcı testi", yeniOturum: "Yeni Hatırlatıcı Oturumu",
       bosMesaj: "İşaretli soru bulunamadı.", kaydeder: false,
-      guidler: function () { return remoteReminderGuids || []; }
+      guidler: hatirlaticiGuidListesi
     },
     yanlis: {
       etiket: "❌ Yanlış Soru", ozetBaslik: "Yanlış soru testi", yeniOturum: "Kalanları Çöz",
       bosMesaj: "Tekrar edilecek yanlış soru bulunamadı.", kaydeder: true,
-      guidler: function () { return remoteWrongGuids || []; }
+      guidler: yanlisGuidListesi
     }
   };
   // {tur, kuyruk:[guid...], konum, kayitlar:[{guid,secilen,dogru,kayit,kayitHatasi}]}
@@ -2710,6 +2754,14 @@
     if (!kayit || kayit.secilen === null || kayit.kayit === "bekliyor" || kayit.kayit === "tamam") return;
     var q = hatirlaticiSoruBul(kayit.guid);
     if (!q || !q.siklar[kayit.secilen]) return;
+    // AI denemesinden gelen yanlış yerel listede durur; pratik havuzundaki soru
+    // ayrıca practice_stats'a yazılır. Sunucudaki yanlış havuzunda olmayan bir guid'i
+    // wrong-question-answer'a yollamak 409 döner.
+    aiYanlisKaydet(kayit.guid, !!kayit.dogru);
+    if (pratikGuidMi(kayit.guid)) recordPratikStat(kayit.guid, !!kayit.dogru, q.siklar[kayit.secilen]);
+    if (!remoteWrongGuids || remoteWrongGuids.indexOf(kayit.guid) === -1) {
+      kayit.kayit = "tamam"; render(); return;
+    }
     kayit.kayit = "bekliyor";
     kayit.kayitHatasi = "";
     render();
@@ -2816,7 +2868,7 @@
   }
 
   function exportHatirlaticiWord() {
-    var guids = (remoteReminderGuids || []).filter(function (g) { return hatirlaticiSoruBul(g); });
+    var guids = hatirlaticiGuidListesi();
     if (!guids.length) { showBanner("İşaretli soru bulunamadı.", true); return; }
     showBanner("Word belgesi hazırlanıyor…");
     docxKutuphaneYukle(function () {
@@ -2877,12 +2929,18 @@
     var res = scoreExam(STATE.practiceBank, currentExam.sorular, currentExam.cevaplar, currentExam.soruKayitlari);
     var pratikGuid = {};
     STATE.practiceBank.forEach(function (q) { pratikGuid[q.guid] = true; });
+    // Ana ekrandaki ❌ Yanlış Sorular kartı AI denemesinin yanlışlarını da göstersin
+    // (kullanıcı isteği, 16 Eyl 2026). question_stats'a yazamayız — resmi Deneme'nin
+    // doğruluk oranını ve kendi yanlış havuzunu bozardı — o yüzden liste yereldir.
+    // ponytail: localStorage'a bağlı, cihazlar arası taşınmaz; sunucuya taşımak yeni
+    // tablo ister. Pratik havuzunun 🔖 işaretleri de zaten aynı şekilde yerel.
     currentExam.sorular.forEach(function (guid) {
       var secilen = currentExam.cevaplar[guid];
-      if (secilen === undefined || secilen === null || !pratikGuid[guid]) return;
       var q = currentExam.soruKayitlari[guid];
-      if (!q) return;
-      recordPratikStat(guid, secilen === q.cevapIdx, q.siklar[secilen]);
+      if (!q || secilen === undefined || secilen === null) return;
+      var dogru = secilen === q.cevapIdx;
+      aiYanlisKaydet(guid, dogru);
+      if (pratikGuid[guid]) recordPratikStat(guid, dogru, q.siklar[secilen]);
     });
     var aiGunu = currentExam.aiGunu;
     lastResult = {
@@ -3537,7 +3595,7 @@
   // tamamsa (bank ve reminder listesi sunucudan çekilmiş olur) gösterilir.
   function hatirlaticiBolumHtml() {
     if (!remoteGirisTamamMi() || remoteReminderGuids === null) return "";
-    var guids = remoteReminderGuids.filter(function (g) { return hatirlaticiSoruBul(g); });
+    var guids = hatirlaticiGuidListesi();
     return '<div class="card" style="margin-top:14px">' +
       '<div class="section-title" style="font-size:1rem;margin-bottom:6px">🔖 Hatırlatıcı İşaretli Sorular (' + guids.length + ')</div>' +
       (guids.length
@@ -3552,7 +3610,7 @@
 
   function yanlisSorularBolumHtml() {
     if (!remoteGirisTamamMi() || remoteWrongGuids === null) return "";
-    var guids = remoteWrongGuids.filter(function (g) { return hatirlaticiSoruBul(g); });
+    var guids = yanlisGuidListesi();
     return '<div class="card" style="margin-top:14px">' +
       '<div class="section-title" style="font-size:1rem;margin-bottom:6px">❌ Yanlış Sorular (' + guids.length + ')</div>' +
       (guids.length
