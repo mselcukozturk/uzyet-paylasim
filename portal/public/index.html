@@ -201,9 +201,12 @@
      düğmeler blogun dikey ortasında havada kalıyordu (16 Eyl 2026). */
   .pratik-ust { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px; }
   .pratik-ust-bilgi { flex: 1; min-width: 0; display: grid; gap: 4px; font-variant-numeric: tabular-nums; }
-  .pratik-ust .q-meta { margin-bottom: 0; column-gap: 10px; }
-  /* İkinci satır dar ekranda sarmaz, kırpılır — üst blok en fazla 2 satır tutsun. */
-  .pratik-ust .q-meta > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* İkinci satır dar ekranda sarmaz, kırpılır. min-width:0 ikisinde de şart: .q-meta grid
+     item, içindeki span flex item — ikisinin de varsayılan min-width:auto'su içerikten
+     küçülmeyi engelliyor, metin düğmelerin altına taşıyordu (16 Eyl 2026'da yakalandı). */
+  .pratik-ust .q-meta { margin-bottom: 0; column-gap: 10px; min-width: 0; }
+  .pratik-ust .q-meta > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ust-sayac { white-space: nowrap; }
   .pratik-ust .btn { flex-shrink: 0; }
   @media (max-width: 560px) { .genis-etiket { display: none; } }
   .exam-timer { font-weight: 700; }
@@ -3939,7 +3942,7 @@
   function soruUstBlokHtml(konu, sayac, metaHtml, aksiyonHtml) {
     return '<div class="pratik-ust"><div class="pratik-ust-bilgi">' +
       '<div class="muted" style="font-size:0.82rem">' + konuDotHtml(konu) + escapeHtml(konu) +
-      (sayac ? " · " + escapeHtml(sayac) : "") + "</div>" +
+      (sayac ? ' · <span class="ust-sayac">' + escapeHtml(sayac) + "</span>" : "") + "</div>" +
       (metaHtml ? '<div class="q-meta">' + metaHtml + "</div>" : "") +
       "</div>" + aksiyonHtml + "</div>";
   }
