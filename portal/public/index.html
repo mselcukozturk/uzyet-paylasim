@@ -346,7 +346,10 @@
     "Mali Analiz": 5, "Kambiyo": 3, "Sermaye Piyasaları ve Hazine": 3, "İK Politikaları": 2
   };
   var MOD_ADI = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar", zor: "Zor Deneme", ai: "🤖 AI Denemesi" };
-  function denemeAdi(a) { return a.isDaily ? "☀️ Günün Denemesi" : (MOD_ADI[a.mode] || a.mode); }
+  function denemeAdi(a) {
+    if (a.aiGunu) return "🤖☀️ AI Günün Denemesi";
+    return a.isDaily ? "☀️ Günün Denemesi" : (MOD_ADI[a.mode] || a.mode);
+  }
   var MOD_RENK = { rastgele: "var(--seri-6)", azgorulen: "var(--seri-5)", yanlislar: "var(--seri-3)", zor: "var(--seri-7)", ai: "var(--seri-2)" };
   var KONU_SIRA = Object.keys(RESMI_DAGILIM_DEFAULT);
   function konuSeriIdx(konu) {
@@ -394,10 +397,24 @@
       { key: "UR15", ad: "Mevduat Ürünleri ve Emekli Maaş Ödemeleri" }
     ],
     // Ürünlerimiz kitabı B3 Menkul Kıymetler (15 Eyl 2026'da Ürünler'den taşındı; GUID aynı).
+    // SP1 ayrı: Deneme bankasından kopyalanan, kitabın B3 bölümünden gelmeyen sorular (16 Eyl 2026).
     "Sermaye Piyasaları ve Hazine": [
       { key: "UR7", ad: "Sermaye Piyasası Faaliyetleri ve Ürünleri" },
       { key: "UR8", ad: "Fon, Repo ve Sabit Getirili Kıymet İş Akışları" },
-      { key: "UR9", ad: "Yatırım Hesapları, Pay İşlemleri ve Altın Bankacılığı" }
+      { key: "UR9", ad: "Yatırım Hesapları, Pay İşlemleri ve Altın Bankacılığı" },
+      { key: "SP1", ad: "Ek Sorular (Deneme Bankası)" }
+    ],
+    // 16 Eyl 2026, kullanıcı kararı: Genel Ekonomi / Sermaye / İK iki kaynakta da paralel dursun.
+    // Deneme bankasındaki 149 soru pratik havuzuna kopyalandı (banka_paralel_20260916).
+    // ⚠ "İK Politikaları" o güne kadar bu tabloda HİÇ yoktu; 24 İK sorusu canlıda olmasına
+    // rağmen Test ekranında görünmüyordu (renderMenuTest: MODUL_TANIMLARI yoksa soruSayisi 0,
+    // kutu "Henüz hazır değil"). Yeni bir konuya pratik sorusu eklerken buraya satır eklemeyi unutma.
+    "Genel Ekonomi": [
+      { key: "GE1", ad: "Genel Ekonomi ve Bankacılık Sektörü" },
+      { key: "GE2", ad: "Yatırımcı Sunumu ve Finansal Sonuçlar" }
+    ],
+    "İK Politikaları": [
+      { key: "İK1", ad: "İnsan Kaynakları Politikaları" }
     ],
     // BASİSEN İstihbarat Not ve Soruları 2026, s.27–103 (15 Eyl 2026). Kaynağın bölümleri modüldür.
     "Mali Analiz": [
@@ -1852,6 +1869,9 @@
       remoteAuth.aiDisclaimerAccepted = true;
       remoteFetch("/api/access", "POST", { acceptAiDisclaimer: true }).catch(function () {});
     }
+    // Günün AI denemesi ayrı çekilir ve Promise.all'a KATILMAZ: bu uç hata verirse kart
+    // gizlenir, AI bölümü kapanmaz (Promise.all'daki bir false bölümü kapatıyor).
+    remoteLoadAiGunun(null);
     Promise.all([remoteLoadPracticeBankIfNeeded(), remoteLoadCheckpointsIfNeeded(), remoteLoadPracticeStats(), remoteLoadPracticeBest()]).then(function (results) {
       aiYukleniyor = false;
       if (!aiModu) return;
@@ -2346,6 +2366,10 @@
   // Duyurular (15 Eyl 2026): siteye eklenen içerikler, en yeni başta. Altyapı ve algoritma
   // değişiklikleri buraya yazılmaz. ai: true olanlar yalnız Yapay Zekâ Kaynakları açık hesapta görünür.
   var DUYURULAR = [
+    { tarih: "2026-09-16", ai: true, baslik: "AI Günün Denemesi",
+      metin: "Test ekranında her sabah 07:00'de yenilenen, herkese aynı 50 sorunun geldiği bir deneme açılıyor. Çözdükten sonra puanını ve çözenlerin ortalamasını görürsün — resmi Günün Denemesi'ndeki gibi ilk çözüşün sayılır." },
+    { tarih: "2026-09-16", ai: true, baslik: "Genel Ekonomi ve İK testleri açıldı",
+      metin: "Genel Ekonomi artık Test ekranında iki modülle çalışılabiliyor: Genel Ekonomi ve Bankacılık Sektörü (122 soru) ve Yatırımcı Sunumu ve Finansal Sonuçlar (18 soru). İK Politikaları kutusu da açıldı (26 soru), Sermaye Piyasaları'na 7 soruluk bir modül eklendi." },
     { tarih: "2026-09-16", ai: true, baslik: "AI Denemesi",
       metin: "Test ekranına 50 soru / 60 dakikalık bir deneme eklendi; sorular pratik havuzundan resmi dağılıma göre rastgele geliyor. Başlamadan önce bir kod alırsın, aynı kodu açan aynı 50 soruyu çözer. Geçmiş tutulmaz — ekrandan çıkarsan deneme silinir." },
     { tarih: "2026-09-16", baslik: "Arkadaş sorularından 63 yeni soru",
@@ -2468,7 +2492,45 @@
     if (seed === null) { showBanner("Kod tanınmadı — sonuç ekranındaki kodu olduğu gibi kopyala (ör. UZA-1K2M3P).", true); return; }
     startAiExam(seed);
   }
-  function startAiExam(seed) {
+  // --- AI Günün Denemesi ---
+  // Resmi Günün Denemesi'nin AI karşılığı: herkese aynı 50 soru, "senin puanın / çözenlerin
+  // ortalaması" aynı biçimde. Tohumu sunucu verir (/api/exam "ai-daily") — repo public olduğu
+  // için düz tarihten türetilseydi yarının soruları önceden hesaplanabilirdi. Sonuçlar
+  // practice_sessions'ta ayrılmış '__aiGunun__' anahtarında durur; ilk sonuç sayılır.
+  var aiGunun = null;
+  var aiGununYukleniyor = false;
+  function remoteLoadAiGunun(sonuc, cb) {
+    if (!remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true) return;
+    aiGununYukleniyor = true;
+    var body = sonuc ? { action: "ai-daily", sonuc: sonuc } : { action: "ai-daily" };
+    remoteFetch("/api/exam", "POST", body).then(function (r) {
+      aiGununYukleniyor = false;
+      if (r.ok) aiGunun = r.data;
+      // Hata AI bölümünü kapatmaz: kart gizlenir, bir sonraki açılışta yeniden denenir.
+      if (cb) cb(); else if (VIEW === "menuTest" || VIEW === "result") render();
+    }).catch(function () {
+      aiGununYukleniyor = false;
+      if (cb) cb();
+    });
+  }
+  function startAiGununDenemesi() {
+    if (!aiGunun || aiGununYukleniyor) return;
+    startAiExam(aiGunun.seed, aiGunun.day);
+  }
+  function aiGununDenemesiHtml() {
+    if (!aiGunun) return "";
+    var tarih = new Date(aiGunun.day + "T12:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
+    var govde = aiGunun.myCorrect === null
+      ? '<div class="muted" style="margin-bottom:10px">Her sabah 07:00\'de yenilenir, herkese aynı 50 soru. ' +
+        (aiGunun.solvedCount ? aiGunun.solvedCount + " kişi çözdü — ortalamayı çözünce görürsün." : "Bugün henüz çözen yok.") + "</div>" +
+        '<button class="btn primary" data-action="start-ai-daily"' + (aiGununYukleniyor ? " disabled" : "") + ">Başla (60 dk)</button>"
+      : '<div class="muted">Puanın <b style="color:' + renkEsigi(aiGunun.myCorrect * 2) + '">' + aiGunun.myCorrect + " / 50</b> · " +
+        gununDenemesiOrtalamaHtml(aiGunun) + "</div>";
+    return '<div class="card" style="margin-bottom:22px">' +
+      '<div class="section-title" style="font-size:1rem;margin-bottom:6px">🤖☀️ AI Günün Denemesi — ' + tarih + "</div>" + govde + "</div>";
+  }
+
+  function startAiExam(seed, gununGunu) {
     if (currentExam) { showBanner("Zaten açık bir deneme var.", true); return; }
     var rnd = mulberry32(seed);
     var res = pickAiExamQuestions(STATE.practiceBank, STATE.bank, RESMI_DAGILIM_DEFAULT, rnd);
@@ -2485,7 +2547,7 @@
     });
     aiVazgecOnay = false;
     currentExam = {
-      tip: "ai", ai: true, seed: seed, examCode: aiKoduUret(seed),
+      tip: "ai", ai: true, aiGunu: gununGunu || null, seed: seed, examCode: aiKoduUret(seed),
       sorular: sirali.map(function (q) { return q.guid; }), index: 0, cevaplar: {},
       uyarilar: res.uyarilar, gecenSaniye: 0, soruKayitlari: kayitlar
     };
@@ -2822,8 +2884,9 @@
       if (!q) return;
       recordPratikStat(guid, secilen === q.cevapIdx, q.siklar[secilen]);
     });
+    var aiGunu = currentExam.aiGunu;
     lastResult = {
-      id: "ai" + Date.now(), tarihISO: new Date().toISOString(), tip: "ai", ai: true,
+      id: "ai" + Date.now(), tarihISO: new Date().toISOString(), tip: "ai", ai: true, aiGunu: aiGunu,
       seed: currentExam.seed, examCode: currentExam.examCode,
       sorular: currentExam.sorular, cevaplar: currentExam.cevaplar, soruKayitlari: currentExam.soruKayitlari,
       skor: res.skor, konuKirilim: res.konuKirilim, sureSaniye: currentExam.gecenSaniye || 0
@@ -2832,6 +2895,14 @@
     currentExam = null;
     VIEW = "result";
     render();
+    // Günün denemesiyse sonucu kaydet ve ortalamayı tazele; sonuç ekranı ortalamayı bundan alır.
+    // Sunucu yalnız İLK sonucu sayar, tekrar çözmek ortalamayı bozmaz.
+    if (aiGunu) {
+      remoteLoadAiGunun({
+        dogru: res.skor.dogru, yanlis: res.skor.yanlis, bos: res.skor.bos,
+        sureSaniye: lastResult.sureSaniye
+      });
+    }
   }
 
   function finishExam() {
@@ -3656,9 +3727,12 @@
       '<div class="title">🎲 Rastgele Soru</div><div class="desc">Pratik havuzunun tamamından tek soru, anında cevap — konu/modül seçmeden hızlı pratik.</div></button></div>';
 
     // AI Denemesi: resmi deneme akışındaki gibi önce kod önizlemesi, sonra başlat.
-    var aiDenemeHtml;
+    // Ekran sırası: başlatma düğmeleri (AI Denemesi + Rastgele Soru) üstte, "Kod ile Çöz"
+    // kartı en altta. .mode-grid'in margin-top'u yok; kart doğrudan bir grid'in üstünde
+    // dururken ikisi birbirine yapışıyordu (16 Eyl 2026 kullanıcı bildirimi).
+    var aiDenemeHtml, aiKodKartiHtml = "";
     if (aiDenemeKodOnizleme) {
-      aiDenemeHtml = '<div class="card">' +
+      aiDenemeHtml = '<div class="card" style="margin-bottom:22px">' +
         '<div class="section-title" style="font-size:1rem;margin-bottom:6px">🤖 AI Denemesi — kod hazır</div>' +
         '<div class="muted" style="margin-bottom:10px">Başlamadan önce bu kodu paylaşabilirsin; aynı kodu açan aynı 50 soruyu çözer. Başladığında süre işlemeye başlar.</div>' +
         '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">' +
@@ -3673,8 +3747,8 @@
       aiDenemeHtml = '<div class="mode-grid"><button class="mode-btn" style="border-left:4px solid ' + MOD_RENK.ai + '" ' +
         (pratikHavuzToplam === 0 ? "disabled" : "") + ' data-action="prepare-ai-exam">' +
         '<div class="title"><span class="mode-dot" style="background:' + MOD_RENK.ai + '"></span>📝 AI Denemesi</div>' +
-        '<div class="desc">Resmi dağılıma göre 50 soru / 60 dk, pratik havuzundan rastgele. Geçmiş tutulmaz — çıkarsan deneme silinir.</div></button></div>' +
-        '<div class="card" style="margin-top:14px">' +
+        '<div class="desc">Resmi dağılıma göre 50 soru / 60 dk, pratik havuzundan rastgele. Geçmiş tutulmaz — çıkarsan deneme silinir.</div></button></div>';
+      aiKodKartiHtml = '<div class="card">' +
         '<div class="section-title" style="font-size:1rem;margin-bottom:6px">🔑 Kod ile Çöz</div>' +
         '<div class="muted" style="margin-bottom:10px">Bir AI denemesinin kodunu (UZA- ile başlar) buraya girersen aynı 50 soruyu yeniden çözersin.</div>' +
         '<div class="link-row">' +
@@ -3702,9 +3776,11 @@
       '<div class="stat-grid">' + statCards + "</div>" +
       yarimKalanHtml +
       checkpointYarimKalanKartlari() +
+      aiGununDenemesiHtml() +
       aiDenemeHtml +
       flashCard +
-      '<div class="section-title">Hangi dersle çalışmak istersin?</div>' +
+      aiKodKartiHtml +
+      '<div class="section-title" style="margin-top:22px">Hangi dersle çalışmak istersin?</div>' +
       '<div class="mode-grid">' + tiles + "</div>" +
       '<div class="link-row"><button class="btn" data-action="open-flags">İşaretliler</button></div>';
   }
@@ -4201,7 +4277,7 @@
     var cevapsizSayisi = currentExam.sorular.length - Object.keys(currentExam.cevaplar).length;
     var ustHtml = soruUstBlokHtml(
       q.konu, (idx + 1) + " / " + currentExam.sorular.length,
-      '<span>' + denemeAdi({ isDaily: currentExam.isDaily, mode: currentExam.tip }) + "</span>" +
+      '<span>' + denemeAdi({ isDaily: currentExam.isDaily, aiGunu: currentExam.aiGunu, mode: currentExam.tip }) + "</span>" +
       '<span id="exam-timer" class="exam-timer" title="Geçen süre — resmi sınav 50 soru / 60 dk">⏱ ' + fmtSure(currentExam.gecenSaniye || 0) + "</span>",
       '<button class="btn ghost" data-action="copy-soru" data-scope="exam" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋</button>' +
       // AI denemesinin yarım kalan kaydı yok: "Kaydet ve Çık" yerine iki adımlı "Vazgeç".
@@ -4580,6 +4656,9 @@ function pratikEnIyiHtml(konu, modulKey) {
       (r.uzak && remoteDash && remoteDash.daily && remoteDash.daily.avgCorrect !== null && r.examCode === remoteDash.daily.code
         ? '<div class="muted" style="margin:8px 0">☀️ Günün denemesi — ' + gununDenemesiOrtalamaHtml(remoteDash.daily) + "</div>"
         : "") +
+      (r.ai && r.aiGunu && aiGunun && aiGunun.avgCorrect !== null && r.aiGunu === aiGunun.day
+        ? '<div class="muted" style="margin:8px 0">🤖☀️ AI günün denemesi — ' + gununDenemesiOrtalamaHtml(aiGunun) + "</div>"
+        : "") +
       '<table class="topic-table"><thead><tr><th>Konu</th><th class="num">Doğru</th><th class="num">Yanlış</th><th class="num">Boş</th></tr></thead><tbody>' +
       topicRows + "</tbody></table>" +
       '<div class="link-row" style="margin-top:14px">' +
@@ -4812,6 +4891,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "start-daily-exam") startExamRemote("rastgele", null, true);
     else if (action === "ac-yeni-deneme-turleri") { denemeTurSecimiAcik = true; render(); }
     else if (action === "kapat-yeni-deneme-turleri") { denemeTurSecimiAcik = false; render(); }
+    else if (action === "start-ai-daily") startAiGununDenemesi();
     else if (action === "prepare-ai-exam") prepareAiExam();
     else if (action === "baslat-ai-exam-kod-onizleme") baslatAiExamKodOnizleme();
     else if (action === "cancel-ai-exam-kod-onizleme") cancelAiExamKodOnizleme();

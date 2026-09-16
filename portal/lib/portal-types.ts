@@ -128,6 +128,9 @@ export type ExamApiRequest =
   | { action: 'practice-bank' }
   | { action: 'checkpoints' }
   | { action: 'practice-stats' }
+  // sonuc verilirse günün AI denemesi sonucu kaydedilir (ilk kayıt sayılır); her iki
+  // durumda da günün tohumu + çözen sayısı + ortalama döner.
+  | { action: 'ai-daily'; sonuc?: { dogru: number; yanlis: number; bos: number; sureSaniye: number } }
   | { action: 'dashboard' }
   | { action: 'start'; mode: ExamMode; examCode?: string; daily?: boolean }
   | { action: 'resume'; attemptId: string }

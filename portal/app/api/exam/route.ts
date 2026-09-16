@@ -4,6 +4,8 @@ import { getSessionProfile } from '@/lib/auth/session';
 import { corsPreflight, withCors } from '@/lib/cors';
 import { getDb, schema } from '@/lib/db';
 import {
+  aiDailySeed,
+  aiExamCode,
   dailyExamCode,
   dailyExamDay,
   examCode,
@@ -30,6 +32,10 @@ export const dynamic = 'force-dynamic';
 
 type Attempt = typeof schema.examAttempts.$inferSelect;
 type AttemptQuestion = typeof schema.examAttemptQuestions.$inferSelect;
+
+// practice_sessions içinde ayrılmış anahtar: AI Günün Denemesi sonuçları (topic), gün (modul).
+// Gerçek bir konu adı değil — pratik oturum anahtarı olarak kullanma (pBest'teki '__pBest__' gibi).
+const AI_DAILY_SLOT = '__aiGunun__';
 
 function fail(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
@@ -390,6 +396,54 @@ async function handlePost(request: Request) {
       await db.delete(schema.practiceSessions).where(where);
       return NextResponse.json({ ok: true });
     }
+    // AI Günün Denemesi. Resmi Günün Denemesi'nin aksine sunucuda sınav oturumu açılmaz:
+    // uç yalnız günün tohumunu verir ve bitmiş sonuçları toplar, 50 soruyu istemci aynı
+    // tohumla kendisi seçer (bkz. public/index.html → pickAiExamQuestions). Yeni tablo
+    // gerekmesin diye sonuçlar practice_sessions'ta ayrılmış bir anahtarda durur:
+    // topic = '__aiGunun__', modul = gün. Aynı yöntem pBest'te de kullanılıyor; bu iki
+    // anahtarı konu/modül adı olarak kullanma.
+    //
+    // İLK sonuç sayılır (onConflictDoNothing): resmi denemedeki kuralın aynısı — tekrar
+    // çözen ortalamayı şişirmesin. Ortalama, resmi tarafta olduğu gibi yalnız kendisi
+    // çözmüş olana döner.
+    if (body.action === 'ai-daily') {
+      const denied = requireAiSources(profile);
+      if (denied) return denied;
+      const day = dailyExamDay();
+      const seed = aiDailySeed(day);
+
+      if (body.sonuc !== undefined && body.sonuc !== null) {
+        const dogru = Number((body.sonuc as { dogru?: unknown }).dogru);
+        if (!Number.isInteger(dogru) || dogru < 0 || dogru > 50) return fail('Sonuç geçersiz.', 400);
+        const payload = {
+          dogru,
+          yanlis: Number((body.sonuc as { yanlis?: unknown }).yanlis) || 0,
+          bos: Number((body.sonuc as { bos?: unknown }).bos) || 0,
+          sureSaniye: Number((body.sonuc as { sureSaniye?: unknown }).sureSaniye) || 0,
+          bitisISO: new Date().toISOString(),
+        };
+        await db.insert(schema.practiceSessions)
+          .values({ userId: user.id, topic: AI_DAILY_SLOT, modul: day, payload })
+          .onConflictDoNothing();
+      }
+
+      const rows = await db.select({
+        userId: schema.practiceSessions.userId,
+        payload: schema.practiceSessions.payload,
+      }).from(schema.practiceSessions)
+        .where(and(eq(schema.practiceSessions.topic, AI_DAILY_SLOT), eq(schema.practiceSessions.modul, day)));
+      const dogrular = rows.map((row) => Number((row.payload as { dogru?: unknown }).dogru) || 0);
+      const mine = rows.find((row) => row.userId === user.id);
+      return NextResponse.json({
+        day,
+        seed,
+        code: aiExamCode(seed),
+        solvedCount: rows.length,
+        myCorrect: mine ? Number((mine.payload as { dogru?: unknown }).dogru) || 0 : null,
+        avgCorrect: mine ? Math.round(dogrular.reduce((sum, value) => sum + value, 0) / dogrular.length * 10) / 10 : null,
+      });
+    }
+
     if (body.action === 'practice-bank' || body.action === 'checkpoints' || body.action === 'practice-stats') {
       const denied = requireAiSources(profile);
       if (denied) return denied;
