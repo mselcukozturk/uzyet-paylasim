@@ -365,20 +365,22 @@
   // ayrıldığını tanımlar. Yeni bir dersin pratik modunu açmak = buraya bir giriş +
   // pratik_manifest.json'a karşılık gelen JSON dosyası eklemek — kod değişmez.
   var MODUL_TANIMLARI = {
+    // Dört Bilgi seti, Temel İşlemler YYS 2026 B1–B6 (17 Eyl 2026). Eski ana set (M1–M11), Çok Zor ve
+    // Arkadaş setleri kullanıcı kararıyla kaldırıldı.
     "Temel İşlemler": [
-      { key: "M1", ad: "Kambiyo Temelleri" },
-      { key: "M2", ad: "Mevduat / Zorunlu Karşılık / TMSF" },
-      { key: "M5", ad: "Kur Uygulamaları ve Efektif" },
-      { key: "M6", ad: "Mevduat Hesap Ürünleri" },
-      { key: "M7", ad: "Hesap İşlemleri ve Özel Durumlar" },
-      { key: "M8", ad: "Döviz Tevdiat Hesapları (DTH)" },
-      { key: "M3", ad: "Kimlik Tespiti / MASAK / Yaptırımlar" },
-      { key: "M9", ad: "Havale / EFT / FAST + SWIFT / WU" },
-      { key: "M10", ad: "Çek-Bono İşlemleri" },
-      { key: "M11", ad: "Yurt Dışı Örgütümüz" }
-      // Arkadaş seti sorusu (31 Ağu 2026) ve "ÇOK ZOR SEVİYE" gerekçeli test seti (31 Ağu
-      // 2026, ayrı kaynak: Temel İşlemler YYS 2026 · Bölüm 1-5) 2 Eyl 2026'da gerçek
-      // M1-M11 modüllerine dağıtıldı — ayrı "ARK"/"TZ1-TZ5" modülü kalmadı.
+      { key: "TI1", ad: "Mevduat, Zorunlu Karşılık, TMSF, Faiz ve Valör" },
+      { key: "TI2", ad: "VKN, Müşterini Tanı ve Kimlik Tespiti" },
+      { key: "TI3", ad: "Şüpheli İşlem Bildirimi, Yaptırımlar ve FATCA/CRS" },
+      { key: "TI4", ad: "Kambiyo Mevzuatı ve Yükümlülükler" },
+      { key: "TI5", ad: "Yurt Dışı Örgütümüz" },
+      { key: "TI6", ad: "Kur Uygulamaları, Arbitraj ve Efektif" },
+      { key: "TI7", ad: "Hesap Açtırabilen Kişiler ve Hesap Ürünleri" },
+      { key: "TI8", ad: "Hesap Açılış Belgeleri; TL, DTH ve Müşterek Hesap İşlemleri" },
+      { key: "TI9", ad: "Mevduat Hesaplarında Özel Durumlar" },
+      { key: "TI10", ad: "Havale İlişkisi, Yurt İçi Havale, EFT ve FAST" },
+      { key: "TI11", ad: "SWIFT Döviz Havalesi ve Western Union" },
+      { key: "TI12", ad: "Çek Karnesi, İbraz, Ödeme ve Karşılıksız Çek" },
+      { key: "TI13", ad: "Döviz Çekleri ve Tahsil Senetleri" }
     ],
     // Dört Bilgi seti, Ürünlerimiz kitabı B1–B5 (14 Eyl 2026). B3 (UR7–UR9) Sermaye Piyasaları
     // ve Hazine kutusunda.
@@ -479,11 +481,11 @@
     "ark_n-kreditl": ["Kredi", "K9"],
     "ark_n-kredigayrinakdi": ["Kredi", "K13"],
     "ark_n-krediyp": ["Kredi", "K15"],
-    "ark_n-temelgiris": ["Temel İşlemler", "M1"],
-    "ark_n-kurefektif": ["Temel İşlemler", "M5"],
-    "ark_n-mevduathesap": ["Temel İşlemler", "M6"],
-    "ark_n-havaleislem": ["Temel İşlemler", "M9"],
-    "ark_n-cekbono": ["Temel İşlemler", "M10"]
+    "ark_n-temelgiris": ["Temel İşlemler", "TI4"],
+    "ark_n-kurefektif": ["Temel İşlemler", "TI6"],
+    "ark_n-mevduathesap": ["Temel İşlemler", "TI7"],
+    "ark_n-havaleislem": ["Temel İşlemler", "TI10"],
+    "ark_n-cekbono": ["Temel İşlemler", "TI12"]
   };
   function checkpointDersi(c) { return c.konu === "İthalat İhracat" ? "Kambiyo" : c.konu; }
   function checkpointTestHedefi(id) {
@@ -2377,6 +2379,8 @@
   // Duyurular (15 Eyl 2026): siteye eklenen içerikler, en yeni başta. Altyapı ve algoritma
   // değişiklikleri buraya yazılmaz. ai: true olanlar yalnız Yapay Zekâ Kaynakları açık hesapta görünür.
   var DUYURULAR = [
+    { tarih: "2026-09-17", ai: true, baslik: "Temel İşlemler testi yenilendi",
+      metin: "Temel İşlemler kutusu Temel İşlemler YYS 2026 kitabından baştan kurulan 127 soruluk yeni setle değişti; 13 modül kitabın altı bölümünü izliyor. Eski test, Çok Zor ve Arkadaş setleri kaldırıldı." },
     { tarih: "2026-09-16", ai: true, baslik: "AI Günün Denemesi",
       metin: "Test ekranında her sabah 07:00'de yenilenen, herkese aynı 50 sorunun geldiği bir deneme açılıyor. Çözdükten sonra puanını ve çözenlerin ortalamasını görürsün — resmi Günün Denemesi'ndeki gibi ilk çözüşün sayılır." },
     { tarih: "2026-09-16", ai: true, baslik: "Genel Ekonomi ve İK testleri açıldı",
