@@ -18,8 +18,25 @@ test('real Postgres practice writes: retry deduplication, counters, session isol
       await pg.exec(migration);
       await pg.exec(migration); // Idempotent DDL must also work on a populated schema.
     }
+    await pg.exec(`
+      create table question_banks (
+        id uuid primary key, version text not null unique, question_count integer not null,
+        is_active boolean not null default false, imported_at timestamptz not null default now()
+      );
+      create table questions (
+        id uuid primary key, bank_id uuid not null references question_banks(id), guid text not null,
+        topic text not null, prompt text not null, options jsonb not null, correct_index smallint not null,
+        explanation text not null default '', source text not null default '', verified boolean not null default false
+      );
+    `);
     const db = drizzle(pg);
     await db.insert(schema.practiceQuestions).values({ guid: 'q1', topic: 'K', modul: 'M', prompt: '?', options: ['A', 'B'], correctIndex: 1, version: 'v1' });
+    const bankId = '11111111-1111-4111-8111-111111111111';
+    await db.insert(schema.questionBanks).values({ id: bankId, version: 'bank-v1', questionCount: 1, isActive: true });
+    await db.insert(schema.questions).values({
+      id: '22222222-2222-4222-8222-222222222222', bankId, guid: 'official-q', topic: 'K',
+      prompt: 'Resmî soru?', options: ['A', 'B'], correctIndex: 1,
+    });
     let userId = 'owner';
     const mocks: Record<string, unknown> = {
       'next/server': { NextResponse: Response }, 'drizzle-orm': orm,
@@ -44,6 +61,12 @@ test('real Postgres practice writes: retry deduplication, counters, session isol
     assert.equal((await post({ ...answer, requestId: 'retry-request-2', selectedAnswer: 'A' })).status, 200);
     const [stat] = await db.select().from(schema.practiceStats);
     assert.equal(stat.shownCount, 2); assert.equal(stat.correctCount, 1); assert.equal(stat.wrongCount, 1);
+    const fallback = await post({
+      action: 'practice-answer', questionGuid: 'official-q', selectedAnswer: 'A', requestId: 'retry-request-3',
+    });
+    assert.equal(fallback.status, 200, 'AI denemesinin resmî banka tamamlaması practice_stats içine yazılmalı');
+    const [fallbackStat] = await db.select().from(schema.practiceStats).where(orm.eq(schema.practiceStats.questionGuid, 'official-q'));
+    assert.equal(fallbackStat.lastResult, false);
     assert.equal((await post({ ...answer, questionGuid: 'missing' })).status, 400);
     assert.equal((await post({ ...answer, selectedAnswer: 'C' })).status, 400);
     const session = { konu: 'K', modul: 'M', payload: { kuyruk: ['q1'], index: 0, cevaplar: { q1: 1 }, custom: ['opaque'] } };

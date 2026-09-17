@@ -171,15 +171,14 @@ void test('AI denemesi ekranları bağlı: Test menüsünde kart + kod, deneme s
   assert.match(result, /var koduAciklama = r\.ai\s*\n\s*\? 'Bu kodu Yapay Zek/);
 });
 
-void test('AI denemesi istatistiği yalnız pratik havuzuna yazar, yarım kalan kaydı tutmaz', () => {
+void test('AI denemesi tüm cevapları AI istatistik havuzuna yazar, yarım kalan kaydı tutmaz', () => {
   const finish = script.match(/^  function finishAiExam\(\)[\s\S]*?^  \}/m)?.[0];
   assert.ok(finish, 'finishAiExam bulunamadı');
 
-  // Bankadan tamamlanan sorular question_stats'a yazılsaydı resmi Deneme'nin genel
-  // doğruluk oranı bozulurdu (portal/CLAUDE.md, "İki istatistik havuzu — neden ayrı").
-  assert.ok(finish.includes('pratikGuid[guid]'), 'bankadan gelen sorular elenmiyor');
+  // Bankadan tamamlanan sorular da practice_stats'a yazılır; question_stats'a yazılsaydı
+  // resmî Deneme'nin genel doğruluk oranı bozulurdu.
   assert.ok(finish.includes('recordPratikStat('), 'pratik istatistiği yazılmıyor');
-  assert.match(finish, /STATE\.practiceBank\.forEach/);
+  assert.doesNotMatch(finish, /pratikGuid\[guid\]/, 'bankadan tamamlanan AI sorusu atlanmamalı');
   assert.ok(!finish.includes('STATE.stats'), 'finishAiExam question_stats tarafına yazıyor');
   assert.ok(!finish.includes('STATE.history'), 'AI denemesi geçmişe yazılmamalı');
 

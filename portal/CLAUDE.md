@@ -80,8 +80,11 @@ Karıştırma: `dashboard()` ve `wrongQuestionGuids()` kullanıcının tüm `que
 satırlarını **filtresiz** toplar; pratik cevapları oraya yazılırsa Deneme'nin genel
 doğruluk oranı ve "Yanlış Sorular" kartı bozulur.
 
-Buna karşılık `question_flags` guid bazlıdır ve iki havuzun guid uzayları kesişmez, bu
-yüzden 🔖 hatırlatıcı / 🚩 hata bildirimi her iki havuzda da tek kodla çalışır.
+AI Denemesi kotayı doldurmak için resmî bankadan soru alırsa o cevap da `practice_stats`a
+yazılır; böylece AI'nin yanlış havuzunda kalır ama Deneme istatistiğine karışmaz.
+`question_flags` ortak tablodur; AI hatırlatıcı anahtarları `ai:<guid>` biçiminde ayrı
+ad alanı kullanır. Eski pratik guid'leri geriye dönük okunur. Böylece iki ekrandaki 🔖
+havuzları ayrıdır; 🚩 hata bildirimi gerçek guid ile çalışmaya devam eder.
 
 ## Şema değişikliği akışı
 

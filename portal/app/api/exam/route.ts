@@ -331,8 +331,15 @@ async function handlePost(request: Request) {
         if (body.requestId !== undefined && (typeof body.requestId !== 'string' || !/^[a-zA-Z0-9_-]{8,80}$/.test(body.requestId))) {
           return fail('İstek kimliği geçersiz.', 400);
         }
-        const [question] = await db.select({ options: schema.practiceQuestions.options, correctIndex: schema.practiceQuestions.correctIndex })
+        const [practiceQuestion] = await db.select({ options: schema.practiceQuestions.options, correctIndex: schema.practiceQuestions.correctIndex })
           .from(schema.practiceQuestions).where(eq(schema.practiceQuestions.guid, body.questionGuid)).limit(1);
+        const [bankQuestion] = practiceQuestion ? [] : await db
+          .select({ options: schema.questions.options, correctIndex: schema.questions.correctIndex })
+          .from(schema.questions)
+          .innerJoin(schema.questionBanks, eq(schema.questions.bankId, schema.questionBanks.id))
+          .where(and(eq(schema.questions.guid, body.questionGuid), eq(schema.questionBanks.isActive, true)))
+          .limit(1);
+        const question = practiceQuestion ?? bankQuestion;
         let correct: boolean;
         try { correct = validatePracticeAnswer(question, body.selectedAnswer); }
         catch { return fail('Soru veya cevap geçersiz.', 400); }

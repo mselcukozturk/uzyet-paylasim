@@ -18,7 +18,7 @@ void test('üretilen deneme kabuğunun JavaScript sözdizimi geçerlidir ve soru
 });
 
 void test('tekrar testi karışık başlar ve doğru cevap hatırlatıcı işaretini kaldırmaz', () => {
-  const start = script.match(/function startTekrarTest\(tur\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  const start = script.match(/function startTekrarTest\(tur, havuz\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   const select = script.match(/function selectTekrarOption\(idx\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   assert.match(start, /sampleRandom\(guids, guids\.length\)/);
   assert.match(start, /shuffleSiklarInPlace/);
@@ -49,13 +49,13 @@ void test('tekrar testi Rastgele Soru mekaniğini kullanır: ileri/geri gezinme 
   assert.match(finish, /VIEW = "tekrarSonuc"/);
   assert.match(script, /function renderTekrarSonuc\(\)[\s\S]*?flashSonucKirilimi\(oturum\)/);
   // Her iki tekrar turu da aynı motoru kullanır.
-  assert.match(script, /action === "start-hatirlatici-test"\) startTekrarTest\("hatirlatici"\)/);
-  assert.match(script, /action === "start-yanlis-tekrar-test"\) startTekrarTest\("yanlis"\)/);
+  assert.match(script, /action === "start-hatirlatici-test"\) startTekrarTest\("hatirlatici",/);
+  assert.match(script, /action === "start-yanlis-tekrar-test"\) startTekrarTest\("yanlis",/);
 });
 
 void test('yanlış sorular hatırlatıcıların altında gösterilir ve cevap sunucuya kaydedilir', () => {
   const menu = script.match(/function renderMenuDeneme\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
-  assert.ok(menu.indexOf('hatirlaticiBolumHtml()') < menu.indexOf('yanlisSorularBolumHtml()'));
+  assert.ok(menu.indexOf('hatirlaticiBolumHtml("deneme")') < menu.indexOf('yanlisSorularBolumHtml("deneme")'));
   assert.match(script, /action: "wrong-questions"/);
   assert.match(script, /action: "wrong-question-answer", questionGuid: kayit\.guid, selectedAnswer: q\.siklar\[kayit\.secilen\]/);
   assert.match(script, /if \(r\.data && r\.data\.guids\) remoteWrongGuids = r\.data\.guids/);
@@ -81,51 +81,60 @@ void test('Rastgele Soru üstünde çıkış ve testi bitirme ayrı kontrollerdi
     'çıkış cevaptan sonra kaybolmamalı');
 });
 
-// AI denemesinde yapılan yanlışlar ve basılan 🔖 işaretleri de ana ekrandaki iki karta
-// akar (kullanıcı isteği, 16 Eyl 2026). Zor yanı: o sorular pratik havuzundan gelebilir,
-// question_flags/question_stats ise yalnız Deneme bankasına bağlıdır — bu yüzden liste
-// sunucu + yerel birleşimidir ve kayıt yolu guid'in kaynağına göre ayrılır.
-void test('AI denemesinin yanlışları ve hatırlatıcıları ana ekrandaki kartlara akar', () => {
-  const hatirlaticiKart = script.match(/function hatirlaticiBolumHtml\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
-  const yanlisKart = script.match(/function yanlisSorularBolumHtml\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
-  const turler = script.match(/var TEKRAR_TUR = \{[\s\S]*?^  \};/m)?.[0] ?? '';
-  const bul = script.match(/function hatirlaticiSoruBul\(guid\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+void test('Deneme ve AI kartları aynı motoru ayrı havuzlarla kullanır', () => {
+  const denemeMenu = script.match(/function renderMenuDeneme\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  const aiMenu = script.match(/function renderMenuTest\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  const start = script.match(/function startTekrarTest\(tur, havuz\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   const finishAi = script.match(/function finishAiExam\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   const kaydet = script.match(/function tekrarCevapKaydet\(kayit\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  const flagBar = script.match(/function flagBarHtml\(guid, showPratikExtras\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
 
-  // Kartlar ve tekrar turları aynı birleşik havuzu okur — biri sunucu listesine düşerse
-  // AI tarafı sessizce görünmez olur.
-  assert.match(hatirlaticiKart, /hatirlaticiGuidListesi\(\)/);
-  assert.match(yanlisKart, /yanlisGuidListesi\(\)/);
-  assert.match(turler, /guidler: hatirlaticiGuidListesi/);
-  assert.match(turler, /guidler: yanlisGuidListesi/);
-  // Soru metni pratik havuzunda olabilir; yalnız STATE.bank'a bakan sürüm guid'i düşürürdü.
-  assert.match(bul, /STATE\.practiceBank/);
-  // AI denemesi bittiğinde yanlışlar yerel havuza yazılır, doğrular düşer.
-  assert.match(finishAi, /aiYanlisKaydet\(guid, dogru\)/);
-  assert.match(finishAi, /if \(pratikGuid\[guid\]\) recordPratikStat/);
-  // Sunucudaki yanlış havuzunda olmayan guid wrong-question-answer'a gitmez (409 dönerdi).
-  assert.match(kaydet, /if \(!remoteWrongGuids \|\| remoteWrongGuids\.indexOf\(kayit\.guid\) === -1\)/);
-  assert.match(kaydet, /if \(pratikGuidMi\(kayit\.guid\)\) recordPratikStat/);
+  assert.match(denemeMenu, /hatirlaticiBolumHtml\("deneme"\)[\s\S]*yanlisSorularBolumHtml\("deneme"\)/);
+  assert.match(aiMenu, /hatirlaticiBolumHtml\("ai"\)[\s\S]*yanlisSorularBolumHtml\("ai"\)/);
+  assert.match(start, /currentTekrar = \{[\s\S]*havuz: havuz/);
+  assert.match(script, /startTekrarTest\("hatirlatici", t\.getAttribute\("data-havuz"\)\)/);
+  assert.match(script, /startTekrarTest\("yanlis", t\.getAttribute\("data-havuz"\)\)/);
+  assert.match(finishAi, /recordPratikStat\(guid, dogru/);
+  assert.doesNotMatch(finishAi, /if \(pratikGuid\[guid\]\) recordPratikStat/);
+  assert.match(kaydet, /currentTekrar\.havuz === "ai"/);
+  assert.match(flagBar, /aiModu \? aiHatirlaticiAnahtari\(guid\) : guid/);
+  assert.match(flagBar, /data-guid="' \+ hatirlaticiGuid \+ '" data-kind="hatirlatici"/);
 });
 
-void test('guid birleştirme mükerrer yazmaz, bulunamayan soruyu eler; pratik guid\'i ayırt edilir', () => {
+void test('Deneme ve AI hatırlatıcı/yanlış listeleri birbirine karışmaz', () => {
   const ctx: Record<string, unknown> = {
-    STATE: { bank: [{ guid: 'aabbccddeeff' }], practiceBank: [{ guid: 'h_112233445566' }] },
+    STATE: {
+      bank: [{ guid: 'official' }, { guid: 'fallback' }],
+      practiceBank: [{ guid: 'ai_question' }, { guid: 'legacy_ai' }],
+      flags: {},
+      pStats: {
+        ai_question: { sonSonucDogruMu: false },
+        fallback: { sonSonucDogruMu: false },
+      },
+      aiYanlisGuidler: ['legacy_ai'],
+    },
+    remoteReminderGuids: ['official', 'legacy_ai', 'ai:fallback'],
+    remoteWrongGuids: ['official'],
     String,
   };
   vm.createContext(ctx);
   vm.runInContext([
     script.match(/function hatirlaticiSoruBul\(guid\) \{[\s\S]*?^  \}/m)?.[0],
     script.match(/function pratikGuidMi\(guid\) \{.*\}/)?.[0],
+    script.match(/function aiFlagGuidCoz\(guid\) \{.*\}/)?.[0],
+    script.match(/function aiFlagMi\(guid\) \{.*\}/)?.[0],
+    script.match(/function aiHatirlaticiAnahtari\(guid\) \{[\s\S]*?^  \}/m)?.[0],
     script.match(/function guidBirlestir\(uzak, yerel\) \{[\s\S]*?^  \}/m)?.[0],
+    script.match(/function denemeHatirlaticiGuidListesi\(\) \{[\s\S]*?^  \}/m)?.[0],
+    script.match(/function aiHatirlaticiGuidListesi\(\) \{[\s\S]*?^  \}/m)?.[0],
+    script.match(/function denemeYanlisGuidListesi\(\) \{[\s\S]*?^  \}/m)?.[0],
+    script.match(/function aiYanlisGuidListesi\(\) \{[\s\S]*?^  \}/m)?.[0],
   ].join('\n'), ctx);
 
-  const birlesik = vm.runInContext(
-    "guidBirlestir(['aabbccddeeff'], ['aabbccddeeff', 'h_112233445566', 'yok'])", ctx,
-  ) as string[];
-  // vm ayrı realm döndürüyor; deepStrictEqual referansa takılıyor.
-  assert.equal(Array.from(birlesik).join(','), 'aabbccddeeff,h_112233445566');
-  assert.equal(vm.runInContext("pratikGuidMi('h_112233445566')", ctx), true);
-  assert.equal(vm.runInContext("pratikGuidMi('aabbccddeeff')", ctx), false);
+  const list = (expression: string) => Array.from(vm.runInContext(expression, ctx) as string[]).sort().join(',');
+  assert.equal(list('denemeHatirlaticiGuidListesi()'), 'official');
+  assert.equal(list('aiHatirlaticiGuidListesi()'), 'fallback,legacy_ai');
+  assert.equal(list('denemeYanlisGuidListesi()'), 'official');
+  assert.equal(list('aiYanlisGuidListesi()'), 'ai_question,fallback,legacy_ai');
+  assert.equal(vm.runInContext("aiHatirlaticiAnahtari('fallback')", ctx), 'ai:fallback');
 });
