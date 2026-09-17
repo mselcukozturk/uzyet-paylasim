@@ -447,28 +447,31 @@
       // ayrı "ARK" modülü kalmadı.
     ],
     "Hukuk": [
-      { key: "H1", ad: "Gerçek Kişiler, Hak ve Fiil Ehliyeti" },
-      { key: "H2", ad: "Tüzel Kişiler, Ölüm, Gaiplik ve Miras" },
-      { key: "H3", ad: "Borcun Doğumu, Hukuki İşlemler ve Temsil" },
-      { key: "H4", ad: "Borcun Sona Ermesi ve Borç İlişkisinin Tarafları" },
-      { key: "H5", ad: "Bankacılık Sözleşmeleri, Rehin, Kefalet ve Teminatlar" },
-      { key: "H6", ad: "Tacir, Ticari İşletme ve Tacirin Temsili" },
-      { key: "H7", ad: "Şirketler, Cari Hesap ve Haksız Rekabet" },
-      { key: "H8", ad: "Kıymetli Evrak, Ciro ve Aval" },
-      { key: "H9", ad: "Poliçe ve Bono" },
-      { key: "H10", ad: "Çek" }
-      // Arkadaş seti sorusu (31 Ağu 2026) 2 Eyl 2026'da gerçek H1-H10 modüllerine dağıtıldı,
-      // ayrı "ARK" modülü kalmadı.
+      // 17 Eyl 2026: Hukuk Dört Bilgi seti (118 soru) eski H1–H10 setinin yerine geçti.
+      { key: "HK1", ad: "Gerçek ve Tüzel Kişiler, Ehliyet" },
+      { key: "HK2", ad: "Ölüm, Gaiplik ve Mirasçılar" },
+      { key: "HK3", ad: "Borcun Doğumu ve Sona Ermesi" },
+      { key: "HK4", ad: "Bankacılık Sözleşmeleri" },
+      { key: "HK5", ad: "Bankacılıkta Teminatlar" },
+      { key: "HK6", ad: "Ticari İşletme ve Şirketler" },
+      { key: "HK7", ad: "Kıymetli Evrak Genel Hükümleri" },
+      { key: "HK8", ad: "Poliçe ve Bono" },
+      { key: "HK9", ad: "Çek" },
+      { key: "HK10", ad: "İcra Takip Yolları ve İhtiyati Haciz" },
+      { key: "HK11", ad: "Konkordato" },
+      { key: "HK12", ad: "Bankacılık Kanunu: Kuruluş, İzin ve Kurumsal Yönetim" },
+      { key: "HK13", ad: "Bankacılık Kanunu: İç Sistemler, Özkaynak ve Krediler" },
+      { key: "HK14", ad: "Bankacılık Kanunu: Mevduat, Sır, Denetim ve Yaptırım" }
     ]
   };
   var PRATIK_TUM_MODULLER = "__TUMU__"; // pseudo-modül: bir Konu'nun tüm modülleri karışık
   // Bölüm özetleri baz testlerden daha geniştir; her özetin en ilgili tek modülü seçilir.
   // Kambiyo ve Genel Ekonomi'nin testi yok; konsolide Kritik Süreler için tek bir doğru modül yok.
   var CHECKPOINT_TEST_MODULLERI = {
-    "ark_n-medeni": ["Hukuk", "H1"],
-    "ark_n-borclar": ["Hukuk", "H3"],
-    "ark_n-ticaret": ["Hukuk", "H6"],
-    "ark_n-kambiyo": ["Hukuk", "H8"],
+    "ark_n-medeni": ["Hukuk", "HK1"],
+    "ark_n-borclar": ["Hukuk", "HK3"],
+    "ark_n-ticaret": ["Hukuk", "HK6"],
+    "ark_n-kambiyo": ["Hukuk", "HK8"],
     "ark_n-banka": ["Kredi", "K2"],
     "ark_n-dijital": ["Ürünler", "UR2"],
     "ark_n-kart": ["Ürünler", "UR5"],
@@ -2364,6 +2367,8 @@
   // Duyurular (15 Eyl 2026): siteye eklenen içerikler, en yeni başta. Altyapı ve algoritma
   // değişiklikleri buraya yazılmaz. ai: true olanlar yalnız Yapay Zekâ Kaynakları açık hesapta görünür.
   var DUYURULAR = [
+    { tarih: "2026-09-17", ai: true, baslik: "Hukuk testi yenilendi",
+      metin: "Hukuk kutusu Hukuk kitabı, Bankacılık Kanunu ve Takip Hukuku sunumlarından baştan kurulan 118 soruluk yeni setle değişti; 14 modül Medeni, Borçlar, Ticaret, İcra-İflas ve Bankacılık Kanunu'nu izliyor. Eski Hukuk testi ve Arkadaş seti kaldırıldı." },
     { tarih: "2026-09-17", ai: true, baslik: "Temel İşlemler testi yenilendi",
       metin: "Temel İşlemler kutusu Temel İşlemler YYS 2026 kitabından baştan kurulan 127 soruluk yeni setle değişti; 13 modül kitabın altı bölümünü izliyor. Eski test, Çok Zor ve Arkadaş setleri kaldırıldı." },
     { tarih: "2026-09-16", ai: true, baslik: "AI Günün Denemesi",
