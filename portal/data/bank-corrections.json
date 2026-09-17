@@ -1367,5 +1367,32 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "04 Kredi/Kredi YYS 2026.pdf s.105 (kitap s.88)",
   "tarihISO": "2026-09-15T23:21:28.389898+00:00"
+ },
+ {
+  "id": "gece-20260917-75090a377209",
+  "guid": "75090a377209",
+  "konu": "Kredi",
+  "soru": "Şirket Kredi Kartı Kredisine ilişkin aşağıdakilerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026.pdf s.160 (kitap s.143)",
+  "tarihISO": "2026-09-17T05:10:16.405537+00:00"
+ },
+ {
+  "id": "gece-20260917-0ce07619bba9",
+  "guid": "0ce07619bba9",
+  "konu": "Mali Analiz",
+  "soru": "Aktif Toplamı 1.000.000 TL, Dönen Değerleri 500.000 TL, Sabit Değerleri 100.000 TL ve Devamlı Sermayesi 700.000 TL olan bir firmanın Kısa Vadeli Borçları ne kadardır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "istihbarat_TKR_2026.pdf s.281 (kitap s.264)",
+  "tarihISO": "2026-09-17T05:10:16.405537+00:00"
+ },
+ {
+  "id": "gece-20260917-0e827a7554ff",
+  "guid": "0e827a7554ff",
+  "konu": "Ürünler",
+  "soru": "Hangisinin Mobil Temassız İşlem özelliği aktif hale getirilebilir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026.pdf s.43 (kitap s.26)",
+  "tarihISO": "2026-09-17T05:10:16.405537+00:00"
  }
 ]
