@@ -462,11 +462,19 @@
       { key: "HK12", ad: "Bankacılık Kanunu: Kuruluş, İzin ve Kurumsal Yönetim" },
       { key: "HK13", ad: "Bankacılık Kanunu: İç Sistemler, Özkaynak ve Krediler" },
       { key: "HK14", ad: "Bankacılık Kanunu: Mevduat, Sır, Denetim ve Yaptırım" }
+    ],
+    // 18 Eyl 2026: Kambiyo Dört Bilgi seti (30 soru). Kapsam kaynağı kitap değil ED_UZYET_ITH_IHR_NOTLAR2026
+    // ders notu (kullanıcı kararı: sınavda 3 soru, set kısa tutuldu). Eski 206 soruluk set 15 Eyl'de silinmişti.
+    "Kambiyo": [
+      { key: "KB1", ad: "Incoterms ve Ödeme Şekilleri" },
+      { key: "KB2", ad: "Akreditifli Ödeme" },
+      { key: "KB3", ad: "Dış Ticaret Belgeleri" },
+      { key: "KB4", ad: "İthalat ve İhracat Mevzuatı" }
     ]
   };
   var PRATIK_TUM_MODULLER = "__TUMU__"; // pseudo-modül: bir Konu'nun tüm modülleri karışık
   // Bölüm özetleri baz testlerden daha geniştir; her özetin en ilgili tek modülü seçilir.
-  // Kambiyo ve Genel Ekonomi'nin testi yok; konsolide Kritik Süreler için tek bir doğru modül yok.
+  // Konsolide Kritik Süreler için tek bir doğru modül yok. (Kambiyo ve Genel Ekonomi'nin testi 16–18 Eyl'de açıldı.)
   var CHECKPOINT_TEST_MODULLERI = {
     "ark_n-medeni": ["Hukuk", "HK1"],
     "ark_n-borclar": ["Hukuk", "HK3"],
@@ -488,7 +496,13 @@
     "ark_n-kurefektif": ["Temel İşlemler", "TI6"],
     "ark_n-mevduathesap": ["Temel İşlemler", "TI7"],
     "ark_n-havaleislem": ["Temel İşlemler", "TI10"],
-    "ark_n-cekbono": ["Temel İşlemler", "TI12"]
+    "ark_n-cekbono": ["Temel İşlemler", "TI12"],
+    "ark_n-uluslararasi": ["Kambiyo", "KB1"],
+    "ark_n-pesin": ["Kambiyo", "KB1"],
+    "ark_n-akreditif": ["Kambiyo", "KB2"],
+    "ark_n-belgeler": ["Kambiyo", "KB3"],
+    "ark_n-ithalat": ["Kambiyo", "KB4"],
+    "ark_n-ihracat": ["Kambiyo", "KB4"]
   };
   function checkpointDersi(c) { return c.konu === "İthalat İhracat" ? "Kambiyo" : c.konu; }
   function checkpointTestHedefi(id) {
@@ -2367,6 +2381,8 @@
   // Duyurular (15 Eyl 2026): siteye eklenen içerikler, en yeni başta. Altyapı ve algoritma
   // değişiklikleri buraya yazılmaz. ai: true olanlar yalnız Yapay Zekâ Kaynakları açık hesapta görünür.
   var DUYURULAR = [
+    { tarih: "2026-09-18", ai: true, baslik: "Kambiyo testi açıldı",
+      metin: "Test ekranında Kambiyo kutusu açıldı: dış ticaret ders notundan kurulan 30 soru, dört modül — Incoterms ve Ödeme Şekilleri, Akreditifli Ödeme, Dış Ticaret Belgeleri, İthalat ve İhracat Mevzuatı. Sınavdaki payı üç soru olduğu için set bilerek kısa ve temel kurallara odaklı tutuldu." },
     { tarih: "2026-09-17", ai: true, baslik: "Hukuk testi yenilendi",
       metin: "Hukuk kutusu Hukuk kitabı, Bankacılık Kanunu ve Takip Hukuku sunumlarından baştan kurulan 118 soruluk yeni setle değişti; 14 modül Medeni, Borçlar, Ticaret, İcra-İflas ve Bankacılık Kanunu'nu izliyor. Eski Hukuk testi ve Arkadaş seti kaldırıldı." },
     { tarih: "2026-09-17", ai: true, baslik: "Temel İşlemler testi yenilendi",
