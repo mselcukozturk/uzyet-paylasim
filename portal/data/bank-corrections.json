@@ -1475,5 +1475,59 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "02 Ürünlerimiz/markdown/02-bankamiz-plastik-kart-ve-uye-isyeri-uygulamalari.md (s.41, 52)",
   "tarihISO": "2026-09-19T07:46:43.245031+00:00"
+ },
+ {
+  "id": "gece-20260920-9acc6e1b5beb",
+  "guid": "9acc6e1b5beb",
+  "konu": "Hukuk",
+  "soru": "Türk ticaret kanununa göre Komandit şirket hangi şirket ile birleşemez?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "6102 sayılı Türk Ticaret Kanunu m.137/2 (s.41)",
+  "tarihISO": "2026-09-19T23:26:26.791939+00:00"
+ },
+ {
+  "id": "gece-20260920-e71a0ae661d4",
+  "guid": "e71a0ae661d4",
+  "konu": "Kambiyo",
+  "soru": "Akreditifte yapılacak tadilatlar (değişiklikler) kim tarafından kabul edilmezse geçersizdir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "03 İthalat İhracat/markdown/03-akreditifli-odeme.md (s.50 / PDF s.65)",
+  "tarihISO": "2026-09-19T23:26:26.791939+00:00"
+ },
+ {
+  "id": "gece-20260920-4842b46d338f",
+  "guid": "4842b46d338f",
+  "konu": "Kambiyo",
+  "soru": "Aşağıdakilerden hangisi mal mukabili ödeme şeklinde ihracatçı açısından risk unsuru teşkil etmez?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "03 İthalat İhracat/markdown/02-pesin-odeme-mal-mukabili-odeme-ve-tahsiller.md (s.17-18 / PDF s.32-33)",
+  "tarihISO": "2026-09-19T23:26:26.791939+00:00"
+ },
+ {
+  "id": "gece-20260920-8cc6a85e16fe",
+  "guid": "8cc6a85e16fe",
+  "konu": "Kambiyo",
+  "soru": "Yurt içindeki bir şubemiz tarafından açılan bir akreditife yurt içindeki başka bir şubemizce teyit eklenebilir mi?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "03 İthalat İhracat/markdown/05-ithalat-mevzuati-ve-bankamiz-uygulamalari.md (s.111 / PDF s.126)",
+  "tarihISO": "2026-09-19T23:26:26.791939+00:00"
+ },
+ {
+  "id": "gece-20260920-e7409655428a",
+  "guid": "e7409655428a",
+  "konu": "Kredi",
+  "soru": "Bankamız özkaynağının %1’ini aşan tutarda kredi riski bulunan firma ve risk gruplarına kullandırılan nakdi ve gayrinakdi kredilerin toplam tutarı Bankamız toplam plasmanının % kaçını aşamaz?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "04 Kredi/Kredi Kitap Notları (revize 2026).docx (Özel Temerküz Limitleri)",
+  "tarihISO": "2026-09-19T23:26:26.791939+00:00"
+ },
+ {
+  "id": "gece-20260920-42112e7d7b9e",
+  "guid": "42112e7d7b9e",
+  "konu": "Ürünler",
+  "soru": "İşPlus programı ile ilgili hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: yazılı kullanıcı onayıyla güncellendi; teyitsiz.",
+  "kaynak_atif": "Türkiye İş Bankası İş Plus Programı (isbank.com.tr)",
+  "tarihISO": "2026-09-19T23:26:26.791939+00:00"
  }
 ]
