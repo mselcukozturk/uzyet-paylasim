@@ -12,6 +12,7 @@ import {
   mulberry32,
   parseExamCode,
   selectExamQuestions,
+  shouldApplyAttemptStats,
   shuffleQuestionOptions,
   type BankQuestion,
   type ExamMode,
@@ -967,24 +968,28 @@ async function handlePost(request: Request) {
         }
         if (!result.statsApplied) {
           const seenAt = result.finishedAt ?? new Date();
-          await tx.insert(schema.questionStats).values(review.map((item) => ({
-            userId: user.id,
-            questionGuid: item.guid,
-            shownCount: 1,
-            correctCount: item.isCorrect === true ? 1 : 0,
-            wrongCount: item.isCorrect === false ? 1 : 0,
-            lastResult: item.isCorrect,
-            lastSeenAt: seenAt,
-          }))).onConflictDoUpdate({
-            target: [schema.questionStats.userId, schema.questionStats.questionGuid],
-            set: {
-              shownCount: sql`${schema.questionStats.shownCount} + excluded.shown_count`,
-              correctCount: sql`${schema.questionStats.correctCount} + excluded.correct_count`,
-              wrongCount: sql`${schema.questionStats.wrongCount} + excluded.wrong_count`,
-              lastResult: sql`excluded.last_result`,
-              lastSeenAt: sql`excluded.last_seen_at`,
-            },
-          });
+          const [activeBank] = await tx.select({ id: schema.questionBanks.id }).from(schema.questionBanks)
+            .where(eq(schema.questionBanks.isActive, true)).limit(1);
+          if (activeBank && shouldApplyAttemptStats(result.bankId, activeBank.id)) {
+            await tx.insert(schema.questionStats).values(review.map((item) => ({
+              userId: user.id,
+              questionGuid: item.guid,
+              shownCount: 1,
+              correctCount: item.isCorrect === true ? 1 : 0,
+              wrongCount: item.isCorrect === false ? 1 : 0,
+              lastResult: item.isCorrect,
+              lastSeenAt: seenAt,
+            }))).onConflictDoUpdate({
+              target: [schema.questionStats.userId, schema.questionStats.questionGuid],
+              set: {
+                shownCount: sql`${schema.questionStats.shownCount} + excluded.shown_count`,
+                correctCount: sql`${schema.questionStats.correctCount} + excluded.correct_count`,
+                wrongCount: sql`${schema.questionStats.wrongCount} + excluded.wrong_count`,
+                lastResult: sql`excluded.last_result`,
+                lastSeenAt: sql`excluded.last_seen_at`,
+              },
+            });
+          }
           [result] = await tx.update(schema.examAttempts).set({ statsApplied: true })
             .where(eq(schema.examAttempts.id, body.attemptId)).returning();
         }

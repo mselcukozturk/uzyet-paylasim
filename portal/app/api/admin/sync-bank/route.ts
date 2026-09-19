@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createHash } from 'node:crypto';
-import { eq, ne, sql } from 'drizzle-orm';
+import { eq, inArray, ne, sql } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
+import { parseResetQuestionGuids } from '@/lib/exam-core';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -32,6 +33,7 @@ type RawItem = {
 export async function POST(req: Request) {
   if (!checkAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
+  const resetQuestionGuids = parseResetQuestionGuids(req.headers.get('x-reset-question-stats'));
   const sourceText = await req.text();
   let source: RawItem[];
   try {
@@ -108,7 +110,10 @@ export async function POST(req: Request) {
     }
     await tx.update(schema.questionBanks).set({ isActive: false }).where(ne(schema.questionBanks.id, bank.id));
     await tx.update(schema.questionBanks).set({ isActive: true }).where(eq(schema.questionBanks.id, bank.id));
-    return { version, questionCount: questions.length, bankId: bank.id };
+    const resetRows = resetQuestionGuids.length === 0 ? [] : await tx.delete(schema.questionStats)
+      .where(inArray(schema.questionStats.questionGuid, resetQuestionGuids))
+      .returning({ questionGuid: schema.questionStats.questionGuid });
+    return { version, questionCount: questions.length, bankId: bank.id, resetStatsCount: resetRows.length };
   });
 
   return NextResponse.json({ ok: true, ...result });

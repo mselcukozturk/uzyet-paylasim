@@ -1,14 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {
-  OFFICIAL_DISTRIBUTION,
-  examCode,
-  parseExamCode,
-  selectExamQuestions,
-  shuffleQuestionOptions,
-  mulberry32,
-  type BankQuestion,
-} from '../lib/exam-core.ts';
+import * as examCore from '../lib/exam-core.ts';
+import type { BankQuestion } from '../lib/exam-core.ts';
+
+const {
+  OFFICIAL_DISTRIBUTION, examCode, parseExamCode, selectExamQuestions,
+  shuffleQuestionOptions, mulberry32,
+} = examCore;
 
 function bank(): BankQuestion[] {
   return Object.entries(OFFICIAL_DISTRIBUTION).flatMap(([topic, count]) =>
@@ -84,4 +82,24 @@ void test('zor modu en çok yanlış yapılan soruları önceliklendirir', () =>
     77,
   ).questions.map((item) => item.guid);
   for (const guid of hardGuids) assert.ok(selected.includes(guid), `${guid} seçilmeliydi`);
+});
+
+void test('soru veya şık değişince istatistik sıfırlanır, yalnız açıklama değişince korunur', () => {
+  assert.equal(typeof examCore.shouldResetQuestionStats, 'function');
+  const once = { soru: 'Soru', a: 'A', b: 'B', c: 'C', d: 'D', cevap_harf: 'A', cevap_metni: 'A', aciklama: 'eski' };
+  assert.equal(examCore.shouldResetQuestionStats(once, { ...once, d: 'Yeni D' }), true);
+  assert.equal(examCore.shouldResetQuestionStats(once, { ...once, cevap_harf: 'B', cevap_metni: 'B' }), true);
+  assert.equal(examCore.shouldResetQuestionStats(once, { ...once, aciklama: 'yeni' }), false);
+});
+
+void test('eski banka sürümünden tamamlanan deneme güncel soru istatistiğine yazılmaz', () => {
+  assert.equal(typeof examCore.shouldApplyAttemptStats, 'function');
+  assert.equal(examCore.shouldApplyAttemptStats('eski-bank', 'aktif-bank'), false);
+  assert.equal(examCore.shouldApplyAttemptStats('aktif-bank', 'aktif-bank'), true);
+});
+
+void test('istatistik sıfırlama GUID başlığı tekilleştirilir ve geçersiz değeri reddeder', () => {
+  assert.equal(typeof examCore.parseResetQuestionGuids, 'function');
+  assert.deepEqual(examCore.parseResetQuestionGuids('abc123,def456,abc123,bozuk!'), ['abc123', 'def456']);
+  assert.deepEqual(examCore.parseResetQuestionGuids(null), []);
 });

@@ -31,6 +31,21 @@ export type UserQuestionStat = {
   lastResult: boolean | null;
 };
 
+const STAT_CONTENT_FIELDS = ['soru', 'a', 'b', 'c', 'd', 'cevap_harf', 'cevap_metni'] as const;
+
+export function shouldResetQuestionStats(before: Record<string, unknown>, after: Record<string, unknown>) {
+  return STAT_CONTENT_FIELDS.some((field) => String(before[field] ?? '') !== String(after[field] ?? ''));
+}
+
+export function shouldApplyAttemptStats(attemptBankId: string, activeBankId: string) {
+  return attemptBankId === activeBankId;
+}
+
+export function parseResetQuestionGuids(value: string | null) {
+  return [...new Set((value ?? '').split(',').map((item) => item.trim())
+    .filter((item) => /^[a-zA-Z0-9:_-]{3,100}$/.test(item)))];
+}
+
 export function mulberry32(seed: number) {
   return () => {
     let value = seed += 0x6d2b79f5;
