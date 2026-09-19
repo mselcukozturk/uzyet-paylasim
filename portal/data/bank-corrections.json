@@ -1403,5 +1403,59 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "02 Ürünlerimiz/markdown/03-menkul-kiymetler.md",
   "tarihISO": "2026-09-19T06:45:32.537919+00:00"
+ },
+ {
+  "id": "gece-20260919-eb5a8f2336f0",
+  "guid": "eb5a8f2336f0",
+  "konu": "Hukuk",
+  "soru": "Hangisi ölüm karinesinin kabul edilebilmesinin şartlarındandır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "01 Hukuk/Hukuk_TKR_2026.pdf (s.17)",
+  "tarihISO": "2026-09-19T07:19:35.834080+00:00"
+ },
+ {
+  "id": "gece-20260919-93079f3bbc7d",
+  "guid": "93079f3bbc7d",
+  "konu": "Ürünler",
+  "soru": "Müşteri Olmak İstiyorum (MOİ) sürecine ilişkin aşağıdakilerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "02 Ürünlerimiz/markdown/01-dijital-bankacilik-kanallari.md",
+  "tarihISO": "2026-09-19T07:19:35.834080+00:00"
+ },
+ {
+  "id": "gece-20260919-18ff1de6769b",
+  "guid": "18ff1de6769b",
+  "konu": "Temel İşlemler",
+  "soru": "İbraz tarihi 2026, hesap bakiyesi 0 TL, tutarı 20.000 TL olan çek için hamil 16.350 TL’lik yasal yükümlülük tutarını reddetmiştir. Bu durumda hangisi söylenemez?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "06 Döviz Temel İşlemler/markdown-temel-islemler/05-cek-islemleri-ve-bono.md",
+  "tarihISO": "2026-09-19T07:19:35.834080+00:00"
+ },
+ {
+  "id": "gece-20260919-b81415e66481",
+  "guid": "b81415e66481",
+  "konu": "Kredi",
+  "soru": "Hangisi Anında Ticari Kredi kullanamaz?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "04 Kredi/markdown/04-tl-nakdi-krediler.md",
+  "tarihISO": "2026-09-19T07:19:35.834080+00:00"
+ },
+ {
+  "id": "gece-20260919-03fb6b5ac887",
+  "guid": "03fb6b5ac887",
+  "konu": "Genel Ekonomi",
+  "soru": "Temel olarak, sahip olduğu ‘merkezi takas’  ve ‘bankacılık’ lisansları ile Türk sermaye piyasalarında, üyelerine, takas,  merkezi karşı taraf ve bankacılık hizmetleri sunan kuruluş aşağıdakilerden hangisidir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "02 Ürünlerimiz/markdown/03-menkul-kiymetler.md",
+  "tarihISO": "2026-09-19T07:19:35.834080+00:00"
+ },
+ {
+  "id": "gece-20260919-c3e3ce32d5c5",
+  "guid": "c3e3ce32d5c5",
+  "konu": "Genel Ekonomi",
+  "soru": "İş Bankası 1H2026 (30.06.2026) finansal sonuçlarına göre yıl sonuna kıyasla (YSB) en çok büyüyen ana bilanço kalemi aşağıdakilerden hangisidir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/Genel Ekonomi — Güncelleme Karşılaştırması (Ağu 2026).md",
+  "tarihISO": "2026-09-19T07:19:35.834080+00:00"
  }
 ]
