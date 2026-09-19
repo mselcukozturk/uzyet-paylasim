@@ -83,15 +83,21 @@ test('günün denemesi: aynı anda ilk kez başlayana da aynı sorular; ortalama
     assert.deepEqual((await post('carol', { action: 'dashboard' })).data.daily,
       { day: examCore.dailyExamDay(), code: alice.examCode, solvedCount: 1, myCorrect: null, avgCorrect: null });
 
-    await finish('bob', bob.id, 21); // ortalama (40 + 21) / 2 = 30,5
+    await finish('bob', bob.id, 21); // 27 altı topluluk ortalamasına girmez
     const again = await start('alice');
     assert.deepEqual(guids(again), guids(alice));
     await finish('alice', again.id, 50); // tekrar çözüm ortalamayı değiştirmemeli
 
+    const beforeBoundary = (await post('alice', { action: 'dashboard' })).data.daily;
+    assert.equal(beforeBoundary.solvedCount, 2);
+    assert.equal(beforeBoundary.myCorrect, 40);
+    assert.equal(beforeBoundary.avgCorrect, 40);
+
+    const carol = await start('carol');
+    await finish('carol', carol.id, 27); // 27 ortalamaya dahildir
     const aliceDaily = (await post('alice', { action: 'dashboard' })).data.daily;
-    assert.equal(aliceDaily.solvedCount, 2);
-    assert.equal(aliceDaily.myCorrect, 40);
-    assert.equal(aliceDaily.avgCorrect, 30.5);
+    assert.equal(aliceDaily.solvedCount, 3);
+    assert.equal(aliceDaily.avgCorrect, 33.5);
 
     const history = (await post('alice', { action: 'history' })).data;
     assert.equal(history.total, 2);

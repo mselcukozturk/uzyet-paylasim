@@ -71,21 +71,21 @@ void test('ai-daily: ilk sonuç sayılır, tekrar çözmek ortalamayı değişti
     assert.equal(ilk.avgCorrect, null);
     assert.ok(ilk.code.startsWith('UZA-'), `beklenen UZA- öneki, gelen: ${ilk.code}`);
 
-    const alice = await (await post({ action: 'ai-daily', sonuc: { dogru: 30, yanlis: 15, bos: 5, sureSaniye: 1800 } })).json() as Daily;
-    assert.equal(alice.myCorrect, 30);
-    assert.equal(alice.avgCorrect, 30);
+    const alice = await (await post({ action: 'ai-daily', sonuc: { dogru: 26, yanlis: 19, bos: 5, sureSaniye: 1800 } })).json() as Daily;
+    assert.equal(alice.myCorrect, 26);
+    assert.equal(alice.avgCorrect, null, '27 altındaki tek sonuç ortalama oluşturmamalı');
     assert.equal(alice.solvedCount, 1);
 
     // Aynı kullanıcı tekrar çözerse İLK sonuç korunur.
     const tekrar = await (await post({ action: 'ai-daily', sonuc: { dogru: 50, yanlis: 0, bos: 0, sureSaniye: 60 } })).json() as Daily;
-    assert.equal(tekrar.myCorrect, 30, 'ikinci deneme ilk sonucu ezdi');
+    assert.equal(tekrar.myCorrect, 26, 'ikinci deneme ilk sonucu ezdi');
     assert.equal(tekrar.solvedCount, 1);
 
     sessionUserId.current = 'bob';
-    const bob = await (await post({ action: 'ai-daily', sonuc: { dogru: 40, yanlis: 10, bos: 0, sureSaniye: 2400 } })).json() as Daily;
-    assert.equal(bob.myCorrect, 40);
+    const bob = await (await post({ action: 'ai-daily', sonuc: { dogru: 27, yanlis: 23, bos: 0, sureSaniye: 2400 } })).json() as Daily;
+    assert.equal(bob.myCorrect, 27);
     assert.equal(bob.solvedCount, 2);
-    assert.equal(bob.avgCorrect, 35, 'ortalama (30+40)/2 = 35 olmalı');
+    assert.equal(bob.avgCorrect, 27, '26 dışlanıp sınırdaki 27 ortalamaya dahil edilmeli');
 
     // Hiç çözmemiş üçüncü kullanıcı çözen sayısını görür, ortalamayı görmez.
     sessionUserId.current = 'carol';
@@ -154,4 +154,11 @@ void test('istemci: günün AI denemesi kartı bağlı ve hata AI bölümünü k
   const start = script.match(/^  function startAiExam\([\s\S]*?^  \}/m)?.[0];
   assert.ok(start, 'startAiExam bulunamadı');
   assert.match(start, /aiGunu: gununGunu \|\| null/);
+
+  const avgHelper = script.match(/^  function gununDenemesiOrtalamaHtml\([\s\S]*?^  \}/m)?.[0];
+  assert.ok(avgHelper, 'gununDenemesiOrtalamaHtml bulunamadı');
+  const sandbox: Record<string, unknown> = {};
+  runInNewContext(avgHelper + '\nresult = gununDenemesiOrtalamaHtml({ solvedCount: 1, avgCorrect: null });', sandbox);
+  assert.match(String(sandbox.result), /—/);
+  assert.doesNotMatch(String(sandbox.result), /null/);
 });

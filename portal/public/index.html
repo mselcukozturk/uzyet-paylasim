@@ -2461,7 +2461,8 @@
       '<div class="section-title" style="font-size:1rem;margin-bottom:6px">☀️ Günün Denemesi — ' + tarih + "</div>" + govde + "</div>";
   }
   function gununDenemesiOrtalamaHtml(g) {
-    return "çözen " + g.solvedCount + " kişinin ortalaması <b>" + String(g.avgCorrect).replace(".", ",") + " / 50</b>";
+    return "çözen " + g.solvedCount + " kişinin ortalaması <b>" +
+      (g.avgCorrect == null ? "—" : String(g.avgCorrect).replace(".", ",") + " / 50") + "</b>";
   }
 
   function startExam(mode, seedOverride) {

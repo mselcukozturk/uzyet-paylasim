@@ -36,6 +36,7 @@ type AttemptQuestion = typeof schema.examAttemptQuestions.$inferSelect;
 // practice_sessions içinde ayrılmış anahtar: AI Günün Denemesi sonuçları (topic), gün (modul).
 // Gerçek bir konu adı değil — pratik oturum anahtarı olarak kullanma (pBest'teki '__pBest__' gibi).
 const AI_DAILY_SLOT = '__aiGunun__';
+const COMMUNITY_AVERAGE_MIN_CORRECT = 27;
 
 function fail(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
@@ -214,6 +215,9 @@ async function dashboard(userId: string) {
     .where(and(eq(schema.examAttempts.examCode, dailyCode), eq(schema.examAttempts.status, 'finished')))
     .orderBy(schema.examAttempts.userId, asc(schema.examAttempts.finishedAt));
   const myDaily = dailyRows.find((row) => row.userId === userId);
+  const dailyAverageScores = dailyRows
+    .map((row) => row.correct ?? 0)
+    .filter((correct) => correct >= COMMUNITY_AVERAGE_MIN_CORRECT);
 
   return {
     displayName: profile?.displayName || profile?.username || 'Kullanıcı',
@@ -239,7 +243,9 @@ async function dashboard(userId: string) {
       solvedCount: dailyRows.length,
       // Puan 50 üzerinden doğru sayısıdır; ortalama tek ondalıklı (ör. 32.5).
       myCorrect: myDaily ? myDaily.correct ?? 0 : null,
-      avgCorrect: myDaily ? Math.round(dailyRows.reduce((sum, row) => sum + (row.correct ?? 0), 0) / dailyRows.length * 10) / 10 : null,
+      avgCorrect: myDaily && dailyAverageScores.length
+        ? Math.round(dailyAverageScores.reduce((sum, value) => sum + value, 0) / dailyAverageScores.length * 10) / 10
+        : null,
     },
   };
 }
@@ -439,7 +445,9 @@ async function handlePost(request: Request) {
         payload: schema.practiceSessions.payload,
       }).from(schema.practiceSessions)
         .where(and(eq(schema.practiceSessions.topic, AI_DAILY_SLOT), eq(schema.practiceSessions.modul, day)));
-      const dogrular = rows.map((row) => Number((row.payload as { dogru?: unknown }).dogru) || 0);
+      const dogrular = rows
+        .map((row) => Number((row.payload as { dogru?: unknown }).dogru) || 0)
+        .filter((dogru) => dogru >= COMMUNITY_AVERAGE_MIN_CORRECT);
       const mine = rows.find((row) => row.userId === user.id);
       return NextResponse.json({
         day,
@@ -447,7 +455,9 @@ async function handlePost(request: Request) {
         code: aiExamCode(seed),
         solvedCount: rows.length,
         myCorrect: mine ? Number((mine.payload as { dogru?: unknown }).dogru) || 0 : null,
-        avgCorrect: mine ? Math.round(dogrular.reduce((sum, value) => sum + value, 0) / dogrular.length * 10) / 10 : null,
+        avgCorrect: mine && dogrular.length
+          ? Math.round(dogrular.reduce((sum, value) => sum + value, 0) / dogrular.length * 10) / 10
+          : null,
       });
     }
 
