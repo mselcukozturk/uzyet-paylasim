@@ -1457,5 +1457,23 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "07 Diğer Konular/Genel Ekonomi — Güncelleme Karşılaştırması (Ağu 2026).md",
   "tarihISO": "2026-09-19T07:19:35.834080+00:00"
+ },
+ {
+  "id": "gece-20260919-3ed14bb92855",
+  "guid": "3ed14bb92855",
+  "konu": "Ürünler",
+  "soru": "Hangisi bireysel dijital bankacılıkta işlem kısıtlaması (talimat kodu) değişikliği yapılabilen kanallardan biri değildir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "02 Ürünlerimiz/markdown/01-dijital-bankacilik-kanallari.md (s.6 / PDF s.23)",
+  "tarihISO": "2026-09-19T07:46:43.245031+00:00"
+ },
+ {
+  "id": "gece-20260919-c5daf85cdc96",
+  "guid": "c5daf85cdc96",
+  "konu": "Ürünler",
+  "soru": "Bankamızca hangi plastik kart ürünümüz TROY logolu üretilemez?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "02 Ürünlerimiz/markdown/02-bankamiz-plastik-kart-ve-uye-isyeri-uygulamalari.md (s.41, 52)",
+  "tarihISO": "2026-09-19T07:46:43.245031+00:00"
  }
 ]
