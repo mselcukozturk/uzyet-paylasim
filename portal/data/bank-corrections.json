@@ -1529,5 +1529,95 @@
   "not": "Gece otomatik incelemesi: yazılı kullanıcı onayıyla güncellendi; teyitsiz.",
   "kaynak_atif": "Türkiye İş Bankası İş Plus Programı (isbank.com.tr)",
   "tarihISO": "2026-09-19T23:26:26.791939+00:00"
+ },
+ {
+  "id": "gece-20260921-0460cc0db2eb",
+  "guid": "0460cc0db2eb",
+  "konu": "Kambiyo",
+  "soru": "İhracat bedellerinin yurda getirilmesi ve tahsili ile ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: yazılı kullanıcı onayıyla güncellendi; teyitsiz.",
+  "kaynak_atif": "Kullanıcı Onayı (Kontrol: 21.09.2026)",
+  "tarihISO": "2026-09-20T23:31:25.751509+00:00"
+ },
+ {
+  "id": "gece-20260921-327f5768bc74",
+  "guid": "327f5768bc74",
+  "konu": "Kredi",
+  "soru": "Aşağıdakilerden hangisindeki alacaklar kredinin teminatı değildir?\nI. Fatura karşılığı kredi\nII. POS alacakları karşılığı kredi (Pos'um Öder)\nIII. TL Çek iskonto/iştira kredisi",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "04 Kredi/Kredi YYS 2026.pdf (s.144, 150-151)",
+  "tarihISO": "2026-09-20T23:31:25.751509+00:00"
+ },
+ {
+  "id": "gece-20260921-bc091e18e134",
+  "guid": "bc091e18e134",
+  "konu": "Kredi",
+  "soru": "YP Pos'um Öder Kredisi kapsamında sistem tarafından gerçekleştirilecek ilk otomatik tahsilat; kredi kullandırım tarihinden …. gün sonra yapılacaktır.",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "04 Kredi/Kredi YYS 2026.pdf (s.144 / PDF 161)",
+  "tarihISO": "2026-09-20T23:31:25.751509+00:00"
+ },
+ {
+  "id": "gece-20260921-8204fb9b16fe",
+  "guid": "8204fb9b16fe",
+  "konu": "Genel Ekonomi",
+  "soru": "Fiyat seviyesi aynı kalırken sunulan mal veya hizmetlerin kalitesinin düşürülmesi aşağıdaki kavramlardan hangisinin tanımıdır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Mahfi Eğilmez, Multiflasyon ya da Türk Tipi Enflasyon (mahfiegilmez.com, 19.02.2024)",
+  "tarihISO": "2026-09-20T23:31:25.751509+00:00"
+ },
+ {
+  "id": "gece-20260921-71d9cb7a0f46",
+  "guid": "71d9cb7a0f46",
+  "konu": "Genel Ekonomi",
+  "soru": "2025 Yılında en çok ithalat yapılan ülke aşağıdakilerden hangisidir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/Genel Ekonomi — Güncelleme Karşılaştırması (Ağu 2026).md (Madde 10, 27)",
+  "tarihISO": "2026-09-20T23:31:25.751509+00:00"
+ },
+ {
+  "id": "gece-20260921-27dc785791c9",
+  "guid": "27dc785791c9",
+  "konu": "Ürünler",
+  "soru": "Peşin yapılan bireysel alışverişlerin vadelendirme/taksitlendirilmesi işlemi ile ilgili olarak hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Maximum Kart Harcama Taksitlendirme (maximum.com.tr)",
+  "tarihISO": "2026-09-20T23:31:25.751509+00:00"
+ },
+ {
+  "id": "gece-20260921-0665c64de623",
+  "guid": "0665c64de623",
+  "konu": "Kredi",
+  "soru": "Hangi segmentte yer alan müşterilere paket tarife satışı yapılamaz?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "02 Ürünlerimiz/Ürünlerimiz YYS 2026.pdf (s.224 / PDF 241)",
+  "tarihISO": "2026-09-20T23:31:25.751509+00:00"
+ },
+ {
+  "id": "gece-20260921-13b04aad9215",
+  "guid": "13b04aad9215",
+  "konu": "Kambiyo",
+  "soru": "Uygun ibraz yapılan bir akreditifte, ithalata konu malların ayıplı olması halinde, amir bankanın ödeme yükümlülüğü ne olur?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "03 İthalat İhracat/ithalat_ihracat_TKR_2026.pdf (s.38 / PDF 53)",
+  "tarihISO": "2026-09-20T23:31:25.751509+00:00"
+ },
+ {
+  "id": "gece-20260921-f12d71e15bed",
+  "guid": "f12d71e15bed",
+  "konu": "Kambiyo",
+  "soru": "Kabul kredili, vadeli akreditif ve mal mukabili ödeme şekillerine göre gerçekleştirilen ithalat işlemlerinin tabi olduğu KKDF oranı kaçtır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "03 İthalat İhracat/ithalat_ihracat_TKR_2026.pdf (s.114 / PDF 311); 03 İthalat İhracat/İthalat İhracat Kitap Notları (revize 2026).docx",
+  "tarihISO": "2026-09-20T23:31:25.751509+00:00"
+ },
+ {
+  "id": "gece-20260921-3b8a5f9b9421",
+  "guid": "3b8a5f9b9421",
+  "konu": "Kambiyo",
+  "soru": "Amir banka bir akreditife teyidini ekleyebilir mi?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "03 İthalat İhracat/ithalat_ihracat_TKR_2026.pdf (s.42 / PDF 57)",
+  "tarihISO": "2026-09-20T23:31:25.751509+00:00"
  }
 ]
