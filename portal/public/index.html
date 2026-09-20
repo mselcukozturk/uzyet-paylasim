@@ -2466,29 +2466,30 @@
 
   // Duyurular (15 Eyl 2026): siteye eklenen içerikler, en yeni başta. Altyapı ve algoritma
   // değişiklikleri buraya yazılmaz. ai: true olanlar yalnız Yapay Zekâ Kaynakları açık hesapta görünür.
+  // Yalnız son 7 günün kayıtları gösterilir; eskiler arşiv olarak listede kalır. Metinler 1-2 cümle.
   var DUYURULAR = [
     { tarih: "2026-09-18", ai: true, baslik: "Kambiyo testi açıldı",
-      metin: "Test ekranında Kambiyo kutusu açıldı: dış ticaret ders notundan kurulan 30 soru, dört modül — Incoterms ve Ödeme Şekilleri, Akreditifli Ödeme, Dış Ticaret Belgeleri, İthalat ve İhracat Mevzuatı. Sınavdaki payı üç soru olduğu için set bilerek kısa ve temel kurallara odaklı tutuldu." },
+      metin: "Dış ticaret ders notundan 30 soru, dört modül. Sınav payı üç soru olduğu için set kısa tutuldu." },
     { tarih: "2026-09-17", ai: true, baslik: "Hukuk testi yenilendi",
-      metin: "Hukuk kutusu Hukuk kitabı, Bankacılık Kanunu ve Takip Hukuku sunumlarından baştan kurulan 118 soruluk yeni setle değişti; 14 modül Medeni, Borçlar, Ticaret, İcra-İflas ve Bankacılık Kanunu'nu izliyor. Eski Hukuk testi ve Arkadaş seti kaldırıldı." },
+      metin: "Hukuk kitabı ve kanun sunumlarından 118 soruluk yeni set, 14 modül. Eski Hukuk ve Arkadaş setleri kaldırıldı." },
     { tarih: "2026-09-17", ai: true, baslik: "Temel İşlemler testi yenilendi",
-      metin: "Temel İşlemler kutusu Temel İşlemler YYS 2026 kitabından baştan kurulan 127 soruluk yeni setle değişti; 13 modül kitabın altı bölümünü izliyor. Eski test, Çok Zor ve Arkadaş setleri kaldırıldı." },
+      metin: "YYS 2026 kitabından 127 soruluk yeni set, 13 modül. Eski setler kaldırıldı." },
     { tarih: "2026-09-16", ai: true, baslik: "AI Günün Denemesi",
-      metin: "Test ekranında her sabah 07:00'de yenilenen, herkese aynı 50 sorunun geldiği bir deneme açılıyor. Çözdükten sonra puanını ve çözenlerin ortalamasını görürsün — resmi Günün Denemesi'ndeki gibi ilk çözüşün sayılır." },
+      metin: "Her sabah 07:00'de herkese aynı 50 soru. Çözünce puanını ve çözenlerin ortalamasını görürsün." },
     { tarih: "2026-09-16", ai: true, baslik: "Genel Ekonomi ve İK testleri açıldı",
-      metin: "Genel Ekonomi artık Test ekranında iki modülle çalışılabiliyor: Genel Ekonomi ve Bankacılık Sektörü (122 soru) ve Yatırımcı Sunumu ve Finansal Sonuçlar (18 soru). İK Politikaları kutusu da açıldı (26 soru), Sermaye Piyasaları'na 7 soruluk bir modül eklendi." },
+      metin: "Genel Ekonomi iki modülle açıldı (140 soru), İK Politikaları 26 soru; Sermaye Piyasaları'na 7 soru eklendi." },
     { tarih: "2026-09-16", ai: true, baslik: "AI Denemesi",
-      metin: "Test ekranına 50 soru / 60 dakikalık bir deneme eklendi; sorular pratik havuzundan resmi dağılıma göre rastgele geliyor. Başlamadan önce bir kod alırsın, aynı kodu açan aynı 50 soruyu çözer. Geçmiş tutulmaz — ekrandan çıkarsan deneme silinir." },
+      metin: "50 soru / 60 dakika, pratik havuzundan resmi dağılımla. Aynı kodu açan aynı soruları çözer; geçmiş tutulmaz." },
     { tarih: "2026-09-16", baslik: "Arkadaş sorularından 63 yeni soru",
-      metin: "Emre ve Orhan'ın paylaştığı sorulardan kaynakla doğrulanan 63 tanesi Deneme bankasına eklendi. Yatırımcı Sunumu soruları Genel Ekonomi (havuz 125'ten 141'e), Incoterms ve akreditif soruları Kambiyo (339'dan 358'e), kalanlar Kredi, Temel İşlemler, Ürünler ve Hukuk havuzlarına dağıldı." },
+      metin: "Emre ve Orhan'ın sorularından kaynakla doğrulanan 63'ü Deneme bankasına eklendi." },
     { tarih: "2026-09-16", baslik: "Sermaye Piyasaları havuzu genişledi",
-      metin: "Ürünlerimiz kitabının menkul kıymetler bölümünden hazırlanan 30 soru Deneme bankasına eklendi; Sermaye Piyasaları ve Hazine havuzu 7'den 37 soruya çıktı. Her denemede bu konudan 3 soru geldiği için artık aynı sorular tekrar etmiyor." },
+      metin: "Ürünlerimiz kitabından 30 soru eklendi; havuz 7'den 37 soruya çıktı." },
     { tarih: "2026-09-15", baslik: "Mali Analiz'e Selçuk Bayraktar'ın soruları eklendi",
-      metin: "Selçuk Bayraktar'ın İstihbarat ve Mali Analiz notlarındaki sorulardan 359'u Deneme bankasına eklendi; Mali Analiz havuzu 261'den 620 soruya çıktı. Bilanço ve gelir tablosu içeren sorular tablo olarak görünüyor." },
+      metin: "359 soru Deneme bankasına eklendi; Mali Analiz havuzu 261'den 620 soruya çıktı." },
     { tarih: "2026-09-15", ai: true, baslik: "Mali Analiz testi: 369 soru",
-      metin: "Selçuk Bayraktar'ın 369 sorusu Test ekranında Mali Analiz altında beş modül halinde. Her sorunun kısa bir açıklaması ve İstihbarat kitabından sayfa numarası var." },
+      metin: "Selçuk Bayraktar'ın 369 sorusu beş modül halinde Test ekranında, açıklamalı." },
     { tarih: "2026-09-14", ai: true, baslik: "Ürünler testi yenilendi",
-      metin: "Ürünlerimiz kitabından hazırlanan 150 soruluk yeni set Test ekranında. Menkul kıymet modülleri Sermaye Piyasaları ve Hazine altında." },
+      metin: "Ürünlerimiz kitabından 150 soruluk yeni set Test ekranında." },
     { tarih: "2026-09-13", baslik: "Günün Denemesi",
       metin: "Her sabah 07:00'de herkese aynı 50 soruluk deneme açılıyor. Çözdükten sonra puanını ve çözenlerin ortalamasını görürsün." },
     { tarih: "2026-09-12", ai: true, baslik: "Kredi testi yenilendi",
@@ -2503,7 +2504,10 @@
       metin: "Sınavda 🔖 ile işaretlediğin sorular ana ekranda listeleniyor. Bunlarla tekrar testi çözebilir ya da Word belgesi olarak indirebilirsin." }
   ];
   function duyurularHtml() {
-    var liste = DUYURULAR.filter(function (d) { return !d.ai || remoteAuth.canSeeAiSources === true; });
+    var esik = Date.now() - 7 * 86400000;
+    var liste = DUYURULAR.filter(function (d) {
+      return (!d.ai || remoteAuth.canSeeAiSources === true) && new Date(d.tarih + "T12:00:00").getTime() >= esik;
+    });
     if (!liste.length) return "";
     var slaytlar = liste.map(function (d, i) {
       var tarih = new Date(d.tarih + "T12:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
