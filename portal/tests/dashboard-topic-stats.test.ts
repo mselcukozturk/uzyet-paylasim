@@ -36,7 +36,7 @@ test('dashboard examTopicStats: bitmiş denemelerde konu başına ortalama doğr
     // başka kullanıcının bitmiş denemesi — karışmamalı
     // gun: kaç gün önce bitti (null = bitmedi); dogru: denemenin kayıtlı doğru sayısı.
     const denemeler: Array<{ user: string; status: 'finished' | 'active'; secim: Array<number | null>; gun: number | null; dogru: number }> = [
-      { user: 'ben', status: 'finished', secim: [0, null, 0, 3], gun: 10, dogru: 30 },
+      { user: 'ben', status: 'finished', secim: [0, null, 0, 3], gun: 10, dogru: 31 },
       { user: 'ben', status: 'finished', secim: [0, 0, 2, 1], gun: 1, dogru: 40 },
       { user: 'ben', status: 'active', secim: [0, 0, 0, 0], gun: null, dogru: 50 },
       { user: 'baskasi', status: 'finished', secim: [0, 0, 0, 0], gun: 0, dogru: 50 },
@@ -77,16 +77,25 @@ test('dashboard examTopicStats: bitmiş denemelerde konu başına ortalama doğr
     const data = await res.json();
 
     assert.equal(data.examStats.count, 2);
-    assert.equal(data.examStats.avgCorrect, 35);
+    assert.equal(data.examStats.avgCorrect, 35.5);
     // Son 7 gün: yalnız 1 gün önce biten deneme; 10 gün önceki, yarım olan ve başkasınınki sayılmaz.
     assert.equal(data.examStats.weekCount, 1);
     assert.equal(data.examStats.weekAvgCorrect, 40);
     const konuBazli = Object.fromEntries(data.examTopicStats.map((t: { topic: string }) => [t.topic, t]));
     assert.deepEqual(Object.keys(konuBazli).sort(), ['Hukuk', 'Kambiyo', 'Kredi']);
     // Kredi: 4 soru soruldu, 3 doğru → deneme başına 2 soru / 1.5 doğru
-    assert.deepEqual(konuBazli.Kredi, { topic: 'Kredi', asked: 4, correct: 3, avgAsked: 2, avgCorrect: 1.5, percent: 75 });
-    assert.deepEqual(konuBazli.Hukuk, { topic: 'Hukuk', asked: 2, correct: 1, avgAsked: 1, avgCorrect: 0.5, percent: 50 });
-    assert.deepEqual(konuBazli.Kambiyo, { topic: 'Kambiyo', asked: 2, correct: 0, avgAsked: 1, avgCorrect: 0, percent: 0 });
+    assert.deepEqual(konuBazli.Kredi, {
+      topic: 'Kredi', asked: 4, correct: 3, avgAsked: 2, avgCorrect: 1.5, percent: 75,
+      weekPercent: 100,
+    });
+    assert.deepEqual(konuBazli.Hukuk, {
+      topic: 'Hukuk', asked: 2, correct: 1, avgAsked: 1, avgCorrect: 0.5, percent: 50,
+      weekPercent: 0,
+    });
+    assert.deepEqual(konuBazli.Kambiyo, {
+      topic: 'Kambiyo', asked: 2, correct: 0, avgAsked: 1, avgCorrect: 0, percent: 0,
+      weekPercent: 0,
+    });
     // En çok soru gelen konu başta listelenir.
     assert.equal(data.examTopicStats[0].topic, 'Kredi');
   } finally { await pg.close(); }

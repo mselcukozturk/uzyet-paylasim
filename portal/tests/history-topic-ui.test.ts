@@ -26,11 +26,25 @@ function kartCiz(remoteDash: unknown) {
   return sandbox.out as string;
 }
 
+function gecmisCiz(examStats: unknown) {
+  const sandbox: Record<string, unknown> = {
+    remoteGecmis: { attempts: [], total: 0, page: 0, pageSize: 20 },
+    remoteDash: { examStats },
+    konuOrtalamaKartiHtml: () => '',
+    ustBarHtml: () => '',
+    fmtSure: (seconds: number) => seconds + ' sn',
+  };
+  vm.createContext(sandbox);
+  vm.runInContext(parca('fmtOrt') + '\n' + parca('renderGecmisUzak') + '\nvar out = renderGecmisUzak();', sandbox);
+  return sandbox.out as string;
+}
+
 void test('Geçmiş: konu bazlı ortalama kartı ortalama doğru/soru ve yüzdeyi basar', () => {
   const out = kartCiz({
     examTopicStats: [
-      { topic: 'Kredi', asked: 16, correct: 12, avgAsked: 8, avgCorrect: 6, percent: 75 },
-      { topic: 'Mali Analiz', asked: 10, correct: 3, avgAsked: 5, avgCorrect: 1.55, percent: 30 },
+      { topic: 'Kredi', asked: 16, correct: 12, avgAsked: 8, avgCorrect: 6, percent: 75, weekPercent: 80 },
+      { topic: 'Mali Analiz', asked: 10, correct: 3, avgAsked: 5, avgCorrect: 1.55, percent: 30, weekPercent: 20 },
+      { topic: 'Hukuk', asked: 8, correct: 4, avgAsked: 4, avgCorrect: 2, percent: 50, weekPercent: 50 },
     ],
   });
   assert.match(out, /Konu bazlı ortalama/);
@@ -38,15 +52,29 @@ void test('Geçmiş: konu bazlı ortalama kartı ortalama doğru/soru ve yüzdey
   assert.match(out, /Mali Analiz<\/span>[\s\S]*?1,6 \/ 5,0/);
   assert.match(out, /%75/);
   assert.match(out, /var\(--bad\)/);
+  assert.match(out, /Kredi<\/span>[\s\S]*?color:var\(--good\)[\s\S]*?>↑<\/span>/);
+  assert.match(out, /Mali Analiz<\/span>[\s\S]*?color:var\(--bad\)[\s\S]*?>↓<\/span>/);
+  assert.match(out, /Hukuk<\/span>[\s\S]*?color:var\(--text-muted\)[\s\S]*?>→<\/span>/);
   // Uzun konu adında sağdaki sayılar kaymasın: kolonlar içeriğe bağlı (auto) değil, her satırda aynı.
   assert.match(out, /grid-template-columns:minmax\(0,2fr\) minmax\(0,1fr\) 9\.5ch 4\.5ch/);
   assert.doesNotMatch(out, /grid-template-columns:[^;"]*auto/);
 });
 
 void test('Geçmiş özeti genel ortalamanın yanında son 7 gün ortalamasını gösterir', () => {
-  const render = script.match(/function renderGecmisUzak\(\) \{[\s\S]*?^  \}/m)![0];
-  assert.match(render, /es\.weekAvgCorrect == null \? "—" : fmtOrt\(es\.weekAvgCorrect\) \+ "\/50"/);
-  assert.match(render, /Son 7 gün · ' \+ \(es\.weekCount \|\| 0\) \+ ' deneme/);
+  const out = gecmisCiz({
+    count: 12, avgCorrect: 35.5, avgSeconds: 600, weekCount: 3, weekAvgCorrect: 38.25,
+  });
+  assert.match(out, /35,5\/50[\s\S]*?Tüm zamanlar · 12 deneme/);
+  assert.match(out, /38,3\/50[\s\S]*?Son 7 gün · 3 deneme/);
+});
+
+void test('Geçmiş: son 7 günde ders verisi yoksa karşılaştırma oku göstermez', () => {
+  const out = kartCiz({
+    examTopicStats: [
+      { topic: 'Kambiyo', asked: 8, correct: 4, avgAsked: 4, avgCorrect: 2, percent: 50, weekPercent: null },
+    ],
+  });
+  assert.doesNotMatch(out, /[↑↓→]/);
 });
 
 void test('Geçmiş ekranı ayrı geri düğmesi yerine ana ekranla aynı üst çubuğu kullanır', () => {
