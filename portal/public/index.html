@@ -165,6 +165,7 @@
   .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
   .stat-card .num { font-family: var(--font-display); font-variant-numeric: tabular-nums; font-size: 1.6rem; font-weight: 700; }
   .stat-card .lbl { color: var(--text-muted); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 2px; }
+  .stat-card .tum-zamanlar-etiket { font-size: 0.66rem; letter-spacing: 0.04em; }
   .mode-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 22px; }
   .mode-btn {
     display: block; text-align: left; width: 100%; cursor: pointer;
@@ -303,13 +304,16 @@
   .muted { color: var(--text-muted); }
   .history-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: center; font-size: 0.9rem; }
   .history-row .when { color: var(--text-muted); }
-  .konu-ortalama-baslik, .konu-ortalama-satir { display: grid; grid-template-columns: minmax(120px, 1fr) 8.5ch 2ch 8.5ch; gap: 10px; align-items: center; }
+  .konu-ortalama-baslik, .konu-ortalama-satir { display: grid; grid-template-columns: minmax(120px, 1fr) 8.2ch 1.6ch 8.2ch 1.6ch 8.2ch; gap: 6px; align-items: center; }
   .konu-ortalama-baslik { color: var(--text-muted); font-size: 0.72rem; padding: 2px 0 6px; border-bottom: 1px solid var(--border); }
   .konu-ortalama-satir { padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-  .konu-ortalama-deger { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  .konu-ortalama-deger { font-variant-numeric: tabular-nums; text-align: center; white-space: nowrap; }
   .konu-ortalama-ok { text-align: center; font-weight: 700; }
   @media (max-width: 560px) {
-    .konu-ortalama-baslik, .konu-ortalama-satir { grid-template-columns: minmax(0, 1fr) 7.2ch 1.4ch 7.2ch; gap: 6px; }
+    .konu-ortalama-baslik, .konu-ortalama-satir { grid-template-columns: minmax(0, 1fr) 1.4ch minmax(0, 1fr) 1.4ch minmax(0, 1fr); gap: 4px; }
+    .konu-ortalama-baslik .konu-ortalama-konu { display: none; }
+    .konu-ortalama-satir .konu-ortalama-konu { grid-column: 1 / -1; margin-bottom: 4px; }
+    .konu-ortalama-baslik { font-size: 0.68rem; }
     .konu-ortalama-satir { font-size: 0.82rem; }
   }
   .cp-list-item {
@@ -2180,11 +2184,12 @@
     var list = (g && g.attempts) || [];
     var es = remoteDash && remoteDash.examStats;
     var ozetHtml = es ? '<div class="stat-grid">' +
-      '<div class="stat-card"><div class="num">' + es.count + '</div><div class="lbl">Toplam deneme</div></div>' +
-      '<div class="stat-card"><div class="num">' + fmtOrt(es.avgCorrect) + '/50</div><div class="lbl">Tüm zamanlar · ' + es.count + ' deneme</div></div>' +
+      '<div class="stat-card"><div class="num">' + (es.threeDayAvgCorrect == null ? "—" : fmtOrt(es.threeDayAvgCorrect) + "/50") +
+      '</div><div class="lbl">Son 3 gün · ' + (es.threeDayCount || 0) + ' deneme</div></div>' +
       // Son dönem performansı: son 7 günde biten denemelerin ortalaması (deneme yoksa —).
       '<div class="stat-card"><div class="num">' + (es.weekAvgCorrect == null ? "—" : fmtOrt(es.weekAvgCorrect) + "/50") +
       '</div><div class="lbl">Son 7 gün · ' + (es.weekCount || 0) + ' deneme</div></div>' +
+      '<div class="stat-card"><div class="num">' + fmtOrt(es.avgCorrect) + '/50</div><div class="lbl tum-zamanlar-etiket">Tüm zamanlar · ' + es.count + ' deneme</div></div>' +
       '<div class="stat-card"><div class="num">' + fmtSure(es.avgSeconds) + '</div><div class="lbl">Ortalama süre</div></div>' +
       "</div>" : "";
     var konuHtml = konuOrtalamaKartiHtml();
@@ -2237,24 +2242,35 @@
       var pct = t.percent || 0;
       var ortalamaHtml = fmtOrt(t.avgCorrect) + " / " + fmtOrt(t.avgAsked);
       var haftaHtml = "—";
-      var trendHtml = "";
+      var haftaTrendHtml = "";
       if (t.weekPercent != null) {
         haftaHtml = fmtOrt(t.weekAvgCorrect) + " / " + fmtOrt(t.weekAvgAsked);
         var ok = t.weekPercent > pct ? "↑" : t.weekPercent < pct ? "↓" : "→";
         var okRenk = t.weekPercent > pct ? "var(--good)" : t.weekPercent < pct ? "var(--bad)" : "var(--text-muted)";
         var okEtiket = "Son 7 gün " + haftaHtml + ", tüm zamanlar " + ortalamaHtml;
-        trendHtml = '<span style="color:' + okRenk + '" title="' + okEtiket + '" aria-label="' + okEtiket + '">' + ok + "</span>";
+        haftaTrendHtml = '<span style="color:' + okRenk + '" title="' + okEtiket + '" aria-label="' + okEtiket + '">' + ok + "</span>";
+      }
+      var ucGunHtml = "—";
+      var ucGunTrendHtml = "";
+      if (t.threeDayPercent != null && t.weekPercent != null) {
+        ucGunHtml = fmtOrt(t.threeDayAvgCorrect) + " / " + fmtOrt(t.threeDayAvgAsked);
+        var ucGunOk = t.threeDayPercent > t.weekPercent ? "↑" : t.threeDayPercent < t.weekPercent ? "↓" : "→";
+        var ucGunRenk = t.threeDayPercent > t.weekPercent ? "var(--good)" : t.threeDayPercent < t.weekPercent ? "var(--bad)" : "var(--text-muted)";
+        var ucGunEtiket = "Son 3 gün " + ucGunHtml + ", son 7 gün " + haftaHtml;
+        ucGunTrendHtml = '<span style="color:' + ucGunRenk + '" title="' + ucGunEtiket + '" aria-label="' + ucGunEtiket + '">' + ucGunOk + "</span>";
       }
       return '<div class="konu-ortalama-satir">' +
-        '<span style="display:flex;align-items:center;min-width:0">' + konuDotHtml(t.topic) + "<span>" + escapeHtml(t.topic) + "</span></span>" +
-        '<span class="konu-ortalama-deger">' + ortalamaHtml + "</span>" +
-        '<span class="konu-ortalama-ok">' + trendHtml + "</span>" +
-        '<span class="konu-ortalama-deger">' + haftaHtml + "</span></div>";
+        '<span class="konu-ortalama-konu" style="display:flex;align-items:center;min-width:0">' + konuDotHtml(t.topic) + "<span>" + escapeHtml(t.topic) + "</span></span>" +
+        '<span class="konu-ortalama-deger">' + ucGunHtml + "</span>" +
+        '<span class="konu-ortalama-ok">' + ucGunTrendHtml + "</span>" +
+        '<span class="konu-ortalama-deger">' + haftaHtml + "</span>" +
+        '<span class="konu-ortalama-ok">' + haftaTrendHtml + "</span>" +
+        '<span class="konu-ortalama-deger">' + ortalamaHtml + "</span></div>";
     }).join("");
     return '<div class="card" style="margin-bottom:16px">' +
       '<div class="section-title">Konu bazlı ortalama</div>' +
-      '<div class="muted" style="font-size:0.82rem;margin-bottom:8px">Deneme başına ortalama doğru / soru sayısı. Oklar son 7 gündeki değişimi gösterir.</div>' +
-      '<div class="konu-ortalama-baslik"><span>Ders</span><span class="konu-ortalama-deger">Ortalama</span><span></span><span class="konu-ortalama-deger">Son 7 gün</span></div>' +
+      '<div class="muted" style="font-size:0.82rem;margin-bottom:8px">Deneme başına ortalama doğru / soru sayısı. Oklar bir önceki döneme göre değişimi gösterir.</div>' +
+      '<div class="konu-ortalama-baslik"><span class="konu-ortalama-konu">Ders</span><span class="konu-ortalama-deger">Son 3 gün</span><span></span><span class="konu-ortalama-deger">Son 7 gün</span><span></span><span class="konu-ortalama-deger">Tüm zamanlar</span></div>' +
       satirlar + "</div>";
   }
 

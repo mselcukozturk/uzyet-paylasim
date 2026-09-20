@@ -109,7 +109,7 @@ async function loadAttempt(userId: string, attemptId: string) {
 
 async function dashboard(userId: string) {
   const db = getDb();
-  const [profileRows, bankRows, attempts, stats, completedRows, avgRows, weekRows] = await Promise.all([
+  const [profileRows, bankRows, attempts, stats, completedRows, avgRows, weekRows, threeDayRows] = await Promise.all([
     db.select().from(schema.profiles).where(eq(schema.profiles.userId, userId)).limit(1),
     db.select().from(schema.questionBanks).where(eq(schema.questionBanks.isActive, true)).limit(1),
     db.select().from(schema.examAttempts).where(eq(schema.examAttempts.userId, userId)).orderBy(desc(schema.examAttempts.updatedAt)).limit(12),
@@ -121,9 +121,13 @@ async function dashboard(userId: string) {
     db.select({ count: count(), avgCorrect: avg(schema.examAttempts.correctCount) })
       .from(schema.examAttempts).where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.status, 'finished'),
         gte(schema.examAttempts.finishedAt, sql`now() - interval '7 days'`))),
+    db.select({ count: count(), avgCorrect: avg(schema.examAttempts.correctCount) })
+      .from(schema.examAttempts).where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.status, 'finished'),
+        gte(schema.examAttempts.finishedAt, sql`now() - interval '3 days'`))),
   ]);
   const profile = profileRows[0];
   const weekCount = Number(weekRows[0]?.count ?? 0);
+  const threeDayCount = Number(threeDayRows[0]?.count ?? 0);
   const bank = bankRows[0];
   const attemptIds = attempts.map((item) => item.id);
   const questionCounts = attemptIds.length
@@ -184,6 +188,8 @@ async function dashboard(userId: string) {
     correct: sql<number>`sum(case when ${schema.examAnswers.selectedIndex} = ${schema.examAttemptQuestions.correctIndex} then 1 else 0 end)`,
     weekAsked: sql<number>`sum(case when ${schema.examAttempts.finishedAt} >= now() - interval '7 days' then 1 else 0 end)`,
     weekCorrect: sql<number>`sum(case when ${schema.examAttempts.finishedAt} >= now() - interval '7 days' and ${schema.examAnswers.selectedIndex} = ${schema.examAttemptQuestions.correctIndex} then 1 else 0 end)`,
+    threeDayAsked: sql<number>`sum(case when ${schema.examAttempts.finishedAt} >= now() - interval '3 days' then 1 else 0 end)`,
+    threeDayCorrect: sql<number>`sum(case when ${schema.examAttempts.finishedAt} >= now() - interval '3 days' and ${schema.examAnswers.selectedIndex} = ${schema.examAttemptQuestions.correctIndex} then 1 else 0 end)`,
   })
     .from(schema.examAttemptQuestions)
     .innerJoin(schema.examAttempts, eq(schema.examAttemptQuestions.attemptId, schema.examAttempts.id))
@@ -197,6 +203,8 @@ async function dashboard(userId: string) {
     const correct = Number(row.correct ?? 0);
     const weekAsked = Number(row.weekAsked ?? 0);
     const weekCorrect = Number(row.weekCorrect ?? 0);
+    const threeDayAsked = Number(row.threeDayAsked ?? 0);
+    const threeDayCorrect = Number(row.threeDayCorrect ?? 0);
     return {
       topic: row.topic,
       asked,
@@ -207,6 +215,9 @@ async function dashboard(userId: string) {
       weekAvgAsked: weekAsked ? weekAsked / weekCount : null,
       weekAvgCorrect: weekAsked ? weekCorrect / weekCount : null,
       weekPercent: weekAsked ? Math.round(weekCorrect / weekAsked * 100) : null,
+      threeDayAvgAsked: threeDayAsked ? threeDayAsked / threeDayCount : null,
+      threeDayAvgCorrect: threeDayAsked ? threeDayCorrect / threeDayCount : null,
+      threeDayPercent: threeDayAsked ? Math.round(threeDayCorrect / threeDayAsked * 100) : null,
     };
   }).sort((a, b) => b.avgAsked - a.avgAsked || a.topic.localeCompare(b.topic, 'tr'));
 
@@ -244,6 +255,8 @@ async function dashboard(userId: string) {
       weekCount,
       // 50 üzerinden ortalama doğru, tek ondalık; son 7 günde deneme yoksa null.
       weekAvgCorrect: weekCount ? Math.round(Number(weekRows[0]?.avgCorrect ?? 0) * 10) / 10 : null,
+      threeDayCount,
+      threeDayAvgCorrect: threeDayCount ? Math.round(Number(threeDayRows[0]?.avgCorrect ?? 0) * 10) / 10 : null,
     } : null,
     daily: {
       day: dailyDay,

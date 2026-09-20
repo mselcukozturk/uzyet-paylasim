@@ -62,8 +62,20 @@ export type DashboardData = {
     weekAvgAsked: number | null;
     weekAvgCorrect: number | null;
     weekPercent: number | null;
+    threeDayAvgAsked: number | null;
+    threeDayAvgCorrect: number | null;
+    threeDayPercent: number | null;
   }>;
-  examStats: { count: number; avgPercent: number; avgCorrect: number; avgSeconds: number; weekCount: number; weekAvgCorrect: number | null } | null;
+  examStats: {
+    count: number;
+    avgPercent: number;
+    avgCorrect: number;
+    avgSeconds: number;
+    weekCount: number;
+    weekAvgCorrect: number | null;
+    threeDayCount: number;
+    threeDayAvgCorrect: number | null;
+  } | null;
   // Günün denemesi: myCorrect/avgCorrect (50 üzerinden doğru) yalnız kullanıcı çözdüyse dolu.
   daily: { day: string; code: string; solvedCount: number; myCorrect: number | null; avgCorrect: number | null };
 };
