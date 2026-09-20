@@ -38,7 +38,8 @@ npm run dev               # yerel dev sunucu
   - `app/api/exam` — **action tabanlı** tek uç. Deneme: `bank`, `start`, `answer`,
     `pause`, `resume`, `finish`, `dashboard`, `history`, `flags`, `flag`, `reminders`,
     `corrections`, `wrong-questions`. AI kaynakları: `practice-bank`, `checkpoints`,
-    `practice-stats`, `practice-answer`, `practice-session-save/load/delete`.
+    `practice-stats`, `practice-answer`, `practice-session-save/load/delete`,
+    `ai-exam-save/history/detail/delete` (AI denemesi geçmişi).
   - `app/api/admin/*` — token korumalı bakım uçları (bkz. aşağı).
   - `app/api/auth/[...path]` — Neon Auth (yalnız yönetici hesabı).
 - İş mantığı `lib/exam-core.ts` (deneme) ve `lib/practice-core.ts` (AI kaynakları) içinde;
@@ -85,6 +86,26 @@ yazılır; böylece AI'nin yanlış havuzunda kalır ama Deneme istatistiğine k
 `question_flags` ortak tablodur; AI hatırlatıcı anahtarları `ai:<guid>` biçiminde ayrı
 ad alanı kullanır. Eski pratik guid'leri geriye dönük okunur. Böylece iki ekrandaki 🔖
 havuzları ayrıdır; 🚩 hata bildirimi gerçek guid ile çalışmaya devam eder.
+
+## `practice_sessions` içindeki ayrılmış anahtarlar
+
+Tablo yalnız pratik oturumu tutmaz; şema değişikliği gerektirmesin diye üç ayrılmış
+`topic` değeri taşır. Bunları konu adı olarak kullanma:
+
+| `topic` | `modul` | İçerik |
+|---|---|---|
+| `__pBest__` | `__pBest__` | Modül kartındaki "en iyi sonuç", cihazlar arası |
+| `__aiGunun__` | gün (`YYYY-MM-DD`) | AI Günün Denemesi'nin İLK sonucu (ortalama için) |
+| `__aiDeneme__` | deneme kimliği (uuid) | Biten AI denemesi: skor, konu kırılımı, 50 sorunun anlık görüntüsü |
+
+AI denemesinin sunucuda sınav oturumu yoktur (resmi denemenin `exam_attempts` akışı
+yok); istatistik sayfasındaki "AI Denemesi" sekmesi `examStats`/`examTopicStats`
+alanlarını `ai-exam-history` içinde bu satırlardan hesaplar. Liste sorgusu soru
+görüntüsünü jsonb'den düşürür, tam gövde yalnız `ai-exam-detail`de döner.
+
+Yarım kalan test/checkpoint oturumu 20 Eyl 2026'da kaldırıldı (kullanıcı isteği):
+testten çıkmak oturumu bitirir. Geriye kalan satırlar `0014_drop_paused_sessions.sql`
+ile silindi; tablo artık yalnız yukarıdaki üç anahtarı taşır.
 
 ## Şema değişikliği akışı
 

@@ -25,14 +25,18 @@ function kartCiz(remoteDash: unknown) {
     konuDotHtml: () => '<i></i>',
   };
   vm.createContext(sandbox);
-  vm.runInContext(parca('fmtOrt') + '\n' + parca('konuOrtalamaKartiHtml') + '\nvar out = konuOrtalamaKartiHtml();', sandbox);
+  vm.runInContext(parca('fmtOrt') + '\n' + parca('konuOrtalamaKartiHtml') + '\nvar out = konuOrtalamaKartiHtml(remoteDash && remoteDash.examTopicStats);', sandbox);
   return sandbox.out as string;
 }
 
-function gecmisCiz(examStats: unknown) {
+function gecmisCiz(examStats: unknown, sekme: 'resmi' | 'ai' = 'resmi') {
+  const bosSayfa = { attempts: [], total: 0, page: 0, pageSize: 20 };
   const sandbox: Record<string, unknown> = {
-    remoteGecmis: { attempts: [], total: 0, page: 0, pageSize: 20 },
+    remoteGecmis: bosSayfa,
     remoteDash: { examStats },
+    aiGecmis: { ...bosSayfa, examStats, examTopicStats: [] },
+    istatistikSekmesi: sekme,
+    remoteAuth: { canSeeAiSources: true },
     konuOrtalamaKartiHtml: () => '',
     ustBarHtml: () => '',
     fmtSure: (seconds: number) => seconds + ' sn',
@@ -127,6 +131,28 @@ void test('Geçmiş: deneme tarihçesi satırında puan yalnız doğru / toplam,
 void test('Geçmiş: veri yokken konu kartı hiç basılmaz', () => {
   assert.equal(kartCiz({ examTopicStats: [] }), '');
   assert.equal(kartCiz(null), '');
+});
+
+// AI sekmesi resmi sekmenin birebir aynısı olmalı: yalnız veri kaynağı ve iki başlık değişir.
+void test('İstatistik sayfası: AI sekmesi resmi sekmeyle aynı ekranı AI kaynağından basar', () => {
+  const es = {
+    count: 21, avgCorrect: 35.5, avgSeconds: 600, weekCount: 5, weekAvgCorrect: 38.25,
+    threeDayCount: 2, threeDayAvgCorrect: 40.45,
+  };
+  const govde = (out: string) => out.slice(out.indexOf('<div class="stat-grid">'));
+  assert.equal(
+    govde(gecmisCiz(es, 'ai')),
+    govde(gecmisCiz(es, 'resmi')).replace('Henüz tamamlanmış resmi deneme yok.', 'Henüz tamamlanmış AI denemesi yok.'),
+  );
+  const ai = gecmisCiz(es, 'ai');
+  assert.match(ai, /data-action="select-istatistik-sekmesi" data-sekme="resmi"[^>]*>Resmi Deneme</);
+  assert.match(ai, /data-action="select-istatistik-sekmesi" data-sekme="ai"[^>]*>AI Denemesi</);
+  assert.match(ai, /🤖 AI Deneme Geçmişi/);
+  // AI erişimi olmayan hesapta sekme çubuğu hiç çıkmaz.
+  const render = script.match(/function renderGecmisUzak\(\) \{[\s\S]*?^  \}/m)![0];
+  assert.match(render, /remoteAuth\.canSeeAiSources === true\s*\?/);
+  assert.match(render, /aiSekme \? \(aiGecmis && aiGecmis\.examStats\)/);
+  assert.match(render, /aiSekme \? \(aiGecmis && aiGecmis\.examTopicStats\)/);
 });
 
 void test('Geçmiş ekranı kartı özet ile deneme listesi arasına koyar', () => {

@@ -45,11 +45,38 @@ void test('üst çubuk mobilde tek satır: 🤖, geri ve çıkış yalnız emoji
   assert.match(html, /\.ust-bar \{ flex-wrap: nowrap;/);
 });
 
-void test('pratik soru üst bloğu: bilgi solda, 📋 ve 💾 sağda aynı satırda; mobilde yazılar gizlenir', () => {
+// 20 Eyl 2026: AI ana sayfası Deneme ana sayfasıyla aynı sırayı izler, üstteki soru
+// istatistiği ve yarım kalan test/checkpoint kartları kaldırıldı.
+void test('AI ana sayfası ana sayfayla aynı sırada; istatistik kartı ve yarım kalanlar yok', () => {
+  const menu = fn('renderMenuTest');
+  assert.match(menu, /aiGununDenemesiHtml\(\) \+\s*\n\s*aiDenemeHtml \+\s*\n\s*aiKodKartiHtml \+\s*\n\s*hatirlaticiBolumHtml\("ai"\) \+\s*\n\s*yanlisSorularBolumHtml\("ai"\) \+\s*\n\s*flashCard/);
+  assert.doesNotMatch(menu, /stat-grid|stat-card|Yarım kalan/);
+  // İşaretliler tek girişten açılır: hatırlatıcı kartının içinden (sayfanın altında ayrı düğme yok).
+  assert.doesNotMatch(menu, /data-action="open-flags"/);
+  assert.match(fn('hatirlaticiBolumHtml'), /aiMi \? '<button class="btn ghost" data-action="open-flags"/);
+  assert.match(fn('renderFlags'), /hatirlaticiGuidListesi\(aiModu \? "ai" : "deneme"\)/);
+});
+
+void test('ders ekranında Test sekmesi önce gelir ve varsayılan açık sekmedir', () => {
+  const modul = fn('renderPratikModul');
+  assert.ok(modul.indexOf('data-sekme="test"') < modul.indexOf('data-sekme="konu"'), 'Test sekmesi önce basılmalı');
+  assert.match(script, /var dersSekmesi = "test";/);
+  assert.match(script, /pratikSeciliKonu = pk; dersSekmesi = "test";/);
+});
+
+void test('AI denemesi bitince geçmişe kaydedilir, yarıda bırakılan kaydedilmez', () => {
+  assert.match(fn('finishAiExam'), /remoteSaveAiExam\(lastResult\)/);
+  const kaydet = fn('remoteSaveAiExam');
+  assert.match(kaydet, /action: "ai-exam-save"/);
+  assert.match(kaydet, /soruKayitlari: r\.soruKayitlari/);
+  assert.doesNotMatch(fn('aiExamVazgec'), /remoteSaveAiExam/);
+});
+
+void test('pratik soru üst bloğu: bilgi solda, 📋 ve ✕ sağda aynı satırda; mobilde yazılar gizlenir', () => {
   const soru = fn('renderPratikSoru');
   assert.match(soru, /soruUstBlokHtml\(/);
   assert.match(soru, /data-action="copy-soru" data-scope="pratik" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋<\/button>'/);
-  assert.match(soru, /aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık<\/span><\/button>'/);
+  assert.match(soru, /aria-label="Çık">✕<span class="genis-etiket"> Çık<\/span><\/button>'/);
   assert.doesNotMatch(soru, /kopyalaButonHtml\("pratik"\)/);
   // Ortak üst blok ders ve x / y ilerlemesini ayrı argümanlarla alır; otomatik kayıt açıklaması gösterilmez.
   assert.match(soru, /q\.konu, \(currentPratik\.index \+ 1\) \+ " \/ " \+ currentPratik\.kuyruk\.length/);
@@ -104,8 +131,8 @@ void test('bölüm açılınca tembel yükleyiciler çağrılır, hata olursa De
   assert.match(accept, /remoteLoadPracticeBankIfNeeded\(\), remoteLoadCheckpointsIfNeeded\(\), remoteLoadPracticeStats\(\)/);
   assert.match(accept, /aiYukleniyor = true/);
   assert.match(accept, /aiModu = false; VIEW = "menuDeneme"/);
-  // Yarım pratik oturumu Deneme'ye dönerken kaybolmasın diye önce diske yazılır.
-  assert.match(fn('leaveAiSources'), /pratikSlotYaz\(\); veriDegisti\(\)/);
+  // Yarım kalan oturum kaldırıldı: Deneme'ye dönerken yazılacak bir slot yok.
+  assert.doesNotMatch(fn('leaveAiSources'), /SlotYaz/);
 });
 
 void test('çıkışta AI içeriği ve pratik ilerlemesi bellekten temizlenir', () => {

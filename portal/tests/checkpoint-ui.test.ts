@@ -9,21 +9,20 @@ function fn(name: string) {
   return script.match(new RegExp('function ' + name + '\\([^)]*\\) \\{[\\s\\S]*?^  \\}', 'm'))?.[0] ?? '';
 }
 
-void test('checkpoint maddeleri ileri-geri gezilen ve kaldığı yerden devam eden notlara dönüşür', () => {
+void test('checkpoint maddeleri ileri-geri gezilen notlara dönüşür, yarım kalan tutulmaz', () => {
   assert.match(fn('checkpointSorular'), /querySelectorAll\("li"\)/);
   // Liste dışı tablo/paragraflar komşu maddeye eklenir; madde sırası (hatırlatıcı guid'i) değişmez.
   assert.match(fn('checkpointSorular'), /doc\.body\.children/);
   assert.match(fn('checkpointSorular'), /return maddeler\.map\(function \(li, i\) \{ return once\[i\] \+ li\.innerHTML \+ sonra\[i\]; \}\)/);
-  assert.match(fn('checkpointSlotYaz'), /practice-session-save/);
-  assert.match(fn('checkpointDevamEt'), /practice-session-load/);
-  assert.match(fn('checkpointSlotSil'), /practice-session-delete/);
+  // Yarım kalan checkpoint 20 Eyl 2026'da kaldırıldı: ne slot yazılır ne de menüde kart çıkar.
+  assert.doesNotMatch(script, /checkpointSlotYaz|checkpointDevamEt|checkpointSlotSil|checkpointYarimKalanKartlari/);
+  assert.doesNotMatch(script, /data-action="devam-checkpoint"/);
   assert.match(fn('checkpointOnceki'), /currentCheckpoint\.index--/);
   assert.match(fn('checkpointSonraki'), /currentCheckpoint\.index\+\+/);
   assert.match(fn('renderCheckpointSoru'), /data-action="checkpoint-onceki"/);
   assert.match(fn('renderCheckpointSoru'), /data-action="checkpoint-sonraki"/);
-  assert.match(fn('renderCheckpointDetay'), /Kaldığım Yerden Devam Et/);
-  assert.match(fn('checkpointYarimKalanKartlari'), /Kaldığım Yerden Devam Et/);
-  assert.match(fn('renderMenuTest'), /checkpointYarimKalanKartlari\(\)/);
+  assert.doesNotMatch(fn('renderCheckpointDetay'), /Kaldığım Yerden Devam Et/);
+  assert.match(fn('renderCheckpointDetay'), /data-action="start-checkpoint"/);
 });
 
 void test('checkpoint ekranı pratik sorusuyla aynı üst bloğu kullanır ve gezinme "Madde" der', () => {
@@ -31,26 +30,24 @@ void test('checkpoint ekranı pratik sorusuyla aynı üst bloğu kullanır ve ge
   assert.match(ekran, /soruUstBlokHtml\(/);
   assert.match(ekran, /c\.konu, \(index \+ 1\) \+ " \/ " \+ sorular\.length/);
   assert.match(ekran, /data-action="copy-checkpoint-soru" title="Maddeyi kopyala" aria-label="Maddeyi kopyala">📋<\/button>'/);
-  assert.match(ekran, /aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık<\/span><\/button>'/);
+  assert.match(ekran, /aria-label="Çık">✕<span class="genis-etiket"> Çık<\/span><\/button>'/);
   assert.match(ekran, /← Önceki Madde/);
   assert.match(ekran, /Sonraki Madde →/);
   assert.doesNotMatch(ekran, /Soru →|Önceki Soru|soru\/adım|otomatik kaydediliyor/);
 });
 
-void test('checkpoint maddeleri ok tuşlarıyla gezilir; Kaydet ve Çık AI ders listesine döner', () => {
+void test('checkpoint maddeleri ok tuşlarıyla gezilir; Çık AI ders listesine döner', () => {
   assert.match(script, /else if \(VIEW === "checkpointSoru" && currentCheckpoint && !currentCheckpoint\.bitti\) \{[\s\S]*?"ArrowRight"\) \{ e\.preventDefault\(\); checkpointSonraki\(\); \}[\s\S]*?"ArrowLeft"\) \{ e\.preventDefault\(\); checkpointOnceki\(\); \}/);
-  const cik = fn('checkpointKaydetVeCik');
-  assert.match(cik, /checkpointSlotYaz\(\); veriDegisti\(true\);/);
+  const cik = fn('checkpointCik');
+  assert.doesNotMatch(cik, /SlotYaz/);
   assert.match(cik, /VIEW = "menuTest"; render\(\);/);
   assert.doesNotMatch(cik, /checkpointDetay/);
 });
 
-void test('checkpoint yarım oturumu kullanıcıya ait yerel yedekte de tutulur', () => {
-  const save = fn('remoteSavePracticeLocal');
-  const load = fn('remoteInitPracticeOwner');
-  assert.match(save, /pausedCheckpoints/);
-  assert.match(load, /saved\.pausedCheckpoints/);
-  assert.match(script, /"pausedCheckpoints"/);
+void test('yarım kalan test/checkpoint kaydı hiçbir katmanda tutulmaz', () => {
+  // 20 Eyl 2026: yerel yedek yalnız pBest taşır, STATE'te paused* alanları kalmadı.
+  assert.match(fn('remoteSavePracticeLocal'), /pBest: STATE\.pBest/);
+  assert.doesNotMatch(script, /pausedPratik|pausedCheckpoints/);
 });
 
 void test('checkpoint kartında kopyala ve hatırlatıcı butonu, ayrı gruplu hatırlatıcılar bölümü ve Word dışa aktarımı var', () => {

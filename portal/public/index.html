@@ -211,7 +211,7 @@
   .pratik-ust .btn { flex-shrink: 0; }
   @media (max-width: 560px) { .genis-etiket { display: none; } }
   .exam-timer { font-weight: 700; }
-  .q-text { font-family: var(--font-display); font-size: 1.22rem; font-weight: 600; margin-bottom: 18px; white-space: pre-wrap; text-wrap: balance; }
+  .q-text { font-family: var(--font-display); font-size: 1.22rem; font-weight: 600; margin-bottom: 18px; white-space: pre-wrap; }
   .option-row {
     display: flex; gap: 10px; align-items: flex-start; width: 100%; text-align: left;
     background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
@@ -347,7 +347,7 @@
 </style>
 </head>
 <body>
-<script id="app-state" type="application/json">{"schemaVersion":1,"bank":[],"stats":{},"arsivIstatistik":{},"practiceBank":[],"pStats":{},"arsivPratikIstatistik":{},"checkpoints":[],"settings":{"dagilim":{"Ürünler":8,"Hukuk":8,"Temel İşlemler":8,"Kredi":8,"Genel Ekonomi":5,"Mali Analiz":5,"Kambiyo":3,"Sermaye Piyasaları ve Hazine":3,"İK Politikaları":2}},"history":[],"meta":{"lastImportISO":null,"kaynakDosyaAdi":"UZYET Soru Bankası (Web Quiz).xlsx (ilk yükleme, dosya derleme sırasında gömüldü)"},"flags":{},"pausedExam":null,"pausedPratik":{},"duzeltmeler":[],"flashOzet":{"gosterim":0,"dogru":0},"pFlashOzet":{"gosterim":0,"dogru":0},"rev":0,"bankCorrections":[],"sadeceDeneme":true}</script>
+<script id="app-state" type="application/json">{"schemaVersion":1,"bank":[],"stats":{},"arsivIstatistik":{},"practiceBank":[],"pStats":{},"arsivPratikIstatistik":{},"checkpoints":[],"settings":{"dagilim":{"Ürünler":8,"Hukuk":8,"Temel İşlemler":8,"Kredi":8,"Genel Ekonomi":5,"Mali Analiz":5,"Kambiyo":3,"Sermaye Piyasaları ve Hazine":3,"İK Politikaları":2}},"history":[],"meta":{"lastImportISO":null,"kaynakDosyaAdi":"UZYET Soru Bankası (Web Quiz).xlsx (ilk yükleme, dosya derleme sırasında gömüldü)"},"flags":{},"pausedExam":null,"duzeltmeler":[],"flashOzet":{"gosterim":0,"dogru":0},"pFlashOzet":{"gosterim":0,"dogru":0},"rev":0,"bankCorrections":[],"sadeceDeneme":true}</script>
 <div id="app"></div>
 <script id="app-script">
 (function () {
@@ -553,8 +553,6 @@
   if (!STATE.flashOzet) STATE.flashOzet = { gosterim: 0, dogru: 0 }; // Rastgele Soru'nun kendi doğruluk oranı — sınav istatistiğinden ayrı
   if (!STATE.pFlashOzet) STATE.pFlashOzet = { gosterim: 0, dogru: 0 }; // Test sayfasındaki Rastgele Soru (pratik havuzu) — flashOzet'ten ayrı
   if (STATE.pausedExam === undefined) STATE.pausedExam = null;
-  if (!STATE.pausedPratik) STATE.pausedPratik = {};   // {"<konu>::<modul>": {mod, kuyruk, index, cevaplar, savedAtISO}} — yarım kalan konu çalışması, modül başına bir slot
-  if (!STATE.pausedCheckpoints) STATE.pausedCheckpoints = {}; // {[checkpointId]: {index, savedAtISO}} — yarım kalan checkpoint notu
   if (typeof STATE.rev !== "number") STATE.rev = 0;   // her veri mutasyonunda artar; localStorage anlık görüntüsüyle hangisinin yeni olduğunu ayırt etmek için
   if (STATE.sadeceDeneme === undefined) STATE.sadeceDeneme = false; // paylaşım derlemesi: Test/Checkpoint yok, doğrudan Deneme ekranı
 
@@ -575,7 +573,7 @@
   var lastFlashResult = null;  // {kaynak, oturum} — "Testi Bitir" sonrası özet ekranı için
   var currentPratik = null;    // {konu, modul, mod, kuyruk:[guid...], index, cevaplandi, secilen, bitti}
   var pratikSeciliKonu = null; // pratikModul ekranında hangi Konu'nun modülleri gösteriliyor
-  var dersSekmesi = "konu";    // ders içindeki Konu / Test seçimi
+  var dersSekmesi = "test";    // ders içindeki Test / Konu seçimi
   var pratikSeciliModul = null; // seçili modül (alt-mod seçimi bu modül için gösterilir)
   var checkpointSeciliKonu = null; // checkpointListe ekranında hangi Konu açık
   var checkpointSeciliId = null;   // checkpointDetay ekranında gösterilen özet
@@ -601,7 +599,7 @@
         lastFlashResult = p.lastFlashResult || null;
         currentPratik = p.currentPratik || null;
         pratikSeciliKonu = p.pratikSeciliKonu || null;
-        dersSekmesi = p.dersSekmesi || "konu";
+        dersSekmesi = p.dersSekmesi || "test";
         pratikSeciliModul = p.pratikSeciliModul || null;
         currentCheckpoint = p.currentCheckpoint || null;
         checkpointSeciliKonu = p.checkpointSeciliKonu || null;
@@ -622,7 +620,7 @@
   // gelmez — onlar hep yayınlanan HTML'den okunur, yoksa yeni yayınlanan sorular ezilirdi.
   var LS_KEY = "uzyet_state_v1";
   var LS_ALANLAR = ["stats", "pStats", "pBest", "arsivIstatistik", "arsivPratikIstatistik",
-    "flags", "aiYanlisGuidler", "history", "duzeltmeler", "appliedBankCorrections", "flashOzet", "pFlashOzet", "pausedExam", "pausedPratik", "pausedCheckpoints", "settings", "meta"];
+    "flags", "aiYanlisGuidler", "history", "duzeltmeler", "appliedBankCorrections", "flashOzet", "pFlashOzet", "pausedExam", "settings", "meta"];
   var autosaveTimer = null;
 
   function bumpRev() { STATE.rev = (STATE.rev || 0) + 1; }
@@ -1567,7 +1565,6 @@
 
   var remotePracticeBankLoaded = false;
   var remoteCheckpointsLoaded = false;
-  var remotePracticeSessions = {};
   var remotePracticeLoads = {};
   var remotePracticeLoading = 0;
 
@@ -1617,8 +1614,6 @@
     return remoteLoadPractice("practice-stats", function (data) {
       if (!data.stats || !Array.isArray(data.sessions)) throw new Error("Pratik ilerleme yanıtı geçersiz.");
       STATE.pStats = data.stats;
-      remotePracticeSessions = {};
-      data.sessions.forEach(function (s) { remotePracticeSessions[pratikSlotKey(s.konu, s.modul)] = s; });
       remotePendingPracticeStats();
     }, cb);
   }
@@ -1641,7 +1636,7 @@
     if (!remoteAuth.username) return;
     try {
       localStorage.setItem("uzyet_practice_local_v1:" + remoteAuth.username, JSON.stringify({
-        pausedPratik: STATE.pausedPratik, pausedCheckpoints: STATE.pausedCheckpoints, pBest: STATE.pBest
+        pBest: STATE.pBest
       }));
     } catch (e) {}
   }
@@ -1649,14 +1644,11 @@
     if (remotePracticeOwner === remoteAuth.username) return;
     remotePracticeOwner = remoteAuth.username;
     var tarayiciBest = STATE.pBest || {};
-    STATE.pStats = {}; STATE.pausedPratik = {}; STATE.pausedCheckpoints = {}; STATE.pBest = {};
+    STATE.pStats = {}; STATE.pBest = {};
     remotePracticeBestLoaded = false;
     if (remotePracticeOwner) {
       try {
         var saved = JSON.parse(localStorage.getItem("uzyet_practice_local_v1:" + remotePracticeOwner) || "{}");
-        // Eski yalnız-pratik biçimini de okuyarak mevcut kullanıcıların oturumlarını koru.
-        STATE.pausedPratik = saved.pausedPratik || saved;
-        STATE.pausedCheckpoints = saved.pausedCheckpoints || {};
         if (saved.pBest) STATE.pBest = saved.pBest;
         else if (!localStorage.getItem(PBEST_TARAYICI_SAHIBI)) {
           // 13 Eyl 2026 öncesi pBest hesaba değil tarayıcıya yazılıyordu; o tarayıcıda ilk
@@ -1913,8 +1905,6 @@
     });
   }
   function leaveAiSources() {
-    if (currentPratik && !currentPratik.bitti) { pratikSlotYaz(); veriDegisti(); }
-    if (currentCheckpoint && !currentCheckpoint.bitti) { checkpointSlotYaz(); veriDegisti(); }
     currentPratik = null; currentCheckpoint = null; currentFlash = null;
     aiModu = false; aiUyariAcik = false;
     openMenuDeneme();
@@ -1963,8 +1953,8 @@
   function denemeCikisYap() {
     if (!confirm("Çıkış yapmak istediğine emin misin?")) return;
     aiModu = false; aiUyariAcik = false; aiYukleniyor = false;
-    STATE.bank = []; STATE.stats = {}; STATE.practiceBank = []; STATE.checkpoints = []; STATE.pStats = {}; STATE.pausedPratik = {}; STATE.pausedCheckpoints = {}; STATE.pBest = {};
-    remotePracticeBankLoaded = false; remoteCheckpointsLoaded = false; remotePracticeSessions = {}; remotePracticeBestLoaded = false;
+    STATE.bank = []; STATE.stats = {}; STATE.practiceBank = []; STATE.checkpoints = []; STATE.pStats = {}; STATE.pBest = {};
+    remotePracticeBankLoaded = false; remoteCheckpointsLoaded = false; remotePracticeBestLoaded = false;
     remoteStudyOwner = null; remoteStudyOwnerGeneration++; remoteBankGeneration++;
     remotePracticeOwner = null;
     currentPratik = null; currentCheckpoint = null; currentFlash = null;
@@ -2131,12 +2121,60 @@
   }
 
   function openHistoryRemote() {
+    // 📊 hangi ekrandan basıldıysa onun sekmesini açar: Deneme'den resmi deneme,
+    // AI ekranından AI denemesi. İki sekmenin kaynağı ayrıdır, karışmaz.
+    istatistikSekmesi = (aiModu && remoteAuth.canSeeAiSources === true) ? "ai" : "resmi";
     if (aiModu) leaveAiSources(); // üst çubuktaki 📊 AI ekranından da basılabilir
     VIEW = "gecmisUzak";
     remoteGecmis = null;
     render();
     remoteRefreshDashboard(render);
     remoteLoadGecmis(0);
+    if (remoteAuth.canSeeAiSources === true) { aiGecmis = null; remoteLoadAiGecmis(0); }
+  }
+
+  // AI denemeleri sunucuda sınav oturumu açmadığı için liste, istatistik ve konu
+  // kırılımı tek uçtan (ai-exam-history) gelir; resmi taraftaki dashboard+history
+  // ikilisinin karşılığıdır ve aynı alan adlarını taşır.
+  var aiGecmis = null;
+  var istatistikSekmesi = "resmi"; // 📊 sayfası: "resmi" | "ai"
+  function remoteLoadAiGecmis(page) {
+    remoteFetch("/api/exam", "POST", { action: "ai-exam-history", page: page || 0 }).then(function (r) {
+      if (!r.ok) { showBanner((r.data && r.data.error) || "AI geçmişi yüklenemedi.", true); return; }
+      if (page > 0 && !r.data.attempts.length && r.data.total) { remoteLoadAiGecmis(page - 1); return; }
+      aiGecmis = r.data;
+    }).catch(function () { showBanner("Bağlantı hatası.", true); }).then(function () { if (VIEW === "gecmisUzak") render(); });
+  }
+
+  // Geçmişteki bir AI denemesini açar: sorular ve cevaplar kaydın içinde durduğu için
+  // sonuç ekranı resmi denemedekiyle aynı şekilde yeniden kurulur.
+  function openAiGecmisDetay(attemptId) {
+    if (remoteBusy) return;
+    remoteBusy = true; render();
+    remoteFetch("/api/exam", "POST", { action: "ai-exam-detail", attemptId: attemptId }).then(function (r) {
+      remoteBusy = false;
+      if (!r.ok || !r.data.payload) { showBanner((r.data && r.data.error) || "Deneme açılamadı.", true); render(); return; }
+      var d = r.data.payload;
+      lastResult = {
+        id: attemptId, tarihISO: d.bitisISO, tip: "ai", ai: true, aiGunu: d.aiGunu || null,
+        seed: null, examCode: d.examCode || "",
+        sorular: d.sorular || [], cevaplar: d.cevaplar || {}, soruKayitlari: d.soruKayitlari || {},
+        skor: d.skor, konuKirilim: d.konuKirilim || {}, sureSaniye: d.sureSaniye || 0
+      };
+      VIEW = "result";
+      render();
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+  }
+
+  function confirmDeleteAiGecmis(attemptId) {
+    if (remoteBusy) return;
+    remoteBusy = true; render();
+    remoteFetch("/api/exam", "POST", { action: "ai-exam-delete", attemptId: attemptId }).then(function (r) {
+      remoteBusy = false;
+      gecmisSilConfirmId = null;
+      if (!r.ok) { showBanner((r.data && r.data.error) || "Silinemedi.", true); render(); return; }
+      remoteLoadAiGecmis(aiGecmis ? aiGecmis.page : 0);
+    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
   }
 
   // Geçmiş sayfa sayfa gelir (sunucu: action "history", 20'şer). Son sayfadaki tek deneme
@@ -2179,9 +2217,14 @@
   }
 
   function renderGecmisUzak() {
-    var g = remoteGecmis;
+    // Resmi Deneme / AI Denemesi sekmeleri (20 Eyl 2026 kullanıcı isteği): iki ekran
+    // birebir aynı, yalnız kaynak değişir — resmi taraf dashboard+history uçlarından,
+    // AI tarafı ai-exam-history'den beslenir.
+    var aiSekme = istatistikSekmesi === "ai";
+    var kaynak = aiSekme ? ' data-kaynak="ai"' : "";
+    var g = aiSekme ? aiGecmis : remoteGecmis;
     var list = (g && g.attempts) || [];
-    var es = remoteDash && remoteDash.examStats;
+    var es = aiSekme ? (aiGecmis && aiGecmis.examStats) : (remoteDash && remoteDash.examStats);
     var ozetHtml = es ? '<div class="stat-grid">' +
       '<div class="stat-card"><div class="num">' + (es.threeDayAvgCorrect == null ? "—" : fmtOrt(es.threeDayAvgCorrect) + "/50") +
       '</div><div class="lbl">Son 3 gün · ' + (es.threeDayCount || 0) + ' deneme</div></div>' +
@@ -2191,40 +2234,47 @@
       '<div class="stat-card"><div class="num">' + fmtOrt(es.avgCorrect) + '/50</div><div class="lbl tum-zamanlar-etiket">Tüm zamanlar · ' + es.count + ' deneme</div></div>' +
       '<div class="stat-card"><div class="num">' + fmtSure(es.avgSeconds) + '</div><div class="lbl">Ortalama süre</div></div>' +
       "</div>" : "";
-    var konuHtml = konuOrtalamaKartiHtml();
+    var konuHtml = konuOrtalamaKartiHtml(aiSekme ? (aiGecmis && aiGecmis.examTopicStats) : (remoteDash && remoteDash.examTopicStats));
     var rows = list.map(function (a) {
       var toplam = a.score ? (a.score.correct + a.score.wrong + a.score.blank) : a.totalCount;
       var skorTxt = a.score ? (a.score.correct + " / " + toplam) : "—";
       var renk = MOD_RENK[a.mode] || "var(--seri-6)";
       var silBlok = gecmisSilConfirmId === a.id
         ? '<span style="display:flex;gap:4px;flex-shrink:0">' +
-          '<button class="btn primary" style="padding:2px 8px;font-size:0.78rem" data-action="confirm-delete-gecmis" data-id="' + a.id + '">Evet</button>' +
+          '<button class="btn primary" style="padding:2px 8px;font-size:0.78rem" data-action="confirm-delete-gecmis" data-id="' + a.id + '"' + kaynak + '>Evet</button>' +
           '<button class="btn ghost" style="padding:2px 8px;font-size:0.78rem" data-action="cancel-delete-gecmis">Vazgeç</button>' +
           "</span>"
         : '<button class="btn ghost" style="padding:2px 8px;font-size:0.78rem;flex-shrink:0" data-action="request-delete-gecmis" data-id="' + a.id + '">Sil</button>';
       return '<div class="card" style="border-left:4px solid ' + renk + ';margin-bottom:10px;padding:14px 16px">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">' +
-        '<div style="cursor:pointer;flex:1" data-action="open-gecmis-detay" data-id="' + a.id + '">' +
+        '<div style="cursor:pointer;flex:1" data-action="open-gecmis-detay" data-id="' + a.id + '"' + kaynak + '>' +
         '<div class="title" style="font-weight:700">' + denemeAdi(a) + '</div>' +
         '<div class="desc" style="color:var(--text-muted);font-size:0.86rem">' + fmtTarih(a.updatedAt) + " · ⏱ " + fmtSure(a.elapsedSeconds || 0) + " · " + skorTxt + "</div></div>" +
         silBlok +
         "</div></div>";
     }).join("");
+    var sekmeHtml = remoteAuth.canSeeAiSources === true
+      ? '<div class="ders-sekmeler" role="tablist" aria-label="İstatistik kaynağı">' +
+        '<button class="btn' + (aiSekme ? "" : " active") + '" role="tab" aria-selected="' + (!aiSekme) + '" tabindex="' + (aiSekme ? "-1" : "0") + '" data-action="select-istatistik-sekmesi" data-sekme="resmi">Resmi Deneme</button>' +
+        '<button class="btn' + (aiSekme ? " active" : "") + '" role="tab" aria-selected="' + aiSekme + '" tabindex="' + (aiSekme ? "0" : "-1") + '" data-action="select-istatistik-sekmesi" data-sekme="ai">AI Denemesi</button></div>'
+      : "";
     return ustBarHtml() + // ana ekranla aynı 🏠 · 📊 · 🤖 çubuğu (13 Eyl 2026 kullanıcı isteği)
-      '<div class="section-title">📊 Deneme Geçmişi</div>' +
+      sekmeHtml +
+      '<div class="section-title">' + (aiSekme ? "🤖 AI Deneme Geçmişi" : "📊 Deneme Geçmişi") + "</div>" +
       ozetHtml +
       konuHtml +
       (!g ? '<div class="card">Yükleniyor…</div>'
-        : list.length ? rows + gecmisSayfaHtml(g) : '<div class="card">Henüz tamamlanmış resmi deneme yok.</div>');
+        : list.length ? rows + gecmisSayfaHtml(g, kaynak)
+          : '<div class="card">' + (aiSekme ? "Henüz tamamlanmış AI denemesi yok." : "Henüz tamamlanmış resmi deneme yok.") + "</div>");
   }
 
-  function gecmisSayfaHtml(g) {
+  function gecmisSayfaHtml(g, kaynak) {
     var sayfaSayisi = Math.ceil(g.total / g.pageSize);
     if (sayfaSayisi <= 1) return "";
     return '<div class="link-row" style="justify-content:space-between;align-items:center;margin-top:4px">' +
-      '<button class="btn ghost" data-action="gecmis-sayfa" data-page="' + (g.page - 1) + '"' + (g.page <= 0 ? " disabled" : "") + ">← Daha yeni</button>" +
+      '<button class="btn ghost" data-action="gecmis-sayfa" data-page="' + (g.page - 1) + '"' + (kaynak || "") + (g.page <= 0 ? " disabled" : "") + ">← Daha yeni</button>" +
       '<span class="muted">Sayfa ' + (g.page + 1) + " / " + sayfaSayisi + " · " + g.total + " deneme</span>" +
-      '<button class="btn ghost" data-action="gecmis-sayfa" data-page="' + (g.page + 1) + '"' + (g.page >= sayfaSayisi - 1 ? " disabled" : "") + ">Daha eski →</button>" +
+      '<button class="btn ghost" data-action="gecmis-sayfa" data-page="' + (g.page + 1) + '"' + (kaynak || "") + (g.page >= sayfaSayisi - 1 ? " disabled" : "") + ">Daha eski →</button>" +
       "</div>";
   }
 
@@ -2234,8 +2284,8 @@
     var v = Math.round((Number(n) || 0) * 10) / 10;
     return v.toFixed(1).replace(".", ",");
   }
-  function konuOrtalamaKartiHtml() {
-    var ts = (remoteDash && remoteDash.examTopicStats) || [];
+  function konuOrtalamaKartiHtml(ts) {
+    ts = ts || [];
     if (!ts.length) return "";
     var satirlar = ts.map(function (t) {
       var ortalamaHtml = fmtOrt(t.avgCorrect) + " / " + fmtOrt(t.avgAsked);
@@ -2977,7 +3027,22 @@
     }, function () { showBanner("Word kütüphanesi yüklenemedi — internet bağlantısını kontrol et.", true); });
   }
 
-  // AI denemesi bitişi: geçmiş tutulmaz, yalnız sonuç ekranı gösterilir. Tüm cevaplar
+  // Biten AI denemesi sunucuda ayrılmış '__aiDeneme__' anahtarına tek parça yazılır:
+  // istatistik sayfasındaki "AI Denemesi" sekmesi ve geçmişten yeniden açma buna dayanır
+  // (20 Eyl 2026 kullanıcı isteği). Yarıda bırakılan deneme kaydedilmez.
+  function remoteSaveAiExam(r) {
+    if (!remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true) return;
+    remoteFetch("/api/exam", "POST", { action: "ai-exam-save", payload: {
+      examCode: r.examCode, aiGunu: r.aiGunu || null, bitisISO: r.tarihISO, sureSaniye: r.sureSaniye,
+      skor: r.skor, konuKirilim: r.konuKirilim,
+      sorular: r.sorular, cevaplar: r.cevaplar, soruKayitlari: r.soruKayitlari
+    } }).then(function (res) {
+      if (!res.ok) { showBanner((res.data && res.data.error) || "AI denemesi geçmişe kaydedilemedi.", true); return; }
+      aiGecmis = null; // liste bayatladı, istatistik sayfası açılınca yeniden çekilir
+    }).catch(function () { showBanner("AI denemesi geçmişe kaydedilemedi — bağlantını kontrol et.", true); });
+  }
+
+  // AI denemesi bitişi: sonuç ekranı gösterilir ve geçmişe yazılır. Tüm cevaplar
   // practice_stats'a yazılır; pratik havuzundaki eksiği resmî bankadan tamamlayan sorular
   // da böylece AI yanlış havuzunda kalır ve question_stats'a karışmaz. Boşlar kaydedilmez.
   function finishAiExam() {
@@ -3000,6 +3065,7 @@
     currentExam = null;
     VIEW = "result";
     render();
+    remoteSaveAiExam(lastResult);
     // Günün denemesiyse sonucu kaydet ve ortalamayı tazele; sonuç ekranı ortalamayı bundan alır.
     // Sunucu yalnız İLK sonucu sayar, tekrar çözmek ortalamayı bozmaz.
     if (aiGunu) {
@@ -3236,10 +3302,8 @@
   }
 
   function backToMenu() {
-    if (currentPratik && !currentPratik.bitti) { pratikSlotYaz(); bumpRev(); lsKaydet(); pendingSaveDirty = true; }
-    if (currentCheckpoint && !currentCheckpoint.bitti) { checkpointSlotYaz(); bumpRev(); lsKaydet(); pendingSaveDirty = true; }
     VIEW = aiModu ? "menuTest" : STATE.sadeceDeneme ? "menuDeneme" : "menu"; currentExam = null; lastResult = null; currentFlash = null; lastFlashResult = null;
-    currentPratik = null; currentCheckpoint = null; pratikSeciliKonu = null; dersSekmesi = "konu"; pratikSeciliModul = null;
+    currentPratik = null; currentCheckpoint = null; pratikSeciliKonu = null; dersSekmesi = "test"; pratikSeciliModul = null;
     checkpointSeciliKonu = null; checkpointSeciliId = null;
     pausedDeleteConfirm = false; deletingHistoryId = null; denemeKodOnizleme = null;
     aiDenemeKodOnizleme = null; aiVazgecOnay = false;
@@ -3259,92 +3323,25 @@
     remoteQueuePractice({ action: "practice-answer", questionGuid: guid, selectedAnswer: selectedAnswer }, dogruMu, false);
   }
 
-  // --- yarım kalan oturum (modül başına bir slot) ---
-  function pratikSlotKey(konu, modul) { return konu + "::" + modul; }
-
-  function pratikSlotOku(konu, modul) { return STATE.pausedPratik[pratikSlotKey(konu, modul)] || null; }
-
-  function pratikSlotYaz() {
-    // Her cevaptan sonra çağrılır: sekme kapansa bile kaldığı yerden devam edebilsin.
-    // Kuyruğun tamamı saklanır, yoksa dönüşte soru sırası değişir ve "34/290" anlamsızlaşır.
-    if (!currentPratik || currentPratik.bitti) return;
-    STATE.pausedPratik[pratikSlotKey(currentPratik.konu, currentPratik.modul)] = {
-      mod: currentPratik.mod, kuyruk: currentPratik.kuyruk, index: currentPratik.index,
-      soruKayitlari: currentPratik.soruKayitlari,
-      cevaplar: currentPratik.cevaplar, savedAtISO: new Date().toISOString()
-    };
-    remoteSavePracticeLocal();
-    remoteQueuePractice({ action: "practice-session-save", konu: currentPratik.konu, modul: currentPratik.modul,
-      payload: STATE.pausedPratik[pratikSlotKey(currentPratik.konu, currentPratik.modul)] }, null, true);
-  }
-
-  function pratikSlotSil(konu, modul) {
-    delete STATE.pausedPratik[pratikSlotKey(konu, modul)];
-    delete remotePracticeSessions[pratikSlotKey(konu, modul)];
-    remoteSavePracticeLocal();
-    remoteQueuePractice({ action: "practice-session-delete", konu: konu, modul: modul }, null, false);
-  }
+  // Yarım kalan test/checkpoint oturumu 20 Eyl 2026'da kaldırıldı (kullanıcı isteği):
+  // testten çıkmak oturumu bitirir, dönünce baştan başlanır.
 
   function startPratikOturum(konu, modul, mod) {
     if (!konu || !modul) return;
     var kuyruk = pratikKuyrukOlustur(konu, modul, mod);
     if (kuyruk.length === 0) { showBanner("Bu modülde henüz soru yok.", true); return; }
     dersSekmesi = "test";
-    pratikSlotSil(konu, modul); // yeni oturum yarım kalanın yerine geçer
     currentPratik = { konu: konu, modul: modul, mod: mod, kuyruk: kuyruk, index: 0, cevaplandi: false, secilen: null, bitti: false, cevaplar: {} };
     currentPratik.soruKayitlari = soruKayitlari(STATE.practiceBank, kuyruk);
-    pratikSlotYaz();
     VIEW = "pratikSoru";
     veriDegisti();
     render();
   }
 
-  function devamPratikOturum(konu, modul) {
-    dersSekmesi = "test";
-    var slot = pratikSlotOku(konu, modul);
-    if (!slot) {
-      showBanner("Yarım oturum yükleniyor…", false);
-      remoteFetch("/api/exam", "POST", { action: "practice-session-load", konu: konu, modul: modul }).then(function (r) {
-        if (!r.ok) throw new Error((r.data && r.data.error) || "Oturum yüklenemedi.");
-        if (!r.data.payload) { delete remotePracticeSessions[pratikSlotKey(konu, modul)]; showBanner("Kayıtlı yarım oturum bulunamadı.", true); render(); return; }
-        STATE.pausedPratik[pratikSlotKey(konu, modul)] = r.data.payload;
-        remoteSavePracticeLocal();
-        devamPratikOturum(konu, modul);
-      }).catch(function (e) { showBanner(e.message || "Oturum yüklenemedi.", true); });
-      return;
-    }
-    // Banka güncellenmiş olabilir: artık havuzda olmayan guid'leri kuyruktan düşür.
-    // oturumSorusu önce oturum kopyasına baktığından tek başına hiçbir guid'i düşürmüyordu.
-    var gecerli = slot.kuyruk.filter(function (g) { return pratikCanliMi(g) && !!oturumSorusu(slot, STATE.practiceBank, g); });
-    if (gecerli.length === 0) { pratikSlotSil(konu, modul); showBanner("Yarım kalan oturumun soruları artık havuzda yok.", true); veriDegisti(); render(); return; }
-    var idx = Math.min(slot.index, gecerli.length - 1);
-    currentPratik = {
-      konu: konu, modul: modul, mod: slot.mod, kuyruk: gecerli, index: idx,
-      cevaplandi: false, secilen: null, bitti: false, cevaplar: slot.cevaplar || {}
-    };
-    currentPratik.soruKayitlari = slot.soruKayitlari || soruKayitlari(STATE.practiceBank, gecerli);
-    // Kaldığı soru zaten cevaplanmışsa (cevapladıktan hemen sonra çıkmışsa) bir sonrakine geç.
-    var guidSimdi = gecerli[idx];
-    if (currentPratik.cevaplar[guidSimdi] !== undefined) {
-      if (idx < gecerli.length - 1) currentPratik.index = idx + 1;
-      else { currentPratik.cevaplandi = true; currentPratik.secilen = currentPratik.cevaplar[guidSimdi]; }
-    }
-    VIEW = "pratikSoru";
-    render();
-  }
-
-  function pratikKaydetVeCik() {
-    // "Kaydet ve Çık" — yarım kalan oturumu slota yazar ve HEMEN yayınlar.
-    if (currentPratik && !currentPratik.bitti) pratikSlotYaz();
+  function pratikCik() {
     currentPratik = null;
     VIEW = "pratikModul";
     veriDegisti(true);
-    render();
-  }
-
-  function pratikSlotAt(konu, modul) {
-    pratikSlotSil(konu, modul);
-    veriDegisti();
     render();
   }
 
@@ -3356,7 +3353,6 @@
     currentPratik.cevaplandi = true;
     currentPratik.cevaplar[q.guid] = idx; // oturuma özel skor (Modül bitti ekranında x doğru/y yanlış için)
     recordPratikStat(q.guid, idx === q.cevapIdx, q.siklar[idx]);
-    pratikSlotYaz();                              // ...ve konum da aynı yazımda kalıcı olsun
     lsKaydet();
     render();
   }
@@ -3365,12 +3361,10 @@
     if (currentPratik.index < currentPratik.kuyruk.length - 1) {
       currentPratik.index++;
       currentPratik.cevaplandi = false; currentPratik.secilen = null;
-      pratikSlotYaz();
       veriDegisti();
     } else {
       currentPratik.bitti = true;
       pratikBestGuncelle(currentPratik);
-      pratikSlotSil(currentPratik.konu, currentPratik.modul); // tamamlandı, yarım kalan yok
       veriDegisti(true); // modül bitti — bu gerçek bir çıkış noktası, hemen yayınla
     }
     render();
@@ -3380,8 +3374,6 @@
     startPratikOturum(currentPratik.konu, currentPratik.modul, currentPratik.mod);
   }
   function pratikListeyeDon() {
-    // Oturum yarım kaldıysa kaybolmaz — slota yazılıp yayınlanır (bitmiş oturumda no-op).
-    if (currentPratik && !currentPratik.bitti) { pratikSlotYaz(); veriDegisti(true); }
     currentPratik = null;
     VIEW = "pratikModul";
     render();
@@ -3647,13 +3639,15 @@
     return '<div class="card" style="margin-top:14px">' +
       '<div class="section-title" style="font-size:1rem;margin-bottom:6px">🔖 Hatırlatıcı İşaretli Sorular (' + guids.length + ')</div>' +
       (guids.length
-        ? '<div class="muted" style="margin-bottom:10px">' + (aiMi ? "AI testlerinde" : "Sınav sırasında") + ' 🔖 ile işaretlediğin sorular — buradan tekrar gözden geçirebilir veya Word\'e aktarabilirsin.</div>' +
-          '<div class="link-row">' +
-          '<button class="btn primary" data-action="start-hatirlatici-test" data-havuz="' + havuz + '">Test Başlat</button>' +
-          '<button class="btn ghost" data-action="export-hatirlatici-word" data-havuz="' + havuz + '">📄 Word\'e Aktar</button>' +
-          "</div>"
-        : '<div class="muted">Henüz hatırlatıcı olarak işaretlediğin bir soru yok — ' + (aiMi ? "AI bölümünde" : "sınav sırasında") + ' bir sorunun altındaki 🔖 Hatırlatıcı butonuna basarak buraya ekleyebilirsin.</div>') +
-      "</div>";
+        ? '<div class="muted" style="margin-bottom:10px">' + (aiMi ? "AI testlerinde" : "Sınav sırasında") + ' 🔖 ile işaretlediğin sorular — buradan tekrar gözden geçirebilir veya Word\'e aktarabilirsin.</div>'
+        : '<div class="muted" style="margin-bottom:10px">Henüz hatırlatıcı olarak işaretlediğin bir soru yok — ' + (aiMi ? "AI bölümünde" : "sınav sırasında") + ' bir sorunun altındaki 🔖 Hatırlatıcı butonuna basarak buraya ekleyebilirsin.</div>') +
+      '<div class="link-row">' +
+      (guids.length
+        ? '<button class="btn primary" data-action="start-hatirlatici-test" data-havuz="' + havuz + '">Test Başlat</button>' +
+          '<button class="btn ghost" data-action="export-hatirlatici-word" data-havuz="' + havuz + '">📄 Word\'e Aktar</button>'
+        : "") +
+      (aiMi ? '<button class="btn ghost" data-action="open-flags">İşaretlilerim</button>' : "") +
+      "</div></div>";
   }
 
   function yanlisSorularBolumHtml(havuz) {
@@ -3791,52 +3785,13 @@
 
   function renderMenuTest() {
     var pratikHavuzToplam = STATE.practiceBank.length;
-    var pDogru = Object.keys(STATE.pStats).filter(function (g) { return STATE.pStats[g].sonSonucDogruMu === true; }).length;
-    var pYanlis = Object.keys(STATE.pStats).filter(function (g) { return STATE.pStats[g].sonSonucDogruMu === false; }).length;
-    var pFlashYuzde = STATE.pFlashOzet.gosterim ? Math.round((STATE.pFlashOzet.dogru / STATE.pFlashOzet.gosterim) * 100) : null;
-
-    var statCards = [
-      { num: pratikHavuzToplam, lbl: "Pratik havuzu" },
-      { num: pDogru, lbl: "Doğru çözülen soru" },
-      { num: pYanlis, lbl: "Yanlış geçmişli soru" },
-      { num: pFlashYuzde === null ? "—" : pFlashYuzde + "%", lbl: "Rastgele Soru Doğruluğu", renk: renkEsigi(pFlashYuzde) }
-    ].map(function (c) {
-      var stil = c.renk ? ' style="color:' + c.renk + '"' : "";
-      return '<div class="stat-card"><div class="num"' + stil + '>' + escapeHtml(c.num) + '</div><div class="lbl">' + c.lbl + "</div></div>";
-    }).join("");
-
-    // Yarım kalan konu çalışmaları — en son kaydedilen üstte.
-    var slotKeys = Object.keys(STATE.pausedPratik).sort(function (a, b) {
-      return (STATE.pausedPratik[b].savedAtISO || "").localeCompare(STATE.pausedPratik[a].savedAtISO || "");
-    });
-    var yarimKalanHtml = "";
-    if (slotKeys.length) {
-      yarimKalanHtml = '<details class="resume-section"><summary class="section-title">Yarım kalan testler</summary><div class="mode-grid">' +
-        slotKeys.map(function (key) {
-          var s = STATE.pausedPratik[key];
-          var parts = key.split("::"), konu = parts[0], modul = parts[1];
-          var cevaplanan = Object.keys(s.cevaplar || {}).length;
-          var toplam = s.kuyruk.length;
-          var yuzde = Math.round((cevaplanan / toplam) * 100);
-          return '<div class="card resume-card" style="border-left:4px solid var(--seri-' + konuSeriIdx(konu) + ')">' +
-            '<div class="title">' + konuDotHtml(konu) + escapeHtml(konu) + " · " + escapeHtml(modulAdi(konu, modul)) + "</div>" +
-            '<div class="desc">' + cevaplanan + " / " + toplam + " soru cevaplanmış (%" + yuzde + ") · " + fmtTarih(s.savedAtISO) + "</div>" +
-            '<div class="link-row" style="margin-top:10px">' +
-            '<button class="btn primary" data-action="devam-pratik" data-konu="' + escapeHtml(konu) + '" data-modul="' + escapeHtml(modul) + '">Devam Et</button>' +
-            '<button class="btn ghost" data-action="pratik-slot-at" data-konu="' + escapeHtml(konu) + '" data-modul="' + escapeHtml(modul) + '">Sil</button>' +
-            "</div></div>";
-        }).join("") + "</div></details>";
-    }
 
     var flashDisabled = pratikHavuzToplam === 0 ? "disabled" : "";
-    var flashCard = '<div class="mode-grid"><button class="mode-btn" style="border-left:4px solid var(--seri-7)" ' + flashDisabled +
+    var flashCard = '<div class="mode-grid" style="margin-top:14px"><button class="mode-btn" style="border-left:4px solid var(--seri-7)" ' + flashDisabled +
       ' data-action="start-pratik-flash">' +
       '<div class="title">🎲 Rastgele Soru</div><div class="desc">Pratik havuzunun tamamından tek soru, anında cevap — konu/modül seçmeden hızlı pratik.</div></button></div>';
 
     // AI Denemesi: resmi deneme akışındaki gibi önce kod önizlemesi, sonra başlat.
-    // Ekran sırası: başlatma düğmeleri (AI Denemesi + Rastgele Soru) üstte, "Kod ile Çöz"
-    // kartı en altta. .mode-grid'in margin-top'u yok; kart doğrudan bir grid'in üstünde
-    // dururken ikisi birbirine yapışıyordu (16 Eyl 2026 kullanıcı bildirimi).
     var aiDenemeHtml, aiKodKartiHtml = "";
     if (aiDenemeKodOnizleme) {
       aiDenemeHtml = '<div class="card" style="margin-bottom:22px">' +
@@ -3854,8 +3809,10 @@
       aiDenemeHtml = '<div class="mode-grid"><button class="mode-btn" style="border-left:4px solid ' + MOD_RENK.ai + '" ' +
         (pratikHavuzToplam === 0 ? "disabled" : "") + ' data-action="prepare-ai-exam">' +
         '<div class="title"><span class="mode-dot" style="background:' + MOD_RENK.ai + '"></span>📝 AI Denemesi</div>' +
-        '<div class="desc">Resmi dağılıma göre 50 soru / 60 dk, pratik havuzundan rastgele. Geçmiş tutulmaz — çıkarsan deneme silinir.</div></button></div>';
-      aiKodKartiHtml = '<div class="card">' +
+        '<div class="desc">Resmi dağılıma göre 50 soru / 60 dk, pratik havuzundan rastgele. Bitirdiğinde AI istatistiğine işlenir; yarıda çıkarsan kaydedilmez.</div></button></div>';
+      // .mode-grid'in margin-top'u yok; kart doğrudan bir grid'in altında dururken ikisi
+      // birbirine yapışıyordu (16 Eyl 2026 kullanıcı bildirimi) — aralığı kart taşır.
+      aiKodKartiHtml = '<div class="card" style="margin-top:14px">' +
         '<div class="section-title" style="font-size:1rem;margin-bottom:6px">🔑 Kod ile Çöz</div>' +
         '<div class="muted" style="margin-bottom:10px">Bir AI denemesinin kodunu (UZA- ile başlar) buraya girersen aynı 50 soruyu yeniden çözersin.</div>' +
         '<div class="link-row">' +
@@ -3879,19 +3836,18 @@
           : "Henüz hazır değil") + "</div></button>";
     }).join("");
 
+    // Ekran sırası ana sayfayla (Deneme) aynı: deneme → hatırlatıcı → yanlış → çalışma
+    // (20 Eyl 2026 kullanıcı isteği). İşaretliler ayrı bir alt düğme değil, hatırlatıcı
+    // kartının içinde — sayfanın iki ayrı yerinde iki ayrı liste görünmesin.
     return '<div class="section-title">📚 Test</div>' +
-      '<div class="stat-grid">' + statCards + "</div>" +
-      hatirlaticiBolumHtml("ai") +
-      yanlisSorularBolumHtml("ai") +
-      yarimKalanHtml +
-      checkpointYarimKalanKartlari() +
       aiGununDenemesiHtml() +
       aiDenemeHtml +
-      flashCard +
       aiKodKartiHtml +
+      hatirlaticiBolumHtml("ai") +
+      yanlisSorularBolumHtml("ai") +
+      flashCard +
       '<div class="section-title" style="margin-top:22px">Hangi dersle çalışmak istersin?</div>' +
-      '<div class="mode-grid">' + tiles + "</div>" +
-      '<div class="link-row"><button class="btn" data-action="open-flags">İşaretliler</button></div>';
+      '<div class="mode-grid">' + tiles + "</div>";
   }
 
   // ------------------------------------------------------------ Checkpoint --
@@ -3958,83 +3914,26 @@
     return out;
   }
 
-  function checkpointOturumKonusu(c) { return "__checkpoint__:" + c.konu; }
-  function checkpointSlotAnahtari(c) { return pratikSlotKey(checkpointOturumKonusu(c), c.id); }
-  function checkpointSlotOku(c) { return STATE.pausedCheckpoints[c.id] || null; }
-  function checkpointSlotYaz() {
-    if (!currentCheckpoint || currentCheckpoint.bitti) return;
-    var c = checkpointBul(currentCheckpoint.id);
-    if (!c) return;
-    var slot = { index: currentCheckpoint.index, savedAtISO: new Date().toISOString() };
-    STATE.pausedCheckpoints[c.id] = slot;
-    remoteSavePracticeLocal();
-    remoteQueuePractice({ action: "practice-session-save", konu: checkpointOturumKonusu(c), modul: c.id, payload: slot }, null, true);
-  }
-  function checkpointSlotSil(c) {
-    delete STATE.pausedCheckpoints[c.id];
-    delete remotePracticeSessions[checkpointSlotAnahtari(c)];
-    remoteSavePracticeLocal();
-    remoteQueuePractice({ action: "practice-session-delete", konu: checkpointOturumKonusu(c), modul: c.id }, null, false);
-  }
-  function checkpointDevamVarMi(c) { return !!checkpointSlotOku(c) || !!remotePracticeSessions[checkpointSlotAnahtari(c)]; }
-  function checkpointYarimKalanKartlari() {
-    var checkpoints = STATE.checkpoints.filter(function (c) { return checkpointDevamVarMi(c); }).sort(function (a, b) {
-      var aSlot = checkpointSlotOku(a) || remotePracticeSessions[checkpointSlotAnahtari(a)] || {};
-      var bSlot = checkpointSlotOku(b) || remotePracticeSessions[checkpointSlotAnahtari(b)] || {};
-      return (bSlot.savedAtISO || bSlot.updatedAt || "").localeCompare(aSlot.savedAtISO || aSlot.updatedAt || "");
-    });
-    if (!checkpoints.length) return "";
-    return '<details class="resume-section"><summary class="section-title">Yarım kalan checkpointler</summary><div class="mode-grid">' + checkpoints.map(function (c) {
-      var slot = checkpointSlotOku(c) || remotePracticeSessions[checkpointSlotAnahtari(c)] || {};
-      var toplam = checkpointSorular(c).length;
-      var index = Math.min((slot.index || 0) + 1, toplam || 1);
-      return '<div class="card resume-card" style="border-left:4px solid var(--seri-' + konuSeriIdx(c.konu) + ')">' +
-        '<div class="title">' + konuDotHtml(c.konu) + escapeHtml(c.title) + '</div>' +
-        '<div class="desc">' + index + " / " + toplam + ". soruda kaldın" + ((slot.savedAtISO || slot.updatedAt) ? " · " + fmtTarih(slot.savedAtISO || slot.updatedAt) : "") + '</div>' +
-        '<div class="link-row" style="margin-top:10px"><button class="btn primary" data-action="devam-checkpoint" data-id="' + escapeHtml(c.id) + '">Kaldığım Yerden Devam Et</button></div></div>';
-    }).join("") + "</div></details>";
-  }
   function checkpointBaslat(id) {
     var c = checkpointBul(id), sorular = checkpointSorular(c);
     if (!c || !sorular.length) { showBanner("Bu checkpoint'te gösterilecek soru bulunamadı.", true); return; }
     pratikSeciliKonu = checkpointDersi(c); dersSekmesi = "konu";
-    checkpointSlotSil(c);
     currentCheckpoint = { id: c.id, index: 0, bitti: false };
-    checkpointSlotYaz(); checkpointSeciliId = c.id; VIEW = "checkpointSoru";
+    checkpointSeciliId = c.id; VIEW = "checkpointSoru";
     veriDegisti(); render();
-  }
-  function checkpointDevamEt(id) {
-    var c = checkpointBul(id), slot = c && checkpointSlotOku(c);
-    if (!c) return;
-    pratikSeciliKonu = checkpointDersi(c); dersSekmesi = "konu";
-    if (!slot) {
-      showBanner("Kayıtlı checkpoint yükleniyor…", false);
-      remoteFetch("/api/exam", "POST", { action: "practice-session-load", konu: checkpointOturumKonusu(c), modul: c.id }).then(function (r) {
-        if (!r.ok) throw new Error((r.data && r.data.error) || "Checkpoint yüklenemedi.");
-        if (!r.data.payload) { delete remotePracticeSessions[checkpointSlotAnahtari(c)]; showBanner("Kayıtlı yarım checkpoint bulunamadı.", true); render(); return; }
-        STATE.pausedCheckpoints[c.id] = r.data.payload;
-        remoteSavePracticeLocal(); checkpointDevamEt(c.id);
-      }).catch(function (e) { showBanner(e.message || "Checkpoint yüklenemedi.", true); });
-      return;
-    }
-    var sorular = checkpointSorular(c);
-    if (!sorular.length) { checkpointSlotSil(c); showBanner("Bu checkpoint'te gösterilecek soru bulunamadı.", true); render(); return; }
-    currentCheckpoint = { id: c.id, index: Math.min(Math.max(0, slot.index || 0), sorular.length - 1), bitti: false };
-    checkpointSeciliId = c.id; VIEW = "checkpointSoru"; render();
   }
   function checkpointOnceki() {
     if (!currentCheckpoint || currentCheckpoint.index === 0) return;
-    currentCheckpoint.index--; checkpointSlotYaz(); veriDegisti(); render();
+    currentCheckpoint.index--; veriDegisti(); render();
   }
   function checkpointSonraki() {
     var c = currentCheckpoint && checkpointBul(currentCheckpoint.id), sorular = checkpointSorular(c);
     if (!c || !currentCheckpoint) return;
-    if (currentCheckpoint.index < sorular.length - 1) { currentCheckpoint.index++; checkpointSlotYaz(); veriDegisti(); render(); return; }
-    currentCheckpoint.bitti = true; checkpointSlotSil(c); veriDegisti(); render();
+    if (currentCheckpoint.index < sorular.length - 1) { currentCheckpoint.index++; veriDegisti(); render(); return; }
+    currentCheckpoint.bitti = true; veriDegisti(); render();
   }
-  function checkpointKaydetVeCik() {
-    if (currentCheckpoint && !currentCheckpoint.bitti) { checkpointSlotYaz(); veriDegisti(true); }
-    // Kaydedip AI ders listesine döner.
+  function checkpointCik() {
+    // AI ders listesine döner; kaldığı yer saklanmaz.
     currentCheckpoint = null; checkpointSeciliKonu = null; checkpointSeciliId = null;
     VIEW = "menuTest"; render();
   }
@@ -4077,7 +3976,6 @@
           : '<div class="muted">Bir checkpoint maddesinin altındaki 🔖 Hatırlatıcı butonuna basarak buraya ekleyebilirsin.</div>') +
         "</div>";
       return '<div class="section-title">📌 Checkpoint</div>' +
-        checkpointYarimKalanKartlari() +
         '<div class="muted" style="margin:16px 0">Bölümün tamamını numaralı checkpoint\'ler hâlinde tarayan özetler. Hangi dersle çalışmak istersin?</div>' +
         hatirlaticiKart +
         '<div class="mode-grid">' + tiles + "</div>";
@@ -4097,17 +3995,13 @@
     var c = checkpointBul(checkpointSeciliId);
     if (!c) { checkpointSeciliId = null; return renderCheckpointListe(); }
     var soruSayisi = checkpointSorular(c).length;
-    var slot = checkpointSlotOku(c);
-    var devamVar = checkpointDevamVarMi(c);
-    var ilerleme = slot ? " · " + Math.min((slot.index || 0) + 1, soruSayisi) + " / " + soruSayisi + ". soruda kaldın" : "";
     return '<div class="link-row"><button class="btn ghost" data-action="checkpoint-konu-geri">← ' + escapeHtml(checkpointDersi(c)) + " Konuları</button></div>" +
       '<div class="card">' +
       '<div class="section-title" style="margin-bottom:2px">' + escapeHtml(c.title) + "</div>" +
       '<div class="muted" style="margin-bottom:18px">' + escapeHtml(c.subtitle) + "</div>" +
-      '<div class="desc">' + soruSayisi + " madde. İleri geri gezebilir, çıkınca kaldığın yerden devam edebilirsin." + ilerleme + "</div>" +
+      '<div class="desc">' + soruSayisi + " madde. İleri geri gezebilirsin; çıkınca baştan başlar." + "</div>" +
       '<div class="link-row" style="margin-top:20px">' +
-      (devamVar ? '<button class="btn primary" data-action="devam-checkpoint" data-id="' + escapeHtml(c.id) + '">Kaldığım Yerden Devam Et</button>' : '<button class="btn primary" data-action="start-checkpoint" data-id="' + escapeHtml(c.id) + '">Başlat</button>') +
-      (devamVar ? '<button class="btn" data-action="start-checkpoint" data-id="' + escapeHtml(c.id) + '">Baştan Başla</button>' : "") +
+      '<button class="btn primary" data-action="start-checkpoint" data-id="' + escapeHtml(c.id) + '">Başlat</button>' +
       "</div>" +
       "</div>";
   }
@@ -4118,11 +4012,11 @@
     if (!c || !sorular.length) { currentCheckpoint = null; return '<div class="card">Checkpoint artık bulunamadı. <button class="btn" data-action="open-checkpoint-liste">Listeye Dön</button></div>'; }
     if (currentCheckpoint.bitti) {
       // "Özetlere Dön" yerine aynı dersin listedeki sonraki bölümü (13 Eyl 2026 kullanıcı isteği);
-      // yarım oturumu varsa kaldığı yerden devam eder, dersin son bölümünde buton yok.
+      // dersin son bölümünde buton yok.
       var dersListesi = STATE.checkpoints.filter(function (x) { return x.konu === c.konu; });
       var sonraki = dersListesi[dersListesi.indexOf(c) + 1];
       var sonrakiBtn = sonraki
-        ? '<button class="btn primary" data-action="' + (checkpointDevamVarMi(sonraki) ? "devam-checkpoint" : "start-checkpoint") + '" data-id="' + escapeHtml(sonraki.id) + '">Sıradaki Bölüm →</button>'
+        ? '<button class="btn primary" data-action="start-checkpoint" data-id="' + escapeHtml(sonraki.id) + '">Sıradaki Bölüm →</button>'
         : "";
       var testHedefi = checkpointTestHedefi(c.id);
       var testBtn = testHedefi
@@ -4142,7 +4036,7 @@
       c.konu, (index + 1) + " / " + sorular.length,
       '<span>' + escapeHtml(c.title) + "</span>",
       '<button class="btn ghost" data-action="copy-checkpoint-soru" title="Maddeyi kopyala" aria-label="Maddeyi kopyala">📋</button>' +
-      '<button class="btn primary" data-action="checkpoint-kaydet-cik" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>'
+      '<button class="btn primary" data-action="checkpoint-cik" title="Çık" aria-label="Çık">✕<span class="genis-etiket"> Çık</span></button>'
     );
     return '<div class="card">' + ustHtml +
       '<div class="cp-content">' + sorular[index] + "</div>" +
@@ -4338,7 +4232,9 @@
   // kararları veremez).
   function flagBarHtml(guid, showPratikExtras) {
     var f = STATE.flags[guid] || bosFlagKaydi();
-    var hatirlaticiGuid = aiModu ? aiHatirlaticiAnahtari(guid) : guid;
+    // Geçmişten açılan AI denemesinde aiModu kapalıdır; işaret yine AI ad alanına yazılsın.
+    var aiKaydi = aiModu || (VIEW === "result" && lastResult && lastResult.ai);
+    var hatirlaticiGuid = aiKaydi ? aiHatirlaticiAnahtari(guid) : guid;
     var hatirlatici = STATE.flags[hatirlaticiGuid] || bosFlagKaydi();
     var pratikExtraBtns = (showPratikExtras && remoteAuth.isAdmin)
       ? '<button class="flag-btn' + (f.begenildi ? " active-star" : "") + '" data-action="toggle-flag" data-guid="' + guid + '" data-kind="begenildi">⭐ Beğendim — sınav bankasına aday</button>' +
@@ -4574,22 +4470,14 @@ function pratikEnIyiHtml(konu, modulKey) {
     return '<span class="konu-dot" style="background:' + renk + '" title="Bu oturumdaki sonuç"></span>';
   }
 
-  function pratikDevamHtml(konu, modulKey) {
-    // Modül kartında "yarım kaldı" rozeti — kaç soruda kalındığını gösterir.
-    var s = pratikSlotOku(konu, modulKey);
-    if (!s) return remotePracticeSessions[pratikSlotKey(konu, modulKey)]
-      ? '<div class="desc" style="color:var(--accent-strong);font-weight:600">▶ yarım kaldı · başka cihazdan devam edebilirsin</div>' : "";
-    return '<div class="desc" style="color:var(--accent-strong);font-weight:600">▶ yarım kaldı: ' +
-      Object.keys(s.cevaplar || {}).length + " / " + s.kuyruk.length + "</div>";
-  }
-
   function renderPratikModul() {
     var konu = pratikSeciliKonu;
     var geri = '<button class="btn" data-action="pratik-konu-geri">← Konulara Dön</button>';
     var baslik = konuDotHtml(konu) + escapeHtml(konu);
+    // Test sekmesi önce gelir ve varsayılan olarak açıktır (20 Eyl 2026 kullanıcı isteği).
     var sekmeler = '<div class="ders-sekmeler" role="tablist" aria-label="Ders bölümleri">' +
-      '<button class="btn' + (dersSekmesi === "konu" ? " active" : "") + '" role="tab" aria-selected="' + (dersSekmesi === "konu") + '" tabindex="' + (dersSekmesi === "konu" ? "0" : "-1") + '" data-action="select-ders-sekmesi" data-sekme="konu">Konu</button>' +
-      '<button class="btn' + (dersSekmesi === "test" ? " active" : "") + '" role="tab" aria-selected="' + (dersSekmesi === "test") + '" tabindex="' + (dersSekmesi === "test" ? "0" : "-1") + '" data-action="select-ders-sekmesi" data-sekme="test">Test</button></div>';
+      '<button class="btn' + (dersSekmesi === "test" ? " active" : "") + '" role="tab" aria-selected="' + (dersSekmesi === "test") + '" tabindex="' + (dersSekmesi === "test" ? "0" : "-1") + '" data-action="select-ders-sekmesi" data-sekme="test">Test</button>' +
+      '<button class="btn' + (dersSekmesi === "konu" ? " active" : "") + '" role="tab" aria-selected="' + (dersSekmesi === "konu") + '" tabindex="' + (dersSekmesi === "konu" ? "0" : "-1") + '" data-action="select-ders-sekmesi" data-sekme="konu">Konu</button></div>';
     if (dersSekmesi === "konu") {
       var checkpointler = STATE.checkpoints.filter(function (c) { return checkpointDersi(c) === konu; });
       var cpHtml = checkpointler.length ? checkpointler.map(function (c) {
@@ -4614,8 +4502,7 @@ function pratikEnIyiHtml(konu, modulKey) {
       var havuz = pratikHavuz(konu, m.key);
       return '<button class="mode-btn" ' + pratikTileStil(konu, m.key) + ' data-action="select-pratik-modul" data-modul="' + m.key + '">' +
         '<div class="title">' + escapeHtml(m.key + " — " + m.ad) + "</div>" +
-        '<div class="desc">' + havuz.length + " soru" + pratikEnIyiHtml(konu, m.key) + "</div>" +
-        pratikDevamHtml(konu, m.key) + "</button>";
+        '<div class="desc">' + havuz.length + " soru" + pratikEnIyiHtml(konu, m.key) + "</div>" + "</button>";
     }).join("");
     var testHtml = modlar.length ? '<div class="mode-grid">' + tiles + '</div>' : '<div class="muted">Bu ders için henüz test yok.</div>';
     return '<div class="link-row">' + geri + '</div>' +
@@ -4671,7 +4558,7 @@ function pratikEnIyiHtml(konu, modulKey) {
       q.konu, (currentPratik.index + 1) + " / " + currentPratik.kuyruk.length,
       '<span>' + karisikOnEki + escapeHtml(q.modul + " · " + modulAdi(q.konu, q.modul)) + "</span>",
       '<button class="btn ghost" data-action="copy-soru" data-scope="pratik" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋</button>' +
-      '<button class="btn primary" data-action="pratik-kaydet-cik" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>'
+      '<button class="btn primary" data-action="pratik-cik" title="Çık" aria-label="Çık">✕<span class="genis-etiket"> Çık</span></button>'
     );
 
     var harfler = ["A", "B", "C", "D"];
@@ -4872,7 +4759,10 @@ function pratikEnIyiHtml(konu, modulKey) {
     }
 
     var guids = Object.keys(STATE.flags);
-    var hatirlaticilar = guids.filter(function (g) { return STATE.flags[g].hatirlatici && soruByGuid(g); });
+    // Hatırlatıcılar ana karttaki (🔖 Hatırlatıcı İşaretli Sorular) listeyle aynı kaynaktan
+    // gelir: uzak + yerel birleşimi, açık olan havuza göre süzülmüş. Eskiden burada ham
+    // STATE.flags okunuyordu ve iki liste farklı çıkıyordu (20 Eyl 2026 kullanıcı bildirimi).
+    var hatirlaticilar = hatirlaticiGuidListesi(aiModu ? "ai" : "deneme").filter(soruByGuid);
     var hatalilar = guids.filter(function (g) { return STATE.flags[g].hatali && soruByGuid(g); });
     var begenilenler = guids.filter(function (g) { return STATE.flags[g].begenildi && practiceByGuid[aiFlagGuidCoz(g)]; });
     var kapsamDisilar = guids.filter(function (g) { return STATE.flags[g].kapsamDisi && practiceByGuid[aiFlagGuidCoz(g)]; });
@@ -4881,12 +4771,14 @@ function pratikEnIyiHtml(konu, modulKey) {
       if (list.length === 0) return '<span class="muted">Yok.</span>';
       return list.map(function (g) {
         var q = soruByGuid(g);
-        var f = STATE.flags[g];
+        // Hatırlatıcı anahtarı AI tarafında "ai:" önekli tutulur; "Kaldır" doğru kaydı silsin.
+        var anahtar = kind === "hatirlatici" && aiModu ? aiHatirlaticiAnahtari(g) : g;
+        var f = STATE.flags[anahtar] || bosFlagKaydi();
         return '<div class="review-item"><div class="review-q">' + soruHtml(q.soru) +
           '<span class="badge unverified">' + escapeHtml(konuEtiketi(g)) + "</span></div>" +
           (kind === "hatali" && f.hataNotu ? '<div class="review-expl">' + escapeHtml(f.hataNotu) + "</div>" : "") +
           '<div class="link-row" style="margin-top:8px">' +
-          '<button class="btn" data-action="toggle-flag" data-guid="' + g + '" data-kind="' + kind + '">Kaldır</button>' +
+          '<button class="btn" data-action="toggle-flag" data-guid="' + anahtar + '" data-kind="' + kind + '">Kaldır</button>' +
           "</div></div>";
       }).join("");
     }
@@ -4961,7 +4853,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     // denemeyi sessizce düşürürdü (AI denemesinin yarım kalan kaydı yok). Resmi deneme
     // ekranında da çubuk yoktur; çıkış yalnız "✕ Vazgeç" onayından geçer.
     if (aiModu && VIEW === "exam" && currentExam && currentExam.ai) {
-      $app().innerHTML = '<div class="' + shellClass + '">' + bannerHtml + html + "</div>";
+      ekraniYaz('<div class="' + shellClass + '">' + bannerHtml + html + "</div>");
       return;
     }
     if (aiModu) {
@@ -4977,7 +4869,21 @@ function pratikEnIyiHtml(konu, modulKey) {
     if (aiUyariAcik) html += '<div role="dialog" aria-modal="true" aria-labelledby="ai-uyari-baslik" data-action="close-ai-uyari" style="position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:100;padding:20px">' +
       '<div class="card" data-action="ai-uyari-govde" style="max-width:520px"><h2 id="ai-uyari-baslik">Yapay Zekâ Kaynakları</h2><p>' + escapeHtml(AI_KAYNAK_UYARISI) + '</p>' +
       '<button id="ai-uyari-anladim" class="btn primary" data-action="accept-ai-sources">Anladım</button></div></div>';
-    $app().innerHTML = '<div class="' + shellClass + '">' + bannerHtml + html + "</div>";
+    ekraniYaz('<div class="' + shellClass + '">' + bannerHtml + html + "</div>");
+  }
+
+  // Uzun bir soruda aşağı kaydırıp sonraki soruya geçince ekran aşağıda kalıyordu.
+  // Ekran ya da gösterilen sorunun sırası değiştiyse başa dön; aynı soruda kalan
+  // yeniden çizimlerde (şık seçme, banner, modal) kaydırma korunur.
+  var sonEkranAnahtari = null;
+  function ekraniYaz(icerik) {
+    var anahtar = VIEW + ":" + [
+      currentExam && currentExam.index, currentFlash && currentFlash.konum,
+      currentPratik && currentPratik.index, currentTekrar && currentTekrar.konum,
+      currentCheckpoint && currentCheckpoint.index
+    ].join(",");
+    $app().innerHTML = icerik;
+    if (anahtar !== sonEkranAnahtari) { sonEkranAnahtari = anahtar; window.scrollTo(0, 0); }
   }
 
   // ------------------------------------------------------------- olaylar --
@@ -5021,10 +4927,28 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "confirm-discard-exam-remote") discardExamRemote();
     else if (action === "cancel-discard-exam-remote") cancelDiscardExamRemote();
     else if (action === "open-history-remote") openHistoryRemote();
-    else if (action === "open-gecmis-detay") openGecmisDetay(t.getAttribute("data-id"));
-    else if (action === "gecmis-sayfa") remoteLoadGecmis(Number(t.getAttribute("data-page")));
+    else if (action === "select-istatistik-sekmesi") {
+      var isekme = t.getAttribute("data-sekme");
+      if (isekme === "resmi" || isekme === "ai") {
+        istatistikSekmesi = isekme;
+        gecmisSilConfirmId = null;
+        if (isekme === "ai" && !aiGecmis) remoteLoadAiGecmis(0);
+        render();
+      }
+    }
+    else if (action === "open-gecmis-detay") {
+      if (t.getAttribute("data-kaynak") === "ai") openAiGecmisDetay(t.getAttribute("data-id"));
+      else openGecmisDetay(t.getAttribute("data-id"));
+    }
+    else if (action === "gecmis-sayfa") {
+      if (t.getAttribute("data-kaynak") === "ai") remoteLoadAiGecmis(Number(t.getAttribute("data-page")));
+      else remoteLoadGecmis(Number(t.getAttribute("data-page")));
+    }
     else if (action === "request-delete-gecmis") requestDeleteGecmis(t.getAttribute("data-id"));
-    else if (action === "confirm-delete-gecmis") confirmDeleteGecmis(t.getAttribute("data-id"));
+    else if (action === "confirm-delete-gecmis") {
+      if (t.getAttribute("data-kaynak") === "ai") confirmDeleteAiGecmis(t.getAttribute("data-id"));
+      else confirmDeleteGecmis(t.getAttribute("data-id"));
+    }
     else if (action === "cancel-delete-gecmis") cancelDeleteGecmis();
     else if (action === "copy-exam-code") kopyalaPano(t.getAttribute("data-kod"));
     else if (action === "duyuru-kaydir") duyuruKaydir(parseInt(t.getAttribute("data-yon"), 10));
@@ -5074,7 +4998,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "select-pratik-konu") {
       var pk = t.getAttribute("data-konu");
       if (KONU_SIRA.indexOf(pk) !== -1) {
-        pratikSeciliKonu = pk; dersSekmesi = STATE.checkpoints.some(function (c) { return checkpointDersi(c) === pk; }) ? "konu" : "test";
+        pratikSeciliKonu = pk; dersSekmesi = "test";
         pratikSeciliModul = null; VIEW = "pratikModul"; render();
       }
     }
@@ -5082,7 +5006,7 @@ function pratikEnIyiHtml(konu, modulKey) {
       var sekme = t.getAttribute("data-sekme");
       if (VIEW === "pratikModul" && (sekme === "konu" || sekme === "test")) { dersSekmesi = sekme; render(); }
     }
-    else if (action === "pratik-konu-geri") { VIEW = "menuTest"; pratikSeciliKonu = null; dersSekmesi = "konu"; pratikSeciliModul = null; render(); }
+    else if (action === "pratik-konu-geri") { VIEW = "menuTest"; pratikSeciliKonu = null; dersSekmesi = "test"; pratikSeciliModul = null; render(); }
     else if (action === "open-checkpoint-liste") { checkpointSeciliKonu = null; checkpointSeciliId = null; VIEW = "checkpointListe"; render(); }
     else if (action === "select-checkpoint-konu") { checkpointSeciliKonu = t.getAttribute("data-konu"); VIEW = "checkpointListe"; render(); }
     else if (action === "checkpoint-konu-geri") { checkpointSeciliId = null; VIEW = pratikSeciliKonu ? "pratikModul" : "checkpointListe"; render(); }
@@ -5092,37 +5016,28 @@ function pratikEnIyiHtml(konu, modulKey) {
       if (secilenCheckpoint) { checkpointSeciliKonu = secilenCheckpoint.konu; pratikSeciliKonu = checkpointDersi(secilenCheckpoint); dersSekmesi = "konu"; VIEW = "checkpointDetay"; render(); }
     }
     else if (action === "start-checkpoint") checkpointBaslat(t.getAttribute("data-id"));
-    else if (action === "devam-checkpoint") checkpointDevamEt(t.getAttribute("data-id"));
     else if (action === "checkpoint-onceki") checkpointOnceki();
     else if (action === "checkpoint-sonraki") checkpointSonraki();
     else if (action === "checkpoint-testi-coz") {
       var hedef = currentCheckpoint && checkpointTestHedefi(currentCheckpoint.id);
       if (hedef && hedef.konu === t.getAttribute("data-konu") && hedef.modul === t.getAttribute("data-modul")) {
         currentCheckpoint = null; pratikSeciliKonu = hedef.konu; dersSekmesi = "test"; pratikSeciliModul = hedef.modul;
-        if (pratikSlotOku(hedef.konu, hedef.modul) || remotePracticeSessions[pratikSlotKey(hedef.konu, hedef.modul)]) devamPratikOturum(hedef.konu, hedef.modul);
-        else startPratikOturum(hedef.konu, hedef.modul, "siray");
+        startPratikOturum(hedef.konu, hedef.modul, "siray");
       }
     }
-    else if (action === "checkpoint-kaydet-cik") checkpointKaydetVeCik();
+    else if (action === "checkpoint-cik") checkpointCik();
     else if (action === "copy-checkpoint-soru") kopyalaCheckpointMaddesi();
     else if (action === "open-checkpoint-hatirlatici") { VIEW = "checkpointHatirlatici"; render(); }
     else if (action === "checkpoint-hatirlatici-geri") { VIEW = pratikSeciliKonu ? "pratikModul" : "menuTest"; dersSekmesi = "konu"; render(); }
     else if (action === "export-checkpoint-hatirlatici-word") exportCheckpointHatirlaticiWord();
     else if (action === "select-pratik-modul") {
       var secilenModul = t.getAttribute("data-modul");
-      // Tek tık: yarım kalan oturum varsa kaldığı yerden devam, yoksa "Sırayla" başlar.
-      // Sırayla/Az Görülenler/Yanlışlar seçim paneli 12 Eyl 2026'da kaldırıldı (kullanıcı isteği).
-      if (pratikSlotOku(pratikSeciliKonu, secilenModul) || remotePracticeSessions[pratikSlotKey(pratikSeciliKonu, secilenModul)]) {
-        pratikSeciliModul = secilenModul; devamPratikOturum(pratikSeciliKonu, secilenModul);
-      } else startPratikOturum(pratikSeciliKonu, secilenModul, "siray");
+      // Tek tık: modül "Sırayla" başlar. Sırayla/Az Görülenler/Yanlışlar seçim paneli
+      // 12 Eyl 2026'da, yarım kalan oturum 20 Eyl 2026'da kaldırıldı (kullanıcı isteği).
+      pratikSeciliModul = secilenModul;
+      startPratikOturum(pratikSeciliKonu, secilenModul, "siray");
     }
-    else if (action === "devam-pratik") {
-      var dk = t.getAttribute("data-konu"), dm = t.getAttribute("data-modul");
-      pratikSeciliKonu = dk; pratikSeciliModul = dm;
-      devamPratikOturum(dk, dm);
-    }
-    else if (action === "pratik-slot-at") pratikSlotAt(t.getAttribute("data-konu"), t.getAttribute("data-modul"));
-    else if (action === "pratik-kaydet-cik") pratikKaydetVeCik();
+    else if (action === "pratik-cik") pratikCik();
     else if (action === "start-pratik-flash") startFlash("practice", t.getAttribute("data-konu"));
     else if (action === "select-pratik-option") selectPratikOption(parseInt(t.getAttribute("data-idx"), 10));
     else if (action === "pratik-sonraki") nextPratikSoru();
@@ -5217,7 +5132,6 @@ function pratikEnIyiHtml(konu, modulKey) {
   // Sekme kapanırken/gizlenirken son bir yerel yazım — publish'e zaman kalmasa da veri durur.
   function sonOturumuKaydet() {
     if (VIEW === "exam" && currentExam && !currentExam.uzak) { examSlotYaz(); bumpRev(); }
-    if (VIEW === "pratikSoru" && currentPratik && !currentPratik.bitti) { pratikSlotYaz(); bumpRev(); }
     lsKaydet();
   }
   window.addEventListener("pagehide", sonOturumuKaydet);

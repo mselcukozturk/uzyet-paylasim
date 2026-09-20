@@ -37,7 +37,93 @@ type AttemptQuestion = typeof schema.examAttemptQuestions.$inferSelect;
 // practice_sessions içinde ayrılmış anahtar: AI Günün Denemesi sonuçları (topic), gün (modul).
 // Gerçek bir konu adı değil — pratik oturum anahtarı olarak kullanma (pBest'teki '__pBest__' gibi).
 const AI_DAILY_SLOT = '__aiGunun__';
+// Biten AI denemeleri: topic = '__aiDeneme__', modul = deneme kimliği. Resmi denemenin
+// aksine sunucuda oturum açılmadığı için sonuç istemciden tek parça gelir (skor, konu
+// kırılımı ve 50 sorunun anlık görüntüsü); istatistik sayfasındaki "AI Denemesi" sekmesi
+// resmi sekmenin alanlarını buradan hesaplar. Gerçek bir konu adı değil.
+const AI_EXAM_SLOT = '__aiDeneme__';
+const AI_EXAM_PAGE_SIZE = 20;
 const COMMUNITY_AVERAGE_MIN_CORRECT = 27;
+
+// ---- AI denemesi geçmişi ve istatistiği ----
+// Resmi tarafın examStats/examTopicStats alanlarının birebir aynısını, sunucuda sınav
+// oturumu olmayan AI denemelerinin kaydedilmiş özetlerinden üretir.
+type AiExamOzet = {
+  examCode?: string;
+  aiGunu?: string | null;
+  bitisISO?: string;
+  sureSaniye?: number;
+  skor?: { dogru?: number; yanlis?: number; bos?: number };
+  konuKirilim?: Record<string, { dogru?: number; yanlis?: number; bos?: number }>;
+};
+type AiExamRow = { id: string; updatedAt: Date; ozet: AiExamOzet };
+
+function aiExamSayi(value: unknown) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+}
+
+function aiExamBitis(row: AiExamRow) {
+  const raw = row.ozet?.bitisISO ? Date.parse(row.ozet.bitisISO) : NaN;
+  return Number.isNaN(raw) ? row.updatedAt.getTime() : raw;
+}
+
+function aiExamIstatistik(rows: AiExamRow[]) {
+  const simdi = Date.now();
+  const gun = 24 * 60 * 60 * 1000;
+  const hafta = rows.filter((row) => simdi - aiExamBitis(row) <= 7 * gun);
+  const ucGun = rows.filter((row) => simdi - aiExamBitis(row) <= 3 * gun);
+  const dogru = (row: AiExamRow) => aiExamSayi(row.ozet?.skor?.dogru);
+  const toplam = (row: AiExamRow) => dogru(row) + aiExamSayi(row.ozet?.skor?.yanlis) + aiExamSayi(row.ozet?.skor?.bos);
+  const ortalama = (list: AiExamRow[], f: (row: AiExamRow) => number) =>
+    list.length ? list.reduce((sum, row) => sum + f(row), 0) / list.length : 0;
+  const bir = (n: number) => Math.round(n * 10) / 10;
+
+  const examStats = rows.length ? {
+    count: rows.length,
+    avgPercent: Math.round(ortalama(rows, (row) => (toplam(row) ? dogru(row) / toplam(row) * 100 : 0))),
+    avgCorrect: bir(ortalama(rows, dogru)),
+    avgSeconds: Math.round(ortalama(rows, (row) => aiExamSayi(row.ozet?.sureSaniye))),
+    weekCount: hafta.length,
+    weekAvgCorrect: hafta.length ? bir(ortalama(hafta, dogru)) : null,
+    threeDayCount: ucGun.length,
+    threeDayAvgCorrect: ucGun.length ? bir(ortalama(ucGun, dogru)) : null,
+  } : null;
+
+  type KonuToplam = { asked: number; correct: number; weekAsked: number; weekCorrect: number; threeDayAsked: number; threeDayCorrect: number };
+  const konular = new Map<string, KonuToplam>();
+  for (const row of rows) {
+    const yas = simdi - aiExamBitis(row);
+    const haftaIci = yas <= 7 * gun;
+    const ucGunIci = yas <= 3 * gun;
+    for (const [topic, k] of Object.entries(row.ozet?.konuKirilim ?? {})) {
+      const sorulan = aiExamSayi(k?.dogru) + aiExamSayi(k?.yanlis) + aiExamSayi(k?.bos);
+      const bilinen = aiExamSayi(k?.dogru);
+      const entry = konular.get(topic) ?? { asked: 0, correct: 0, weekAsked: 0, weekCorrect: 0, threeDayAsked: 0, threeDayCorrect: 0 };
+      entry.asked += sorulan;
+      entry.correct += bilinen;
+      if (haftaIci) { entry.weekAsked += sorulan; entry.weekCorrect += bilinen; }
+      if (ucGunIci) { entry.threeDayAsked += sorulan; entry.threeDayCorrect += bilinen; }
+      konular.set(topic, entry);
+    }
+  }
+  const examTopicStats = [...konular.entries()].map(([topic, v]) => ({
+    topic,
+    asked: v.asked,
+    correct: v.correct,
+    avgAsked: rows.length ? v.asked / rows.length : 0,
+    avgCorrect: rows.length ? v.correct / rows.length : 0,
+    percent: v.asked ? Math.round(v.correct / v.asked * 100) : 0,
+    weekAvgAsked: v.weekAsked ? v.weekAsked / hafta.length : null,
+    weekAvgCorrect: v.weekAsked ? v.weekCorrect / hafta.length : null,
+    weekPercent: v.weekAsked ? Math.round(v.weekCorrect / v.weekAsked * 100) : null,
+    threeDayAvgAsked: v.threeDayAsked ? v.threeDayAsked / ucGun.length : null,
+    threeDayAvgCorrect: v.threeDayAsked ? v.threeDayCorrect / ucGun.length : null,
+    threeDayPercent: v.threeDayAsked ? Math.round(v.threeDayCorrect / v.threeDayAsked * 100) : null,
+  })).sort((a, b) => b.avgAsked - a.avgAsked || a.topic.localeCompare(b.topic, 'tr'));
+
+  return { examStats, examTopicStats };
+}
 
 function fail(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
@@ -479,6 +565,72 @@ async function handlePost(request: Request) {
         avgCorrect: mine && dogrular.length
           ? Math.round(dogrular.reduce((sum, value) => sum + value, 0) / dogrular.length * 10) / 10
           : null,
+      });
+    }
+
+    // AI denemesi geçmişi: kaydet / listele+istatistik / tek denemeyi aç / sil.
+    // Liste ve istatistik sorgusu 50 sorunun anlık görüntüsünü (soruKayitlari, sorular,
+    // cevaplar) jsonb'den düşürerek okur; tam gövde yalnız "ai-exam-detail"de döner.
+    if (body.action === 'ai-exam-save' || body.action === 'ai-exam-history'
+      || body.action === 'ai-exam-detail' || body.action === 'ai-exam-delete') {
+      const denied = requireAiSources(profile);
+      if (denied) return denied;
+
+      if (body.action === 'ai-exam-save') {
+        const payload = body.payload as AiExamOzet | null;
+        if (!payload || typeof payload !== 'object') return fail('Deneme verisi gerekli.', 400);
+        const dogru = Number(payload.skor?.dogru);
+        if (!Number.isInteger(dogru) || dogru < 0 || dogru > 50) return fail('Deneme sonucu geçersiz.', 400);
+        if (Buffer.byteLength(JSON.stringify(payload), 'utf8') > 256 * 1024) return fail('Deneme verisi 256 KB sınırını aşıyor.', 413);
+        const id = crypto.randomUUID();
+        await db.insert(schema.practiceSessions)
+          .values({ userId: user.id, topic: AI_EXAM_SLOT, modul: id, payload });
+        return NextResponse.json({ ok: true, id });
+      }
+
+      if (body.action === 'ai-exam-detail' || body.action === 'ai-exam-delete') {
+        if (typeof body.attemptId !== 'string' || !body.attemptId.trim()) return fail('Deneme kimliği gerekli.', 400);
+        const where = and(eq(schema.practiceSessions.userId, user.id),
+          eq(schema.practiceSessions.topic, AI_EXAM_SLOT), eq(schema.practiceSessions.modul, body.attemptId));
+        if (body.action === 'ai-exam-delete') {
+          await db.delete(schema.practiceSessions).where(where);
+          return NextResponse.json({ ok: true });
+        }
+        const [row] = await db.select({ payload: schema.practiceSessions.payload })
+          .from(schema.practiceSessions).where(where).limit(1);
+        if (!row) return fail('Deneme bulunamadı.', 404);
+        return NextResponse.json({ payload: row.payload });
+      }
+
+      const rows: AiExamRow[] = (await db.select({
+        id: schema.practiceSessions.modul,
+        updatedAt: schema.practiceSessions.updatedAt,
+        ozet: sql<AiExamOzet | null>`${schema.practiceSessions.payload} - 'soruKayitlari' - 'sorular' - 'cevaplar'`,
+      }).from(schema.practiceSessions)
+        .where(and(eq(schema.practiceSessions.userId, user.id), eq(schema.practiceSessions.topic, AI_EXAM_SLOT))))
+        .map((row) => ({ id: row.id, updatedAt: row.updatedAt, ozet: row.ozet ?? {} }));
+      rows.sort((a, b) => aiExamBitis(b) - aiExamBitis(a));
+
+      const page = Math.max(0, Number(body.page) || 0);
+      const attempts = rows.slice(page * AI_EXAM_PAGE_SIZE, (page + 1) * AI_EXAM_PAGE_SIZE).map((row) => {
+        const skor = {
+          correct: aiExamSayi(row.ozet.skor?.dogru),
+          wrong: aiExamSayi(row.ozet.skor?.yanlis),
+          blank: aiExamSayi(row.ozet.skor?.bos),
+        };
+        return {
+          id: row.id,
+          mode: 'ai' as const,
+          aiGunu: row.ozet.aiGunu ?? null,
+          examCode: row.ozet.examCode ?? '',
+          updatedAt: new Date(aiExamBitis(row)).toISOString(),
+          elapsedSeconds: aiExamSayi(row.ozet.sureSaniye),
+          totalCount: skor.correct + skor.wrong + skor.blank,
+          score: skor,
+        };
+      });
+      return NextResponse.json({
+        attempts, total: rows.length, page, pageSize: AI_EXAM_PAGE_SIZE, ...aiExamIstatistik(rows),
       });
     }
 

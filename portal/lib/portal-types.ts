@@ -153,6 +153,11 @@ export type ExamApiRequest =
   // sonuc verilirse günün AI denemesi sonucu kaydedilir (ilk kayıt sayılır); her iki
   // durumda da günün tohumu + çözen sayısı + ortalama döner.
   | { action: 'ai-daily'; sonuc?: { dogru: number; yanlis: number; bos: number; sureSaniye: number } }
+  // AI denemesi geçmişi: sunucuda sınav oturumu yok, biten deneme tek parça kaydedilir.
+  | { action: 'ai-exam-save'; payload: unknown }
+  | { action: 'ai-exam-history'; page?: number }
+  | { action: 'ai-exam-detail'; attemptId: string }
+  | { action: 'ai-exam-delete'; attemptId: string }
   | { action: 'dashboard' }
   | { action: 'start'; mode: ExamMode; examCode?: string; daily?: boolean }
   | { action: 'resume'; attemptId: string }

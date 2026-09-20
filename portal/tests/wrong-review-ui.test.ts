@@ -97,7 +97,9 @@ void test('Deneme ve AI kartları aynı motoru ayrı havuzlarla kullanır', () =
   assert.match(finishAi, /recordPratikStat\(guid, dogru/);
   assert.doesNotMatch(finishAi, /if \(pratikGuid\[guid\]\) recordPratikStat/);
   assert.match(kaydet, /currentTekrar\.havuz === "ai"/);
-  assert.match(flagBar, /aiModu \? aiHatirlaticiAnahtari\(guid\) : guid/);
+  // Geçmişten açılan AI denemesinde aiModu kapalıdır; işaret yine AI ad alanına yazılır.
+  assert.match(flagBar, /var aiKaydi = aiModu \|\| \(VIEW === "result" && lastResult && lastResult\.ai\)/);
+  assert.match(flagBar, /aiKaydi \? aiHatirlaticiAnahtari\(guid\) : guid/);
   assert.match(flagBar, /data-guid="' \+ hatirlaticiGuid \+ '" data-kind="hatirlatici"/);
 });
 

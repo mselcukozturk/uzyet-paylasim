@@ -61,4 +61,8 @@ export const MIGRATIONS: readonly Migration[] = [
     name: "0013_exam_code_index.sql",
     content: "CREATE INDEX IF NOT EXISTS \"exam_attempts_exam_code_idx\" ON \"exam_attempts\" (\"exam_code\");\n",
   },
+  {
+    name: "0014_drop_paused_sessions.sql",
+    content: "-- Yarım kalan test/checkpoint oturumu 20 Eyl 2026'da kaldırıldı (kullanıcı isteği).\n-- Geriye kalan satırlar artık hiçbir yerden okunmuyor; practice_sessions yalnız\n-- ayrılmış anahtarları taşısın diye temizleniyor:\n--   '__pBest__'    modül kartındaki en iyi sonuç\n--   '__aiGunun__'  AI Günün Denemesi'nin ilk sonucu\n--   '__aiDeneme__' biten AI denemesi (AI istatistik sekmesinin kaynağı)\n-- Tekrar çalıştırılabilir: silinecek satır kalmazsa hiçbir şey yapmaz.\nDELETE FROM \"practice_sessions\" WHERE \"topic\" NOT IN ('__pBest__', '__aiGunun__', '__aiDeneme__');\n",
+  },
 ];
