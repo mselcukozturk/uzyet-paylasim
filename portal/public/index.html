@@ -304,14 +304,13 @@
   .muted { color: var(--text-muted); }
   .history-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: center; font-size: 0.9rem; }
   .history-row .when { color: var(--text-muted); }
-  .konu-ortalama-baslik, .konu-ortalama-satir { display: grid; grid-template-columns: minmax(120px, 1fr) 8.2ch 1.6ch 8.2ch 1.6ch 8.2ch; gap: 6px; align-items: center; font-size: 0.9rem; }
+  .konu-ortalama-baslik, .konu-ortalama-satir { display: grid; grid-template-columns: minmax(120px, 1fr) repeat(3, 8.2ch); gap: 12px; align-items: center; font-size: 0.9rem; }
   .konu-ortalama-baslik { color: var(--text-muted); padding: 2px 0 6px; border-bottom: 1px solid var(--border); }
   .konu-ortalama-baslik > span { font-size: 0.72rem; }
   .konu-ortalama-satir { padding: 10px 0; border-bottom: 1px solid var(--border); }
   .konu-ortalama-deger { font-variant-numeric: tabular-nums; text-align: center; white-space: nowrap; }
-  .konu-ortalama-ok { text-align: center; font-weight: 700; }
   @media (max-width: 560px) {
-    .konu-ortalama-baslik, .konu-ortalama-satir { grid-template-columns: minmax(0, 1fr) 1.4ch minmax(0, 1fr) 1.4ch minmax(0, 1fr); gap: 4px; font-size: 0.82rem; }
+    .konu-ortalama-baslik, .konu-ortalama-satir { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; font-size: 0.82rem; }
     .konu-ortalama-baslik .konu-ortalama-konu { display: none; }
     .konu-ortalama-satir .konu-ortalama-konu { grid-column: 1 / -1; margin-bottom: 4px; }
     .konu-ortalama-baslik > span { font-size: 0.68rem; }
@@ -2239,38 +2238,41 @@
     var ts = (remoteDash && remoteDash.examTopicStats) || [];
     if (!ts.length) return "";
     var satirlar = ts.map(function (t) {
-      var pct = t.percent || 0;
       var ortalamaHtml = fmtOrt(t.avgCorrect) + " / " + fmtOrt(t.avgAsked);
       var haftaHtml = "—";
-      var haftaTrendHtml = "";
+      var haftaNitelik = "";
       if (t.weekPercent != null) {
         haftaHtml = fmtOrt(t.weekAvgCorrect) + " / " + fmtOrt(t.weekAvgAsked);
-        var ok = t.weekPercent > pct ? "↑" : t.weekPercent < pct ? "↓" : "→";
-        var okRenk = t.weekPercent > pct ? "var(--good)" : t.weekPercent < pct ? "var(--bad)" : "var(--text-muted)";
-        var okEtiket = "Son 7 gün " + haftaHtml + ", tüm zamanlar " + ortalamaHtml;
-        haftaTrendHtml = '<span style="color:' + okRenk + '" title="' + okEtiket + '" aria-label="' + okEtiket + '">' + ok + "</span>";
+        var haftaDeger = Math.round((Number(t.weekAvgCorrect) || 0) * 10);
+        var genelDeger = Math.round((Number(t.avgCorrect) || 0) * 10);
+        if (haftaDeger !== genelDeger) {
+          var haftaYon = haftaDeger > genelDeger ? "yükseldi" : "düştü";
+          var haftaRenk = haftaDeger > genelDeger ? "var(--good)" : "var(--bad)";
+          haftaNitelik = ' style="color:' + haftaRenk + '" title="Son 7 gün ortalaması ' + haftaYon + '" aria-label="Son 7 gün ' + haftaHtml + ', tüm zamanlara göre ' + haftaYon + '"';
+        }
       }
       var ucGunHtml = "—";
-      var ucGunTrendHtml = "";
+      var ucGunNitelik = "";
       if (t.threeDayPercent != null && t.weekPercent != null) {
         ucGunHtml = fmtOrt(t.threeDayAvgCorrect) + " / " + fmtOrt(t.threeDayAvgAsked);
-        var ucGunOk = t.threeDayPercent > t.weekPercent ? "↑" : t.threeDayPercent < t.weekPercent ? "↓" : "→";
-        var ucGunRenk = t.threeDayPercent > t.weekPercent ? "var(--good)" : t.threeDayPercent < t.weekPercent ? "var(--bad)" : "var(--text-muted)";
-        var ucGunEtiket = "Son 3 gün " + ucGunHtml + ", son 7 gün " + haftaHtml;
-        ucGunTrendHtml = '<span style="color:' + ucGunRenk + '" title="' + ucGunEtiket + '" aria-label="' + ucGunEtiket + '">' + ucGunOk + "</span>";
+        var ucGunDeger = Math.round((Number(t.threeDayAvgCorrect) || 0) * 10);
+        var ucGunKiyas = Math.round((Number(t.weekAvgCorrect) || 0) * 10);
+        if (ucGunDeger !== ucGunKiyas) {
+          var ucGunYon = ucGunDeger > ucGunKiyas ? "yükseldi" : "düştü";
+          var ucGunRenk = ucGunDeger > ucGunKiyas ? "var(--good)" : "var(--bad)";
+          ucGunNitelik = ' style="color:' + ucGunRenk + '" title="Son 3 gün ortalaması ' + ucGunYon + '" aria-label="Son 3 gün ' + ucGunHtml + ', son 7 güne göre ' + ucGunYon + '"';
+        }
       }
       return '<div class="konu-ortalama-satir">' +
         '<span class="konu-ortalama-konu" style="display:flex;align-items:center;min-width:0">' + konuDotHtml(t.topic) + "<span>" + escapeHtml(t.topic) + "</span></span>" +
-        '<span class="konu-ortalama-deger">' + ucGunHtml + "</span>" +
-        '<span class="konu-ortalama-ok">' + ucGunTrendHtml + "</span>" +
-        '<span class="konu-ortalama-deger">' + haftaHtml + "</span>" +
-        '<span class="konu-ortalama-ok">' + haftaTrendHtml + "</span>" +
+        '<span class="konu-ortalama-deger"' + ucGunNitelik + ">" + ucGunHtml + "</span>" +
+        '<span class="konu-ortalama-deger"' + haftaNitelik + ">" + haftaHtml + "</span>" +
         '<span class="konu-ortalama-deger">' + ortalamaHtml + "</span></div>";
     }).join("");
     return '<div class="card" style="margin-bottom:16px">' +
       '<div class="section-title">Konu bazlı ortalama</div>' +
-      '<div class="muted" style="font-size:0.82rem;margin-bottom:8px">Deneme başına ortalama doğru / soru sayısı. Oklar bir önceki döneme göre değişimi gösterir.</div>' +
-      '<div class="konu-ortalama-baslik"><span class="konu-ortalama-konu">Ders</span><span class="konu-ortalama-deger">Son 3 gün</span><span></span><span class="konu-ortalama-deger">Son 7 gün</span><span></span><span class="konu-ortalama-deger">Tüm zamanlar</span></div>' +
+      '<div class="muted" style="font-size:0.82rem;margin-bottom:8px">Deneme başına ortalama doğru / soru sayısı. Yeşil yükselişi, kırmızı düşüşü gösterir.</div>' +
+      '<div class="konu-ortalama-baslik"><span class="konu-ortalama-konu">Ders</span><span class="konu-ortalama-deger">Son 3 gün</span><span class="konu-ortalama-deger">Son 7 gün</span><span class="konu-ortalama-deger">Tüm zamanlar</span></div>' +
       satirlar + "</div>";
   }
 

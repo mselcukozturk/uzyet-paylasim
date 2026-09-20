@@ -47,14 +47,17 @@ void test('Geçmiş: konu bazlı ortalama kartı 3 gün, 7 gün ve tüm zamanlar
     examTopicStats: [
       { topic: 'Kredi', avgAsked: 8, avgCorrect: 6, percent: 75, weekAvgAsked: 8, weekAvgCorrect: 6.4, weekPercent: 80, threeDayAvgAsked: 8, threeDayAvgCorrect: 7.2, threeDayPercent: 90 },
       { topic: 'Mali Analiz', avgAsked: 5, avgCorrect: 1.6, percent: 32, weekAvgAsked: 4, weekAvgCorrect: 1.2, weekPercent: 30, threeDayAvgAsked: 4, threeDayAvgCorrect: 1, threeDayPercent: 25 },
-      { topic: 'Hukuk', avgAsked: 4, avgCorrect: 2, percent: 50, weekAvgAsked: 4, weekAvgCorrect: 2, weekPercent: 50, threeDayAvgAsked: 4, threeDayAvgCorrect: 2, threeDayPercent: 50 },
+      { topic: 'Kambiyo', avgAsked: 4, avgCorrect: 1.44, percent: 36, weekAvgAsked: 4, weekAvgCorrect: 1.39, weekPercent: 34.75, threeDayAvgAsked: 4, threeDayAvgCorrect: 1.36, threeDayPercent: 34 },
     ],
   });
   assert.match(out, /Konu bazlı ortalama/);
   assert.match(out, /Son 3 gün[\s\S]*?Son 7 gün[\s\S]*?Tüm zamanlar/);
-  assert.match(out, /Kredi<\/span>[\s\S]*?7,2 \/ 8,0[\s\S]*?color:var\(--good\)[\s\S]*?>↑<\/span>[\s\S]*?6,4 \/ 8,0[\s\S]*?color:var\(--good\)[\s\S]*?>↑<\/span>[\s\S]*?6,0 \/ 8,0/);
-  assert.match(out, /Mali Analiz<\/span>[\s\S]*?1,0 \/ 4,0[\s\S]*?color:var\(--bad\)[\s\S]*?>↓<\/span>[\s\S]*?1,2 \/ 4,0[\s\S]*?color:var\(--bad\)[\s\S]*?>↓<\/span>[\s\S]*?1,6 \/ 5,0/);
-  assert.match(out, /Hukuk<\/span>[\s\S]*?2,0 \/ 4,0[\s\S]*?color:var\(--text-muted\)[\s\S]*?>→<\/span>[\s\S]*?2,0 \/ 4,0[\s\S]*?color:var\(--text-muted\)[\s\S]*?>→<\/span>[\s\S]*?2,0 \/ 4,0/);
+  assert.match(out, /Kredi<\/span>[\s\S]*?<span class="konu-ortalama-deger" style="color:var\(--good\)"[^>]*>7,2 \/ 8,0<\/span>[\s\S]*?<span class="konu-ortalama-deger" style="color:var\(--good\)"[^>]*>6,4 \/ 8,0<\/span>[\s\S]*?<span class="konu-ortalama-deger">6,0 \/ 8,0<\/span>/);
+  assert.match(out, /Mali Analiz<\/span>[\s\S]*?<span class="konu-ortalama-deger" style="color:var\(--bad\)"[^>]*>1,0 \/ 4,0<\/span>[\s\S]*?<span class="konu-ortalama-deger" style="color:var\(--bad\)"[^>]*>1,2 \/ 4,0<\/span>[\s\S]*?<span class="konu-ortalama-deger">1,6 \/ 5,0<\/span>/);
+  const kambiyo = out.split('<div class="konu-ortalama-satir">').find((satir) => satir.includes('Kambiyo'))!;
+  assert.match(kambiyo, /1,4 \/ 4,0[\s\S]*?1,4 \/ 4,0[\s\S]*?1,4 \/ 4,0/);
+  assert.doesNotMatch(kambiyo, /style="color:/);
+  assert.doesNotMatch(out, /[↑↓→]|konu-ortalama-ok/);
   assert.doesNotMatch(out, /bar-track|bar-fill|%75/);
   assert.match(out, /class="konu-ortalama-satir"/);
 });
@@ -73,13 +76,17 @@ void test('Geçmiş: konu ortalaması sütun başlıkları değerlerle aynı eks
   const gecici = mkdtempSync(join(tmpdir(), 'konu-ortalama-'));
   const dosya = join(gecici, 'index.html');
   writeFileSync(dosya, `<!doctype html><style>${css}</style><main style="width:800px">
-    <div class="konu-ortalama-baslik"><span class="konu-ortalama-konu">Ders</span><span class="konu-ortalama-deger">Son 3 gün</span><span></span><span class="konu-ortalama-deger">Son 7 gün</span><span></span><span class="konu-ortalama-deger">Tüm zamanlar</span></div>
-    <div class="konu-ortalama-satir"><span class="konu-ortalama-konu">Kredi</span><span class="konu-ortalama-deger">5,2 / 8,0</span><span class="konu-ortalama-ok">↓</span><span class="konu-ortalama-deger">6,0 / 8,0</span><span class="konu-ortalama-ok">↓</span><span class="konu-ortalama-deger">6,2 / 8,0</span></div>
-    <script>const merkezler=s=>[...document.querySelectorAll(s)].map(e=>{const r=e.getBoundingClientRect();return r.x+r.width/2});const b=merkezler('.konu-ortalama-baslik .konu-ortalama-deger');const d=merkezler('.konu-ortalama-satir .konu-ortalama-deger');document.body.dataset.sapma=Math.max(...b.map((x,i)=>Math.abs(x-d[i]))).toFixed(2)</script>`);
+    <div class="konu-ortalama-baslik"><span class="konu-ortalama-konu">Ders</span><span class="konu-ortalama-deger">Son 3 gün</span><span class="konu-ortalama-deger">Son 7 gün</span><span class="konu-ortalama-deger">Tüm zamanlar</span></div>
+    <div class="konu-ortalama-satir"><span class="konu-ortalama-konu">Kredi</span><span class="konu-ortalama-deger">5,2 / 8,0</span><span class="konu-ortalama-deger">6,0 / 8,0</span><span class="konu-ortalama-deger">6,2 / 8,0</span></div>
+    <script>const merkezler=s=>[...document.querySelectorAll(s)].map(e=>{const r=e.getBoundingClientRect();return r.x+r.width/2});const b=merkezler('.konu-ortalama-baslik .konu-ortalama-deger');const d=merkezler('.konu-ortalama-satir .konu-ortalama-deger');const son=document.querySelector('.konu-ortalama-baslik .konu-ortalama-deger:last-child').getBoundingClientRect();document.body.dataset.sapma=Math.max(...b.map((x,i)=>Math.abs(x-d[i]))).toFixed(2);document.body.dataset.aralik=Math.abs((b[1]-b[0])-(b[2]-b[1])).toFixed(2);document.body.dataset.son=(document.querySelector('main').getBoundingClientRect().right-son.right).toFixed(2)</script>`);
   try {
     const sonuc = execFileSync(chrome, ['--headless=new', '--no-sandbox', '--disable-gpu', '--dump-dom', pathToFileURL(dosya).href], { encoding: 'utf8' });
     const sapma = Number(sonuc.match(/data-sapma="([\d.]+)"/)![1]);
+    const aralik = Number(sonuc.match(/data-aralik="([\d.]+)"/)![1]);
+    const son = Number(sonuc.match(/data-son="([\d.]+)"/)![1]);
     assert.ok(sapma < 0.5, `başlık ve değer eksenleri arasında ${sapma}px sapma var`);
+    assert.ok(aralik < 0.5, `ortalama sütun aralıkları arasında ${aralik}px fark var`);
+    assert.ok(son < 0.5, `son ortalama sütunu sağ kenardan ${son}px uzakta`);
   } finally {
     rmSync(gecici, { recursive: true, force: true });
   }
