@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import test from 'node:test';
+import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
 
 const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
@@ -53,6 +57,32 @@ void test('Geçmiş: konu bazlı ortalama kartı 3 gün, 7 gün ve tüm zamanlar
   assert.match(out, /Hukuk<\/span>[\s\S]*?2,0 \/ 4,0[\s\S]*?color:var\(--text-muted\)[\s\S]*?>→<\/span>[\s\S]*?2,0 \/ 4,0[\s\S]*?color:var\(--text-muted\)[\s\S]*?>→<\/span>[\s\S]*?2,0 \/ 4,0/);
   assert.doesNotMatch(out, /bar-track|bar-fill|%75/);
   assert.match(out, /class="konu-ortalama-satir"/);
+});
+
+void test('Geçmiş: konu ortalaması sütun başlıkları değerlerle aynı eksende durur', (t) => {
+  const chrome = [
+    process.env.CHROME_PATH,
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium',
+  ].find((yol): yol is string => Boolean(yol && existsSync(yol)));
+  if (!chrome) return t.skip('Yerleşim testi için Chrome/Chromium bulunamadı');
+
+  const css = html.match(/<style[^>]*>([\s\S]*?)<\/style>/)![1];
+  const gecici = mkdtempSync(join(tmpdir(), 'konu-ortalama-'));
+  const dosya = join(gecici, 'index.html');
+  writeFileSync(dosya, `<!doctype html><style>${css}</style><main style="width:800px">
+    <div class="konu-ortalama-baslik"><span class="konu-ortalama-konu">Ders</span><span class="konu-ortalama-deger">Son 3 gün</span><span></span><span class="konu-ortalama-deger">Son 7 gün</span><span></span><span class="konu-ortalama-deger">Tüm zamanlar</span></div>
+    <div class="konu-ortalama-satir"><span class="konu-ortalama-konu">Kredi</span><span class="konu-ortalama-deger">5,2 / 8,0</span><span class="konu-ortalama-ok">↓</span><span class="konu-ortalama-deger">6,0 / 8,0</span><span class="konu-ortalama-ok">↓</span><span class="konu-ortalama-deger">6,2 / 8,0</span></div>
+    <script>const merkezler=s=>[...document.querySelectorAll(s)].map(e=>{const r=e.getBoundingClientRect();return r.x+r.width/2});const b=merkezler('.konu-ortalama-baslik .konu-ortalama-deger');const d=merkezler('.konu-ortalama-satir .konu-ortalama-deger');document.body.dataset.sapma=Math.max(...b.map((x,i)=>Math.abs(x-d[i]))).toFixed(2)</script>`);
+  try {
+    const sonuc = execFileSync(chrome, ['--headless=new', '--no-sandbox', '--disable-gpu', '--dump-dom', pathToFileURL(dosya).href], { encoding: 'utf8' });
+    const sapma = Number(sonuc.match(/data-sapma="([\d.]+)"/)![1]);
+    assert.ok(sapma < 0.5, `başlık ve değer eksenleri arasında ${sapma}px sapma var`);
+  } finally {
+    rmSync(gecici, { recursive: true, force: true });
+  }
 });
 
 void test('Geçmiş özeti toplam kartı olmadan 3 gün, 7 gün ve tüm zamanları sırayla gösterir', () => {

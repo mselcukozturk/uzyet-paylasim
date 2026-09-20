@@ -304,17 +304,17 @@
   .muted { color: var(--text-muted); }
   .history-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: center; font-size: 0.9rem; }
   .history-row .when { color: var(--text-muted); }
-  .konu-ortalama-baslik, .konu-ortalama-satir { display: grid; grid-template-columns: minmax(120px, 1fr) 8.2ch 1.6ch 8.2ch 1.6ch 8.2ch; gap: 6px; align-items: center; }
-  .konu-ortalama-baslik { color: var(--text-muted); font-size: 0.72rem; padding: 2px 0 6px; border-bottom: 1px solid var(--border); }
-  .konu-ortalama-satir { padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .konu-ortalama-baslik, .konu-ortalama-satir { display: grid; grid-template-columns: minmax(120px, 1fr) 8.2ch 1.6ch 8.2ch 1.6ch 8.2ch; gap: 6px; align-items: center; font-size: 0.9rem; }
+  .konu-ortalama-baslik { color: var(--text-muted); padding: 2px 0 6px; border-bottom: 1px solid var(--border); }
+  .konu-ortalama-baslik > span { font-size: 0.72rem; }
+  .konu-ortalama-satir { padding: 10px 0; border-bottom: 1px solid var(--border); }
   .konu-ortalama-deger { font-variant-numeric: tabular-nums; text-align: center; white-space: nowrap; }
   .konu-ortalama-ok { text-align: center; font-weight: 700; }
   @media (max-width: 560px) {
-    .konu-ortalama-baslik, .konu-ortalama-satir { grid-template-columns: minmax(0, 1fr) 1.4ch minmax(0, 1fr) 1.4ch minmax(0, 1fr); gap: 4px; }
+    .konu-ortalama-baslik, .konu-ortalama-satir { grid-template-columns: minmax(0, 1fr) 1.4ch minmax(0, 1fr) 1.4ch minmax(0, 1fr); gap: 4px; font-size: 0.82rem; }
     .konu-ortalama-baslik .konu-ortalama-konu { display: none; }
     .konu-ortalama-satir .konu-ortalama-konu { grid-column: 1 / -1; margin-bottom: 4px; }
-    .konu-ortalama-baslik { font-size: 0.68rem; }
-    .konu-ortalama-satir { font-size: 0.82rem; }
+    .konu-ortalama-baslik > span { font-size: 0.68rem; }
   }
   .cp-list-item {
     display: block; text-align: left; width: 100%; cursor: pointer;
