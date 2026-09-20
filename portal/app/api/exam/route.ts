@@ -204,6 +204,8 @@ async function dashboard(userId: string) {
       avgAsked: completedCount ? asked / completedCount : 0,
       avgCorrect: completedCount ? correct / completedCount : 0,
       percent: asked ? Math.round(correct / asked * 100) : 0,
+      weekAvgAsked: weekAsked ? weekAsked / weekCount : null,
+      weekAvgCorrect: weekAsked ? weekCorrect / weekCount : null,
       weekPercent: weekAsked ? Math.round(weekCorrect / weekAsked * 100) : null,
     };
   }).sort((a, b) => b.avgAsked - a.avgAsked || a.topic.localeCompare(b.topic, 'tr'));

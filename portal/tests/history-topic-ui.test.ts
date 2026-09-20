@@ -13,13 +13,12 @@ function parca(ad: string) {
 }
 
 // Geçmiş ekranındaki "Konu bazlı ortalama" kartı gerçekten çalıştırılarak denenir:
-// deneme başına ortalama doğru / ortalama soru, virgüllü ve tek ondalıklı.
+// tüm zamanlar ve son 7 gün ortalamaları ayrı sütunlarda, virgüllü ve tek ondalıklı.
 function kartCiz(remoteDash: unknown) {
   const sandbox: Record<string, unknown> = {
     remoteDash,
     escapeHtml: (s: string) => s,
     konuDotHtml: () => '<i></i>',
-    renkEsigi: (p: number) => (p >= 70 ? 'var(--good)' : p >= 40 ? 'var(--warn)' : 'var(--bad)'),
   };
   vm.createContext(sandbox);
   vm.runInContext(parca('fmtOrt') + '\n' + parca('konuOrtalamaKartiHtml') + '\nvar out = konuOrtalamaKartiHtml();', sandbox);
@@ -39,25 +38,21 @@ function gecmisCiz(examStats: unknown) {
   return sandbox.out as string;
 }
 
-void test('Geçmiş: konu bazlı ortalama kartı ortalama doğru/soru ve yüzdeyi basar', () => {
+void test('Geçmiş: konu bazlı ortalama kartı tüm zamanlar ve son 7 gün puanlarını iki sütunda basar', () => {
   const out = kartCiz({
     examTopicStats: [
-      { topic: 'Kredi', asked: 16, correct: 12, avgAsked: 8, avgCorrect: 6, percent: 75, weekPercent: 80 },
-      { topic: 'Mali Analiz', asked: 10, correct: 3, avgAsked: 5, avgCorrect: 1.55, percent: 30, weekPercent: 20 },
-      { topic: 'Hukuk', asked: 8, correct: 4, avgAsked: 4, avgCorrect: 2, percent: 50, weekPercent: 50 },
+      { topic: 'Kredi', avgAsked: 8, avgCorrect: 6, percent: 75, weekAvgAsked: 8, weekAvgCorrect: 7, weekPercent: 88 },
+      { topic: 'Mali Analiz', avgAsked: 5, avgCorrect: 1.55, percent: 30, weekAvgAsked: 4, weekAvgCorrect: 1.2, weekPercent: 20 },
+      { topic: 'Hukuk', avgAsked: 4, avgCorrect: 2, percent: 50, weekAvgAsked: 4, weekAvgCorrect: 2, weekPercent: 50 },
     ],
   });
   assert.match(out, /Konu bazlı ortalama/);
-  assert.match(out, /Kredi<\/span>[\s\S]*?6,0 \/ 8,0/);
-  assert.match(out, /Mali Analiz<\/span>[\s\S]*?1,6 \/ 5,0/);
-  assert.match(out, /%75/);
-  assert.match(out, /var\(--bad\)/);
-  assert.match(out, /Kredi<\/span>[\s\S]*?color:var\(--good\)[\s\S]*?>↑<\/span>/);
-  assert.match(out, /Mali Analiz<\/span>[\s\S]*?color:var\(--bad\)[\s\S]*?>↓<\/span>/);
-  assert.match(out, /Hukuk<\/span>[\s\S]*?color:var\(--text-muted\)[\s\S]*?>→<\/span>/);
-  // Uzun konu adında sağdaki sayılar kaymasın: kolonlar içeriğe bağlı (auto) değil, her satırda aynı.
-  assert.match(out, /grid-template-columns:minmax\(0,2fr\) minmax\(0,1fr\) 9\.5ch 4\.5ch/);
-  assert.doesNotMatch(out, /grid-template-columns:[^;"]*auto/);
+  assert.match(out, /Ortalama[\s\S]*?Son 7 gün/);
+  assert.match(out, /Kredi<\/span>[\s\S]*?6,0 \/ 8,0[\s\S]*?color:var\(--good\)[\s\S]*?>↑<\/span>[\s\S]*?7,0 \/ 8,0/);
+  assert.match(out, /Mali Analiz<\/span>[\s\S]*?1,6 \/ 5,0[\s\S]*?color:var\(--bad\)[\s\S]*?>↓<\/span>[\s\S]*?1,2 \/ 4,0/);
+  assert.match(out, /Hukuk<\/span>[\s\S]*?2,0 \/ 4,0[\s\S]*?color:var\(--text-muted\)[\s\S]*?>→<\/span>[\s\S]*?2,0 \/ 4,0/);
+  assert.doesNotMatch(out, /bar-track|bar-fill|%75/);
+  assert.match(out, /class="konu-ortalama-satir"/);
 });
 
 void test('Geçmiş özeti genel ortalamanın yanında son 7 gün ortalamasını gösterir', () => {
@@ -75,6 +70,7 @@ void test('Geçmiş: son 7 günde ders verisi yoksa karşılaştırma oku göste
     ],
   });
   assert.doesNotMatch(out, /[↑↓→]/);
+  assert.match(out, /Kambiyo<\/span>[\s\S]*?2,0 \/ 4,0[\s\S]*?>—<\/span>/);
 });
 
 void test('Geçmiş ekranı ayrı geri düğmesi yerine ana ekranla aynı üst çubuğu kullanır', () => {

@@ -303,6 +303,15 @@
   .muted { color: var(--text-muted); }
   .history-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: center; font-size: 0.9rem; }
   .history-row .when { color: var(--text-muted); }
+  .konu-ortalama-baslik, .konu-ortalama-satir { display: grid; grid-template-columns: minmax(120px, 1fr) 8.5ch 2ch 8.5ch; gap: 10px; align-items: center; }
+  .konu-ortalama-baslik { color: var(--text-muted); font-size: 0.72rem; padding: 2px 0 6px; border-bottom: 1px solid var(--border); }
+  .konu-ortalama-satir { padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .konu-ortalama-deger { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  .konu-ortalama-ok { text-align: center; font-weight: 700; }
+  @media (max-width: 560px) {
+    .konu-ortalama-baslik, .konu-ortalama-satir { grid-template-columns: minmax(0, 1fr) 7.2ch 1.4ch 7.2ch; gap: 6px; }
+    .konu-ortalama-satir { font-size: 0.82rem; }
+  }
   .cp-list-item {
     display: block; text-align: left; width: 100%; cursor: pointer;
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
@@ -2226,24 +2235,26 @@
     if (!ts.length) return "";
     var satirlar = ts.map(function (t) {
       var pct = t.percent || 0;
+      var ortalamaHtml = fmtOrt(t.avgCorrect) + " / " + fmtOrt(t.avgAsked);
+      var haftaHtml = "—";
       var trendHtml = "";
       if (t.weekPercent != null) {
+        haftaHtml = fmtOrt(t.weekAvgCorrect) + " / " + fmtOrt(t.weekAvgAsked);
         var ok = t.weekPercent > pct ? "↑" : t.weekPercent < pct ? "↓" : "→";
         var okRenk = t.weekPercent > pct ? "var(--good)" : t.weekPercent < pct ? "var(--bad)" : "var(--text-muted)";
-        var okEtiket = "Son 7 gün %" + t.weekPercent + ", tüm zamanlar %" + pct;
-        trendHtml = '<span style="color:' + okRenk + ';font-weight:700;margin-left:4px" title="' + okEtiket + '" aria-label="' + okEtiket + '">' + ok + "</span>";
+        var okEtiket = "Son 7 gün " + haftaHtml + ", tüm zamanlar " + ortalamaHtml;
+        trendHtml = '<span style="color:' + okRenk + '" title="' + okEtiket + '" aria-label="' + okEtiket + '">' + ok + "</span>";
       }
-      // Her satır ayrı grid: kolonlar içeriğe bağlı olursa uzun konu adında sağdaki sayılar
-      // kayar. Sabit oran + ch genişliği yazı büyütülse de tüm satırlarda aynı hizada kalır.
-      return '<div class="history-row" style="grid-template-columns:minmax(0,2fr) minmax(0,1fr) 9.5ch 4.5ch;gap:10px">' +
+      return '<div class="konu-ortalama-satir">' +
         '<span style="display:flex;align-items:center;min-width:0">' + konuDotHtml(t.topic) + "<span>" + escapeHtml(t.topic) + "</span></span>" +
-        '<div class="bar-track" style="max-width:120px;min-width:0"><div class="bar-fill" style="width:' + pct + '%;background:' + renkEsigi(pct) + '"></div></div>' +
-        '<span style="font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap">' + fmtOrt(t.avgCorrect) + " / " + fmtOrt(t.avgAsked) + "</span>" +
-        '<span class="muted" style="font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap">%' + pct + trendHtml + "</span></div>";
+        '<span class="konu-ortalama-deger">' + ortalamaHtml + "</span>" +
+        '<span class="konu-ortalama-ok">' + trendHtml + "</span>" +
+        '<span class="konu-ortalama-deger">' + haftaHtml + "</span></div>";
     }).join("");
     return '<div class="card" style="margin-bottom:16px">' +
       '<div class="section-title">Konu bazlı ortalama</div>' +
-      '<div class="muted" style="font-size:0.82rem;margin-bottom:8px">Tamamlanan denemelerde konu başına ortalama doğru / ortalama soru sayısı. Oklar son 7 günü tüm zamanlarla karşılaştırır.</div>' +
+      '<div class="muted" style="font-size:0.82rem;margin-bottom:8px">Deneme başına ortalama doğru / soru sayısı. Oklar son 7 gündeki değişimi gösterir.</div>' +
+      '<div class="konu-ortalama-baslik"><span>Ders</span><span class="konu-ortalama-deger">Ortalama</span><span></span><span class="konu-ortalama-deger">Son 7 gün</span></div>' +
       satirlar + "</div>";
   }
 

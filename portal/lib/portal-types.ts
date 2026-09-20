@@ -59,6 +59,8 @@ export type DashboardData = {
     avgAsked: number;
     avgCorrect: number;
     percent: number;
+    weekAvgAsked: number | null;
+    weekAvgCorrect: number | null;
     weekPercent: number | null;
   }>;
   examStats: { count: number; avgPercent: number; avgCorrect: number; avgSeconds: number; weekCount: number; weekAvgCorrect: number | null } | null;

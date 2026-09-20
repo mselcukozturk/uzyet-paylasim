@@ -86,15 +86,15 @@ test('dashboard examTopicStats: bitmiş denemelerde konu başına ortalama doğr
     // Kredi: 4 soru soruldu, 3 doğru → deneme başına 2 soru / 1.5 doğru
     assert.deepEqual(konuBazli.Kredi, {
       topic: 'Kredi', asked: 4, correct: 3, avgAsked: 2, avgCorrect: 1.5, percent: 75,
-      weekPercent: 100,
+      weekAvgAsked: 2, weekAvgCorrect: 2, weekPercent: 100,
     });
     assert.deepEqual(konuBazli.Hukuk, {
       topic: 'Hukuk', asked: 2, correct: 1, avgAsked: 1, avgCorrect: 0.5, percent: 50,
-      weekPercent: 0,
+      weekAvgAsked: 1, weekAvgCorrect: 0, weekPercent: 0,
     });
     assert.deepEqual(konuBazli.Kambiyo, {
       topic: 'Kambiyo', asked: 2, correct: 0, avgAsked: 1, avgCorrect: 0, percent: 0,
-      weekPercent: 0,
+      weekAvgAsked: 1, weekAvgCorrect: 0, weekPercent: 0,
     });
     // En çok soru gelen konu başta listelenir.
     assert.equal(data.examTopicStats[0].topic, 'Kredi');
