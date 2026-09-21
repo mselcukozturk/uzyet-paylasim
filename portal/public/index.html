@@ -234,6 +234,26 @@
     margin: 14px -20px -20px; padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
     background: var(--surface); border-top: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius);
   }
+  /* Deneme dışı soru ekranlarının alt barı: sol ←, orta Boş, sağ → (21 Eyl 2026). Üç
+     sabit sütun, butonlar cevap durumuna göre kaybolsa da diğerlerinin yeri değişmesin. */
+  .soru-nav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
+  .soru-nav-sol { justify-self: start; }
+  .soru-nav-sag { justify-self: end; }
+  .pill.notr { background: var(--surface-2); color: var(--text-muted); }
+  /* Mobilde bar ekranın altına sabitlenir: kısa soruda içeriğin hemen altında, ekranın
+     ortasında kalıyor ve butonlar sorudan soruya yer değiştiriyordu. Oklar kare olur,
+     yazılar (.genis-etiket) gizlenir. Not yazılırken klavyenin üstüne binmesin diye gizlenir. */
+  @media (max-width: 560px) {
+    .soru-nav {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; margin: 0;
+      border-radius: 0; box-shadow: 0 -2px 10px rgba(30, 30, 20, 0.08);
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    }
+    .soru-nav .nav-ok { min-width: 48px; min-height: 44px; padding: 9px 12px; }
+    .soru-nav .bos-btn { min-width: 88px; min-height: 44px; }
+    .shell:has(.soru-nav) { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+    body:has(textarea:focus) .soru-nav { display: none; }
+  }
   .mode-btn.selected { border-color: var(--accent); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--accent); }
   .hata-notu { width: 100%; min-height: 54px; margin-top: 6px; padding: 8px 10px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: var(--font-body); font-size: 0.86rem; resize: vertical; }
   .resume-card { border-color: var(--accent); margin-bottom: 18px; }
@@ -569,6 +589,9 @@
   var bannerMsg = null;
   var bannerIsError = false;
   var pausedDeleteConfirm = false;   // "Sil" iki adımlı onay — window.confirm() Artifact sandbox'ında çalışmıyor
+  // Deneme dışı ekranlarda "Boş" butonunun seçimi: cevap açılır ama hiçbir istatistiğe
+  // (stats/pStats, sunucu, oturum özeti, yanlış havuzu) yazılmaz — soru görülmemiş sayılır.
+  var BOS_CEVAP = -1;
   var currentFlash = null;     // {guid, secilen, kaynak, oturum:[{konu,dogru}...]} — Rastgele Soru modu: tek soru, anında cevap
   var lastFlashResult = null;  // {kaynak, oturum} — "Testi Bitir" sonrası özet ekranı için
   var currentPratik = null;    // {konu, modul, mod, kuyruk:[guid...], index, cevaplandi, secilen, bitti}
@@ -2865,10 +2888,17 @@
     render();
     if (TEKRAR_TUR[currentTekrar.tur].kaydeder) tekrarCevapKaydet(kayit);
   }
+  // Boş: cevap açılır, sunucuya/pStats'a gitmez; yanlış turunda soru havuzda kalır.
+  function bosTekrar() {
+    var kayit = tekrarAktifKayit();
+    if (!kayit || kayit.secilen !== null) return;
+    kayit.secilen = BOS_CEVAP;
+    render();
+  }
   // Kayıt asenkron: kullanıcı sonucu beklemeden ilerleyebilir. Hata olursa kayıt o
   // sorunun kaydında durur, geri dönünce "Tekrar Dene" ile yeniden gönderilebilir.
   function tekrarCevapKaydet(kayit) {
-    if (!kayit || kayit.secilen === null || kayit.kayit === "bekliyor" || kayit.kayit === "tamam") return;
+    if (!kayit || kayit.secilen === null || kayit.secilen === BOS_CEVAP || kayit.kayit === "bekliyor" || kayit.kayit === "tamam") return;
     var q = hatirlaticiSoruBul(kayit.guid);
     if (!q || !q.siklar[kayit.secilen]) return;
     if (currentTekrar.havuz === "ai") {
@@ -2914,7 +2944,7 @@
     if (!currentTekrar) { VIEW = "menuDeneme"; render(); return; }
     var oturum = [];
     currentTekrar.kayitlar.forEach(function (k) {
-      if (k.secilen === null) return;
+      if (k.secilen === null || k.secilen === BOS_CEVAP) return;
       var q = hatirlaticiSoruBul(k.guid);
       if (q) oturum.push({ konu: q.konu, dogru: !!k.dogru });
     });
@@ -3292,6 +3322,15 @@
     render();
   }
 
+  // Boş: cevap açılır; stats, flashOzet, oturum özeti ve sunucu kaydına dokunulmaz.
+  // Soru "görülmemiş" kalır, flashSecimYap onu öncelikli havuzda tutmaya devam eder.
+  function bosFlash() {
+    if (!currentFlash || currentFlash.secilen !== null) return;
+    currentFlash.secilen = BOS_CEVAP;
+    currentFlash.gecmis[currentFlash.konum].secilen = BOS_CEVAP;
+    render();
+  }
+
   function finishFlash() {
     if (!currentFlash) { backToMenu(); return; }
     lastFlashResult = { kaynak: currentFlash.kaynak, konuFiltre: currentFlash.konuFiltre, oturum: currentFlash.oturum };
@@ -3358,6 +3397,13 @@
     currentPratik.cevaplar[q.guid] = idx; // oturuma özel skor (Modül bitti ekranında x doğru/y yanlış için)
     recordPratikStat(q.guid, idx === q.cevapIdx, q.siklar[idx]);
     lsKaydet();
+    render();
+  }
+  // Boş: cevaplar'a (modül skoru, en iyi sonuç) ve pStats'a yazılmaz.
+  function bosPratik() {
+    if (!currentPratik || currentPratik.cevaplandi) return;
+    currentPratik.secilen = BOS_CEVAP;
+    currentPratik.cevaplandi = true;
     render();
   }
   function nextPratikSoru() {
@@ -3675,13 +3721,13 @@
     var cfg = TEKRAR_TUR[currentTekrar.tur];
     var kayit = tekrarAktifKayit();
     var q = kayit && hatirlaticiSoruBul(kayit.guid);
-    var cevaplanan = currentTekrar.kayitlar.filter(function (k) { return k.secilen !== null; }).length;
+    var cevaplanan = currentTekrar.kayitlar.filter(function (k) { return k.secilen !== null && k.secilen !== BOS_CEVAP; }).length;
     var sonSoruda = currentTekrar.konum >= currentTekrar.kuyruk.length - 1;
-    var navHtml = '<div class="sticky-next-bar link-row">' +
-      '<button class="btn ghost" data-action="prev-tekrar-soru"' + (currentTekrar.konum <= 0 ? " disabled" : "") + ">← Önceki Soru</button>" +
-      '<button class="btn' + (kayit && kayit.secilen !== null ? " primary" : "") + '" data-action="next-tekrar-soru"' +
-      (sonSoruda ? " disabled" : "") + ">Sonraki Soru →</button>" +
-      "</div>";
+    var navHtml = soruNavBarHtml({
+      prev: "prev-tekrar-soru", prevDisabled: currentTekrar.konum <= 0,
+      bos: q && kayit.secilen === null ? "bos-tekrar" : null,
+      next: "next-tekrar-soru", nextPrimary: !!(kayit && kayit.secilen !== null), nextDisabled: sonSoruda
+    });
     if (!q) {
       return '<div class="card"><button class="btn ghost" data-action="tekrar-cik">← Çık</button>' +
         '<div class="muted">Bu soru artık bankada yok.</div>' + navHtml + "</div>";
@@ -3702,7 +3748,10 @@
         (answered ? "" : '<span class="kbd-hint">' + (i + 1) + "</span>") + "</div>";
     }).join("");
     var sonucHtml = "";
-    if (answered) {
+    if (answered && secilen === BOS_CEVAP) {
+      sonucHtml = bosSonucPillHtml(harfler[q.cevapIdx], cfg.kaydeder ? "Kaydedilmedi, soru havuzda kalacak." : "") +
+        (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + "</div>" : "");
+    } else if (answered) {
       var dogruMu = secilen === q.cevapIdx;
       var pillMetin = cfg.kaydeder
         ? (dogruMu ? "Doğru — kaydedilince havuzdan çıkacak." : "Yanlış — doğrusu " + harfler[q.cevapIdx] + ". Soru havuzda kalacak.")
@@ -4220,6 +4269,35 @@
       "</div>" + aksiyonHtml + "</div>";
   }
 
+  // Deneme dışı soru ekranlarının ortak alt barı: solda ←, ortada Boş, sağda →.
+  // o: {prev, prevDisabled, bos, next, nextPrimary, nextDisabled, nextEtiket} — action adları;
+  // verilmeyen buton çizilmez. Dar ekranda oklar yazısız kalır (.genis-etiket); nextEtiket
+  // (ör. "Testi Bitir") ise ne olacağını ok anlatmadığı için her genişlikte yazılı görünür.
+  function soruNavBarHtml(o) {
+    var sol = o.prev
+      ? '<button class="btn ghost nav-ok" data-action="' + o.prev + '"' + (o.prevDisabled ? " disabled" : "") +
+        ' title="Önceki Soru" aria-label="Önceki Soru">←<span class="genis-etiket"> Önceki Soru</span></button>'
+      : "";
+    var orta = o.bos
+      ? '<button class="btn bos-btn" data-action="' + o.bos + '" title="Boş bırak, cevabı göster — istatistiğe yazılmaz (5)"' +
+        ' aria-label="Boş bırak, cevabı göster">Boş</button>'
+      : "";
+    var sag = "";
+    if (o.next) {
+      var nextAd = o.nextEtiket || "Sonraki Soru";
+      sag = '<button class="btn nav-ok' + (o.nextPrimary ? " primary" : "") + '" data-action="' + o.next + '"' +
+        (o.nextDisabled ? " disabled" : "") + ' title="' + escapeHtml(nextAd) + '" aria-label="' + escapeHtml(nextAd) + '">' +
+        (o.nextEtiket ? escapeHtml(o.nextEtiket) + " →" : '<span class="genis-etiket">Sonraki Soru </span>→') + "</button>";
+    }
+    return '<div class="sticky-next-bar soru-nav"><div class="soru-nav-sol">' + sol + '</div><div class="soru-nav-orta">' + orta +
+      '</div><div class="soru-nav-sag">' + sag + "</div></div>";
+  }
+
+  // Boş bırakılan sorunun sonuç satırı: yanlış gibi kırmızı değil, nötr.
+  function bosSonucPillHtml(harf, ek) {
+    return '<div class="pill notr" style="margin:10px 0">Boş — doğrusu ' + harf + (ek ? ". " + ek : "") + "</div>";
+  }
+
   function kopyalaCheckpointMaddesi() {
     var c = currentCheckpoint && checkpointBul(currentCheckpoint.id), sorular = c && checkpointSorular(c);
     if (!c || !sorular.length) { showBanner("Kopyalanacak içerik bulunamadı.", true); return; }
@@ -4342,7 +4420,8 @@
     var sonucHtml = "";
     if (answered) {
       var dogruMu = secilen === q.cevapIdx;
-      sonucHtml = '<div class="pill ' + (dogruMu ? "good" : "bad") + '" style="margin:10px 0">' + (dogruMu ? "Doğru!" : "Yanlış — doğrusu " + harfler[q.cevapIdx]) + "</div>" +
+      sonucHtml = (secilen === BOS_CEVAP ? bosSonucPillHtml(harfler[q.cevapIdx])
+        : '<div class="pill ' + (dogruMu ? "good" : "bad") + '" style="margin:10px 0">' + (dogruMu ? "Doğru!" : "Yanlış — doğrusu " + harfler[q.cevapIdx]) + "</div>") +
         (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + (q.kaynak ? " — " + escapeHtml(q.kaynak) : "") + "</div>" : "");
     }
 
@@ -4350,10 +4429,11 @@
     var geriAction = dersFlashMi ? "pratik-listeye-don" : pratikMi ? "open-menu-test" : (konuBakMi ? "open-deneme-konu-sec" : "back-menu");
     var geriEtiket = dersFlashMi ? "← Modüller" : pratikMi ? "← Test Sayfası" : (konuBakMi ? "← Konu Seç" : "Ana Menüye Dön");
     var sonSoruda = currentFlash.sabitKuyruk && currentFlash.konum >= currentFlash.gecmis.length - 1;
-    var navHtml = '<div class="sticky-next-bar link-row">' +
-      '<button class="btn ghost" data-action="prev-flash"' + (currentFlash.konum <= 0 ? " disabled" : "") + ">← Önceki Soru</button>" +
-      '<button class="btn' + (answered ? " primary" : "") + '" data-action="next-flash">' + (sonSoruda ? "Testi Bitir →" : "Sonraki Soru →") + "</button>" +
-      "</div>";
+    var navHtml = soruNavBarHtml({
+      prev: "prev-flash", prevDisabled: currentFlash.konum <= 0,
+      bos: answered ? null : "bos-flash",
+      next: "next-flash", nextPrimary: answered, nextEtiket: sonSoruda ? "Testi Bitir" : ""
+    });
 
     // Mod adı ("🎲 Rastgele Soru", "📖 Konu Konu Bak") ve konu filtresi satır 2'den kalktı:
     // kullanıcı o ekranı kendisi açtı, konu zaten satır 1'de. Kalan tek ek bilgi modül adı.
@@ -4583,20 +4663,18 @@ function pratikEnIyiHtml(konu, modulKey) {
     var sonucHtml = "";
     if (answered) {
       var dogruMu = secilen === q.cevapIdx;
-      sonucHtml = '<div class="pill ' + (dogruMu ? "good" : "bad") + '" style="margin:10px 0">' +
-        (dogruMu ? "Doğru!" : "Yanlış — doğrusu " + harfler[q.cevapIdx]) + "</div>" +
+      sonucHtml = (secilen === BOS_CEVAP ? bosSonucPillHtml(harfler[q.cevapIdx])
+        : '<div class="pill ' + (dogruMu ? "good" : "bad") + '" style="margin:10px 0">' +
+          (dogruMu ? "Doğru!" : "Yanlış — doğrusu " + harfler[q.cevapIdx]) + "</div>") +
         (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + "</div>" : "");
     }
     var body = optionsHtml + sonucHtml;
 
     var kaynakHtml = q.kaynak ? '<div class="muted" style="font-size:0.82rem;margin-top:8px">' + escapeHtml(q.kaynak) + "</div>" : "";
-    var altNav = "";
-    if (currentPratik.cevaplandi) {
-      altNav = flagBarHtml(guid, true) +
-        '<div class="sticky-next-bar link-row">' +
-        '<button class="btn primary" data-action="pratik-sonraki">Sonraki Soru →</button>' +
-        "</div>";
-    }
+    // Pratikte geri gezinme yok: cevaptan önce barda yalnız Boş, sonra yalnız → durur.
+    var altNav = (currentPratik.cevaplandi ? flagBarHtml(guid, true) : "") + soruNavBarHtml(currentPratik.cevaplandi
+      ? { next: "pratik-sonraki", nextPrimary: true }
+      : { bos: "bos-pratik" });
 
     return '<div class="card">' + ustHtml + '<div class="q-text">' + soruHtml(q.soru) + "</div>" + body + kaynakHtml + altNav + "</div>";
   }
@@ -4979,6 +5057,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "start-yanlis-tekrar-test") startTekrarTest("yanlis", t.getAttribute("data-havuz"));
     else if (action === "start-tekrar-again") startTekrarTest(t.getAttribute("data-tur"), t.getAttribute("data-havuz"));
     else if (action === "select-tekrar-option") selectTekrarOption(parseInt(t.getAttribute("data-idx"), 10));
+    else if (action === "bos-tekrar") bosTekrar();
     else if (action === "next-tekrar-soru") nextTekrarSoru();
     else if (action === "prev-tekrar-soru") prevTekrarSoru();
     else if (action === "finish-tekrar-test") finishTekrarTest();
@@ -4993,6 +5072,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "start-flash") startFlash();
     else if (action === "start-flash-again") startFlash(t.getAttribute("data-kaynak"), t.getAttribute("data-konu"));
     else if (action === "next-flash") nextFlash();
+    else if (action === "bos-flash") bosFlash();
     else if (action === "prev-flash") prevFlash();
     else if (action === "finish-flash") finishFlash();
     else if (action === "select-flash-option") selectFlashOption(parseInt(t.getAttribute("data-idx"), 10));
@@ -5045,6 +5125,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "start-pratik-flash") startFlash("practice", t.getAttribute("data-konu"));
     else if (action === "select-pratik-option") selectPratikOption(parseInt(t.getAttribute("data-idx"), 10));
     else if (action === "pratik-sonraki") nextPratikSoru();
+    else if (action === "bos-pratik") bosPratik();
     else if (action === "pratik-tekrar") pratikTekrarBaslat();
     else if (action === "pratik-sonraki-modul") pratikSonrakiModuleBaslat();
     else if (action === "pratik-listeye-don") pratikListeyeDon();
@@ -5100,6 +5181,8 @@ function pratikEnIyiHtml(konu, modulKey) {
         var fidx = parseInt(e.key, 10) - 1;
         var fq = flashSoruBul(currentFlash);
         if (fq && fq.siklar[fidx]) { e.preventDefault(); selectFlashOption(fidx); }
+      } else if (currentFlash.secilen === null && e.key === "5") {
+        e.preventDefault(); bosFlash();
       } else if (e.key === "ArrowRight") {
         e.preventDefault(); nextFlash(); // cevaplanmamış olsa da atlanabilir
       } else if (e.key === "ArrowLeft") {
@@ -5110,17 +5193,21 @@ function pratikEnIyiHtml(konu, modulKey) {
       if (pq && !currentPratik.cevaplandi && e.key >= "1" && e.key <= "4") {
         var pidx = parseInt(e.key, 10) - 1;
         if (pq.siklar[pidx]) { e.preventDefault(); selectPratikOption(pidx); }
+      } else if (pq && !currentPratik.cevaplandi && e.key === "5") {
+        e.preventDefault(); bosPratik();
       } else if (e.key === "ArrowRight" && currentPratik.cevaplandi) {
         e.preventDefault(); nextPratikSoru();
       }
     } else if (VIEW === "tekrarTest" && currentTekrar) {
-      // Rastgele Soru ile aynı kısayollar: 1-4 seçer, ok tuşları kuyrukta gezer
+      // Rastgele Soru ile aynı kısayollar: 1-4 seçer, 5 boş bırakır, ok tuşları kuyrukta gezer
       // (cevaplanmamış soru da atlanabilir).
       var tKayit = tekrarAktifKayit();
       var tq = tKayit && hatirlaticiSoruBul(tKayit.guid);
       if (tq && tKayit.secilen === null && e.key >= "1" && e.key <= "4") {
         var tidx = parseInt(e.key, 10) - 1;
         if (tq.siklar[tidx]) { e.preventDefault(); selectTekrarOption(tidx); }
+      } else if (tq && tKayit.secilen === null && e.key === "5") {
+        e.preventDefault(); bosTekrar();
       } else if (e.key === "ArrowRight") {
         e.preventDefault(); nextTekrarSoru();
       } else if (e.key === "ArrowLeft") {

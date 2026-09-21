@@ -29,9 +29,9 @@ void test('tekrar testi Rastgele Soru mekaniğini kullanır: ileri/geri gezinme 
   const render = script.match(/function renderTekrarTest\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   // Rastgele Soru ile aynı düzen: üstte Testi Bitir, altta Önceki/Sonraki Soru.
   assert.match(render, /data-action="finish-tekrar-test"/);
-  assert.match(render, /data-action="prev-tekrar-soru"/);
-  assert.match(render, /data-action="next-tekrar-soru"/);
-  assert.match(render, /sticky-next-bar/);
+  assert.match(render, /prev: "prev-tekrar-soru"/);
+  assert.match(render, /next: "next-tekrar-soru"/);
+  assert.match(render, /soruNavBarHtml\(/);
   assert.match(render, /data-action="tekrar-cik"/);
   assert.doesNotMatch(render, /\(cevaplanan\s*\?[\s\S]*data-action="finish-tekrar-test"[\s\S]*data-action="tekrar-cik"/,
     'çık ve testi bitir aynı anda görünmeli');
