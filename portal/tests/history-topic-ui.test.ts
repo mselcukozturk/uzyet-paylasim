@@ -106,6 +106,20 @@ void test('Geçmiş özeti toplam kartı olmadan 3 gün, 7 gün ve tüm zamanlar
   assert.match(out, /class="lbl tum-zamanlar-etiket">Tüm zamanlar · 21 deneme/);
 });
 
+void test('Geçmiş özeti: dönem kutuları bir önceki döneme göre yeşil/kırmızı boyanır', () => {
+  const kutu = (out: string, etiket: string) =>
+    out.split('<div class="stat-card">').find((k) => new RegExp('<div class="lbl[^"]*">' + etiket).test(k))!;
+  // 3 gün 40,5 > 7 gün 38,3 → yeşil; 7 gün 38,3 < tüm zamanlar 39,0 → kırmızı.
+  let out = gecmisCiz({ count: 21, avgCorrect: 39, avgSeconds: 600, weekCount: 5, weekAvgCorrect: 38.25, threeDayCount: 2, threeDayAvgCorrect: 40.45 });
+  assert.match(kutu(out, 'Son 3 gün'), /<div class="num" style="color:var\(--good\)"[^>]*>40,5\/50</);
+  assert.match(kutu(out, 'Son 7 gün'), /<div class="num" style="color:var\(--bad\)"[^>]*>38,3\/50</);
+  assert.match(kutu(out, 'Tüm zamanlar'), /<div class="num">39,0\/50</);
+  // Tek ondalıkta eşitse renk yok; dönem verisi yoksa da renk yok.
+  out = gecmisCiz({ count: 21, avgCorrect: 38.26, avgSeconds: 600, weekCount: 5, weekAvgCorrect: 38.25, threeDayCount: 0, threeDayAvgCorrect: null });
+  assert.match(kutu(out, 'Son 3 gün'), /<div class="num">—</);
+  assert.match(kutu(out, 'Son 7 gün'), /<div class="num">38,3\/50</);
+});
+
 void test('Geçmiş: dönem verisi yoksa tire gösterir ve karşılaştırma oku göstermez', () => {
   const out = kartCiz({
     examTopicStats: [

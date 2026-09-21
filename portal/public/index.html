@@ -2249,11 +2249,24 @@
     var g = aiSekme ? aiGecmis : remoteGecmis;
     var list = (g && g.attempts) || [];
     var es = aiSekme ? (aiGecmis && aiGecmis.examStats) : (remoteDash && remoteDash.examStats);
+    // Konu tablosuyla aynı kural: dönem ortalaması bir önceki döneme göre (3 gün → 7 gün,
+    // 7 gün → tüm zamanlar) ekranda görünen tek ondalıkta yükseldiyse yeşil, düştüyse kırmızı.
+    function donemRengi(deger, kiyas, donem, kiyasDonem) {
+      if (deger == null || kiyas == null) return "";
+      var d = Math.round((Number(deger) || 0) * 10);
+      var k = Math.round((Number(kiyas) || 0) * 10);
+      if (d === k) return "";
+      var yon = d > k ? "yükseldi" : "düştü";
+      return ' style="color:' + (d > k ? "var(--good)" : "var(--bad)") + '" title="' + donem + " ortalaması " + yon +
+        '" aria-label="' + donem + " " + fmtOrt(deger) + "/50, " + kiyasDonem + " göre " + yon + '"';
+    }
     var ozetHtml = es ? '<div class="stat-grid">' +
-      '<div class="stat-card"><div class="num">' + (es.threeDayAvgCorrect == null ? "—" : fmtOrt(es.threeDayAvgCorrect) + "/50") +
+      '<div class="stat-card"><div class="num"' + donemRengi(es.threeDayAvgCorrect, es.weekAvgCorrect, "Son 3 gün", "son 7 güne") + ">" +
+      (es.threeDayAvgCorrect == null ? "—" : fmtOrt(es.threeDayAvgCorrect) + "/50") +
       '</div><div class="lbl">Son 3 gün · ' + (es.threeDayCount || 0) + ' deneme</div></div>' +
       // Son dönem performansı: son 7 günde biten denemelerin ortalaması (deneme yoksa —).
-      '<div class="stat-card"><div class="num">' + (es.weekAvgCorrect == null ? "—" : fmtOrt(es.weekAvgCorrect) + "/50") +
+      '<div class="stat-card"><div class="num"' + donemRengi(es.weekAvgCorrect, es.avgCorrect, "Son 7 gün", "tüm zamanlara") + ">" +
+      (es.weekAvgCorrect == null ? "—" : fmtOrt(es.weekAvgCorrect) + "/50") +
       '</div><div class="lbl">Son 7 gün · ' + (es.weekCount || 0) + ' deneme</div></div>' +
       '<div class="stat-card"><div class="num">' + fmtOrt(es.avgCorrect) + '/50</div><div class="lbl tum-zamanlar-etiket">Tüm zamanlar · ' + es.count + ' deneme</div></div>' +
       '<div class="stat-card"><div class="num">' + fmtSure(es.avgSeconds) + '</div><div class="lbl">Ortalama süre</div></div>' +
