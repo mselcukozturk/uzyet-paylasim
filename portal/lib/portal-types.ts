@@ -81,7 +81,7 @@ export type DashboardData = {
 };
 
 // action "daily-solvers" (yalnız yönetici): bugünün günün denemesini çözenler, kişi başı ilk
-// bitmiş deneme, bitiş sırasına göre. correct 50 üzerinden doğru sayısıdır.
+// bitmiş deneme, puana göre büyükten küçüğe. name kullanıcı adıdır; correct 50 üzerinden doğru.
 export type DailySolversResponse = {
   day: string;
   solvers: Array<{ name: string; finishedAt: string | null; correct: number }>;

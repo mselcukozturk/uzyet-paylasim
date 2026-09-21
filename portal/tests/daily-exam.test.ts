@@ -100,7 +100,7 @@ test('günün denemesi: aynı anda ilk kez başlayana da aynı sorular; ortalama
     assert.equal(aliceDaily.solvedCount, 3);
     assert.equal(aliceDaily.avgCorrect, 33.5);
 
-    // Çözenler listesi yalnız yöneticiye: kişi başı ilk bitmiş deneme, bitiş sırasıyla.
+    // Çözenler listesi yalnız yöneticiye: kişi başı ilk bitmiş deneme, puana göre azalan; ad = kullanıcı adı.
     assert.equal((await post('alice', { action: 'daily-solvers' })).status, 403);
     await db.insert(schema.profiles).values([
       { userId: 'alice', username: 'alice', displayName: 'Alice' }, { userId: 'bob', username: 'bob' },
@@ -109,7 +109,7 @@ test('günün denemesi: aynı anda ilk kez başlayana da aynı sorular; ortalama
     assert.equal(solvers.status, 200, JSON.stringify(solvers.data));
     assert.equal(solvers.data.day, examCore.dailyExamDay());
     assert.deepEqual(solvers.data.solvers.map((s: { name: string; correct: number }) => [s.name, s.correct]),
-      [['Alice', 40], ['bob', 21], ['—', 27]]);
+      [['alice', 40], ['—', 27], ['bob', 21]]);
     assert.ok(solvers.data.solvers.every((s: { finishedAt: string }) => !Number.isNaN(Date.parse(s.finishedAt))));
 
     const history = (await post('alice', { action: 'history' })).data;

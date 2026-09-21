@@ -359,13 +359,13 @@ async function dashboard(userId: string) {
 }
 
 // Yalnız yönetici: bugünün günün denemesini çözenler — kişi başı ilk bitmiş deneme
-// (dashboard'daki solvedCount/ortalama ile aynı kural), bitiş sırasına göre.
+// (dashboard'daki solvedCount/ortalama ile aynı kural), puana göre büyükten küçüğe;
+// eşitlikte önce bitiren üstte. Ad olarak yalnız kullanıcı adı (giriş adı) kullanılır.
 async function dailySolvers(): Promise<DailySolversResponse> {
   const db = getDb();
   const day = dailyExamDay();
   const rows = await db.selectDistinctOn([schema.examAttempts.userId], {
     username: schema.profiles.username,
-    displayName: schema.profiles.displayName,
     finishedAt: schema.examAttempts.finishedAt,
     correct: schema.examAttempts.correctCount,
   }).from(schema.examAttempts)
@@ -376,11 +376,11 @@ async function dailySolvers(): Promise<DailySolversResponse> {
     day,
     solvers: rows
       .map((row) => ({
-        name: row.displayName || row.username || '—',
+        name: row.username || '—',
         finishedAt: row.finishedAt?.toISOString() ?? null,
         correct: row.correct ?? 0,
       }))
-      .sort((a, b) => (a.finishedAt ?? '').localeCompare(b.finishedAt ?? '')),
+      .sort((a, b) => b.correct - a.correct || (a.finishedAt ?? '').localeCompare(b.finishedAt ?? '')),
   };
 }
 
