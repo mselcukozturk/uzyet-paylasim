@@ -234,7 +234,7 @@
     margin: 14px -20px -20px; padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
     background: var(--surface); border-top: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius);
   }
-  /* Deneme dışı soru ekranlarının alt barı: sol ←, orta Boş, sağ → (21 Eyl 2026). Üç
+  /* Soru ekranlarının alt barı: sol ←, orta Boş (deneme dışı), sağ → (21 Eyl 2026). Üç
      sabit sütun, butonlar cevap durumuna göre kaybolsa da diğerlerinin yeri değişmesin. */
   .soru-nav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
   .soru-nav-sol { justify-self: start; }
@@ -249,8 +249,9 @@
       border-radius: 0; box-shadow: 0 -2px 10px rgba(30, 30, 20, 0.08);
       padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
     }
-    .soru-nav .nav-ok { min-width: 48px; min-height: 44px; padding: 9px 12px; }
-    .soru-nav .bos-btn { min-width: 88px; min-height: 44px; }
+    /* Oklar ilk sürümde 48 px idi, kullanıcı "ufak, rahat basılamıyor" dedi (21 Eyl 2026). */
+    .soru-nav .nav-ok { min-width: 72px; min-height: 52px; padding: 6px 18px; font-size: 1.6rem; line-height: 1; }
+    .soru-nav .bos-btn { min-width: 96px; min-height: 52px; }
     .shell:has(.soru-nav) { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
     body:has(textarea:focus) .soru-nav { display: none; }
   }
@@ -262,7 +263,7 @@
   .resume-section > summary { cursor: pointer; padding: 8px 0; }
   .option-row.correct { border-color: var(--good); background: var(--good-bg); }
   .option-row.wrong { border-color: var(--bad); background: var(--bad-bg); }
-  .exam-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; gap: 10px; flex-wrap: wrap; }
+  .exam-nav { display: flex; justify-content: flex-end; align-items: center; margin-top: 18px; gap: 10px; flex-wrap: wrap; }
   .qgrid { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 4px; }
   .qgrid button { width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); font-size: 0.78rem; font-variant-numeric: tabular-nums; cursor: pointer; }
   .qgrid button.answered { background: var(--surface-2); border-color: var(--accent); }
@@ -4384,15 +4385,17 @@
       optionsHtml +
       flagBarHtml(guid) +
       '<div class="qgrid">' + qgrid + "</div>" +
+      // Bitir düğmesi onaysız sonuçlandırdığı için bara (başparmağın sürekli gezdiği yere)
+      // alınmadı, kartın içinde kalır. Boş butonu yok: denemede boş = cevapsız bırakmak.
       '<div class="exam-nav">' +
-      '<div class="link-row">' +
-      '<button class="btn" data-action="prev-q" ' + (idx === 0 ? "disabled" : "") + ">← Önceki</button>" +
-      (isLast ? "" : '<button class="btn" data-action="next-q">Sonraki →</button>') +
-      "</div>" +
-      '<div class="link-row">' +
       '<button class="btn primary" data-action="finish-exam">' + (isLast ? "Sınavı Bitir" : "Erken Bitir") +
       (cevapsizSayisi ? " (" + cevapsizSayisi + " boş)" : "") + "</button>" +
-      "</div></div></div>";
+      "</div>" +
+      soruNavBarHtml({
+        prev: "prev-q", prevDisabled: idx === 0,
+        next: "next-q", nextDisabled: isLast, nextPrimary: secilen !== undefined && !isLast
+      }) +
+      "</div>";
   }
 
   function renderFlash() {

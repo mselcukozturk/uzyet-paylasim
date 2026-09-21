@@ -78,11 +78,15 @@ void test('AI pratik: Boş modül skoruna ve pStats\'a yazılmaz', () => {
   assert.deepEqual(ctx.calls, ['render']);
 });
 
-void test('alt bar: deneme dışı ekranlar ortak barı kullanır, deneme ekranı değişmez', () => {
+void test('alt bar: tüm soru ekranları ortak barı kullanır, Boş yalnız deneme dışında', () => {
   assert.match(fn('renderFlash'), /soruNavBarHtml\(\{[\s\S]*bos: answered \? null : "bos-flash"[\s\S]*nextEtiket: sonSoruda \? "Testi Bitir"/);
   assert.match(fn('renderTekrarTest'), /bos: q && kayit\.secilen === null \? "bos-tekrar"/);
   assert.match(fn('renderPratikSoru'), /\{ bos: "bos-pratik" \}/);
-  assert.doesNotMatch(fn('renderExam'), /soruNavBarHtml|bos-/);
+  // Deneme aynı barı kullanır ama Boş butonu yoktur; Bitir düğmesi barın dışında kalır.
+  const exam = fn('renderExam');
+  assert.match(exam, /soruNavBarHtml\(\{[\s\S]*prev: "prev-q"[\s\S]*next: "next-q", nextDisabled: isLast/);
+  assert.doesNotMatch(exam, /bos:|bos-/);
+  assert.ok(exam.indexOf('data-action="finish-exam"') < exam.indexOf('soruNavBarHtml('));
   // Dar ekranda oklar yazısız, bar ekranın altına sabit; not yazılırken gizlenir.
   const bar = fn('soruNavBarHtml');
   assert.match(bar, /←<span class="genis-etiket"> Önceki Soru<\/span>/);
