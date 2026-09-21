@@ -36,7 +36,8 @@ async function kur() {
     '@/lib/db': { getDb: () => db, schema }, '@/lib/exam-core': examCore, '@/lib/practice-core': { validatePracticeAnswer },
     '@/lib/auth/session': {
       getSessionProfile: async (request: Request) => ({
-        userId: request.headers.get('x-user'), isActive: true, canSeeAiSources: true, disclaimerAcceptedAt: new Date(),
+        userId: request.headers.get('x-user'), isActive: true, isAdmin: request.headers.get('x-user') === 'admin',
+        canSeeAiSources: true, disclaimerAcceptedAt: new Date(),
       }),
     },
     '@/lib/cors': { withCors: (r: Response) => r }, '@/data/bank-corrections.json': [],
@@ -98,6 +99,18 @@ test('günün denemesi: aynı anda ilk kez başlayana da aynı sorular; ortalama
     const aliceDaily = (await post('alice', { action: 'dashboard' })).data.daily;
     assert.equal(aliceDaily.solvedCount, 3);
     assert.equal(aliceDaily.avgCorrect, 33.5);
+
+    // Çözenler listesi yalnız yöneticiye: kişi başı ilk bitmiş deneme, bitiş sırasıyla.
+    assert.equal((await post('alice', { action: 'daily-solvers' })).status, 403);
+    await db.insert(schema.profiles).values([
+      { userId: 'alice', username: 'alice', displayName: 'Alice' }, { userId: 'bob', username: 'bob' },
+    ]);
+    const solvers = await post('admin', { action: 'daily-solvers' });
+    assert.equal(solvers.status, 200, JSON.stringify(solvers.data));
+    assert.equal(solvers.data.day, examCore.dailyExamDay());
+    assert.deepEqual(solvers.data.solvers.map((s: { name: string; correct: number }) => [s.name, s.correct]),
+      [['Alice', 40], ['bob', 21], ['—', 27]]);
+    assert.ok(solvers.data.solvers.every((s: { finishedAt: string }) => !Number.isNaN(Date.parse(s.finishedAt))));
 
     const history = (await post('alice', { action: 'history' })).data;
     assert.equal(history.total, 2);

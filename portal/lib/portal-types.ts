@@ -80,6 +80,13 @@ export type DashboardData = {
   daily: { day: string; code: string; solvedCount: number; myCorrect: number | null; avgCorrect: number | null };
 };
 
+// action "daily-solvers" (yalnız yönetici): bugünün günün denemesini çözenler, kişi başı ilk
+// bitmiş deneme, bitiş sırasına göre. correct 50 üzerinden doğru sayısıdır.
+export type DailySolversResponse = {
+  day: string;
+  solvers: Array<{ name: string; finishedAt: string | null; correct: number }>;
+};
+
 // action "history": bitmiş denemeler, en yeniden eskiye, pageSize'lık sayfalar (page 0'dan).
 export type HistoryPage = { attempts: AttemptSummary[]; total: number; page: number; pageSize: number };
 
@@ -159,6 +166,7 @@ export type ExamApiRequest =
   | { action: 'ai-exam-detail'; attemptId: string }
   | { action: 'ai-exam-delete'; attemptId: string }
   | { action: 'dashboard' }
+  | { action: 'daily-solvers' }
   | { action: 'start'; mode: ExamMode; examCode?: string; daily?: boolean }
   | { action: 'resume'; attemptId: string }
   | { action: 'answer'; attemptId: string; questionId: string; selectedIndex: number }

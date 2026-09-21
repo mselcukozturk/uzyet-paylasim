@@ -2570,9 +2570,51 @@
         (g.solvedCount ? g.solvedCount + " kişi çözdü — ortalamayı çözünce görürsün." : "Bugün henüz çözen yok.") + "</div>" +
         '<button class="btn primary" data-action="start-daily-exam"' + (remoteBusy ? " disabled" : "") + ">Başla (60 dk)</button>"
       : '<div class="muted">Puanın <b style="color:' + renkEsigi(g.myCorrect * 2) + '">' + g.myCorrect + " / 50</b> · " +
-        gununDenemesiOrtalamaHtml(g) + "</div>";
+        gununDenemesiOrtalamaHtml(g) + "</div>" + gununCozenlerHtml(g);
     return '<div class="card" style="margin-bottom:14px">' +
       '<div class="section-title" style="font-size:1rem;margin-bottom:6px">☀️ Günün Denemesi — ' + tarih + "</div>" + govde + "</div>";
+  }
+  // Yalnız yönetici, çözdükten sonra: kim, ne zaman, kaç puan. Yetkiyi sunucu da zorlar
+  // ("daily-solvers" 403 döner); buradaki kontrol yalnız görünürlüktür.
+  var gununCozenler = { acik: false, yukleniyor: false, veri: null, hata: null };
+  function gununCozenlerHtml(g) {
+    if (!remoteAuth.isAdmin) return "";
+    var c = gununCozenler;
+    var btn = '<button class="btn ghost" style="margin-top:10px" data-action="toggle-daily-solvers" aria-expanded="' + c.acik + '">' +
+      (c.acik ? "Listeyi gizle" : "👥 Kimler çözdü?") + "</button>";
+    if (!c.acik) return btn;
+    var govde;
+    if (c.yukleniyor) govde = '<div class="muted">Yükleniyor…</div>';
+    else if (c.hata) govde = '<div class="muted">' + escapeHtml(c.hata) + "</div>";
+    else if (!c.veri || c.veri.day !== g.day || !c.veri.solvers.length) govde = '<div class="muted">Henüz çözen yok.</div>';
+    else govde = '<table style="width:100%;border-collapse:collapse;font-size:.92rem">' +
+      '<thead><tr class="muted" style="text-align:left"><th style="padding:4px 6px 4px 0;font-weight:500">Kim</th>' +
+      '<th style="padding:4px 6px;font-weight:500">Ne zaman</th><th style="padding:4px 0 4px 6px;font-weight:500;text-align:right">Puan</th></tr></thead><tbody>' +
+      c.veri.solvers.map(function (s) {
+        var zaman = s.finishedAt
+          ? new Date(s.finishedAt).toLocaleString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
+          : "—";
+        return '<tr style="border-top:1px solid var(--border)"><td style="padding:5px 6px 5px 0">' + escapeHtml(s.name) + "</td>" +
+          '<td class="muted" style="padding:5px 6px;white-space:nowrap">' + zaman + "</td>" +
+          '<td style="padding:5px 0 5px 6px;text-align:right;white-space:nowrap"><b style="color:' + renkEsigi(s.correct * 2) + '">' + s.correct + "</b> / 50</td></tr>";
+      }).join("") + "</tbody></table>";
+    return btn + '<div style="margin-top:10px">' + govde + "</div>";
+  }
+  function toggleGununCozenler() {
+    var c = gununCozenler;
+    c.acik = !c.acik;
+    if (!c.acik || c.yukleniyor) { render(); return; }
+    c.yukleniyor = true; c.hata = null;
+    render();
+    remoteFetch("/api/exam", "POST", { action: "daily-solvers" }).then(function (r) {
+      c.yukleniyor = false;
+      if (r.ok) c.veri = r.data;
+      else c.hata = (r.data && r.data.error) || "Liste alınamadı.";
+      render();
+    }).catch(function () {
+      c.yukleniyor = false; c.hata = "Liste alınamadı.";
+      render();
+    });
   }
   function gununDenemesiOrtalamaHtml(g) {
     return "çözen " + g.solvedCount + " kişinin ortalaması <b>" +
@@ -4992,6 +5034,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "start-exam") startExam(t.getAttribute("data-mode"));
     else if (action === "start-exam-code") startExamWithCode();
     else if (action === "start-daily-exam") startExamRemote("rastgele", null, true);
+    else if (action === "toggle-daily-solvers") toggleGununCozenler();
     else if (action === "ac-yeni-deneme-turleri") { denemeTurSecimiAcik = true; render(); }
     else if (action === "kapat-yeni-deneme-turleri") { denemeTurSecimiAcik = false; render(); }
     else if (action === "start-ai-daily") startAiGununDenemesi();

@@ -18,6 +18,7 @@ import {
   type ExamMode,
 } from '@/lib/exam-core';
 import type {
+  DailySolversResponse,
   ExamApiRequest,
   PracticeBankResponse,
   PracticeCheckpointsResponse,
@@ -357,6 +358,32 @@ async function dashboard(userId: string) {
   };
 }
 
+// Yalnız yönetici: bugünün günün denemesini çözenler — kişi başı ilk bitmiş deneme
+// (dashboard'daki solvedCount/ortalama ile aynı kural), bitiş sırasına göre.
+async function dailySolvers(): Promise<DailySolversResponse> {
+  const db = getDb();
+  const day = dailyExamDay();
+  const rows = await db.selectDistinctOn([schema.examAttempts.userId], {
+    username: schema.profiles.username,
+    displayName: schema.profiles.displayName,
+    finishedAt: schema.examAttempts.finishedAt,
+    correct: schema.examAttempts.correctCount,
+  }).from(schema.examAttempts)
+    .leftJoin(schema.profiles, eq(schema.examAttempts.userId, schema.profiles.userId))
+    .where(and(eq(schema.examAttempts.examCode, dailyExamCode(day)), eq(schema.examAttempts.status, 'finished')))
+    .orderBy(schema.examAttempts.userId, asc(schema.examAttempts.finishedAt));
+  return {
+    day,
+    solvers: rows
+      .map((row) => ({
+        name: row.displayName || row.username || '—',
+        finishedAt: row.finishedAt?.toISOString() ?? null,
+        correct: row.correct ?? 0,
+      }))
+      .sort((a, b) => (a.finishedAt ?? '').localeCompare(b.finishedAt ?? '')),
+  };
+}
+
 const HISTORY_PAGE_SIZE = 20;
 
 // Geçmiş ekranı: bitmiş denemelerin tamamı, en yeniden eskiye sayfa sayfa.
@@ -681,6 +708,11 @@ async function handlePost(request: Request) {
 
     if (body.action === 'dashboard') {
       return NextResponse.json(await dashboard(user.id));
+    }
+
+    if (body.action === 'daily-solvers') {
+      if (!profile.isAdmin) return fail('Bu bilgi yalnız yöneticiye açık.', 403);
+      return NextResponse.json(await dailySolvers());
     }
 
     if (body.action === 'history') {
