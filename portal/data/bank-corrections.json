@@ -1790,5 +1790,86 @@
   "not": "Anında Tarım Kredisi azami vadesi 36 aydan 48 aya çıktı; doğru şık 2.000.000 TL - 48 Ay olarak güncellendi.",
   "kaynak_atif": "Kullanıcı güncellemesi 23 Eyl 2026 (orhan/enes işaretleriyle aynı); kitap s.179-180'deki 36 ay eski",
   "tarihISO": "2026-09-23T17:44:55.647615+00:00"
+ },
+ {
+  "id": "gece-20260923-d116357f1e2f",
+  "guid": "d116357f1e2f",
+  "konu": "Kredi",
+  "soru": "Anında İmece Kart uygulamamız, çiftçi müşterilerimize İşCep’ten ….. TL’ye kadar İmece Kart tahsis edilmesine imkan vermektedir.",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026, s. 173",
+  "tarihISO": "2026-09-23T19:43:23.367572+00:00"
+ },
+ {
+  "id": "gece-20260923-ecb2ae74f46a",
+  "guid": "ecb2ae74f46a",
+  "konu": "Kredi",
+  "soru": "Şube yetkisinde verilebilecek Ticari Taşıt Kredisi ile ilgili hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026 s.167 (PDF s.184)",
+  "tarihISO": "2026-09-23T19:43:23.367572+00:00"
+ },
+ {
+  "id": "gece-20260923-8d81e656d901",
+  "guid": "8d81e656d901",
+  "konu": "Temel İşlemler",
+  "soru": "Hangisi efektiftir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "06 Döviz Temel İşlemler/Temel Islemler_YYS_2026.pdf, s. 68",
+  "tarihISO": "2026-09-23T19:43:23.367572+00:00"
+ },
+ {
+  "id": "gece-20260923-12d5e2e90183",
+  "guid": "12d5e2e90183",
+  "konu": "Temel İşlemler",
+  "soru": "Basım tarihi 14.09.2022 olan, 5941 sayılı Kanuna tabi 20.000 TL tutarındaki çek 26.03.2026’da süresinde ibraz edilmiştir. Hesap bakiyesi sıfırsa ve bankanın yasal yükümlülük bedeli hamile ödenirse karşılıksız belgelendirilecek tutar nedir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "01 Hukuk/Hukuk - Çoktan Seçmeli Set 2 (Medeni-Borçlar-Ticaret).pdf s. 16",
+  "tarihISO": "2026-09-23T19:43:23.367572+00:00"
+ },
+ {
+  "id": "gece-20260923-256ab8b15b16",
+  "guid": "256ab8b15b16",
+  "konu": "Hukuk",
+  "soru": "1512 sayılı Noterlik Kanunu'nda yapılan değişiklik ile daha önceden yalnızca tapu müdürlükleri nezdinde düzenlenebilirken noter huzurunda da yapılabileceği düzenlenen sözleşme aşağıdakilerden hangisidir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "01 Hukuk/Hukuk_TKR_2026.pdf s. 59, 92 (kitap s. 73)",
+  "tarihISO": "2026-09-23T19:43:23.367572+00:00"
+ },
+ {
+  "id": "gece-20260923-224b8dd272f4",
+  "guid": "224b8dd272f4",
+  "konu": "Ürünler",
+  "soru": "Sınırsız Otomatik Servis (SOS) uygulaması kapsamında satılan fonların, satış sırası hangisinde doğru verilmiştir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026 s.237 (PDF s.254)",
+  "tarihISO": "2026-09-23T19:43:23.367572+00:00"
+ },
+ {
+  "id": "gece-20260923-e723099befa8",
+  "guid": "e723099befa8",
+  "konu": "Hukuk",
+  "soru": "Trabzon’da keşide edilmiş, 31 Eylül 2025 tarihli, hesap numarası İstanbul’da bulunan ve Tacir çeki niteliğinde 13.650TL tutarlı bir çek verilmiştir. \nYasal zorunluluk tutarı 16.350 TL, Müşterinin hesap bakiyesi: 10.650 TL\nAşağıdakilerden hangisi doğrudur?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "01 Hukuk/Hukuk - Çoktan Seçmeli Set 2 (Medeni-Borçlar-Ticaret).pdf, s. 16",
+  "tarihISO": "2026-09-23T19:43:23.367572+00:00"
+ },
+ {
+  "id": "gece-20260923-3c9659590309",
+  "guid": "3c9659590309",
+  "konu": "Genel Ekonomi",
+  "soru": "Sırasıyla 2024 yıl sonu ve 2026 Ağustos (2026/8) yıllık TÜFE oranları aşağıdakilerden hangisidir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "TCMB Fiyat Gelişmeleri Raporu (Ağustos 2026, 4 Eylül 2026)",
+  "tarihISO": "2026-09-23T19:43:23.367572+00:00"
+ },
+ {
+  "id": "gece-20260923-7eedcbd9d07b",
+  "guid": "7eedcbd9d07b",
+  "konu": "Kredi",
+  "soru": "Aşağıdaki kredi türlerinden hangisi TL kredi büyümesine dayalı zorunlu karşılık uygulamasında büyüme sınırına tabi olan kredidir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "TCMB, Finansal İstikrar Raporu – Mayıs 2026, Finansal Kesim, basılı s. 34 (PDF s. 36); kontrol tarihi 23 Eyl 2026.",
+  "tarihISO": "2026-09-23T19:43:23.367572+00:00"
  }
 ]
