@@ -11,7 +11,7 @@ const sql = postgres(url, { max: 1, prepare: false });
 
 let bankByGuid = new Map();
 try {
-  const bankUrl = new URL(process.env.QUESTION_BANK_PATH ?? '../../../web_quiz_bank.json', import.meta.url);
+  const bankUrl = new URL(process.env.QUESTION_BANK_PATH ?? '../../../08 Sorular/birlestir/web_quiz_bank.json', import.meta.url);
   const bank = JSON.parse(await readFile(bankUrl, 'utf8'));
   bankByGuid = new Map(bank.map((q) => [String(q.guid ?? '').trim(), q]));
 } catch {

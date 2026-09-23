@@ -6,7 +6,7 @@ import postgres from 'postgres';
 
 const sourceUrl = process.env.QUESTION_BANK_PATH
   ? pathToFileURL(resolve(process.env.QUESTION_BANK_PATH))
-  : new URL('../../../web_quiz_bank.json', import.meta.url);
+  : new URL('../../../08 Sorular/birlestir/web_quiz_bank.json', import.meta.url);
 const sourceText = await readFile(sourceUrl, 'utf8');
 const source = JSON.parse(sourceText);
 
