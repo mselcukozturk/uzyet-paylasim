@@ -1781,5 +1781,14 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "HSBC Bank Malaysia, Product Disclosure Sheet: Export Forfaiting, ver. Jun 2025, s.1, satırlar 18-29; kontrol 23 Eyl 2026",
   "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "elle-20260923-31c0547a544a",
+  "guid": "31c0547a544a",
+  "konu": "Kredi",
+  "soru": "Anında Tarım Kredisinin azami tutar ve vadesi nedir",
+  "not": "Anında Tarım Kredisi azami vadesi 36 aydan 48 aya çıktı; doğru şık 2.000.000 TL - 48 Ay olarak güncellendi.",
+  "kaynak_atif": "Kullanıcı güncellemesi 23 Eyl 2026 (orhan/enes işaretleriyle aynı); kitap s.179-180'deki 36 ay eski",
+  "tarihISO": "2026-09-23T17:44:55.647615+00:00"
  }
 ]
