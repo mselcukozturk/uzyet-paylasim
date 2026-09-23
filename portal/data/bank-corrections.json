@@ -1619,5 +1619,167 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "03 İthalat İhracat/ithalat_ihracat_TKR_2026.pdf (s.42 / PDF 57)",
   "tarihISO": "2026-09-20T23:31:25.751509+00:00"
+ },
+ {
+  "id": "gece-20260923-9031c3864fee",
+  "guid": "9031c3864fee",
+  "konu": "Genel Ekonomi",
+  "soru": "2024 Yılında Ülke Büyüme oranımız kaçtır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "TÜİK, Dönemsel Gayrisafi Yurt İçi Hasıla IV. Çeyrek: Ekim-Aralık 2024 haber bülteni (28.02.2025) [kontrol 23.09.2026]",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-bcf769ddca4d",
+  "guid": "bcf769ddca4d",
+  "konu": "Kambiyo",
+  "soru": "İhracat Bedeli Kabul Belgesi (İBKB) düzenletilen ve TL cinsi ihracat reeskont finansmanı kullanan firmaların ihracat bedelinin en az yüzde kaçı Merkez Bankası'na satılır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "TCMB İhracat ve Döviz Kazandırıcı Hizmetler Reeskont Finansmanı Uygulama Talimatı (Haziran 2026), md.13/2-a ve Ek Madde 2; oran için 03 İthalat İhracat/ithalat_ihracat_TKR_2026.pdf 'TCMB'ye Döviz Satışı' [kontrol 23.09.2026]",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-8715ee2d6869",
+  "guid": "8715ee2d6869",
+  "konu": "Ürünler",
+  "soru": "Çek Cepte ürününe ilişkin özelliklerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "04 Kredi/Kredi YYS 2026.pdf s.152 — ÇekCepte Uygulaması [kontrol 23.09.2026]",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-d80992681432",
+  "guid": "d80992681432",
+  "konu": "Temel İşlemler",
+  "soru": "Düzenlenme Yeri: Kars\nİbraz Yeri: Muş\nMuhatap Banka Şubesinin Yeri: Kars\nolan çekin ibraz süresi ne kadardır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "06 Döviz Temel İşlemler/Temel Islemler_YYS_2026.pdf s.217-218; aynı cümle 01 Hukuk/Hukuk_TKR_2026.pdf s.187 [kontrol 23.09.2026]",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-80755273b805",
+  "guid": "80755273b805",
+  "konu": "Kambiyo",
+  "soru": "Akreditifli ve vesaik mukabili ihracat işlemlerinde aşağıdakilerden hangisi şubelerimizin sorumluluğunda değildir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "03 İthalat İhracat/ithalat_ihracat_TKR_2026.pdf s.148 — Akreditifli ve Vesaik Mukabili İhracat İşlemlerinde Şubelerimizin ve DİTKOB'un Sorumlulukları [kontrol 23.09.2026]",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-a744f2f6ef53",
+  "guid": "a744f2f6ef53",
+  "konu": "Mali Analiz",
+  "soru": "| $ | I | II | III | IV |\n| Son Yıl Ciro | 5.000.000 | 10.000.000 | 3.000.000 | 15.000.000 |\n| Önceki Yıl Ciro | 7.000.000 | 7.000.000 | 5.000.000 | 20.000.000 |\n| Teklif Sonrası Ulaşılacak Genel Limit | 500.000 | 40.000 | 2.000.000 | 10.000.000 |\nYukarıdaki tabloya göre hangi firmanın karar destek sistemi farklıdır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "05 İstihbarat/istihbarat_TKR_2026.pdf, basılı s.18-19 (PDF s.35-36), Bankamız değerlendirmeye esas segment yapısı tablosu",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-8867950f28dd",
+  "guid": "8867950f28dd",
+  "konu": "Kambiyo",
+  "soru": "Akreditif açılış metninde (MT700) istenen belgelerde, \"Sigorta sertifikası\" bulunmaktadır, fakat \"Sigorta poliçesi\" ibraz edilmiştir. Bu durum rezerv oluşturur mu?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "03 İthalat İhracat/markdown/04-uluslararasi-ticaret-islemlerinde-kullanilan-baslica-belgeler.md, basılı s.76-77 (PDF s.91-92), Sigorta Belgelerinin İncelenmesi",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-c48779cbb807",
+  "guid": "c48779cbb807",
+  "konu": "Temel İşlemler",
+  "soru": "19. I. Küçükler adına açılan hesaplar için zamanaşımı süresi ergin olduğu tarihten itibaren başlar.\nII. Kiralık kasa açan ve açtıktan sonra hiç bankaya uğramayan kişi için zaman aşımı kasa bedelini ödediği tarihte zamanaşımı başlar \nIII. Hesaba konulan haciz zamanaşımını durdurur.\nYukarıdakilerden hangileri doğrudur?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "06 Döviz Temel İşlemler/markdown-temel-islemler/03-mevduat-hesaplari-ve-genel-isleyis-kurallari.md, basılı s.145 (PDF s.161)",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-73ed2793e66f",
+  "guid": "73ed2793e66f",
+  "konu": "Ürünler",
+  "soru": "Repo ile ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "02 Ürünlerimiz/Ürünlerimiz YYS 2026.pdf, basılı s.118-119 (PDF s.135-136), Repo İşlemleri",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-fc52b549748f",
+  "guid": "fc52b549748f",
+  "konu": "Ürünler",
+  "soru": "Dijital bankacılık kanallarında görüntülenmeyen hesaplara ne ad verilir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, 02 Ürünlerimiz/markdown/01-dijital-bankacilik-kanallari.md, PDF s.5; kontrol tarihi 23.09.2026.",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-393326c9591b",
+  "guid": "393326c9591b",
+  "konu": "Ürünler",
+  "soru": "Talimat Kodu “2 - Sınırlı” olan bireysel müşterilerimiz aşağıdaki işlemlerden hangisini yapabilir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, Dijital Bankacılık, s.6 (PDF s.23)",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-ac881a082e0a",
+  "guid": "ac881a082e0a",
+  "konu": "Temel İşlemler",
+  "soru": "Şüpheli işlem, şüphenin oluştuğu tarihten itibaren en geç kaç iş günü içinde MASAK’a bildirilmelidir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "MASAK, Şüpheli İşlem Bildirimi Yükümlülüğü Rehberi; kontrol 23.09.2026",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-410cf596bc0f",
+  "guid": "410cf596bc0f",
+  "konu": "Ürünler",
+  "soru": "Privia Black kredi kartları ile ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, Privia Black, s.60-61 (PDF s.77-78)",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-e573e9c8e214",
+  "guid": "e573e9c8e214",
+  "konu": "Kredi",
+  "soru": "Aşağıdakilerden hangisi peşin faiz tahsil edilen kredilerdendir?\nI. TL Çek İskontosu/İştira Kredisi\nII. TLREF Endeksli Taksitli Ticari Kredi\nIII. Doğrudan Borçlandırma Sistemi (DBS)",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026, TL Çek İskontosu/İştirası ve TLREF Endeksli Taksitli Krediler",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-b273696434bf",
+  "guid": "b273696434bf",
+  "konu": "Kredi",
+  "soru": "İşletme segmenti müşterileri için uygulanan İşletme Entegre Skorlama Sistemi'nde aşağıdaki modüllerden hangisi kullanılmaz?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026, Bankamızda Kredilendirme Süreci, modül tanımları",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-db8c949b5108",
+  "guid": "db8c949b5108",
+  "konu": "Kambiyo",
+  "soru": "Bir akreditifin iptal edilmesi kimin onayı olmadan gerçekleştirilemez?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "ICC, Uniform Customs and Practice for Documentary Credits (UCP 600), Article 10(a); kontrol 23 Eyl 2026",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-76c4cd485c3d",
+  "guid": "76c4cd485c3d",
+  "konu": "Kambiyo",
+  "soru": "Aşağıdaki durumlardan hangisinde ithalatçı firmaya BPO önerilemez?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "ICC, Uniform Rules for Bank Payment Obligations, Article 7; kontrol 23 Eyl 2026",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
+ },
+ {
+  "id": "gece-20260923-76e9a2440c1d",
+  "guid": "76e9a2440c1d",
+  "konu": "Kambiyo",
+  "soru": "Forfaiting işleminde alınan ücretler hangileridir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "HSBC Bank Malaysia, Product Disclosure Sheet: Export Forfaiting, ver. Jun 2025, s.1, satırlar 18-29; kontrol 23 Eyl 2026",
+  "tarihISO": "2026-09-23T06:02:04.680364+00:00"
  }
 ]
