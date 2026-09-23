@@ -1871,5 +1871,68 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "TCMB, Finansal İstikrar Raporu – Mayıs 2026, Finansal Kesim, basılı s. 34 (PDF s. 36); kontrol tarihi 23 Eyl 2026.",
   "tarihISO": "2026-09-23T19:43:23.367572+00:00"
+ },
+ {
+  "id": "gece-20260923-b848ecbc0892",
+  "guid": "b848ecbc0892",
+  "konu": "Hukuk",
+  "soru": "Denizli'nin Acıpayam ilçesinde keşide edilen ve muhatap banka şubesi Denizli merkezde bulunan çekin ibraz süresi aşağıdaki şıklardan hangisinde doğru olarak verilmiştir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "01 Hukuk/Hukuk_TKR_2026.pdf s. 206",
+  "tarihISO": "2026-09-23T20:25:12.458485+00:00"
+ },
+ {
+  "id": "gece-20260923-a4ccf0eb1e79",
+  "guid": "a4ccf0eb1e79",
+  "konu": "Kambiyo",
+  "soru": "Amir banka akreditif açılış mesajını (MT700) görevli bankaya iletmiş olup, akreditif henüz lehtara (ihracatçıya) ihbar edilmediyse aşağıdakilerden hangisi doğrudur?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "ithalat_ihracat_TKR_2026.pdf s.53 (Kitap s.38)",
+  "tarihISO": "2026-09-23T20:25:12.458485+00:00"
+ },
+ {
+  "id": "gece-20260923-90d59e589231",
+  "guid": "90d59e589231",
+  "konu": "Temel İşlemler",
+  "soru": "EFT İşlemlerinin \"EFT Bildirim (EP) Ekranı ile yapılması için EFT tutarının ne kadardan yüksek olması gerekir",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Temel Islemler_YYS_2026.pdf s.185 (kitap s.168-169)",
+  "tarihISO": "2026-09-23T20:25:12.458485+00:00"
+ },
+ {
+  "id": "gece-20260923-25a444cc4e0e",
+  "guid": "25a444cc4e0e",
+  "konu": "Kredi",
+  "soru": "Kredi teminatına alınan aşağıdaki varlıklardan hangisi nakit karşılık sayılmaz?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "04 Kredi/Kredi YYS 2026.pdf s.104 (PDF s.121)",
+  "tarihISO": "2026-09-23T20:25:12.458485+00:00"
+ },
+ {
+  "id": "gece-20260923-851d6d674ced",
+  "guid": "851d6d674ced",
+  "konu": "Kambiyo",
+  "soru": "Şubelerimizce bir işlemin ihracat olarak işleme alınması için hangi kontrollerin yapılması gerekir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "İthalat-İhracat s. 139 (PDF s. 154)",
+  "tarihISO": "2026-09-23T20:25:12.458485+00:00"
+ },
+ {
+  "id": "gece-20260923-0eefa095f5bf",
+  "guid": "0eefa095f5bf",
+  "konu": "Mali Analiz",
+  "soru": "İşletmenin cari oranı 3; kısa vadeli borçları 100.000 Türk Lirası ise Net İşletme Sermayesi kaç TL'dir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "İSTİHBARAT NOT VE SORULARI 2026 BASİSEN, s. 8",
+  "tarihISO": "2026-09-23T20:25:12.458485+00:00"
+ },
+ {
+  "id": "gece-20260923-de4eb8b902c2",
+  "guid": "de4eb8b902c2",
+  "konu": "Ürünler",
+  "soru": "Konut tadilatı amacı dışında kullandırılan tüketici destek kredisindeki BSMV oranı kaçtır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, s. 160 (PDF s. 177)",
+  "tarihISO": "2026-09-23T20:25:12.458485+00:00"
  }
 ]
