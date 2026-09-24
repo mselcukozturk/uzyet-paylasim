@@ -1934,5 +1934,50 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "Ürünlerimiz YYS 2026, s. 160 (PDF s. 177)",
   "tarihISO": "2026-09-23T20:25:12.458485+00:00"
+ },
+ {
+  "id": "gece-20260924-772fb3ee0537",
+  "guid": "772fb3ee0537",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 itibarıyla bankamız menkul değer portföyü ile ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/İşbank 1H2026 - Tam Liste (11 sayfa).pdf, s. 4",
+  "tarihISO": "2026-09-24T05:26:37.909341+00:00"
+ },
+ {
+  "id": "gece-20260924-8c5943751370",
+  "guid": "8c5943751370",
+  "konu": "Genel Ekonomi",
+  "soru": "Vadesiz mevduatın toplam mevduat içindeki payı nedir? (2026/6)",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/YatirimciSunumu.pdf s.12 (sl.11)",
+  "tarihISO": "2026-09-24T05:26:37.909341+00:00"
+ },
+ {
+  "id": "gece-20260924-62db3f5d076f",
+  "guid": "62db3f5d076f",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 itibarıyla bankamız gider yönetimi ile ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/İşbank 1H2026 - Tam Liste (11 sayfa).pdf, sayfa 6 (Kârlılık ve Verimlilik tablosu); ayrıca Finansal Sunum sl. 5, 13 ve Yatırımcı Sunumu sl. 14, 17",
+  "tarihISO": "2026-09-24T05:26:37.909341+00:00"
+ },
+ {
+  "id": "gece-20260924-e3c78fa349b1",
+  "guid": "e3c78fa349b1",
+  "konu": "Genel Ekonomi",
+  "soru": "Aşağıdakilerden hangisi GSYH'si en büyük beş ülke arasında yer almaktadır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "03 İthalat İhracat/DIŞ TİC İŞLİ VE FİN İŞ BNAKASI.pdf, s. 2 (TÜRKİYE VE DÜNYA EKONOMİSİ 2025)",
+  "tarihISO": "2026-09-24T05:26:37.909341+00:00"
+ },
+ {
+  "id": "gece-20260924-b027539d2827",
+  "guid": "b027539d2827",
+  "konu": "Kredi",
+  "soru": "Aşağıdaki ürünlerden hangisi işletme finansmanı için kullanılamaz?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026 s.140, 181",
+  "tarihISO": "2026-09-24T05:26:37.909341+00:00"
  }
 ]
