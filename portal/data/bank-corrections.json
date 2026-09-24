@@ -1988,5 +1988,14 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "TÜİK / TRT Haber (2025 yıl sonu ve 2026 2. çeyrek GSYH bültenleri)",
   "tarihISO": "2026-09-24T05:31:26.358822+00:00"
+ },
+ {
+  "id": "yonetici-20260924-a631f22a9325",
+  "guid": "a631f22a9325",
+  "konu": "Genel Ekonomi",
+  "soru": "Sırasıyla 2025 yıl sonu ve 2026 2. çeyrekte Türkiye ekonomisinin büyüme oranı aşağıdakilerden hangisidir?",
+  "not": "Yönetici kontrolü: TÜİK 2025 büyümesini %3,6'dan %3,7'ye revize etti; A şıkkı güncellendi.",
+  "kaynak_atif": "TÜİK Yıllık GSYH 2025 (revize) · SBB 2026 II. Çeyrek büyüme",
+  "tarihISO": "2026-09-24T05:32:34.319530+00:00"
  }
 ]
