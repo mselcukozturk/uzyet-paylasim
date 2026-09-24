@@ -6,6 +6,7 @@ import { PGlite } from '@electric-sql/pglite';
 import { drizzle } from 'drizzle-orm/pglite';
 import * as orm from 'drizzle-orm';
 import * as schema from '../lib/db/schema.ts';
+import * as examCore from '../lib/exam-core.ts';
 import ts from 'typescript';
 
 // AI denemeleri sunucuda sınav oturumu açmaz; biten deneme practice_sessions'ta ayrılmış
@@ -22,7 +23,7 @@ test('AI deneme geçmişi: kayıt, istatistik, detay, silme ve hesap yalıtımı
       'next/server': { NextResponse: Response }, 'drizzle-orm': orm,
       '@/lib/db': { getDb: () => db, schema }, '@/lib/practice-core': {},
       '@/lib/auth/session': { getSessionProfile: async () => ({ userId, isActive: true, canSeeAiSources: true, disclaimerAcceptedAt: new Date() }) },
-      '@/lib/cors': { withCors: (r: Response) => r }, '@/lib/exam-core': {}, '@/data/bank-corrections.json': [],
+      '@/lib/cors': { withCors: (r: Response) => r }, '@/lib/exam-core': examCore, '@/data/bank-corrections.json': [],
     };
     const exports: { POST?: (r: Request) => Promise<Response> } = {};
     const compiled = ts.transpileModule(readFileSync(new URL('../app/api/exam/route.ts', import.meta.url), 'utf8'), {

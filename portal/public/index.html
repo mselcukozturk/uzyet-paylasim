@@ -263,7 +263,6 @@
   .resume-section > summary { cursor: pointer; padding: 8px 0; }
   .option-row.correct { border-color: var(--good); background: var(--good-bg); }
   .option-row.wrong { border-color: var(--bad); background: var(--bad-bg); }
-  .exam-nav { display: flex; justify-content: flex-end; align-items: center; margin-top: 18px; gap: 10px; flex-wrap: wrap; }
   .qgrid { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 4px; }
   .qgrid button { width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); font-size: 0.78rem; font-variant-numeric: tabular-nums; cursor: pointer; }
   .qgrid button.answered { background: var(--surface-2); border-color: var(--accent); }
@@ -4420,11 +4419,17 @@
     var progress = Math.round(((idx + 1) / currentExam.sorular.length) * 100);
     var isLast = idx === currentExam.sorular.length - 1;
     var cevapsizSayisi = currentExam.sorular.length - Object.keys(currentExam.cevaplar).length;
+    var bitirAd = (isLast ? "Sınavı Bitir" : "Erken Bitir") + (cevapsizSayisi ? " (" + cevapsizSayisi + " boş)" : "");
     var ustHtml = soruUstBlokHtml(
       q.konu, (idx + 1) + " / " + currentExam.sorular.length,
       '<span>' + denemeAdi({ isDaily: currentExam.isDaily, aiGunu: currentExam.aiGunu, mode: currentExam.tip }) + "</span>" +
       '<span id="exam-timer" class="exam-timer" title="Geçen süre — resmi sınav 50 soru / 60 dk">⏱ ' + fmtSure(currentExam.gecenSaniye || 0) + "</span>",
       '<button class="btn ghost" data-action="copy-soru" data-scope="exam" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋</button>' +
+      // Bitir onaysız sonuçlandırır: 24 Eyl 2026'ya kadar kartın altında, alt barın hemen
+      // üstündeydi ve "Sonraki Soru" derken yanlışlıkla basılıyordu — üst bloğa alındı.
+      '<button class="btn ' + (isLast ? "primary" : "ghost") + '" data-action="finish-exam" title="' + bitirAd + '" aria-label="' + bitirAd + '">🏁 ' +
+      (isLast ? "Sınavı Bitir" : '<span class="genis-etiket">Erken </span>Bitir') +
+      (cevapsizSayisi ? '<span class="genis-etiket"> (' + cevapsizSayisi + " boş)</span>" : "") + "</button>" +
       // AI denemesinin yarım kalan kaydı yok: "Kaydet ve Çık" yerine iki adımlı "Vazgeç".
       (currentExam.ai
         ? '<button class="btn ' + (aiVazgecOnay ? "primary" : "ghost") + '" data-action="ai-exam-vazgec" title="Denemeyi bırak" aria-label="Denemeyi bırak">' +
@@ -4440,12 +4445,7 @@
       optionsHtml +
       flagBarHtml(guid) +
       '<div class="qgrid">' + qgrid + "</div>" +
-      // Bitir düğmesi onaysız sonuçlandırdığı için bara (başparmağın sürekli gezdiği yere)
-      // alınmadı, kartın içinde kalır. Boş butonu yok: denemede boş = cevapsız bırakmak.
-      '<div class="exam-nav">' +
-      '<button class="btn primary" data-action="finish-exam">' + (isLast ? "Sınavı Bitir" : "Erken Bitir") +
-      (cevapsizSayisi ? " (" + cevapsizSayisi + " boş)" : "") + "</button>" +
-      "</div>" +
+      // Boş butonu yok: denemede boş = cevapsız bırakmak.
       soruNavBarHtml({
         prev: "prev-q", prevDisabled: idx === 0,
         next: "next-q", nextDisabled: isLast, nextPrimary: secilen !== undefined && !isLast
