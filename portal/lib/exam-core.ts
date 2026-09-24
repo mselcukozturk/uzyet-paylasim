@@ -59,6 +59,14 @@ export function examCode(mode: ExamMode, seed: number) {
   return `UZY-${prefix}${(seed >>> 0).toString(36).toUpperCase()}`;
 }
 
+// "Son N gün" istatistikleri takvim günüyle sayılır (24 Eyl 2026 kullanıcı isteği): bugün
+// dahil son N İstanbul günü, yani (N-1) gün önceki gece yarısından (UTC+3, yaz saati yok) beri.
+export function takvimGunuBaslangici(gunSayisi: number, now = new Date()) {
+  const istanbul = 3 * 3600 * 1000;
+  const bugunBasi = Math.floor((now.getTime() + istanbul) / 86_400_000) * 86_400_000 - istanbul;
+  return new Date(bugunBasi - (gunSayisi - 1) * 86_400_000);
+}
+
 // Günün denemesi İstanbul saatiyle 07:00'de değişir (UTC+3, yaz saati yok → UTC 04:00).
 export function dailyExamDay(now = new Date()) {
   return new Date(now.getTime() - 4 * 3600 * 1000).toISOString().slice(0, 10);

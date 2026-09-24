@@ -8,6 +8,7 @@ import {
   aiExamCode,
   dailyExamCode,
   dailyExamDay,
+  takvimGunuBaslangici,
   examCode,
   mulberry32,
   parseExamCode,
@@ -70,10 +71,10 @@ function aiExamBitis(row: AiExamRow) {
 }
 
 function aiExamIstatistik(rows: AiExamRow[]) {
-  const simdi = Date.now();
-  const gun = 24 * 60 * 60 * 1000;
-  const hafta = rows.filter((row) => simdi - aiExamBitis(row) <= 7 * gun);
-  const ucGun = rows.filter((row) => simdi - aiExamBitis(row) <= 3 * gun);
+  const haftaBasi = takvimGunuBaslangici(7).getTime();
+  const ucGunBasi = takvimGunuBaslangici(3).getTime();
+  const hafta = rows.filter((row) => aiExamBitis(row) >= haftaBasi);
+  const ucGun = rows.filter((row) => aiExamBitis(row) >= ucGunBasi);
   const dogru = (row: AiExamRow) => aiExamSayi(row.ozet?.skor?.dogru);
   const toplam = (row: AiExamRow) => dogru(row) + aiExamSayi(row.ozet?.skor?.yanlis) + aiExamSayi(row.ozet?.skor?.bos);
   const ortalama = (list: AiExamRow[], f: (row: AiExamRow) => number) =>
@@ -94,9 +95,9 @@ function aiExamIstatistik(rows: AiExamRow[]) {
   type KonuToplam = { asked: number; correct: number; weekAsked: number; weekCorrect: number; threeDayAsked: number; threeDayCorrect: number };
   const konular = new Map<string, KonuToplam>();
   for (const row of rows) {
-    const yas = simdi - aiExamBitis(row);
-    const haftaIci = yas <= 7 * gun;
-    const ucGunIci = yas <= 3 * gun;
+    const bitis = aiExamBitis(row);
+    const haftaIci = bitis >= haftaBasi;
+    const ucGunIci = bitis >= ucGunBasi;
     for (const [topic, k] of Object.entries(row.ozet?.konuKirilim ?? {})) {
       const sorulan = aiExamSayi(k?.dogru) + aiExamSayi(k?.yanlis) + aiExamSayi(k?.bos);
       const bilinen = aiExamSayi(k?.dogru);
@@ -196,6 +197,8 @@ async function loadAttempt(userId: string, attemptId: string) {
 
 async function dashboard(userId: string) {
   const db = getDb();
+  const haftaBasi = takvimGunuBaslangici(7);
+  const ucGunBasi = takvimGunuBaslangici(3);
   const [profileRows, bankRows, attempts, stats, completedRows, avgRows, weekRows, threeDayRows] = await Promise.all([
     db.select().from(schema.profiles).where(eq(schema.profiles.userId, userId)).limit(1),
     db.select().from(schema.questionBanks).where(eq(schema.questionBanks.isActive, true)).limit(1),
@@ -204,13 +207,13 @@ async function dashboard(userId: string) {
     db.select({ value: count() }).from(schema.examAttempts).where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.status, 'finished'))),
     db.select({ avgPercent: avg(schema.examAttempts.scorePercent), avgCorrect: avg(schema.examAttempts.correctCount), avgSeconds: avg(schema.examAttempts.elapsedSeconds) })
       .from(schema.examAttempts).where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.status, 'finished'))),
-    // Son dönem performansı: son 7 günde biten denemeler (13 Eyl 2026 kullanıcı isteği).
+    // Son dönem performansı: son 7 / 3 takvim gününde (bugün dahil) biten denemeler.
     db.select({ count: count(), avgCorrect: avg(schema.examAttempts.correctCount) })
       .from(schema.examAttempts).where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.status, 'finished'),
-        gte(schema.examAttempts.finishedAt, sql`now() - interval '7 days'`))),
+        gte(schema.examAttempts.finishedAt, haftaBasi))),
     db.select({ count: count(), avgCorrect: avg(schema.examAttempts.correctCount) })
       .from(schema.examAttempts).where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.status, 'finished'),
-        gte(schema.examAttempts.finishedAt, sql`now() - interval '3 days'`))),
+        gte(schema.examAttempts.finishedAt, ucGunBasi))),
   ]);
   const profile = profileRows[0];
   const weekCount = Number(weekRows[0]?.count ?? 0);
@@ -273,10 +276,10 @@ async function dashboard(userId: string) {
     topic: schema.examAttemptQuestions.topic,
     asked: count(),
     correct: sql<number>`sum(case when ${schema.examAnswers.selectedIndex} = ${schema.examAttemptQuestions.correctIndex} then 1 else 0 end)`,
-    weekAsked: sql<number>`sum(case when ${schema.examAttempts.finishedAt} >= now() - interval '7 days' then 1 else 0 end)`,
-    weekCorrect: sql<number>`sum(case when ${schema.examAttempts.finishedAt} >= now() - interval '7 days' and ${schema.examAnswers.selectedIndex} = ${schema.examAttemptQuestions.correctIndex} then 1 else 0 end)`,
-    threeDayAsked: sql<number>`sum(case when ${schema.examAttempts.finishedAt} >= now() - interval '3 days' then 1 else 0 end)`,
-    threeDayCorrect: sql<number>`sum(case when ${schema.examAttempts.finishedAt} >= now() - interval '3 days' and ${schema.examAnswers.selectedIndex} = ${schema.examAttemptQuestions.correctIndex} then 1 else 0 end)`,
+    weekAsked: sql<number>`sum(case when ${schema.examAttempts.finishedAt} >= ${haftaBasi.toISOString()}::timestamptz then 1 else 0 end)`,
+    weekCorrect: sql<number>`sum(case when ${schema.examAttempts.finishedAt} >= ${haftaBasi.toISOString()}::timestamptz and ${schema.examAnswers.selectedIndex} = ${schema.examAttemptQuestions.correctIndex} then 1 else 0 end)`,
+    threeDayAsked: sql<number>`sum(case when ${schema.examAttempts.finishedAt} >= ${ucGunBasi.toISOString()}::timestamptz then 1 else 0 end)`,
+    threeDayCorrect: sql<number>`sum(case when ${schema.examAttempts.finishedAt} >= ${ucGunBasi.toISOString()}::timestamptz and ${schema.examAnswers.selectedIndex} = ${schema.examAttemptQuestions.correctIndex} then 1 else 0 end)`,
   })
     .from(schema.examAttemptQuestions)
     .innerJoin(schema.examAttempts, eq(schema.examAttemptQuestions.attemptId, schema.examAttempts.id))

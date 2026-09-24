@@ -103,3 +103,14 @@ void test('istatistik sıfırlama GUID başlığı tekilleştirilir ve geçersiz
   assert.deepEqual(examCore.parseResetQuestionGuids('abc123,def456,abc123,bozuk!'), ['abc123', 'def456']);
   assert.deepEqual(examCore.parseResetQuestionGuids(null), []);
 });
+
+test('takvimGunuBaslangici: son N gün bugün dahil İstanbul gece yarısından sayılır', () => {
+  // 24 Eyl 01:30 İstanbul (23 Eyl 22:30 UTC): "son 3 gün" 22 Eyl 00:00 İstanbul'dan başlar.
+  const gece = new Date('2026-09-23T22:30:00Z');
+  assert.equal(examCore.takvimGunuBaslangici(3, gece).toISOString(), '2026-09-21T21:00:00.000Z');
+  assert.equal(examCore.takvimGunuBaslangici(1, gece).toISOString(), '2026-09-23T21:00:00.000Z');
+  // 24 Eyl 23:59 İstanbul: aynı gün, sınır değişmez; "son 7 gün" 18 Eyl 00:00'dan.
+  const aksam = new Date('2026-09-24T20:59:00Z');
+  assert.equal(examCore.takvimGunuBaslangici(3, aksam).toISOString(), '2026-09-21T21:00:00.000Z');
+  assert.equal(examCore.takvimGunuBaslangici(7, aksam).toISOString(), '2026-09-17T21:00:00.000Z');
+});

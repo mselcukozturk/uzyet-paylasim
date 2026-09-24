@@ -82,8 +82,11 @@ void test('alt bar: tüm soru ekranları ortak barı kullanır, Boş yalnız den
   assert.match(fn('renderFlash'), /soruNavBarHtml\(\{[\s\S]*bos: answered \? null : "bos-flash"[\s\S]*nextEtiket: sonSoruda \? "Testi Bitir"/);
   assert.match(fn('renderTekrarTest'), /bos: q && kayit\.secilen === null \? "bos-tekrar"/);
   assert.match(fn('renderPratikSoru'), /\{ bos: "bos-pratik" \}/);
-  // Deneme aynı barı kullanır ama Boş butonu yoktur; Bitir düğmesi barın dışında kalır.
+  // Deneme aynı barı kullanır ama Boş butonu yoktur; Bitir düğmesi barın dışında, üst
+  // blokta durur (alt barın yanındayken "Sonraki Soru" yerine yanlışlıkla basılıyordu).
   const exam = fn('renderExam');
+  assert.ok(exam.indexOf('data-action="finish-exam"') < exam.indexOf('soruHtml(q.soru)'));
+  assert.doesNotMatch(exam, /exam-nav/);
   assert.match(exam, /soruNavBarHtml\(\{[\s\S]*prev: "prev-q"[\s\S]*next: "next-q", nextDisabled: isLast/);
   assert.doesNotMatch(exam, /bos:|bos-/);
   assert.ok(exam.indexOf('data-action="finish-exam"') < exam.indexOf('soruNavBarHtml('));
