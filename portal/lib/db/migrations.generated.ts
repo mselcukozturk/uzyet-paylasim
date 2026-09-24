@@ -65,4 +65,8 @@ export const MIGRATIONS: readonly Migration[] = [
     name: "0014_drop_paused_sessions.sql",
     content: "-- Yarım kalan test/checkpoint oturumu 20 Eyl 2026'da kaldırıldı (kullanıcı isteği).\n-- Geriye kalan satırlar artık hiçbir yerden okunmuyor; practice_sessions yalnız\n-- ayrılmış anahtarları taşısın diye temizleniyor:\n--   '__pBest__'    modül kartındaki en iyi sonuç\n--   '__aiGunun__'  AI Günün Denemesi'nin ilk sonucu\n--   '__aiDeneme__' biten AI denemesi (AI istatistik sekmesinin kaynağı)\n-- Tekrar çalıştırılabilir: silinecek satır kalmazsa hiçbir şey yapmaz.\nDELETE FROM \"practice_sessions\" WHERE \"topic\" NOT IN ('__pBest__', '__aiGunun__', '__aiDeneme__');\n",
   },
+  {
+    name: "0015_fixed_exams.sql",
+    content: "CREATE TABLE IF NOT EXISTS \"fixed_exams\" (\n  \"code\" text PRIMARY KEY,\n  \"title\" text NOT NULL,\n  \"question_guids\" text[] NOT NULL,\n  \"created_at\" timestamptz NOT NULL DEFAULT now()\n);\n",
+  },
 ];

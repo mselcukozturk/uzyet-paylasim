@@ -59,6 +59,10 @@ export function examCode(mode: ExamMode, seed: number) {
   return `UZY-${prefix}${(seed >>> 0).toString(36).toUpperCase()}`;
 }
 
+export function fixedExamCode(seed: number) {
+  return `UZY-S${(seed >>> 0).toString(36).toUpperCase()}`;
+}
+
 // "Son N gün" istatistikleri takvim günüyle sayılır (24 Eyl 2026 kullanıcı isteği): bugün
 // dahil son N İstanbul günü, yani (N-1) gün önceki gece yarısından (UTC+3, yaz saati yok) beri.
 export function takvimGunuBaslangici(gunSayisi: number, now = new Date()) {
@@ -93,14 +97,14 @@ export function aiExamCode(seed: number) {
   return `UZA-${(seed >>> 0).toString(36).toUpperCase()}`;
 }
 
-export function parseExamCode(value: string): { mode: ExamMode; seed: number } | null {
+export function parseExamCode(value: string): { mode: ExamMode; seed: number; fixed?: boolean } | null {
   const clean = value.trim().toUpperCase().replace(/^UZY-?/, '');
-  const modes: Record<string, ExamMode> = { R: 'rastgele', A: 'azgorulen', Y: 'yanlislar', Z: 'zor' };
+  const modes: Record<string, ExamMode> = { R: 'rastgele', A: 'azgorulen', Y: 'yanlislar', Z: 'zor', S: 'rastgele' };
   const mode = modes[clean[0]];
   const seedText = clean.slice(1);
   if (!mode || !/^[0-9A-Z]+$/.test(seedText)) return null;
   const seed = Number.parseInt(seedText, 36);
-  return Number.isFinite(seed) ? { mode, seed: seed >>> 0 } : null;
+  return Number.isFinite(seed) ? { mode, seed: seed >>> 0, ...(clean[0] === 'S' ? { fixed: true } : {}) } : null;
 }
 
 function shuffled<T>(items: T[], random: () => number) {

@@ -10,6 +10,7 @@ import {
   dailyExamDay,
   takvimGunuBaslangici,
   examCode,
+  fixedExamCode,
   mulberry32,
   parseExamCode,
   selectExamQuestions,
@@ -825,6 +826,7 @@ async function handlePost(request: Request) {
 
       let mode: ExamMode = body.mode;
       let seed = crypto.getRandomValues(new Uint32Array(1))[0];
+      let fixed = false;
       if (!['rastgele', 'azgorulen', 'yanlislar', 'zor'].includes(mode)) return fail('Sınav modu geçersiz.', 400);
       const requestedCode = body.daily ? dailyExamCode(dailyExamDay()) : body.examCode;
       if (requestedCode) {
@@ -832,6 +834,7 @@ async function handlePost(request: Request) {
         if (!parsed) return fail('Deneme kodu geçersiz.', 400);
         mode = parsed.mode;
         seed = parsed.seed;
+        fixed = parsed.fixed === true;
       }
 
       type QuestionSnapshot = {
@@ -846,12 +849,33 @@ async function handlePost(request: Request) {
       // istatistiğe bağlı modlar da dahil, kodu açan HERKES böylece aynı 50 soruyu görür
       // — kişisel istatistiğe göre yeniden seçim yalnız kodun ilk kullanımında (kodu
       // üretenin kendi başlatması dahil) yapılır.
-      const code = examCode(mode, seed);
+      const code = fixed ? fixedExamCode(seed) : examCode(mode, seed);
       const reused = requestedCode ? await codeSnapshot(db, code) : null;
 
       if (reused) {
         ({ bankId, snapshots } = reused);
       } else {
+        if (fixed) {
+          const [fixedExam] = await db.select().from(schema.fixedExams)
+            .where(eq(schema.fixedExams.code, code)).limit(1);
+          if (!fixedExam) return fail('Deneme kodu bulunamadı.', 404);
+          const [bank] = await db.select().from(schema.questionBanks).where(eq(schema.questionBanks.isActive, true)).limit(1);
+          if (!bank) return fail('Aktif soru bankası bulunamadı.', 503);
+          const rows = await db.select().from(schema.questions)
+            .where(and(eq(schema.questions.bankId, bank.id), inArray(schema.questions.guid, fixedExam.questionGuids)));
+          const byGuid = new Map(rows.map((item) => [item.guid, item]));
+          if (fixedExam.questionGuids.length !== 50 || fixedExam.questionGuids.some((guid) => !byGuid.has(guid))) {
+            return fail('Sabit denemedeki soru bankada yok.', 503);
+          }
+          snapshots = fixedExam.questionGuids.map((guid) => {
+            const item = byGuid.get(guid)!;
+            return {
+              questionId: item.id, questionGuid: item.guid, topic: item.topic, prompt: item.prompt,
+              options: item.options, correctIndex: item.correctIndex, explanation: item.explanation,
+            };
+          });
+          bankId = bank.id;
+        } else {
         const [bank] = await db.select().from(schema.questionBanks).where(eq(schema.questionBanks.isActive, true)).limit(1);
         if (!bank) return fail('Aktif soru bankası bulunamadı.', 503);
         // guid sırası: Postgres satır sırası garanti değil; aynı kod + aynı banka hep aynı seçimi versin.
@@ -885,6 +909,7 @@ async function handlePost(request: Request) {
           options: item.options, correctIndex: item.correctIndex, explanation: item.explanation,
         }));
         bankId = bank.id;
+        }
       }
 
       const created = await db.transaction(async (tx) => {

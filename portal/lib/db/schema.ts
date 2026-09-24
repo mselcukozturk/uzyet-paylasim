@@ -47,6 +47,13 @@ export const questionBanks = pgTable('question_banks', {
   uniqueIndex('one_active_question_bank').on(table.isActive).where(sql`${table.isActive} = true`),
 ]);
 
+export const fixedExams = pgTable('fixed_exams', {
+  code: text('code').primaryKey(),
+  title: text('title').notNull(),
+  questionGuids: text('question_guids').array().notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const questions = pgTable('questions', {
   id: uuid('id').primaryKey().defaultRandom(),
   bankId: uuid('bank_id').notNull().references(() => questionBanks.id, { onDelete: 'restrict' }),
