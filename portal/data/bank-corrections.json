@@ -2681,5 +2681,1517 @@
   "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
   "kaynak_atif": "İthalat-İhracat TKR 2026, rezerv bildirimi açıklaması (kaynak arama konumu 155699)",
   "tarihISO": "2026-09-25T06:50:11.501397+00:00"
+ },
+ {
+  "id": "format-20260925-bba20ada0c9a",
+  "guid": "bba20ada0c9a",
+  "konu": "Kambiyo",
+  "soru": "Hangi durumda konşimentonun Bankamız adına düzenlenmesini isteriz?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 82 ve s. 124",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-e11fe484513f",
+  "guid": "e11fe484513f",
+  "konu": "Kambiyo",
+  "soru": "I- Vergi numarasına sahip gerçek ve tüzel kişiler \nII-Vergi numarasına sahip olamayan kitap ithalat etmek isteyen gerçek kişi \nYukarıda bilgileri verilen kişilerden hangileri ithalat yapabilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, Kimler İthalat Yapabilir?, PDF s.109-110",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-4770816d33e0",
+  "guid": "4770816d33e0",
+  "konu": "Kambiyo",
+  "soru": "Akreditifte tadilat (değişiklik) talebi amir bankaya kim tarafından iletilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 52",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-f24f37042d9c",
+  "guid": "f24f37042d9c",
+  "konu": "Kambiyo",
+  "soru": "İhracat akreditiflerinde teyit istenmesi hangi durumda söz konusudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi, Kredi Tum Testler Toplu.pdf; konfirmasyon kredileri açıklaması",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-e16e4eadafe3",
+  "guid": "e16e4eadafe3",
+  "konu": "Kambiyo",
+  "soru": "İthalat vesaiki amir bankaya Pazar günü gelmiştir. Bu durumda doğru olan ifade hangisidir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat s.146",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-c0b31a17d118",
+  "guid": "c0b31a17d118",
+  "konu": "Kambiyo",
+  "soru": "Bankamızın teyidi hangi durumda istenir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat İhracat TKR 2026, s. 144 (PDF s. 159)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-72d85a460fa0",
+  "guid": "72d85a460fa0",
+  "konu": "Kambiyo",
+  "soru": "Akreditif açılışından dolayı oluşan risk hangi hesaplarda takip edilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, PDF sayfa 123",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-045f531b46c7",
+  "guid": "045f531b46c7",
+  "konu": "Kambiyo",
+  "soru": "UCP 600'e göre açılan bir akreditif açılış metninde \"GERİ DÖNÜLEMEZ (IRREVOCABLE)\" ifadesi yer almamaktadır. Bu durumda hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, UCP 600 Madde 3",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-910be2595879",
+  "guid": "910be2595879",
+  "konu": "Kambiyo",
+  "soru": "\"Yüklemeden itibaren 60 gün\" vade kaydı içeren poliçe için aşağıdakilerden hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat, basılı s.81 (PDF s.96)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-630991cf0ee4",
+  "guid": "630991cf0ee4",
+  "konu": "Kambiyo",
+  "soru": "Bedelsiz ihracatla ilgili aşağıdakilerden hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 140",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-a6bd6a624788",
+  "guid": "a6bd6a624788",
+  "konu": "Kambiyo",
+  "soru": "Offset kapsamında yapılan ihracat ile ilgili aşağıdakilerden hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat İhracat Kitap Notları (revize 2026), konum 54968",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-1e0e890022a8",
+  "guid": "1e0e890022a8",
+  "konu": "Kambiyo",
+  "soru": "Bir dönem kullanılmayan tutarın ilerleyen dönemde kullanılabileceği rotatif akreditif türü aşağıdakilerden hangisidir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat, s.49",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-0d169609092a",
+  "guid": "0d169609092a",
+  "konu": "Kambiyo",
+  "soru": "İhracat alacağına ilişkin hangi poliçe forfaitinge tabi tutulmaz?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Forfaiting konusu yapılacak poliçe ve vadeli akreditifler bölümü",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-470154b89f12",
+  "guid": "470154b89f12",
+  "konu": "Kambiyo",
+  "soru": "Amir banka bir akreditife teyidini ekleyebilir mi?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat s.38",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-414588ea1be1",
+  "guid": "414588ea1be1",
+  "konu": "Kambiyo",
+  "soru": "Dahilde işleme izin belgesi (DİİB) kapsamında, ikincil işlem görmüş tarım ürünleri taahhüdü içeren belgeler hariç, döviz kullanım oranı azami yüzde kaçtır?",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-9ef17f28157b",
+  "guid": "9ef17f28157b",
+  "konu": "Kambiyo",
+  "soru": "Akreditif işleminde ibraz edilen konşimentoda malı yükletenin lehtar (ihracatçı) dışındaki bir taraf olması rezerv oluşturur mu?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, PDF s.102",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-f7bb1cd9c6bd",
+  "guid": "f7bb1cd9c6bd",
+  "konu": "Kredi",
+  "soru": "KGF TURWIB programı destek paketi kefalet oranı ne kadardır",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-d769fa4ba43e",
+  "guid": "d769fa4ba43e",
+  "konu": "Kredi",
+  "soru": "Tarımsal Arazi Kredilerinde kredilendirme oranı tarım arazisinin ekspertiz değerinin azami % kaçıdır?",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-ce19d77f6fcd",
+  "guid": "ce19d77f6fcd",
+  "konu": "Kredi",
+  "soru": "Anahtar teslimi götürü bedel üzerinden sözleşmeye bağlanmış ise; hakedişe konu işin geçici kabulünde tespit edilen eksikliklerin giderilmesini teminen işin ...... kadar Geçici Kabul Noksanları Teminat Mektubu alınabilir.",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "Kredi s.214",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-9a5d15b8272a",
+  "guid": "9a5d15b8272a",
+  "konu": "Kredi",
+  "soru": "Hazine Destekli KGF Kefaleti 2018-2 Protokolü kapsamında Portföy Limit Sistemindeki(PLS) KOBİ dışı yararlanıcılar için kefalet oranı ne kadardır?",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-e19cd52ba06d",
+  "guid": "e19cd52ba06d",
+  "konu": "Kredi",
+  "soru": "İmece Kart Kredisi ile ilgili hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "04 Kredi/Kredi YYS 2026.pdf; sayfa numarası kaynak arama çıktısında gösterilmedi.",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-a181bad57976",
+  "guid": "a181bad57976",
+  "konu": "Kredi",
+  "soru": "Yönetim kurulu, kredi komitesine özkaynakların en fazla yüzde kaçı oranındaki kredi açma yetkisini devredebilir?",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-697e1820e5bc",
+  "guid": "697e1820e5bc",
+  "konu": "Kredi",
+  "soru": "Rotatif kredilere ilişkin aşağıdakilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026, s. 23",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-57b959eb0dde",
+  "guid": "57b959eb0dde",
+  "konu": "Kredi",
+  "soru": "Bankanın dâhil olduğu risk grubunda bulunan gerçek ve tüzel kişilere kredi kullandırılması hâlinde, gerekli kararların yönetim kurulunun üye tam sayısının ....................... ile alınması ve bunlara sağlanan kredi koşullarının kredi kullananın lehine diğer kişi ve gruplara kullandırılanlardan ve piyasa koşullarından farklılık arz etmemesi şarttır.",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026.pdf, PDF s.34",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-9087fbd7322a",
+  "guid": "9087fbd7322a",
+  "konu": "Kredi",
+  "soru": "Aşağıdakilerden hangisi Erken Kapama Özellikli Spot Kredi’nin özelliklerden biri değildir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026, s. 155–156",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-d77820081079",
+  "guid": "d77820081079",
+  "konu": "Kredi",
+  "soru": "İpotekle ilgili hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026, s. 114",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-5faea385cd0d",
+  "guid": "5faea385cd0d",
+  "konu": "Kredi",
+  "soru": "Borçlu Cari Hesaplar'la ilgili hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026, s.152",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-fa06783abd76",
+  "guid": "fa06783abd76",
+  "konu": "Kredi",
+  "soru": "Aşağıdaki durumlardan hangisinde kefilin eşinin rızasına gerek duyulmaktadır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026, s. 127",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-b54bd3b35233",
+  "guid": "b54bd3b35233",
+  "konu": "Kredi",
+  "soru": "Hangisi lehine düzenlenecek teminat mektupları Dijital Teminat Mektubu Uygulması kapsamındadır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026, s.221",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-aa6de561f0dc",
+  "guid": "aa6de561f0dc",
+  "konu": "Kredi",
+  "soru": "Bankalarca bir gerçek ya da tüzel kişiye veya bir risk grubuna kullandırılabilecek kredilerin risk tutarları toplamı ana sermayenin ve özkaynağın ……. aşamaz.",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-2cbc6a9fb7ad",
+  "guid": "2cbc6a9fb7ad",
+  "konu": "Kredi",
+  "soru": "Mevcut Kredili Ticari Mevduat Hesabı limitlerinden yapmış oldukları harcama işlemlerini, müşterilerimiz hangi kanal üzerinden taksitlendirebilirler?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026, PDF s. 158",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-4cd59edc82a2",
+  "guid": "4cd59edc82a2",
+  "konu": "Kredi",
+  "soru": "Hızlı Ticari Kredi uygulaması kapsamında 2.000.000 TL kredi kullanımı yapmış bir müşterinin ATK kapsamında kullanabileceği kredi tutarı ne kadardır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi Tum Testler Toplu, s. 24",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-7e44379cd43e",
+  "guid": "7e44379cd43e",
+  "konu": "Kredi",
+  "soru": "İMECE KART Kredisi ile ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026.pdf, PDF s.190",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-f1c1d73050f3",
+  "guid": "f1c1d73050f3",
+  "konu": "Kredi",
+  "soru": "Esnek Faiz Ödemeli Spot Kredinin özelliklerine ilişkin hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026, s. 139 (PDF s. 156)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-fa98cded9712",
+  "guid": "fa98cded9712",
+  "konu": "Kredi",
+  "soru": "İhracat'ım Öder Kredisi ile ilgili hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026, PDF s. 201 (basılı s. 184)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-3798af5b8556",
+  "guid": "3798af5b8556",
+  "konu": "Kredi",
+  "soru": "Özkaynaklarının 8 katı 4 milyar TL olan bir bankanın kullandırabileceği büyük kredi toplamı ne kadardır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026, Kredi Sınırları",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-12586067c67b",
+  "guid": "12586067c67b",
+  "konu": "Kredi",
+  "soru": "Bankamız geçerli Entegre Derece tanımlarına göre “2” derece hangisini ifade eder?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi TKR 2025, s. 44",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-2b9a8446de93",
+  "guid": "2b9a8446de93",
+  "konu": "Kredi",
+  "soru": "HTK kapsamında bir gerçek kişi tacire tahsis edilecek azami limit tutarı nedir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026, HTK azami açık kredi limiti açıklaması",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-59f6086cf9ef",
+  "guid": "59f6086cf9ef",
+  "konu": "Mali Analiz",
+  "soru": "Aşağıdakilerden hangisi bir firmanın karlılığını etkilemez?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat, s.126",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-07f6c6661ccd",
+  "guid": "07f6c6661ccd",
+  "konu": "Mali Analiz",
+  "soru": "Aşağıdakilerden hangisi bir firmada cari oranı değiştirmez?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat TKR 2026, s. 248",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-98b349521d14",
+  "guid": "98b349521d14",
+  "konu": "Mali Analiz",
+  "soru": "Sonsuz kabul edilen işletme ömrünün belirli aralıklara ayrılarak incelenmesi hangi muhasebe ilkesi ile ilgilidir",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat s.42",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-26baf88b992b",
+  "guid": "26baf88b992b",
+  "konu": "Mali Analiz",
+  "soru": "Net satışları 5.000.000 TL ve Ticari Alacak Devir Hızı 10 olan bir firmanın vadeli satış oranı kaçtır?",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-937cec7711a3",
+  "guid": "937cec7711a3",
+  "konu": "Mali Analiz",
+  "soru": "Aktif Büyüklük: 1.000.000 TL, Özsermaye: 500.000 TL olan bir firmanın borçlanma oranı kaçtır?",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-c99513327efc",
+  "guid": "c99513327efc",
+  "konu": "Mali Analiz",
+  "soru": "Satışlarındaki değişim %50, Faaliyet Kârındaki değişim %100 ve vergi sonrası kârındaki değişim %50 olan firmanın bileşik kaldıraç derecesi kaçtır?",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-b2eb9309ac59",
+  "guid": "b2eb9309ac59",
+  "konu": "Mali Analiz",
+  "soru": "Ekonomik ömrü 5 yıl olan bir makine için normal amortisman yöntemine göre kullanılacak amortisman oranı kaçtır?",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-e36fbbeec46d",
+  "guid": "e36fbbeec46d",
+  "konu": "Mali Analiz",
+  "soru": "Tasfiye sürecine girmiş şirketlere ait ve satış amaçlı alınan hisse senetlerine ilişkin düzeltme işlemi hangi kalemler arasında yapılır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat TKR 2026, s.171",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-a9e92aabed9e",
+  "guid": "a9e92aabed9e",
+  "konu": "Mali Analiz",
+  "soru": "İşletmenin cari oranı 3; kısa vadeli borçları 100.000 Türk Lirası ise Net İşletme Sermayesi kaç TL'dir?",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-4c4c6c7c974a",
+  "guid": "4c4c6c7c974a",
+  "konu": "Mali Analiz",
+  "soru": "Net satışları 1.000.000 TL, brüt kâr marjı %25 olan firmanın Satılan Mal Maliyeti kaç TL'dir?",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-5f39d72340d6",
+  "guid": "5f39d72340d6",
+  "konu": "Temel İşlemler",
+  "soru": "EFT ve Swift dışındaki işlemlerde kimlik tespiti için sınır tutar ne kadardır",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "Döviz Temel İşlemler s.10",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-7c9a1930e2f0",
+  "guid": "7c9a1930e2f0",
+  "konu": "Temel İşlemler",
+  "soru": "Hesap açılışında düzenlenen belgelere ilişkin hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Döviz Tevdiat Hesapları, PDF s.89 (kitap s.74)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-1122d54cd8af",
+  "guid": "1122d54cd8af",
+  "konu": "Mali Analiz",
+  "soru": "Temel Bilanço Eşitliğine göre \"Özsermaye\" aşağıdakilerden hangisine eşittir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat TKR 2026, s. 66 (PDF)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-401aee9d5236",
+  "guid": "401aee9d5236",
+  "konu": "Temel İşlemler",
+  "soru": "ABD Doları cinsinden yükümlülükler için ………… cinsinden zorunlu karşılık tesis edilebilir.",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Döviz TKR 2026, s. 56",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-eb34d3e954d2",
+  "guid": "eb34d3e954d2",
+  "konu": "Temel İşlemler",
+  "soru": "Vadesi 22 Nisan Salı olan senet ödenmediği takdirde en son ne zaman protesto edilebilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "01 Hukuk/Hukuk_TKR_2026.pdf",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-89abea438f94",
+  "guid": "89abea438f94",
+  "konu": "Temel İşlemler",
+  "soru": "Hangisi döviz olarak kaydileşmez?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Temel İşlemler, s. 98",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-6e81916c1368",
+  "guid": "6e81916c1368",
+  "konu": "Temel İşlemler",
+  "soru": "Müşterek Hesap sahiplerinin birinin vefatında durumunda payı nasıl belirlenir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Temel İşlemler, basılı s.149 (PDF s.165)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-b103a73a1625",
+  "guid": "b103a73a1625",
+  "konu": "Temel İşlemler",
+  "soru": "Sabit Hesap hangi para cinsinden açılabilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Temel İşlemler s.113",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-22bb04a8d1a1",
+  "guid": "22bb04a8d1a1",
+  "konu": "Temel İşlemler",
+  "soru": "Düzenlenme Yeri: Şişli/İstanbul İbraz Yeri: Beyazıt/İstanbul Muhatap Banka Şubesinin Yeri: Muratpaşa/Antalya olan çekin ibraz süresi ne kadardır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Temel İşlemler_YYS_2026.pdf, s. 233",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-b13735e09904",
+  "guid": "b13735e09904",
+  "konu": "Temel İşlemler",
+  "soru": "Bireysel dijital bankacılık kanallarından yurt içindeki veya yurt dışındaki diğer bankalara yapılacak SWIFT işlemlerinde günlük limit kaç ABD dolarıdır?",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "Döviz Temel İşlemler s.134",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-4e8c392d2884",
+  "guid": "4e8c392d2884",
+  "konu": "Ürünler",
+  "soru": "BES ile ilgili hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, PDF s. 106",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-641c439ba453",
+  "guid": "641c439ba453",
+  "konu": "Ürünler",
+  "soru": "Üstü Kalsın talimatı kapsamında kart hamillerinin tercih edebileceği güncel yuvarlama tutarlarından biri aşağıdakilerden hangisidir?",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-13107504b006",
+  "guid": "13107504b006",
+  "konu": "Ürünler",
+  "soru": "Ortak POS uygulaması ile ilgili hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026.pdf, s.91",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-2925b1084e11",
+  "guid": "2925b1084e11",
+  "konu": "Ürünler",
+  "soru": "Yatırım hesapları arasındaki kıymet virmanı işlemlerinden hangisinden stopaj kesilmez?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, PDF s.148 (basılı s.131)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-efa29cf4b792",
+  "guid": "efa29cf4b792",
+  "konu": "Ürünler",
+  "soru": "Anında Ek Hesap üst limiti ne kadardır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, s. 210",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-b10acecdbb31",
+  "guid": "b10acecdbb31",
+  "konu": "Ürünler",
+  "soru": "Bankamatik kartlarının döviz hesaplarına bağlanabilmeleri ile ilgili hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026 s.47",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-e6041782adb7",
+  "guid": "e6041782adb7",
+  "konu": "Ürünler",
+  "soru": "Telefon Şubesi aracılığıyla tüm bankacılık işlemlerini yapabilmek için hangisiyle giriş yapmalıdır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026.pdf, PDF s. 34",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-102eef23d178",
+  "guid": "102eef23d178",
+  "konu": "Ürünler",
+  "soru": "Anında Alışveriş Kredisi ile ilgili olarak verilen ifadelerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, s. 188 (PDF s. 205)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-6476c8729d42",
+  "guid": "6476c8729d42",
+  "konu": "Ürünler",
+  "soru": "Anında Kredi uygulaması ile ilgili ifadelerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, basılı s.181 (PDF s.198)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-1928d21fb1ba",
+  "guid": "1928d21fb1ba",
+  "konu": "Ürünler",
+  "soru": "60.000 TL limitli bir kredi kartının asgari ödeme tutarı oranları ile ilgili aşağıdakilerden hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, PDF s. 96",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-cb492bd6ed6f",
+  "guid": "cb492bd6ed6f",
+  "konu": "Ürünler",
+  "soru": "Dijital bankacılık kanallarından tanımlı hesaplara havale EFT yapabilen müşterimizin talimat kodu nedir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, PDF s. 23 (basılı s. 6)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-8d86e786f88e",
+  "guid": "8d86e786f88e",
+  "konu": "Ürünler",
+  "soru": "Hangi karta Sanal Kart verilemez?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, s.72",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-8ff40e1511a3",
+  "guid": "8ff40e1511a3",
+  "konu": "Ürünler",
+  "soru": "Vade Bekletmeyen mevduat hesabın TL alt limiti nedir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, s.242",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-61127ffac71e",
+  "guid": "61127ffac71e",
+  "konu": "Ürünler",
+  "soru": "Hangisi SGK Emekli Maaş Müşterilerimize sağladığımız ayrıcalıklardan biri değildir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, kitap s.244 (PDF sayfa 261)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-d50d67604e1b",
+  "guid": "d50d67604e1b",
+  "konu": "Ürünler",
+  "soru": "Maximiles ve Maximiles Select kredi kartları ile yapılan her 200 TL’lik harcama için kazanılan mil tutarı aşağıdakilerden hangisinde doğru verilmiştir?",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-6d1c7c3f7f22",
+  "guid": "6d1c7c3f7f22",
+  "konu": "Ürünler",
+  "soru": "Bankamız toplam varlık birikimi 1.750.000 TL olan Maximiles Black kredi kartı sahibi bir müşteri 200 liralık harcamasına kaç mil kazanır?",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-a05a7e7f9d25",
+  "guid": "a05a7e7f9d25",
+  "konu": "Ürünler",
+  "soru": "Emekli maaş müşterilerimizin hangi kanaldan yapacakları havale işlemi ücretsizdir ?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026 s.244",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-c3cdf295b4b6",
+  "guid": "c3cdf295b4b6",
+  "konu": "Mali Analiz",
+  "soru": "Cari oranı ve likidite oranı aynı olan bir firma için hangisi söylenebilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat TKR 2026, s.268",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-8bd8a452f47c",
+  "guid": "8bd8a452f47c",
+  "konu": "Mali Analiz",
+  "soru": "İşletme faaliyetlerinde bir yıldan daha uzun süre kullanmak amacıyla duran varlık edinirken katlanılan maliyetlerin dönemsellik ilkesi gereğince ilgili dönemlere yayılması, özel tükenmeye tabi varlıklar için “..................” kavramı ile ifade edilir.",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "05 İstihbarat/istihbarat_TKR_2026.pdf, basılı s.108 (PDF s.125)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-a8da5771f752",
+  "guid": "a8da5771f752",
+  "konu": "Mali Analiz",
+  "soru": "Muhasebede kullanılan sınıflandırma sistematiğine göre aşağıdaki gösterimlerden hangisi \"Hesap Grubu\"nu temsil eder?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat TKR 2026, basılı s.77 (PDF s.76)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-4946e2278fbe",
+  "guid": "4946e2278fbe",
+  "konu": "Mali Analiz",
+  "soru": "Ortaklardan olan alacakların cari yılda tahsil edilmediği görülen kısmına ilişkin düzeltme işlemi hangi kalemden yapılır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat s. 174 (PDF s. 191)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-bb6aa09caec1",
+  "guid": "bb6aa09caec1",
+  "konu": "Mali Analiz",
+  "soru": "Aşağıdakilerden Hangisi Cari Oranın Hesaplanmasında kullanılmaz?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "05 İstihbarat s. 267",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-57acb2355db5",
+  "guid": "57acb2355db5",
+  "konu": "Mali Analiz",
+  "soru": "1 sıra numaralı MSUGT'ye göre hangisi ek mali tablolardandır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat, s. 43",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-c63b94be0606",
+  "guid": "c63b94be0606",
+  "konu": "Mali Analiz",
+  "soru": "Bilançodaki varlıklar hangi esasa göre sıralanmışlardır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat, s. 185",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-4adee34608e8",
+  "guid": "4adee34608e8",
+  "konu": "Mali Analiz",
+  "soru": "Satışlarındaki değişim %50, Faaliyet Kârındaki değişim %100 ve vergi sonrası kârındaki değişim %50 olan firmanın finansal kaldıraç derecesi kaçtır?",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-9355e76e3a39",
+  "guid": "9355e76e3a39",
+  "konu": "Mali Analiz",
+  "soru": "Stoklar kalemindeki değişiklik aşağıdakilerden hangisini etkilemez?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat TKR 2026, net işletme sermayesi tanımı; sayfa belirtilmedi.",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-dd4c4af55854",
+  "guid": "dd4c4af55854",
+  "konu": "Mali Analiz",
+  "soru": "Gelir tablosunda aşağıdakilerden hangisi yer almaz?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat s.219",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-680a968a7990",
+  "guid": "680a968a7990",
+  "konu": "Mali Analiz",
+  "soru": "Aşağıdakilerden hangisi firmanın gelir tablosuna bakılarak elde edilebilecek bilgilerden değildir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "05 İstihbarat/istihbarat_TKR_2026.pdf s. 147",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-6ed8295c905a",
+  "guid": "6ed8295c905a",
+  "konu": "Mali Analiz",
+  "soru": "Muhasebe standartlarına göre hangisi bir işletmenin, duran varlığın maliyetine ekleyebileceği (aktifleştirebileceği) maliyetlerden değildir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat s.103 (PDF sayfa 120)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-b0944eb580b7",
+  "guid": "b0944eb580b7",
+  "konu": "Mali Analiz",
+  "soru": "Cirosu 600.000 USD ve teklifle ulaşılacak genel limiti 100.000 USD olan bir firma için kullanılacak karar destek sistemi aşağıdakilerden hangisidir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat s. 18-19",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-b4096ac37d8b",
+  "guid": "b4096ac37d8b",
+  "konu": "Mali Analiz",
+  "soru": "Temel Bilanço Eşitliğine göre \\\"Özsermaye\\\" aşağıdakilerden hangisine eşittir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "05 İstihbarat/istihbarat_TKR_2026.pdf, sayfa 80",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-34eba5a08c07",
+  "guid": "34eba5a08c07",
+  "konu": "Kambiyo",
+  "soru": "Offset kapsamında yapılan ihracat ile ilgili aşağıdakilerden hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat İhracat Kitap Notları (revize 2026), konum 55024",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-f52fd680fd5a",
+  "guid": "f52fd680fd5a",
+  "konu": "Kambiyo",
+  "soru": "Peşin ihracat bedeli alışı hakkında hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "03 İthalat İhracat/ithalat_ihracat_TKR_2026.pdf",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-d7dc4d09b072",
+  "guid": "d7dc4d09b072",
+  "konu": "Kambiyo",
+  "soru": "Akreditif açılışı kimin bankası tarafından gerçekleştirilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, amir banka açıklaması",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-a5a9e550d974",
+  "guid": "a5a9e550d974",
+  "konu": "Kambiyo",
+  "soru": "İthalat işlemlerine ilişkin aşağıdaki bilgilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat, s. 95",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-c9980ba3d251",
+  "guid": "c9980ba3d251",
+  "konu": "Kambiyo",
+  "soru": "Türkiye'ye gelmeyecek bir mal için Bankamızca akreditif açılabilir mi?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat, PDF sayfa 125 (basılı sayfa 111)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-f498035caa97",
+  "guid": "f498035caa97",
+  "konu": "Kambiyo",
+  "soru": "Müşteriniz bir akreditif açtırdıysa bu ne anlama gelir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-1bc5e2a97910",
+  "guid": "1bc5e2a97910",
+  "konu": "Kambiyo",
+  "soru": "İthalat işlemlerinde hangi durumda KKDF yükümlülüğü doğar?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat Mevzuatı ve Bankamız Uygulamaları, s. 97",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-7acca2ad8342",
+  "guid": "7acca2ad8342",
+  "konu": "Kambiyo",
+  "soru": "Bir dönem kullanılmayan tutarın ilerleyen dönemde kullanılabileceği rotatif akreditif türü aşağıdakilerden hangisidir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 63-64",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-f12090f061a6",
+  "guid": "f12090f061a6",
+  "konu": "Kambiyo",
+  "soru": "UCP 600'e göre açılan bir akreditif açılış metninde \"GERİ DÖNÜLEMEZ (IRREVOCABLE)\" ifadesi yer almamaktadır. Bu durumda hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 57 (basılı)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-d07af5202ba8",
+  "guid": "d07af5202ba8",
+  "konu": "Kambiyo",
+  "soru": "Süresi içinde kapatılmayan ihracat hesapları aracı bankalarca kaç iş günü içinde ilgili resmi kurumlara bildirilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "03 İthalat İhracat/kambiyo_not_bloklar.txt, slayt 347",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-473126dbd2d8",
+  "guid": "473126dbd2d8",
+  "konu": "Kambiyo",
+  "soru": "Akreditifte yapılacak tadilatlar (değişiklikler) kim tarafından kabul edilmezse geçersizdir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat, PDF s.65",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-79194d597e61",
+  "guid": "79194d597e61",
+  "konu": "Kambiyo",
+  "soru": "Devredilebilir nitelikte olmayan bir akreditif işleminde ibraz edilen fatura, lehtar (ihracatçı) dışında bir tarafça düzenlenmiştir. Bu durum rezerv oluşturur mu?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 79 (PDF s. 94)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-f6a5bb43bb84",
+  "guid": "f6a5bb43bb84",
+  "konu": "Kambiyo",
+  "soru": "Mikro İhracat kapsamında Elektronik Ticaret Gümrük Beyannamesi(ETGB) ile yurt dışı edilebilecek ürünlerin azami limitleri aşağıdakilerden hangisidir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, İhracat Mevzuatı ve Bankamız Uygulamaları",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-9e1c51debf86",
+  "guid": "9e1c51debf86",
+  "konu": "Kambiyo",
+  "soru": "İhracatçının akreditif konusu malları yükledikten sonra akreditif metninde ibrazı şarta bağlanan belgeleri akreditifte belirlenen bankaya ibraz etmek suretiyle, sevk ettiği malın bedelini talep ve tahsil etme hakkının bulunduğu süreye ne denir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat s.43",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-c44f885fdca4",
+  "guid": "c44f885fdca4",
+  "konu": "Kambiyo",
+  "soru": "Ticari evraklar olmadan yalnızca mali evrakların tahsili anlamına gelen kavram aşağıdakilerden hangisidir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 19",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-99a0789b0026",
+  "guid": "99a0789b0026",
+  "konu": "Kambiyo",
+  "soru": "600 sayılı Broşüre göre, akreditifte sınırlandırılmamışsa, devredilebilir akreditiflerle ilgili aşağıdakilerden hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-bffc14175a0c",
+  "guid": "bffc14175a0c",
+  "konu": "Kambiyo",
+  "soru": "İthalatçı ve ihracatçı arasındaki sözleşmede \"Peşin Ödeme\" öngörülmüştür. Buna göre, aşağıdakilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 17",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-f4bf851ea976",
+  "guid": "f4bf851ea976",
+  "konu": "Kambiyo",
+  "soru": "Amir emrine düzenlenen ve tam takım ibrazın şart koşulmadığı bir deniz konşimentosunun istendiği bir akreditife Bankamız teyidi eklenmeli midir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat, PDF s.172",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-4bf5c99ce382",
+  "guid": "4bf5c99ce382",
+  "konu": "Kambiyo",
+  "soru": "Akreditif açılış metninde (MT700); 2 orijinal 2 kopya ticari fatura istenmektedir. Lehtarın ibraz ettiği vesaik içerisinde 1 orijinal 3 kopya fatura bulunmaktadır. Bu durum rezerv oluşturur mu?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat, s.80",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-d73ffe0a3cb5",
+  "guid": "d73ffe0a3cb5",
+  "konu": "Kambiyo",
+  "soru": "Forfaiting işlemlerinde aşağıdakilerden hangisine kredi limiti tahsis edilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat, basılı s.150 (PDF sayfa 165)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-075ed29746d7",
+  "guid": "075ed29746d7",
+  "konu": "Kambiyo",
+  "soru": "Merkezi Talimat Uygulaması kapsamına dahil olan peşin ve mal mukabili ithalat işlemleri hangi Bölümümüz tarafından sonuçlandırılır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 114",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-ad1b2f69a8b6",
+  "guid": "ad1b2f69a8b6",
+  "konu": "Kambiyo",
+  "soru": "Belgeli ve belgesiz ihracat kredileri ile bunlarla ilgili işlemlerde, vergi, resim ve harç istisnasından yararlanmak amacıyla belirli tutarda döviz kazandırma veya ihracat gerçekleştirme yükümlülüğüne ne denir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026, s. 295",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-7b5fde75a60f",
+  "guid": "7b5fde75a60f",
+  "konu": "Kambiyo",
+  "soru": "I-Bankamızda forfaiting işlemleri DİTKOB tarafından gerçekleştirilir. II-İthalatçıdan ziyade garantör konumundaki yabancı bankanın değerliliği değerlendirilir. III-Teyitsiz vadeli akreditifler forfaitinge konu edilemez. Forfaiting hakkında yukarıdakilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 150",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-b69c52603c09",
+  "guid": "b69c52603c09",
+  "konu": "Kambiyo",
+  "soru": "Amir banka akreditif açılış mesajını (MT700) görevli bankaya iletmiştir, ancak akreditif henüz lehtara (ihracatçıya) ihbar edilmemiştir. Bu durumda aşağıdakilerden hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, PDF s.53 (basılı s.38)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-c7b62f4c6467",
+  "guid": "c7b62f4c6467",
+  "konu": "Kambiyo",
+  "soru": "Bankamız şubeleri arasında akreditif açılması mümkün müdür?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat İhracat TKR 2026, s. 126",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-85da0d8c5eb2",
+  "guid": "85da0d8c5eb2",
+  "konu": "Kambiyo",
+  "soru": "I-Faturayı düzenleyen firma için ihracat taahhüdüne sayılabilir. II-Fatura üzerinde unvan kaydı olması halinde, imalatçı firmaya ait ihracat taahhüdüne sayılabilir. Türkiye'de oturmayanlara fatura ile yapılan satışlarla ilgili yukarıdakilerden hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, basılı s.125 (PDF s.140)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-b4e8375decca",
+  "guid": "b4e8375decca",
+  "konu": "Kambiyo",
+  "soru": "Incoterms kuralları aşağıdakilerden hangisine ilişkin düzenleme getirmez?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat s.19",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-1fe5bae12ec6",
+  "guid": "1fe5bae12ec6",
+  "konu": "Kambiyo",
+  "soru": "Tam takım (full set) konşimento ne anlama gelir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 82",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-728e3154c1e7",
+  "guid": "728e3154c1e7",
+  "konu": "Kambiyo",
+  "soru": "İhracat akreditifine hangi banka teyit ekleyebilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat; 03 İthalat İhracat/ithalat_ihracat_TKR_2026.pdf",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-e7032eaffdd3",
+  "guid": "e7032eaffdd3",
+  "konu": "Kambiyo",
+  "soru": "I-Yalnızca akreditif kullanılarak ödeme yapılabilir II-Gümrük Beyannamesi(GB) temini mümkün değildir. Transit ticarete ilişkin yukarıdakilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026, s. 244",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-5964c9879f1e",
+  "guid": "5964c9879f1e",
+  "konu": "Kambiyo",
+  "soru": "FOB terimiyle ilgili aşağıdakilerden hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 24",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-70075b454b03",
+  "guid": "70075b454b03",
+  "konu": "Kambiyo",
+  "soru": "Yurt içindeki bir bankaya akreditif açılması mümkün müdür?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat s.111",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-792d460de7b7",
+  "guid": "792d460de7b7",
+  "konu": "Kambiyo",
+  "soru": "Kabul kredili akreditif işleminde düzenlenen poliçenin muhatabı kimdir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat, s. 61",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-9471b9aeff4a",
+  "guid": "9471b9aeff4a",
+  "konu": "Kambiyo",
+  "soru": "Akreditif vesaikinin incelenmesiyle ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat, s.161",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-3d9ad761278d",
+  "guid": "3d9ad761278d",
+  "konu": "Kambiyo",
+  "soru": "Yurt dışındaki bir bankadan müşteriniz lehine bir akreditif açıldıysa bu ne anlama gelir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "03 İthalat İhracat/ithalat_ihracat_TKR_2026.pdf",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-468440a7a1dd",
+  "guid": "468440a7a1dd",
+  "konu": "Kambiyo",
+  "soru": "Döviz üzerinden yurt içi akreditif açılabilir mi?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "03 İthalat İhracat/ithalat_ihracat_TKR_2026.pdf, s. 111",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-0f18727f4e65",
+  "guid": "0f18727f4e65",
+  "konu": "Kambiyo",
+  "soru": "İstisna veya muafiyet bulunmadığı varsayımıyla, aşağıdaki ithalat ödeme şekillerinden hangisi KKDF kesintisine tabidir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, PDF s.131 (kaynak arama sonucu); peşin nitelikli ödeme sınıflandırması PDF s.112.",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-a3a1686b12f8",
+  "guid": "a3a1686b12f8",
+  "konu": "Kambiyo",
+  "soru": "Akreditif işleminde, geç ibraz (late presentation) rezervi tespit edilmiştir. Bu durumda ihracatçıya ödeme yapılır mı?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat, s.146 (PDF sayfa 125)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-51c4892617bf",
+  "guid": "51c4892617bf",
+  "konu": "Kambiyo",
+  "soru": "Akreditife ilişkin belgelerin görevli banka tarafından incelenmesi, bu bankaya ödeme yapma yükümlülüğü getirir mi?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat s. 40 (PDF s. 55)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-3053d77bb3bf",
+  "guid": "3053d77bb3bf",
+  "konu": "Kambiyo",
+  "soru": "Bankamızca forfaiting işlemi hangi durumda yapılamaz?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s.164-165",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-cebac0e49659",
+  "guid": "cebac0e49659",
+  "konu": "Kambiyo",
+  "soru": "Akreditif işleminde amir bankaya ibraz edilen belgeler içerisinde, ibraz tarihinden daha sonraki tarihi içeren bir vesaik bulunmaktadır. Bu durum rezerv oluşturur mu?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat, s. 55 (PDF s. 70)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-1384f90a6ab6",
+  "guid": "1384f90a6ab6",
+  "konu": "Kambiyo",
+  "soru": "İthalat akreditif vesaiki amir bankaya Pazartesi günü gelmiştir. Bu durumda doğru olan ifade hangisidir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "ithalat_ihracat_TKR_2026.pdf, PDF s. 68",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-afbcb42395eb",
+  "guid": "afbcb42395eb",
+  "konu": "Kambiyo",
+  "soru": "Milletlerarası Ticaret Odası-MTO (ICC) Türkiye Milli Komitesi Bürosu hangi ilimizde bulunur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, basılı s.3 (PDF s.18)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-f0e187a31630",
+  "guid": "f0e187a31630",
+  "konu": "Kambiyo",
+  "soru": "Türkiye'de yerleşik kişiler tarafından gerçekleştirilen ihracat bedellerinin yurda getirilmesi zorunlu mudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "ithalat_ihracat_TKR_2026.pdf, s. 144 (kitap s. 129)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-7b8ad97ab4ca",
+  "guid": "7b8ad97ab4ca",
+  "konu": "Kambiyo",
+  "soru": "Teyitli ihracat akreditifi işlemlerinde aşağıdakilerden hangisi DİTKOB sorumluluğunda değildir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat s.148 (PDF s.163)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-74a892b267e8",
+  "guid": "74a892b267e8",
+  "konu": "Kambiyo",
+  "soru": "İhracatçı malları yükledikten sonra mümkün olan en kısa sürede parasını almak istiyorsa hangi akreditif türü tercih edilmeli?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat s.43",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-c5c447d990b0",
+  "guid": "c5c447d990b0",
+  "konu": "Kambiyo",
+  "soru": "Bankamızca back to back (karşılıklı) akreditif açılır mi?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "03 İthalat İhracat/ithalat_ihracat_TKR_2026.pdf, s. 67",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-990e00afca88",
+  "guid": "990e00afca88",
+  "konu": "Kambiyo",
+  "soru": "600 sayılı Broşür ve 821 sayılı Yayına göre sigorta belgelerinin incelenmesiyle ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat İhracat TKR 2026, “Sigorta belgelerinin incelenmesi” bölümü",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-558b1de2b231",
+  "guid": "558b1de2b231",
+  "konu": "Kambiyo",
+  "soru": "İhracat bedellerinin yurda getirilmesine ilişkin hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 149",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-f0bb1d95a459",
+  "guid": "f0bb1d95a459",
+  "konu": "Kambiyo",
+  "soru": "Uluslararası ticari işlemlerden doğan vadeli alacakların ihracatçıya rücu hakkı olmaksızın bankalarca devralınmasına ne ad verilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 164",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-de87b33328f6",
+  "guid": "de87b33328f6",
+  "konu": "Kambiyo",
+  "soru": "\\\"Türkiye’den serbest bölgeye satılan mallar ... , serbest bölgeden Türkiye’ye satılan mallar ise ... tabi olup, serbest bölge kullanıcıları Türkiye’den ihraç fiyatına (KDV’siz) mal ve hizmet satın alabilirler.\\\"",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 140",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-34f18649fefa",
+  "guid": "34f18649fefa",
+  "konu": "Kambiyo",
+  "soru": "Bankaların KKDF ile ilgili yükümlülüklerine ilişkin aşağıdaki bilgilierden hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat İhracat TKR 2026, vadeli ithalat işlemlerindeki KKDF kesintileri bölümü",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-545aa2b00cf2",
+  "guid": "545aa2b00cf2",
+  "konu": "Mali Analiz",
+  "soru": "Satışlarındaki değişim %50, Faaliyet Kârındaki değişim %100 ve vergi sonrası kârındaki değişim %50 olan firmanın faaliyet kaldıraç derecesi kaçtır?",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-39d68cbea3a2",
+  "guid": "39d68cbea3a2",
+  "konu": "Kambiyo",
+  "soru": "Diğer banka gayrınakdi kredi memzuç bilgilerinde akreditif görünen bir firma için aşağıdaki çıkarımlardan hangisi yapılabilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat İhracat TKR 2026, s. 52, “Akreditif Amiri” bölümü",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-9181eb57466f",
+  "guid": "9181eb57466f",
+  "konu": "Kambiyo",
+  "soru": "Akreditifli ve vesaik mukabili ihracat işlemlerinde aşağıdakilerden hangisi DİTKOB sorumluluğunda değildir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat, s. 148",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-9a79f1d21478",
+  "guid": "9a79f1d21478",
+  "konu": "Kambiyo",
+  "soru": "Kabul kredili akreditif işleminde düzenlenen poliçenin lehtarı kimdir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 61",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-d603012f2aac",
+  "guid": "d603012f2aac",
+  "konu": "Kambiyo",
+  "soru": "Rezerv bildirim mesajında \"NOTIFY\" açıklamasının anlamı nedir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat, s. 54 (PDF s. 69)",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-f7e91a9b3381",
+  "guid": "f7e91a9b3381",
+  "konu": "Kambiyo",
+  "soru": "Amir bankaya gelen belgelerdeki rezervlerin kabul edilip edilmemesi kime sorulur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, akreditifli ödeme bölümü",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-0d9c8cd8e714",
+  "guid": "0d9c8cd8e714",
+  "konu": "Kambiyo",
+  "soru": "Bankamızda açılmış teyitli ihracat akreditiflerinde, muhabirin talebi üzerine ihracatçıya mal bedelinin, uygun vesaikin Bankamıza ibrazı halinde kayıtsız şartsız ödeneceğine dair taahütte bulunulması, muhabir bankaya hangi kredinin açılmasını gerektirir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat, PDF s.168",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-f5ae142d3f80",
+  "guid": "f5ae142d3f80",
+  "konu": "Kredi",
+  "soru": "Vadeli hesaplara faiz tahakkuku ……… gerçekleşir.",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, s. 243",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-782c9629593b",
+  "guid": "782c9629593b",
+  "konu": "Kredi",
+  "soru": "35 ay taksidi kalmış konut kredisinde tahsil edilecek erken ödeme tazminatı oranı nedir?",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-391669bf7ea8",
+  "guid": "391669bf7ea8",
+  "konu": "Kredi",
+  "soru": "Şartlı muafiyet sisteminde teminat olarak aşağıdakilerden hangisi alınamaz?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026, nakit karşılık/teminat açıklaması",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-ce48e42db320",
+  "guid": "ce48e42db320",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 (1H2026) Yatırımcı Sunumu'na göre Bankamızın Krediler / Mevduat oranı aşağıdaki seçeneklerden hangisinde doğru olarak verilmiştir?",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-c090e88f9983",
+  "guid": "c090e88f9983",
+  "konu": "Genel Ekonomi",
+  "soru": "2025/2 Kredilerin toplam aktifimize oranı aşağıdakilerin hangisinde doğru verilmiştir?",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-037f7306c356",
+  "guid": "037f7306c356",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 Menkul Kıymetlerin toplam aktifimize oranı aşağıdakilerin hangisinde doğru verilmiştir?",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "Yatırımcı Sunumu s.7",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-058ef4f0021e",
+  "guid": "058ef4f0021e",
+  "konu": "Ürünler",
+  "soru": "Anında Kredi üst limiti ne kadardır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026.pdf",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-0ce59a32f43a",
+  "guid": "0ce59a32f43a",
+  "konu": "Ürünler",
+  "soru": "Konut tadilatı amacı dışında kullandırılan tüketici destek kredisindeki KKDF oranı kaçtır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, 04-bireysel-krediler.md",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-63aeb84a4287",
+  "guid": "63aeb84a4287",
+  "konu": "Ürünler",
+  "soru": "275 – Bankamız toplam varlık birikimi 5.750.000 TL olan Maximiles Black kredi kartı sahibi bir müşteri 200 liralık harcamasına kaç mil kazanır?",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-9b1bc81ddf49",
+  "guid": "9b1bc81ddf49",
+  "konu": "Temel İşlemler",
+  "soru": "79 – Ticari müşterilerin yurt içinde veya yurt dışındaki diğer bankalara yapabileceği döviz transferleri (SWIFT) için günlük limit ne kadardır?",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-5cd4c00be6ee",
+  "guid": "5cd4c00be6ee",
+  "konu": "Temel İşlemler",
+  "soru": "80 – Bireysel müşterilerin yurt içinde veya yurt dışındaki diğer bankalara yapabileceği döviz transferleri (SWIFT) için aylık limit ne kadardır?",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-6a7b2551ed85",
+  "guid": "6a7b2551ed85",
+  "konu": "Ürünler",
+  "soru": "11 yıldır BES sahibi olan, 48 yaşındaki bir müşterimiz sistemden çıktığında hangi oranda Devlet Katkısı'na hak kazanır?",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026 s.219-220",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-dffa257834a5",
+  "guid": "dffa257834a5",
+  "konu": "Temel İşlemler",
+  "soru": "81 – Ticari müşterilerin yurt içinde veya yurt dışındaki diğer bankalara yapabileceği döviz transferleri (SWIFT) için aylık limit ne kadardır?",
+  "not": "Format taraması: sayı yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-cd7945493987",
+  "guid": "cd7945493987",
+  "konu": "Temel İşlemler",
+  "soru": "Düzenlenme yeri: Sydney\nİbraz yeri: İstanbul\nMuhatap banka şubesinin yeri: İstanbul\nolan çekim ibraz süresi ne kadardır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Hukuk_TKR_2026.pdf, çeklerde ibraz süreleri",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-a6d68dbc3c7a",
+  "guid": "a6d68dbc3c7a",
+  "konu": "Mali Analiz",
+  "soru": "Aşağıda cari oranı aynı olan iki firma mevcuttur. Hangisinin likiditesi daha iyi konumdadır?\n| | A | B |\n| Kasa | 10 | 40 |\n| Senetli Alacak | 30 | 20 |\n| Stoklar | 100 | 80 |\n| K.V. Borçlar | 70 | 70 |\n| Cari Oran | %200 | %200 |",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat kitabı 2026, s.267",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-2ada70ed0c7b",
+  "guid": "2ada70ed0c7b",
+  "konu": "Mali Analiz",
+  "soru": "A firması (1.000 TL)\n| Dönen Değerler | 300 |\n| Bağlı Değerler | 50 |\n| Sabit Kıymetler | 100 |\n| Aktif Toplam | ? |\n\n| Kısa Vadeli Borçlar | ? |\n| Uzun Vadeli Borçlar | 100 |\n| Öz sermaye | ? |\n| Pasif Toplam | ? |\nA firmasının cari oranı 150 ise borçlanma oranı nedir.",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-6b7c47927097",
+  "guid": "6b7c47927097",
+  "konu": "Mali Analiz",
+  "soru": "İçsel kaynaklardan ( yedek akçeler, geçmiş yıllar karları, enflasyon düzeltme hesabı v.b.) karşılanarak yapılan sermaye artışı firmanın mali bünyesi ve cari borç ödeme gücünü;",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat TKR 2026, Sermaye Artışında Kullanılan Fonlar bölümü",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-20c94ef22c9b",
+  "guid": "20c94ef22c9b",
+  "konu": "Mali Analiz",
+  "soru": "| İşletme Faaliyetlerine İlişkin Yaratılan Nakit | 400.000 ₺ |\n| Yatırım Faaliyetlerine İlişkin Yaratılan Nakit | 200.000 ₺ |\n| Finansman Kaynaklarına İlişkin Yaratılan Nakit | 50.000 ₺ |\n| Finansman Giderleri | 100.000 ₺ |\n| Karşılama Oranı | ? |",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-855d5208a585",
+  "guid": "855d5208a585",
+  "konu": "Mali Analiz",
+  "soru": "| Aktif Toplam | 1.600.000 TL |\n| Devamlı Sermaye | 900.000 TL |\n| Net İşletme Sermayesi | 700.000 TL |\n| Cari Oran | ? |\nYukarıda bazı bilgileri verilen firmanın cari oranı % kaçtır?",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-f60041ae03be",
+  "guid": "f60041ae03be",
+  "konu": "Kambiyo",
+  "soru": "Akreditifte istenen sigorta tutarına ilişkin bir kayıt bulunmadığı takdirde sigorta tutarı malların CIF ya da CIP değerinin en az % kaçı kadar olmalıdır?",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T16:11:52.804781+00:00"
  }
 ]
