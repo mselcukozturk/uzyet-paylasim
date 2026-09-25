@@ -4796,5 +4796,14 @@
   "not": "Format taraması: sayı yazımı (Claude onayı; kaynakla birebir teyit edilemedi)",
   "kaynak_atif": "Dijital Bankacılık Kurları, s.86",
   "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "gece-20260926-3b6b008f378d",
+  "guid": "3b6b008f378d",
+  "konu": "Kambiyo",
+  "soru": "Konşimento kaybedildiği durumda, ithalatçıya amir banka tarafından hangi belge verilerek malın çekilmesi sağlanabilir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Türk P ve I Sigorta, Konşimento Kaynaklı En Sık Karşılaşılan Problemler ve Taşıyanlara Tavsiyeler Sirküleri (Mayıs 2018), s. 2",
+  "tarihISO": "2026-09-25T23:05:00.577365+00:00"
  }
 ]
