@@ -170,10 +170,10 @@ export type ExamApiRequest =
   | { action: 'start'; mode: ExamMode; examCode?: string; daily?: boolean }
   | { action: 'resume'; attemptId: string }
   | { action: 'answer'; attemptId: string; questionId: string; selectedIndex: number }
-  | { action: 'pause'; attemptId: string }
+  | { action: 'pause'; attemptId: string; answers?: Record<string, number> }
   | { action: 'cancel'; attemptId: string }
   | { action: 'delete'; attemptId: string }
-  | { action: 'finish'; attemptId: string }
+  | { action: 'finish'; attemptId: string; answers?: Record<string, number> }
   | { action: 'history'; page?: number }
   | { action: 'flag'; questionGuid: string; note: string; category?: string | null; reported?: boolean; reminder?: boolean }
   | { action: 'reminders' }

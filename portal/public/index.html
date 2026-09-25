@@ -1996,6 +1996,52 @@
     render();
   }
 
+  // Uzak deneme cevaplarının yerel yedeği: çevrimdışı cevapların kaybolmaması için
+  // her şık seçiminde localStorage'a yazılır, bağlantı gelince veya bitir/kaydet'te sunucuya gönderilir.
+  function examBackupKey(attemptId) {
+    return "uzyet_exam_answers_v1:" + attemptId;
+  }
+  function examBackupOku(attemptId) {
+    if (!attemptId) return null;
+    try {
+      var raw = localStorage.getItem(examBackupKey(attemptId));
+      if (!raw) return null;
+      var d = JSON.parse(raw);
+      if (d && typeof d === "object") {
+        return {
+          cevaplar: (d.cevaplar && typeof d.cevaplar === "object") ? d.cevaplar : {},
+          bekleyen: (d.bekleyen && typeof d.bekleyen === "object") ? d.bekleyen : {}
+        };
+      }
+    } catch (e) {}
+    return null;
+  }
+  function examBackupYaz(attemptId, data) {
+    if (!attemptId || !data) return;
+    try {
+      localStorage.setItem(examBackupKey(attemptId), JSON.stringify(data));
+    } catch (e) {}
+  }
+  function examBackupSil(attemptId) {
+    if (!attemptId) return;
+    try {
+      localStorage.removeItem(examBackupKey(attemptId));
+    } catch (e) {}
+  }
+
+  function currentExamAnswersMap() {
+    var out = {};
+    if (!currentExam || !currentExam.cevaplar || !currentExam.soruKayitlari) return out;
+    Object.keys(currentExam.cevaplar).forEach(function (guid) {
+      var idx = currentExam.cevaplar[guid];
+      var q = currentExam.soruKayitlari[guid];
+      if (q && q._attemptQuestionId && idx !== undefined && idx !== null) {
+        out[q._attemptQuestionId] = idx;
+      }
+    });
+    return out;
+  }
+
   // Uzak sınavın soru görüntüsünü yerel exam ekranıyla aynı şekle sokar. cevapIdx
   // placeholder'dır (-1) — renderExam() sınav bitmeden cevapIdx'i hiç okumaz;
   // gerçek değer yalnız finishExamRemote()'da, sunucu açıkladıktan sonra yazılır.
@@ -2012,13 +2058,42 @@
   }
 
   function uzakExamKur(d) {
+    var b = examBackupOku(d.id);
+    var serverAnswers = d.answers || {};
+    var mergedAnswers = {};
+    Object.keys(serverAnswers).forEach(function (g) {
+      mergedAnswers[g] = serverAnswers[g];
+    });
+    var bekleyenMap = {};
+    if (b && b.bekleyen) {
+      Object.keys(b.bekleyen).forEach(function (g) {
+        bekleyenMap[g] = true;
+      });
+    }
+    if (b && b.cevaplar) {
+      Object.keys(b.cevaplar).forEach(function (g) {
+        var localIdx = b.cevaplar[g];
+        mergedAnswers[g] = localIdx;
+        if (serverAnswers[g] !== localIdx) {
+          bekleyenMap[g] = true;
+        }
+      });
+    }
+    examBackupYaz(d.id, { cevaplar: mergedAnswers, bekleyen: bekleyenMap });
+
     currentExam = {
       tip: d.mode, uzak: true, uzakAttemptId: d.id, examCode: d.examCode, isDaily: !!d.isDaily,
       sorular: d.questions.map(function (q) { return q.guid; }),
-      index: 0, cevaplar: d.answers || {}, uyarilar: [], gecenSaniye: d.elapsedSeconds || 0
+      index: 0, cevaplar: mergedAnswers, uyarilar: [], gecenSaniye: d.elapsedSeconds || 0
     };
     currentExam.soruKayitlari = uzakSoruKayitlariOlustur(d.questions);
     VIEW = "exam";
+
+    Object.keys(bekleyenMap).forEach(function (guid) {
+      if (mergedAnswers[guid] !== undefined && mergedAnswers[guid] !== null) {
+        remoteAnswerSync(guid, mergedAnswers[guid]);
+      }
+    });
   }
 
   function startExamRemote(mode, examCodeRaw, daily) {
@@ -2070,6 +2145,7 @@
       remoteBusy = false;
       remoteDeleteConfirm = false;
       if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav silinemedi.", true); render(); return; }
+      examBackupSil(attemptId);
       remoteDash = null;
       remoteRefreshDashboard(render);
     }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
@@ -2077,21 +2153,48 @@
 
   function remoteAnswerSync(guid, idx) {
     if (!currentExam || !currentExam.uzak) return;
+    var attemptId = currentExam.uzakAttemptId;
     var q = currentExam.soruKayitlari[guid];
     if (!q) return;
     remoteFetch("/api/exam", "POST", {
-      action: "answer", attemptId: currentExam.uzakAttemptId, questionId: q._attemptQuestionId, selectedIndex: idx
-    }).catch(function () { /* sessizce geçilir — arayüzü bloklamaz, sınav bitince sunucu son cevaplarla tamamlanır */ });
+      action: "answer", attemptId: attemptId, questionId: q._attemptQuestionId, selectedIndex: idx
+    }).then(function (r) {
+      if (r && r.ok) {
+        var b = examBackupOku(attemptId);
+        if (b && b.bekleyen && b.bekleyen[guid]) {
+          if (!b.cevaplar || b.cevaplar[guid] === idx) {
+            delete b.bekleyen[guid];
+            examBackupYaz(attemptId, b);
+            if (currentExam && currentExam.uzak && currentExam.uzakAttemptId === attemptId && VIEW === "exam") {
+              render();
+            }
+          }
+        }
+      }
+    }).catch(function () { /* sessizce geçilir — bekleyende kalır */ });
   }
+
+  window.addEventListener("online", function () {
+    if (!currentExam || !currentExam.uzak || !currentExam.uzakAttemptId) return;
+    var b = examBackupOku(currentExam.uzakAttemptId);
+    if (!b || !b.bekleyen) return;
+    Object.keys(b.bekleyen).forEach(function (guid) {
+      var idx = currentExam.cevaplar[guid] !== undefined ? currentExam.cevaplar[guid] : b.cevaplar[guid];
+      if (idx !== undefined && idx !== null) {
+        remoteAnswerSync(guid, idx);
+      }
+    });
+  });
 
   function pauseExamRemote() {
     if (!currentExam || !currentExam.uzak) return;
     var attemptId = currentExam.uzakAttemptId;
+    var answers = currentExamAnswersMap();
     currentExam = null;
     VIEW = "menuDeneme";
     remoteDash = null;
     render();
-    remoteFetch("/api/exam", "POST", { action: "pause", attemptId: attemptId }).then(function () {
+    remoteFetch("/api/exam", "POST", { action: "pause", attemptId: attemptId, answers: answers }).then(function () {
       remoteRefreshDashboard(function () { if (VIEW === "menuDeneme") render(); });
     });
   }
@@ -2127,9 +2230,11 @@
     if (!currentExam || !currentExam.uzak || remoteBusy) return;
     remoteBusy = true;
     var attemptId = currentExam.uzakAttemptId;
-    remoteFetch("/api/exam", "POST", { action: "finish", attemptId: attemptId }).then(function (r) {
+    var answers = currentExamAnswersMap();
+    remoteFetch("/api/exam", "POST", { action: "finish", attemptId: attemptId, answers: answers }).then(function (r) {
       remoteBusy = false;
       if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav bitirilemedi.", true); render(); return; }
+      examBackupSil(attemptId);
       uzakSonucKur(r.data);
       currentExam = null;
       remoteDash = null;
@@ -2140,7 +2245,11 @@
       remoteLoadWrongQuestions();
       VIEW = "result";
       render();
-    }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
+    }).catch(function () {
+      remoteBusy = false;
+      showBanner("İnternet yok — cevapların cihazda kayıtlı. Bağlantı gelince Bitir'e tekrar bas.", true);
+      render();
+    });
   }
 
   function openHistoryRemote() {
@@ -2768,7 +2877,15 @@
   }
   function selectOption(guid, idx) {
     currentExam.cevaplar[guid] = idx;
-    if (currentExam.uzak) { remoteAnswerSync(guid, idx); render(); return; }
+    if (currentExam.uzak) {
+      var b = examBackupOku(currentExam.uzakAttemptId) || { cevaplar: {}, bekleyen: {} };
+      b.cevaplar[guid] = idx;
+      b.bekleyen[guid] = true;
+      examBackupYaz(currentExam.uzakAttemptId, b);
+      remoteAnswerSync(guid, idx);
+      render();
+      return;
+    }
     if (aiYerelKayitAtlanir()) return;
     examDegisti(); render();
   }
@@ -4439,10 +4556,21 @@
         : '<button class="btn primary" data-action="pause-exam" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>')
     );
 
+    var bekleyenSatir = "";
+    if (currentExam.uzak && currentExam.uzakAttemptId) {
+      var backupData = examBackupOku(currentExam.uzakAttemptId);
+      var bekleyenSayisi = (backupData && backupData.bekleyen) ? Object.keys(backupData.bekleyen).length : 0;
+      if (bekleyenSayisi > 0) {
+        bekleyenSatir = '<div style="font-size:0.82rem;color:var(--text-muted);margin:0 0 10px;">📴 ' +
+          bekleyenSayisi + ' cevap cihazda kayıtlı — bağlantı gelince gönderilecek</div>';
+      }
+    }
+
     return uyariHtml +
       '<div class="progressbar"><div style="width:' + progress + '%"></div></div>' +
       '<div class="card">' +
       ustHtml +
+      bekleyenSatir +
       '<div class="q-text">' + soruHtml(q.soru) + "</div>" +
       optionsHtml +
       flagBarHtml(guid) +

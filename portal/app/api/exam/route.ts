@@ -196,6 +196,35 @@ async function loadAttempt(userId: string, attemptId: string) {
   };
 }
 
+async function applyClientAnswers(
+  db: ReturnType<typeof getDb>,
+  questions: AttemptQuestion[],
+  clientAnswers?: Record<string, number>,
+  answersMap?: Record<string, number>,
+) {
+  if (!clientAnswers || typeof clientAnswers !== 'object' || Array.isArray(clientAnswers)) return;
+  const qMap = new Map(questions.map((q) => [q.id, q]));
+  const now = new Date();
+  for (const [qId, idx] of Object.entries(clientAnswers)) {
+    const q = qMap.get(qId);
+    if (!q) continue;
+    if (typeof idx !== 'number' || !Number.isInteger(idx) || idx < 0 || idx >= q.options.length) {
+      continue;
+    }
+    await db.insert(schema.examAnswers).values({
+      attemptQuestionId: q.id,
+      selectedIndex: idx,
+      answeredAt: now,
+    }).onConflictDoUpdate({
+      target: schema.examAnswers.attemptQuestionId,
+      set: { selectedIndex: idx, answeredAt: now },
+    });
+    if (answersMap) {
+      answersMap[q.id] = idx;
+    }
+  }
+}
+
 async function dashboard(userId: string) {
   const db = getDb();
   const haftaBasi = takvimGunuBaslangici(7);
@@ -1111,6 +1140,9 @@ async function handlePost(request: Request) {
       const loaded = await loadAttempt(user.id, body.attemptId);
       if (body.action === 'pause' && loaded.attempt.status !== 'active') return fail('Sınav aktif değil.', 409);
       if (body.action === 'cancel' && loaded.attempt.status !== 'active' && loaded.attempt.status !== 'paused') return fail('Bu sınav silinemez.', 409);
+      if (body.action === 'pause' && body.answers) {
+        await applyClientAnswers(db, loaded.questions, body.answers, loaded.answers);
+      }
       const now = new Date();
       await db.update(schema.examAttempts).set({
         status: body.action === 'pause' ? 'paused' : 'cancelled',
@@ -1164,6 +1196,9 @@ async function handlePost(request: Request) {
     if (body.action === 'finish') {
       const loaded = await loadAttempt(user.id, body.attemptId);
       if (loaded.attempt.status !== 'active' && loaded.attempt.status !== 'finished') return fail('Sınav tamamlanamaz.', 409);
+      if (loaded.attempt.status === 'active' && body.answers) {
+        await applyClientAnswers(db, loaded.questions, body.answers, loaded.answers);
+      }
       const review = loaded.questions.map((item) => {
         const selectedIndex = loaded.answers[item.id] ?? null;
         return {
