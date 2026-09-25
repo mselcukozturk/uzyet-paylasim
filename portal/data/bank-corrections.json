@@ -4193,5 +4193,608 @@
   "not": "Format taraması: yüzde yazımı (değer korunarak)",
   "kaynak_atif": "",
   "tarihISO": "2026-09-25T16:11:52.804781+00:00"
+ },
+ {
+  "id": "format-20260925-01a6ca637038",
+  "guid": "01a6ca637038",
+  "konu": "Hukuk",
+  "soru": "Ticari tüketim ödüncü sözleşmesinde belirlenebilecek azami akdi faiz oranı kaçtır?",
+  "not": "Format taraması: sayı yazımı (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-93916d1db211",
+  "guid": "93916d1db211",
+  "konu": "Hukuk",
+  "soru": "\"................, faiz (sözleşme faizi ve gecikme faizi) ve takip giderleri gibi alacağa bağlı bir takım yan alacaklar tapuda gösterilen ipotek miktarına ilaveten ayrıca istenilebilir.\"\nBoşluğu uygun şekilde tamamlayan seçenek hangisidir?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "01 Hukuk/Hukuk_TKR_2026.pdf, s.104",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-77591847f87f",
+  "guid": "77591847f87f",
+  "konu": "Hukuk",
+  "soru": "Adi tüketim ödüncü sözleşmelerinde kararlaştırılabilecek faiz oranının (akdi faiz) üst sınırı kaçtır?",
+  "not": "Format taraması: sayı yazımı (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-ba4dd78c0720",
+  "guid": "ba4dd78c0720",
+  "konu": "Kambiyo",
+  "soru": "Vadeli ithalat akreditifi işleminde istenecek belgeler arasında amir üzerine düzenlenmiş bir poliçe yer alabilir mi?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, akreditifli ödeme bölümü, PDF s.61",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-13b6d24edfb0",
+  "guid": "13b6d24edfb0",
+  "konu": "Kambiyo",
+  "soru": "Akreditifin kullanım türü (görüldüğünde ödemeli, vadeli, kabul kredili) akreditif açılış mesajına (MT700) kim tarafından beyan edilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, PDF s. 120",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-6afe26ecb09a",
+  "guid": "6afe26ecb09a",
+  "konu": "Kambiyo",
+  "soru": "İhtiyat Akreditiflerinde (Stand-by akreditif) MTO (Milletler arası Ticaret Odası)'nun hangi broşürü uygulanabilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "ICC Academy, “Export financing | A comprehensive guide”, “Documentary trade finance” bölümü",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-032db06d2c05",
+  "guid": "032db06d2c05",
+  "konu": "Kambiyo",
+  "soru": "Dahilde işleme izninin veya Dahilde işleme izin belgesinin süreleriyle ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "T.C. Ticaret Bakanlığı, Dahilde İşleme Rejimi Tebliği (İhracat: 2006/12), md. 22/2",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-389cd0ef05a9",
+  "guid": "389cd0ef05a9",
+  "konu": "Kambiyo",
+  "soru": "Sınır ticareti ile ilgili aşağıdaki bilgilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "T.C. Ticaret Bakanlığı, Sınır Ticareti SSS, “Sınır Ticareti Belgesi nedir ve nasıl alınır?” bölümü (erişim: 25.09.2026).",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-f39304bd7e13",
+  "guid": "f39304bd7e13",
+  "konu": "Kambiyo",
+  "soru": "\"Karşılıklı çek\" ürününün dış ticaretteki karşılığı nedir?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "03 İthalat İhracat/ithalat_ihracat_TKR_2026.pdf; 03 İthalat İhracat/kambiyo_not_bloklar.txt",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-0f37bb7e13bc",
+  "guid": "0f37bb7e13bc",
+  "konu": "Kambiyo",
+  "soru": "Forfaiting işleminde alınan ücretler hangileridir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "HSBC Bank Malaysia Berhad, Product Disclosure Sheet: Export Forfaiting (Ver. Jun2025), PDF s. 1.",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-03cb7f809535",
+  "guid": "03cb7f809535",
+  "konu": "Kambiyo",
+  "soru": "Kamu kurum ve kuruluşlarının bedelsiz ihracatı ile ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "T.C. Ticaret Bakanlığı, Bedelsiz İhracata İlişkin Tebliğ (İhracat: 2008/12), md. 2/1-(d), 3/4 ve 8/1",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-d8ca125cadee",
+  "guid": "d8ca125cadee",
+  "konu": "Kambiyo",
+  "soru": "Türkiye'de oturmayanlara fatura ile yapılan satışlarla ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, basılı s.125 (PDF s.140)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-4693da39a98c",
+  "guid": "4693da39a98c",
+  "konu": "Kambiyo",
+  "soru": "Akreditif açılış metninde (MT700); 2 orijinal 2 kopya ticari fatura istenmektedir. Lehtarın ibraz ettiği vesaik içerisinde 4 orijinal 4 kopya fatura bulunmaktadır. Bu durum rezerv oluşturur mu?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "ICC, International Standard Banking Practice (ISBP 821), paragraf A29(a)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-c01a556a10c1",
+  "guid": "c01a556a10c1",
+  "konu": "Kambiyo",
+  "soru": "Tam takım (full set) konşimento ne anlama gelir?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, PDF sayfa 82",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-ad320afd4cd0",
+  "guid": "ad320afd4cd0",
+  "konu": "Kambiyo",
+  "soru": "Konsinye ihracatla ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat İhracat TKR 2026 PDF, s. 138",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-e7a7c0dd99eb",
+  "guid": "e7a7c0dd99eb",
+  "konu": "Kambiyo",
+  "soru": "İthalat işlemlerine ilişkin aşağıdaki bilgilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, PDF s.110 (basılı s.95)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-9fd4dd611388",
+  "guid": "9fd4dd611388",
+  "konu": "Kambiyo",
+  "soru": "Akreditif işlemlerinde kısmi kabul ile ilgili doğru ifade hangisidir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "ICC, UCP 600, Article 10(e)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-ea9588db3680",
+  "guid": "ea9588db3680",
+  "konu": "Kambiyo",
+  "soru": "Akreditifli işlemlerde, tadilat (değişiklik) ile ilgili lehtarın (ihracatçının) sessiz kalması ne anlama gelir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "ICC, UCP 600, Article 10(c) — Amendments",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-3b6b008f378d",
+  "guid": "3b6b008f378d",
+  "konu": "Kambiyo",
+  "soru": "Konşimento kaybedildiği durumda, ithalatçıya amir banka tarafından hangi belge verilerek malın çekilmesi sağlanabilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "ICC Trade Register Report 2014, Letters of Indemnity girişi",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-1156912ba777",
+  "guid": "1156912ba777",
+  "konu": "Kambiyo",
+  "soru": "İhracat akreditifinde, gelen tadilat (değişiklik) mesajında yer alan \"10 gün içerisinde lehtar (ihracatçı) tarafından yanıt verilmezse, lehtarın tadilat mesajında yer alan bütün değişiklikleri kabul ettiği\" ifadesi ne anlama gelmektedir?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "ICC, Uniform Customs and Practice for Documentary Credits (UCP 600), Article 10(f)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-a97171ab7e49",
+  "guid": "a97171ab7e49",
+  "konu": "Kambiyo",
+  "soru": "Aşağıdakilerden hangisi BPO'nun taraflarından değildir?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "ICC URBPO, Introduction; Madde 3 (Involved Bank)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-8fbc21c60bc2",
+  "guid": "8fbc21c60bc2",
+  "konu": "Kambiyo",
+  "soru": "Akreditif açılış komisyonu %1 oranından 6 ay vadeli, vadeli ithalat akreditifi açılmıştır. Alınacak komisyon oranı nedir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Türkiye İş Bankası, Ürün ve Hizmet Ücretleri > İthalat Akreditifi > Akreditif Açılış Ücreti (güncelleme 10.01.2025); İthalat İhracat TKR 2026, s.126 (müşteriden tahsil edilecek oranı şubelerin belirlediği).",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-ea26d066a166",
+  "guid": "ea26d066a166",
+  "konu": "Kambiyo",
+  "soru": "725 sayılı Broşüre göre rambursman bankasının masrafları aşağıdakilerden hangisine aittir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "ICC, URR 725, Madde 16(a)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-3db92f499251",
+  "guid": "3db92f499251",
+  "konu": "Kambiyo",
+  "soru": "Şartlı Muafiyet Sistemi'nde teminat olarak aşağıdakilerden hangisi alınamaz?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "Dahilde İşleme Rejimi Tebliği (İhracat: 2006/12), m. 8/1; 6183 sayılı Amme Alacaklarının Tahsil Usulü Hakkında Kanun, m. 10 (Gelir İdaresi Başkanlığı)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-87e2df364147",
+  "guid": "87e2df364147",
+  "konu": "Kredi",
+  "soru": "6 Şubat Depremi kapsamında oluşturlan KGF Paketinin kefalet oranı nedir",
+  "not": "Format taraması: yüzde yazımı (değer korunarak)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-16b011a03343",
+  "guid": "16b011a03343",
+  "konu": "Kredi",
+  "soru": "Çiftçilerin birinci el (0 km) tarım makine ve ekipmanı (biçerdöver, pulluk, pancar hasat makinesi, balya makinesi, mibzer vb.) alımlarının finansmanını teminen kullandırılacak kredi ürünümüz aşağıdakilerden hangisidir?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "Türkiye İş Bankası, “Traktör ve Ekipman Kredileri” sayfası (Tarım Ekipman Kredisi) ve “Tarımsal Arazi Kredisi” sayfası.",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-88e4b67594dc",
+  "guid": "88e4b67594dc",
+  "konu": "Kredi",
+  "soru": "Teminata alınan çek/senetlerle ilgili olarak hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Kredi YYS 2026, s.123",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-b1e24147d0c2",
+  "guid": "b1e24147d0c2",
+  "konu": "Temel İşlemler",
+  "soru": "Mevduat sahibi ölünce yapılacak işlemler arasından aşağıdakilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "06 Döviz Temel İşlemler/Temel Islemler_YYS_2026.pdf, PDF sayfa 173",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-c41bf21924d8",
+  "guid": "c41bf21924d8",
+  "konu": "Temel İşlemler",
+  "soru": "Vadeli Altın Mevduat Hesaplarına ilişkin hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Temel İşlemler YYS 2026, “Mevduat Hesapları ve Genel İşleyiş Kuralları” bölümü",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-6af79ba28556",
+  "guid": "6af79ba28556",
+  "konu": "Temel İşlemler",
+  "soru": "International Money Order'a ilişkin ifadelerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Temel Islemler_YYS_2026.pdf, PDF s. 264",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-3e2f6541228e",
+  "guid": "3e2f6541228e",
+  "konu": "Temel İşlemler",
+  "soru": "Türk Lirası ve YP olmak üzere dijital bankacılık kanallarından yapılacak havale işlemlerindeki toplam limit bireysel dijital bankacılık müşterilerimiz için günlük ne kadardır?",
+  "not": "Format taraması: sayı yazımı (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-927217312b81",
+  "guid": "927217312b81",
+  "konu": "Temel İşlemler",
+  "soru": "FAST sistemi ile ilgili hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Temel Islemler_YYS_2026.pdf, PDF sayfa 187",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-1fde3e517731",
+  "guid": "1fde3e517731",
+  "konu": "Ürünler",
+  "soru": "Maxi miles / Privia Black özellikli kartlarla uçak bileti alımı ve seyahat işlemlerinde kullanılabilecek azami avans mil ne kadardır",
+  "not": "Format taraması: sayı yazımı (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "Ürünlerimiz s.59",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-f0f72cb88e8e",
+  "guid": "f0f72cb88e8e",
+  "konu": "Ürünler",
+  "soru": "Repo geliri stopaj oranı nedir?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "Gelir İdaresi Başkanlığı, Menkul Sermaye İradı",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-9c2049f43a6f",
+  "guid": "9c2049f43a6f",
+  "konu": "Ürünler",
+  "soru": "Ticari müşterilerimiz mobil onay kodu blokesini hangi kanaldan kaldıramaz?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, PDF s.29",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-917d64daeedd",
+  "guid": "917d64daeedd",
+  "konu": "Ürünler",
+  "soru": "Hesaptan verilen altın biriktiren talimatı ile ilgili hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "Ürünlerimiz altın biriktiren talimat bölümü; girdi kaydındaki s.138 atfı ve 2026 revize kitap notları",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-658d46db8074",
+  "guid": "658d46db8074",
+  "konu": "Ürünler",
+  "soru": "Yatırım fonları ile ilgili hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026.pdf, PDF s.124 (basılı s.107)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-d9cd2783b9a2",
+  "guid": "d9cd2783b9a2",
+  "konu": "Ürünler",
+  "soru": "Dijital Kart Deneyimi ile ilgili aşağıdaki ifadelerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, s. 69",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-f00afd6fcc08",
+  "guid": "f00afd6fcc08",
+  "konu": "Ürünler",
+  "soru": "Maksimum vadeli hesaplarda süpürme işlemi için alt limit ne kadardır?",
+  "not": "Format taraması: sayı yazımı (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-58edf983ed8b",
+  "guid": "58edf983ed8b",
+  "konu": "Ürünler",
+  "soru": "Maximum Hesap talimatı olan bir müşterimizin yatırım hesabındaki cari fiyatlı fonlar SOS talimatı kapsamında hangi sırayla bozulur?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "Türkiye İş Bankası, SOS ve Maksimum Hesap sayfası (erişim: 25.09.2026)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-cac81d0a6d8e",
+  "guid": "cac81d0a6d8e",
+  "konu": "Mali Analiz",
+  "soru": "Ortalama vade farkının hesaplanmasında aşağıdakilerden hangisi kullanılmaz?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İstihbarat TKR 2026, basılı s.279 (PDF s.295)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-31873a1facb7",
+  "guid": "31873a1facb7",
+  "konu": "Kambiyo",
+  "soru": "Süresi içinde kapatılmayan ihracat hesapları için yapılması gereken bildirim hangi Bölümümüz tarafından gerçekleştirilir?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "03 İthalat İhracat/ithalat_ihracat_TKR_2026.pdf, s. 168",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-25ff7915bbc3",
+  "guid": "25ff7915bbc3",
+  "konu": "Kambiyo",
+  "soru": "Gelen ihracat bedeli döviz cinsi ile müşteri tarafından beyan edilen gümrük beyannamesinin (GB) döviz cinsi farklı ise alış işlemi yapılabilir mi?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "TCMB, İhracat Genelgesi (Nisan 2026), Ek-1 Açık İhracat Hesabı İhbar Formu",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-52c02bbab0ae",
+  "guid": "52c02bbab0ae",
+  "konu": "Kambiyo",
+  "soru": "Aracı bankalarca aşağıdaki hangi resmi kuruma bankalarca süresi içinde kapatılmayan ihracat hesaplarına ilişkin bildirim yapılması doğru değildir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 153",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-32762281809c",
+  "guid": "32762281809c",
+  "konu": "Kambiyo",
+  "soru": "Kamu kurum ve kuruluşlarının bedelsiz ihracatı ile ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İhracat: 2008/12 sayılı Bedelsiz İhracata İlişkin Tebliğ, Madde 8 (1)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-e2dcac4bf197",
+  "guid": "e2dcac4bf197",
+  "konu": "Kambiyo",
+  "soru": "I- Vergi numarasına sahip gerçek ve tüzel kişiler II-Vergi numarasına sahip olmayan kitap ithal etmek isteyen tüzel kişi Yukarıda bilgileri verilen kişilerden hangileri ithalat yapabilir?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, basılı s.94-95; 2004/7667 sayılı İthalat Rejimi Kararı m.8/1-2, Ticaret Bakanlığı güncel konsolide metni.",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-6ed380e34260",
+  "guid": "6ed380e34260",
+  "konu": "Kambiyo",
+  "soru": "Bir akreditifin iptal edilmesi kimin onayı olmadan gerçekleştirilemez?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "ICC, Uniform Customs and Practice for Documentary Credits (UCP 600), Article 10(a)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-b8e4fcda5714",
+  "guid": "b8e4fcda5714",
+  "konu": "Kambiyo",
+  "soru": "Ticari İnternet Şubemiz üzerinden peşin ödemeli ithalat transferi yapılabilir mi?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "Türkiye İş Bankası, Ticari İnternet Şubesi — İnternet Şubesinden Yapılabilen Ticari İşlemler Listesi",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-908df85d67c6",
+  "guid": "908df85d67c6",
+  "konu": "Kambiyo",
+  "soru": "Aşağıdakilerden hangileri ihracat bedelinin yurda getirilmesinde istisna tanınan ülkelerdendir?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "İthalat-İhracat YYS 2026, s. 126; Türkiye Cumhuriyet Merkez Bankası, İhracat Genelgesi, Ek-2.",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-f46aa6f869b9",
+  "guid": "f46aa6f869b9",
+  "konu": "Kambiyo",
+  "soru": "Aşağıdakilerden hangisi mal mukabili ödeme şeklinde ihracatçı açısından risk unsuru teşkil etmez?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat s.18",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-9e2092a13865",
+  "guid": "9e2092a13865",
+  "konu": "Kambiyo",
+  "soru": "Teyitli bir ihracat akreditifinde, aşağıdaki durumlardan hangisinde teyit bankasının vesaik karşılığında ödeme yükümlülüğü doğmaz?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, teyit bankası bölümü",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-d86d3ba09923",
+  "guid": "d86d3ba09923",
+  "konu": "Kambiyo",
+  "soru": "İhracat teşvik mevzuatı hangi amaçlarla düzenlenmiştir?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "03 İthalat İhracat/DIŞ TİC İŞLİ VE FİN İŞ BNAKASI.pdf, s. 14",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-d799f1885204",
+  "guid": "d799f1885204",
+  "konu": "Kambiyo",
+  "soru": "I- Konsinye olarak gönderilen malın ihraç tarihinden itibaren 1 yıl içinde kesin satışı yapılmalıdır. II-İzin süresi içinde satılamayan malların yurda getirilmesi gerekmez. Konsinye ihracatla ilgili yukarıdakilerden hangileri yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, basılı s.123 (PDF s.138)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-0766da76bd26",
+  "guid": "0766da76bd26",
+  "konu": "Kambiyo",
+  "soru": "Vadeli ithalat akreditifi işleminde istenecek belgeler arasında amir banka üzerine düzenlenmiş bir poliçe yer alabilir mi?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, kabul akreditifi açıklaması",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-3178568ff36b",
+  "guid": "3178568ff36b",
+  "konu": "Kambiyo",
+  "soru": "Serbest bölge mevzuatı kapsamında, serbest bölgedeki firmalar için hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "T.C. Ticaret Bakanlığı, Devlet Yardımları Rehberi 2023, Serbest Bölgeler; 2017/10718 sayılı Serbest Bölgelerde Türk Lirası ile Yapılacak Ödemelere İlişkin Karar, m. 1.",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-cbc6c28aac8d",
+  "guid": "cbc6c28aac8d",
+  "konu": "Kambiyo",
+  "soru": "Aşağıdakilerden hangisi Forfaiting konusu yapılabilir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, PDF s. 165",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-473ab87891af",
+  "guid": "473ab87891af",
+  "konu": "Kambiyo",
+  "soru": "Dış ticaret işlemlerinde poliçe ile ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, basılı s. 80 (PDF s. 95)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-cf4deda6736a",
+  "guid": "cf4deda6736a",
+  "konu": "Kambiyo",
+  "soru": "Akreditifli ve vesaik mukabili ihracat işlemlerinde aşağıdakilerden hangisi şubelerimizin sorumluluğunda değildir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat TKR 2026, s. 148 (PDF s. 163)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-de31bdc7865c",
+  "guid": "de31bdc7865c",
+  "konu": "Kambiyo",
+  "soru": "725 sayılı Broşüre göre, rambursman bankası herhangi bir nedenle rambursman yetkisi veya rambursman değişikliği altında işlem yapmaya hazır değilse ne yapması beklenir?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "ICC URR 725, Article 6(g), ICC Digital Library",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-5bf468e9fd71",
+  "guid": "5bf468e9fd71",
+  "konu": "Kambiyo",
+  "soru": "\"Yüklemeden itibaren 60 gün\" vade kaydı içeren poliçe için aşağıdakilerden hangisi doğrudur?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "İthalat-İhracat s.81",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-ea9156ff03d5",
+  "guid": "ea9156ff03d5",
+  "konu": "Kambiyo",
+  "soru": "Dış ticaret firmalarını tespit etmek için yapılan incelemeler kapsamında aşağıdakilerden hangisi söylenemez?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "05 İstihbarat, Ezber Notu - İstihbarat Rasyoları, s. 4",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-42b12d7831a6",
+  "guid": "42b12d7831a6",
+  "konu": "Kambiyo",
+  "soru": "Dahilde İşleme İzin Belgesinin (DİİB) süresiyle ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "T.C. Ticaret Bakanlığı, Dahilde İşleme Rejimi Tebliği (İhracat: 2006/12), Madde 21(1)(c)",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-b2fc32efd5c2",
+  "guid": "b2fc32efd5c2",
+  "konu": "Genel Ekonomi",
+  "soru": "2025 işsizlik oranı aşağıdaki seçeneklerden hangisinde doğru verilmiştir?",
+  "not": "Format taraması: yüzde yazımı (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-8ad966c99eba",
+  "guid": "8ad966c99eba",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 (1H2026) Yatırımcı Sunumu'na göre Bankamızın POS cirosu (üye işyeri) pazar payı aşağıdakilerden hangisinde doğru verilmiştir?",
+  "not": "Format taraması: sayı yazımı (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-5cd9983c1217",
+  "guid": "5cd9983c1217",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 verilerine göre Bankamızın SYR'si aşağıdakilerden hangisidir? (Solo Bilanço)",
+  "not": "Format taraması: sayı yazımı (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "Girdi kaydındaki atıf: Yatırımcı Sunumu s.17 (bu işlemde yeniden doğrulanmadı).",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-5c474df2a3f5",
+  "guid": "5c474df2a3f5",
+  "konu": "Mali Analiz",
+  "soru": "Uzun vadeli borçların kasadan ödenmesi, firmanın cari oranını ……… .",
+  "not": "Format taraması: 4. şık eklendi (kaynak doğrulandı)",
+  "kaynak_atif": "05 İstihbarat/istihbarat_TKR_2026.pdf, PDF s.248",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
+ },
+ {
+  "id": "format-20260925-494f433bca2b",
+  "guid": "494f433bca2b",
+  "konu": "Temel İşlemler",
+  "soru": "Dijital bankacılık kanallarından yapılabilecek döviz alış-satış limiti günlük kaç dolardır?",
+  "not": "Format taraması: sayı yazımı (Claude onayı; kaynakla birebir teyit edilemedi)",
+  "kaynak_atif": "Dijital Bankacılık Kurları, s.86",
+  "tarihISO": "2026-09-25T20:41:28.333179+00:00"
  }
 ]
