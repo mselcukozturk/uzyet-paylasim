@@ -154,6 +154,16 @@
   .konu-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: middle; flex-shrink: 0; }
   .banner { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; font-size: 0.92rem; }
   .banner.error { background: var(--bad-bg); color: var(--bad); border-color: var(--bad); }
+  /* Gelip giden bildirimler (showBanner, "Cevap kaydediliyor…") akışa girmez: ekranın üstünde
+     sabit durur, içeriği itmez, kaydırmayı oynatmaz, tıklamayı engellemez (26 Eyl 2026 kullanıcı isteği). */
+  .anlik-bildirim {
+    position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 200;
+    width: max-content; max-width: calc(100% - 32px); margin: 0; box-shadow: var(--shadow); pointer-events: none;
+  }
+  .anlik-bildirim.notr {
+    background: var(--surface); color: var(--text-muted); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 8px 14px; font-size: 0.9rem;
+  }
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -3959,7 +3969,7 @@
         : (dogruMu ? "Doğru!" : "Yanlış — doğrusu " + harfler[q.cevapIdx]);
       sonucHtml = '<div class="pill ' + (dogruMu ? "good" : "bad") + '" style="margin:10px 0">' + pillMetin + "</div>" +
         (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + "</div>" : "") +
-        (kayit.kayit === "bekliyor" ? '<div class="muted" style="margin-top:8px">Cevap kaydediliyor…</div>' : "") +
+        (kayit.kayit === "bekliyor" ? '<div class="anlik-bildirim notr" role="status">Cevap kaydediliyor…</div>' : "") +
         (kayit.kayit === "hata" ? '<div class="banner error" style="margin-top:8px">' + escapeHtml(kayit.kayitHatasi) +
           ' <button class="btn ghost" data-action="retry-tekrar-kayit">Tekrar Dene</button></div>' : "");
     }
@@ -5230,7 +5240,7 @@ function pratikEnIyiHtml(konu, modulKey) {
       else if (STATE.sadeceDeneme) { VIEW = "menuDeneme"; html = renderMenuDeneme(); }
       else { VIEW = "menu"; html = renderMenu(); }
     }
-    var bannerHtml = bannerMsg ? '<div class="banner' + (bannerIsError ? " error" : "") + '">' + escapeHtml(bannerMsg) + "</div>" : "";
+    var bannerHtml = bannerMsg ? '<div class="banner anlik-bildirim' + (bannerIsError ? " error" : "") + '" role="status">' + escapeHtml(bannerMsg) + "</div>" : "";
     var narrowViews = { settings: true, import: true };
     var shellClass = "shell" + (narrowViews[VIEW] ? " narrow" : "");
     // AI denemesi sürerken üst çubuk gizlenir: 🏠 ve 📊 leaveAiSources() çağırıp yarım
