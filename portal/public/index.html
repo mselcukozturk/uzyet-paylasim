@@ -202,12 +202,14 @@
      düğmeler blogun dikey ortasında havada kalıyordu (16 Eyl 2026). */
   .pratik-ust { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px; }
   .pratik-ust-bilgi { flex: 1; min-width: 0; display: grid; gap: 4px; font-variant-numeric: tabular-nums; }
-  /* İkinci satır dar ekranda sarmaz, kırpılır. min-width:0 ikisinde de şart: .q-meta grid
-     item, içindeki span flex item — ikisinin de varsayılan min-width:auto'su içerikten
-     küçülmeyi engelliyor, metin düğmelerin altına taşıyordu (16 Eyl 2026'da yakalandı). */
+  /* Birinci ve ikinci satır dar ekranda sarmaz, kırpılır. min-width:0 şart: .pratik-ust-bilgi
+     grid item, içindeki span flex item — ikisinin de varsayılan min-width:auto'su içerikten
+     küçülmeyi engelliyor, metin düğmelerin altına taşıyordu (16 ve 26 Eyl 2026). */
+  .pratik-ust-baslik { display: flex; align-items: center; min-width: 0; white-space: nowrap; }
+  .pratik-ust-konu { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pratik-ust .q-meta { margin-bottom: 0; column-gap: 10px; min-width: 0; }
   .pratik-ust .q-meta > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ust-sayac { white-space: nowrap; }
+  .ust-sayac, .ust-ayrac { white-space: nowrap; flex-shrink: 0; }
   .pratik-ust .btn { flex-shrink: 0; }
   @media (max-width: 560px) { .genis-etiket { display: none; } }
   .exam-timer { font-weight: 700; }
@@ -390,6 +392,20 @@
   }
   function konuDotHtml(konu) {
     return '<span class="konu-dot" style="background:var(--seri-' + konuSeriIdx(konu) + ')"></span>';
+  }
+  var KONU_KISA_AD = {
+    "Sermaye Piyasaları ve Hazine": "Sermaye Piy.",
+    "Temel İşlemler": "Temel İşl.",
+    "İK Politikaları": "İK Pol.",
+    "Genel Ekonomi": "Genel Ekon.",
+    "Mali Analiz": "Mali Analiz",
+    "Ürünler": "Ürünler",
+    "Hukuk": "Hukuk",
+    "Kredi": "Kredi",
+    "Kambiyo": "Kambiyo"
+  };
+  function konuKisaAdi(konu) {
+    return (konu && KONU_KISA_AD[konu]) || konu || "";
   }
 
   // "Konu Çalışma / Tekrar" modunun modül kırılımı — sınav bankasından (STATE.bank)
@@ -584,6 +600,7 @@
   var AI_KAYNAK_UYARISI = "Buradaki soru ve konular yapay zekâ ile kişisel kullanım için üretildi, doğruluğu ve kapsamı teyit edilmedi.";
   var currentExam = null;      // {tip, sorular:[guid...], index, cevaplar:{guid:idx}, uyarilar}
   var lastResult = null;
+  var sonucSekmesi = "yanlislar"; // "yanlislar" | "tum"
   var importPreview = null;    // {stateKopya, sonuc, dosyaAdi, sheetName}
   var draftSettings = null;
   var bannerMsg = null;
@@ -2243,6 +2260,7 @@
       remoteRefreshDashboard(function () { if (VIEW === "result") render(); });
       remoteWrongGuids = null;
       remoteLoadWrongQuestions();
+      sonucSekmesi = "yanlislar";
       VIEW = "result";
       render();
     }).catch(function () {
@@ -2291,8 +2309,10 @@
         id: attemptId, tarihISO: d.bitisISO, tip: "ai", ai: true, aiGunu: d.aiGunu || null,
         seed: null, examCode: d.examCode || "",
         sorular: d.sorular || [], cevaplar: d.cevaplar || {}, soruKayitlari: d.soruKayitlari || {},
-        skor: d.skor, konuKirilim: d.konuKirilim || {}, sureSaniye: d.sureSaniye || 0
+        skor: d.skor, konuKirilim: d.konuKirilim || {}, sureSaniye: d.sureSaniye || 0,
+        gecmistenAcildi: true
       };
+      sonucSekmesi = "yanlislar";
       VIEW = "result";
       render();
     }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
@@ -2327,6 +2347,8 @@
       remoteBusy = false;
       if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav açılamadı.", true); render(); return; }
       uzakSonucKur(r.data);
+      if (lastResult) lastResult.gecmistenAcildi = true;
+      sonucSekmesi = "yanlislar";
       VIEW = "result";
       render();
     }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası.", true); render(); });
@@ -3271,6 +3293,7 @@
     };
     aiVazgecOnay = false;
     currentExam = null;
+    sonucSekmesi = "yanlislar";
     VIEW = "result";
     render();
     remoteSaveAiExam(lastResult);
@@ -3312,6 +3335,7 @@
     STATE.history.unshift(entry);
     if (STATE.history.length > 100) STATE.history = STATE.history.slice(0, 100);
     lastResult = entry;
+    sonucSekmesi = "yanlislar";
     VIEW = "result";
     currentExam = null;
     pendingSaveDirty = false; // bu save zaten güncel STATE'in tamamını kaydediyor
@@ -3523,7 +3547,7 @@
     currentPratik = null; currentCheckpoint = null; pratikSeciliKonu = null; dersSekmesi = "test"; pratikSeciliModul = null;
     checkpointSeciliKonu = null; checkpointSeciliId = null;
     pausedDeleteConfirm = false; deletingHistoryId = null; denemeKodOnizleme = null;
-    aiDenemeKodOnizleme = null; aiVazgecOnay = false;
+    aiDenemeKodOnizleme = null; aiVazgecOnay = false; sonucSekmesi = "yanlislar";
     render();
     if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
     if (pendingSaveDirty) { pendingSaveDirty = false; saveAndPublish(); }
@@ -4437,8 +4461,9 @@
   // soru ızgarasında ve "Sınavı Bitir (N boş)" düğmesinde, pratikte bitiş özetinde duruyor.
   function soruUstBlokHtml(konu, sayac, metaHtml, aksiyonHtml) {
     return '<div class="pratik-ust"><div class="pratik-ust-bilgi">' +
-      '<div class="muted" style="font-size:0.82rem">' + konuDotHtml(konu) + escapeHtml(konu) +
-      (sayac ? ' · <span class="ust-sayac">' + escapeHtml(sayac) + "</span>" : "") + "</div>" +
+      '<div class="muted pratik-ust-baslik" style="font-size:0.82rem">' + konuDotHtml(konu) +
+      '<span class="pratik-ust-konu" title="' + escapeHtml(konu) + '">' + escapeHtml(konuKisaAdi(konu)) + "</span>" +
+      (sayac ? '<span class="ust-ayrac"> · </span><span class="ust-sayac">' + escapeHtml(sayac) + "</span>" : "") + "</div>" +
       (metaHtml ? '<div class="q-meta">' + metaHtml + "</div>" : "") +
       "</div>" + aksiyonHtml + "</div>";
   }
@@ -4870,33 +4895,111 @@ function pratikEnIyiHtml(konu, modulKey) {
   function renderResult() {
     var r = lastResult;
     var toplam = r.skor.dogru + r.skor.yanlis + r.skor.bos;
-    var topicRows = Object.keys(r.konuKirilim).map(function (konu) {
+    var siraliKonularTablo = [];
+    (typeof KONU_SIRA !== "undefined" ? KONU_SIRA : []).forEach(function (k) {
+      if (r.konuKirilim && r.konuKirilim[k]) siraliKonularTablo.push(k);
+    });
+    Object.keys(r.konuKirilim || {}).forEach(function (k) {
+      if (siraliKonularTablo.indexOf(k) === -1) siraliKonularTablo.push(k);
+    });
+    var topicRows = siraliKonularTablo.map(function (konu) {
       var k = r.konuKirilim[konu];
       return "<tr><td>" + konuDotHtml(konu) + escapeHtml(konu) + '</td><td class="num">' + k.dogru + '</td><td class="num">' + k.yanlis +
         '</td><td class="num">' + k.bos + "</td></tr>";
     }).join("");
 
-    var bankByGuid = {};
-    STATE.bank.forEach(function (q) { bankByGuid[q.guid] = q; });
-    var yanlisBosListesi = r.sorular.map(function (guid) {
+    var isYanlislar = sonucSekmesi !== "tum";
+    var nYanlis = (r.skor && typeof r.skor.yanlis === "number") ? (r.skor.yanlis + r.skor.bos) : 0;
+    var mToplam = toplam;
+    var sekmeHtml = '<div class="ders-sekmeler" role="tablist" aria-label="Gözden geçirme sekmeleri">' +
+      '<button class="btn' + (isYanlislar ? " active" : "") + '" role="tab" aria-selected="' + (isYanlislar ? "true" : "false") + '" tabindex="' + (isYanlislar ? "0" : "-1") + '" data-action="select-sonuc-sekmesi" data-sekme="yanlislar">Yanlışlar (' + nYanlis + ')</button>' +
+      '<button class="btn' + (!isYanlislar ? " active" : "") + '" role="tab" aria-selected="' + (!isYanlislar ? "true" : "false") + '" tabindex="' + (!isYanlislar ? "0" : "-1") + '" data-action="select-sonuc-sekmesi" data-sekme="tum">Tüm Sorular (' + mToplam + ')</button></div>';
+
+    var yanlisBosItems = [];
+    var sorularByKonu = {};
+    var konularListesi = [];
+    var harfler = ["A", "B", "C", "D"];
+
+    r.sorular.forEach(function (guid, idx) {
       var q = oturumSorusu(r, STATE.bank, guid);
-      if (!q) return "";
+      if (!q) return;
       var secilen = r.cevaplar[guid];
-      if (secilen === q.cevapIdx) return "";
-      var harfler = ["A", "B", "C", "D"];
-      var optionsHtml = q.siklar.map(function (s, i) {
-        if (!s) return "";
-        var cls = "option-row";
-        if (i === q.cevapIdx) cls += " correct"; else if (i === secilen) cls += " wrong";
-        return '<div class="' + cls + '"><span class="option-letter">' + harfler[i] + '</span><span class="option-text">' + escapeHtml(s) + "</span></div>";
+      var sira = idx + 1;
+      var dogruMu = secilen === q.cevapIdx;
+
+      // Yanlışlar sekmesi listesi (yanlış + boş)
+      if (!dogruMu) {
+        var yOptionsHtml = q.siklar.map(function (s, i) {
+          if (!s) return "";
+          var cls = "option-row";
+          if (i === q.cevapIdx) cls += " correct"; else if (i === secilen) cls += " wrong";
+          return '<div class="' + cls + '"><span class="option-letter">' + harfler[i] + '</span><span class="option-text">' + escapeHtml(s) + "</span></div>";
+        }).join("");
+        var yBosHtml = (secilen === undefined || secilen === null) ? '<div class="review-opt wrong">Boş bırakıldı</div>' : "";
+        var yBadge = q.dogrulanmis === false ? '<span class="badge unverified">doğrulanmamış</span>' : "";
+        yanlisBosItems.push('<div class="review-item"><div class="review-q">' + soruHtml(q.soru) + yBadge + "</div>" +
+          yBosHtml + yOptionsHtml +
+          (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + (q.kaynak ? " — " + escapeHtml(q.kaynak) : "") + "</div>" : "") +
+          flagBarHtml(guid) +
+          "</div>");
+      }
+
+      // Tüm Sorular sekmesi için konuya göre grupla
+      var konu = q.konu || "Diğer";
+      if (!sorularByKonu[konu]) {
+        sorularByKonu[konu] = [];
+        konularListesi.push(konu);
+      }
+      sorularByKonu[konu].push({ guid: guid, q: q, sira: sira, secilen: secilen, dogruMu: dogruMu });
+    });
+
+    var yanlisBosHtml = yanlisBosItems.length
+      ? yanlisBosItems.join("")
+      : '<div class="muted" style="margin:12px 0">Yanlış veya boş soru yok.</div>';
+
+    // Konu sırası KONU_SIRA sırası, olmayanlar sona
+    var siraliKonular = [];
+    (typeof KONU_SIRA !== "undefined" ? KONU_SIRA : []).forEach(function (k) {
+      if (sorularByKonu[k]) siraliKonular.push(k);
+    });
+    konularListesi.forEach(function (k) {
+      if (siraliKonular.indexOf(k) === -1) siraliKonular.push(k);
+    });
+
+    var tumSorularHtml = siraliKonular.map(function (konu) {
+      var sorular = sorularByKonu[konu];
+      var t = sorular.length;
+      var d = 0;
+      sorular.forEach(function (item) { if (item.dogruMu) d++; });
+
+      var itemsHtml = sorular.map(function (item) {
+        var q = item.q;
+        var guid = item.guid;
+        var secilen = item.secilen;
+        var optionsHtml = q.siklar.map(function (s, i) {
+          if (!s) return "";
+          var cls = "option-row";
+          if (i === q.cevapIdx) cls += " correct"; else if (i === secilen) cls += " wrong";
+          return '<div class="' + cls + '"><span class="option-letter">' + harfler[i] + '</span><span class="option-text">' + escapeHtml(s) + "</span></div>";
+        }).join("");
+        var bosHtml = (secilen === undefined || secilen === null) ? '<div class="review-opt wrong">Boş bırakıldı</div>' : "";
+        var badge = q.dogrulanmis === false ? '<span class="badge unverified">doğrulanmamış</span>' : "";
+        return '<div class="review-item">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+          '<span class="muted" style="font-weight:600;font-size:0.84rem">Soru ' + item.sira + "</span>" +
+          (item.dogruMu ? '<span class="pill good" style="font-size:0.75rem;padding:2px 8px">Doğru</span>' : "") +
+          "</div>" +
+          '<div class="review-q">' + soruHtml(q.soru) + badge + "</div>" +
+          bosHtml + optionsHtml +
+          (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + (q.kaynak ? " — " + escapeHtml(q.kaynak) : "") + "</div>" : "") +
+          flagBarHtml(guid) +
+          "</div>";
       }).join("");
-      var bosHtml = (secilen === undefined || secilen === null) ? '<div class="review-opt wrong">Boş bırakıldı</div>' : "";
-      var badge = q.dogrulanmis === false ? '<span class="badge unverified">doğrulanmamış</span>' : "";
-      return '<div class="review-item"><div class="review-q">' + soruHtml(q.soru) + badge + "</div>" +
-        bosHtml + optionsHtml +
-        (q.aciklama ? '<div class="review-expl">' + escapeHtml(q.aciklama) + (q.kaynak ? " — " + escapeHtml(q.kaynak) : "") + "</div>" : "") +
-        flagBarHtml(guid) +
-        "</div>";
+
+      return '<div class="section-title" style="font-size:0.96rem;margin:18px 0 10px;display:flex;justify-content:space-between;align-items:center">' +
+        "<span>" + konuDotHtml(konu) + escapeHtml(konu) + "</span>" +
+        '<span class="muted" style="font-size:0.84rem;font-weight:normal">' + d + " doğru / " + t + " soru</span>" +
+        "</div>" + itemsHtml;
     }).join("");
 
     var kod = r.examCode || examKoduUret(r.tip, r.seed);
@@ -4915,6 +5018,12 @@ function pratikEnIyiHtml(konu, modulKey) {
     var yuzdeHtml = yuzde === null ? "" : '<span class="pill" style="background:var(--surface-2);color:' + renkEsigi(yuzde) + '">%' + yuzde + "</span>";
     var sureHtml = typeof r.sureSaniye === "number" ? '<span class="muted" style="font-size:0.86rem">⏱ ' + fmtSure(r.sureSaniye) + " sürede bitti</span>" : "";
 
+    var gozdenGecirKarti = '<div class="card" style="margin-top:16px">' +
+      '<div class="section-title">Gözden geçir</div>' +
+      sekmeHtml +
+      (isYanlislar ? yanlisBosHtml : tumSorularHtml) +
+      "</div>";
+
     return '<div class="card">' +
       '<div class="score-hero"><span class="big">' + r.skor.dogru + " / " + toplam + "</span>" +
       '<span class="pill good">' + r.skor.dogru + " doğru</span>" +
@@ -4930,12 +5039,14 @@ function pratikEnIyiHtml(konu, modulKey) {
       '<table class="topic-table"><thead><tr><th>Konu</th><th class="num">Doğru</th><th class="num">Yanlış</th><th class="num">Boş</th></tr></thead><tbody>' +
       topicRows + "</tbody></table>" +
       '<div class="link-row" style="margin-top:14px">' +
-      '<button class="btn primary" data-action="back-menu">' + (STATE.sadeceDeneme ? "Tamam" : "Ana Menüye Dön") + '</button>' +
+      (r.gecmistenAcildi
+        ? '<button class="btn primary" data-action="sonuc-gecmise-don">← Geçmişe Dön</button>'
+        : '<button class="btn primary" data-action="back-menu">' + (STATE.sadeceDeneme ? "Tamam" : "Ana Menüye Dön") + '</button>') +
       '<button class="btn" data-action="copy-result-image">🖼 Sonucu Kopyala</button>' +
       "</div>" +
       koduHtml +
       "</div>" +
-      (yanlisBosListesi ? '<div class="card" style="margin-top:16px"><div class="section-title">Gözden geçir</div>' + yanlisBosListesi + "</div>" : "");
+      gozdenGecirKarti;
   }
 
   function renderSettings() {
@@ -5230,6 +5341,18 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "goto-q") gotoQuestion(parseInt(t.getAttribute("data-idx"), 10));
     else if (action === "finish-exam") finishExam();
     else if (action === "back-menu") backToMenu();
+    else if (action === "sonuc-gecmise-don") {
+      lastResult = null;
+      VIEW = "gecmisUzak";
+      render();
+    }
+    else if (action === "select-sonuc-sekmesi") {
+      var sSekme = t.getAttribute("data-sekme");
+      if (sSekme === "yanlislar" || sSekme === "tum") {
+        sonucSekmesi = sSekme;
+        render();
+      }
+    }
     else if (action === "open-settings") openSettings();
     else if (action === "save-settings") saveSettings();
     else if (action === "cancel-settings") { VIEW = "menu"; render(); }
