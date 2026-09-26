@@ -4805,5 +4805,50 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "Türk P ve I Sigorta, Konşimento Kaynaklı En Sık Karşılaşılan Problemler ve Taşıyanlara Tavsiyeler Sirküleri (Mayıs 2018), s. 2",
   "tarihISO": "2026-09-25T23:05:00.577365+00:00"
+ },
+ {
+  "id": "gece-20260927-e5823e0690ad",
+  "guid": "e5823e0690ad",
+  "konu": "Genel Ekonomi",
+  "soru": "Aşağıdakilerden hangisi Bankamızın Sürdürülebilirlik kapsamında yürüttüğü faaliyetlerden biri değildir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Yatırımcı Sunumu (1H2026), s. 21",
+  "tarihISO": "2026-09-26T23:11:29.325041+00:00"
+ },
+ {
+  "id": "gece-20260927-251c7914aba9",
+  "guid": "251c7914aba9",
+  "konu": "Mali Analiz",
+  "soru": "İşletmeler fonların kısa vadeli değerlendirilmesi amacıyla aldıkları hisse senetlerini hangi hesapta takip ederler?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "05 İstihbarat/istihbarat_TKR_2026.pdf s.179 (ayrıca s.96)",
+  "tarihISO": "2026-09-26T23:11:29.325041+00:00"
+ },
+ {
+  "id": "gece-20260927-c090e88f9983",
+  "guid": "c090e88f9983",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 Kredilerin toplam aktifimize oranı aşağıdakilerin hangisinde doğru verilmiştir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/YatirimciSunumu.pdf s. 7 (slayt 6)",
+  "tarihISO": "2026-09-26T23:11:29.325041+00:00"
+ },
+ {
+  "id": "gece-20260927-d793a6b30a3f",
+  "guid": "d793a6b30a3f",
+  "konu": "Kredi",
+  "soru": "Düzenlenme yeri: İzmir\nİbraz yeri: Kars\nMuhatap banka şubesinin yeri: İzmir\nolan bir çekin ibraz süresi ne kadardır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Temel Islemler_YYS_2026.pdf, s. 218 (PDF s. 234)",
+  "tarihISO": "2026-09-26T23:11:29.325041+00:00"
+ },
+ {
+  "id": "gece-20260927-e7032eaffdd3",
+  "guid": "e7032eaffdd3",
+  "konu": "Kambiyo",
+  "soru": "I. Yalnızca akreditif kullanılarak ödeme yapılabilir.\nII. Gümrük Beyannamesi (GB) temini mümkün değildir.\n\nTransit ticarete ilişkin yukarıdakilerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "04 Kredi/Kredi YYS 2026.pdf s.244 (PDF s.261)",
+  "tarihISO": "2026-09-26T23:11:29.325041+00:00"
  }
 ]
