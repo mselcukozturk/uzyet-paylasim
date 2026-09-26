@@ -164,6 +164,14 @@
     background: var(--surface); color: var(--text-muted); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 8px 14px; font-size: 0.9rem;
   }
+  /* Üst banner ile denemedeki "📴 N cevap cihazda kayıtlı" satırı aynı anda çıkabilir (ör. çevrimdışı Bitir):
+     ikisi tek sabit yığında alt alta durur, üst üste binmez. */
+  .anlik-bildirim-yigin {
+    position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 200;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    width: max-content; max-width: calc(100% - 32px); pointer-events: none;
+  }
+  .anlik-bildirim-yigin > .anlik-bildirim { position: static; transform: none; width: auto; max-width: 100%; }
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -617,6 +625,7 @@
   var importPreview = null;    // {stateKopya, sonuc, dosyaAdi, sheetName}
   var draftSettings = null;
   var bannerMsg = null;
+  var ekAnlikBildirimHtml = "";   // render() sırasında ekranların bannerla aynı sabit yığına koyduğu geçici satır
   var bannerIsError = false;
   var pausedDeleteConfirm = false;   // "Sil" iki adımlı onay — window.confirm() Artifact sandbox'ında çalışmıyor
   // Deneme dışı ekranlarda "Boş" butonunun seçimi: cevap açılır ama hiçbir istatistiğe
@@ -4594,12 +4603,12 @@
         : '<button class="btn primary" data-action="pause-exam" title="Kaydet ve Çık" aria-label="Kaydet ve Çık">💾<span class="genis-etiket"> Kaydet ve Çık</span></button>')
     );
 
-    var bekleyenSatir = "";
     if (currentExam.uzak && currentExam.uzakAttemptId) {
       var backupData = examBackupOku(currentExam.uzakAttemptId);
       var bekleyenSayisi = (backupData && backupData.bekleyen) ? Object.keys(backupData.bekleyen).length : 0;
       if (bekleyenSayisi > 0) {
-        bekleyenSatir = '<div style="font-size:0.82rem;color:var(--text-muted);margin:0 0 10px;">📴 ' +
+        // Akışa girmez: satır belirip kaybolurken soru metnini itiyordu (26 Eyl 2026 kullanıcı isteği).
+        ekAnlikBildirimHtml = '<div class="anlik-bildirim notr" role="status">📴 ' +
           bekleyenSayisi + ' cevap cihazda kayıtlı — bağlantı gelince gönderilecek</div>';
       }
     }
@@ -4608,7 +4617,6 @@
       '<div class="progressbar"><div style="width:' + progress + '%"></div></div>' +
       '<div class="card">' +
       ustHtml +
-      bekleyenSatir +
       '<div class="q-text">' + soruHtml(q.soru) + "</div>" +
       optionsHtml +
       flagBarHtml(guid) +
@@ -5207,6 +5215,7 @@ function pratikEnIyiHtml(konu, modulKey) {
 
   function render() {
     var html = "";
+    ekAnlikBildirimHtml = "";
     if (aiModu && (!remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true)) { aiModu = false; VIEW = "menuDeneme"; }
     if (aiModu && VIEW === "menu") VIEW = "menuTest";
     if (STATE.sadeceDeneme && !aiModu && (VIEW === "menu" || VIEW === "menuTest" || VIEW === "pratikModul" || VIEW === "pratikSoru" ||
@@ -5241,6 +5250,7 @@ function pratikEnIyiHtml(konu, modulKey) {
       else { VIEW = "menu"; html = renderMenu(); }
     }
     var bannerHtml = bannerMsg ? '<div class="banner anlik-bildirim' + (bannerIsError ? " error" : "") + '" role="status">' + escapeHtml(bannerMsg) + "</div>" : "";
+    if (bannerHtml || ekAnlikBildirimHtml) bannerHtml = '<div class="anlik-bildirim-yigin">' + bannerHtml + ekAnlikBildirimHtml + "</div>";
     var narrowViews = { settings: true, import: true };
     var shellClass = "shell" + (narrowViews[VIEW] ? " narrow" : "");
     // AI denemesi sürerken üst çubuk gizlenir: 🏠 ve 📊 leaveAiSources() çağırıp yarım
