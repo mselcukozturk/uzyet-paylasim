@@ -212,6 +212,9 @@
   .ust-sayac, .ust-ayrac { white-space: nowrap; flex-shrink: 0; }
   .pratik-ust .btn { flex-shrink: 0; }
   @media (max-width: 560px) { .genis-etiket { display: none; } }
+  /* Dar ekranda kısa konu adı ile sayaç alt alta: yan yana dururken düğmeler kalan
+     ~110 px'i paylaştırıyor, kısa ad bile "Serm…" diye kırpılıyordu (26 Eyl 2026). */
+  @media (max-width: 560px) { .pratik-ust-baslik { flex-wrap: wrap; } .pratik-ust-konu { flex: 1 1 0; } .ust-ayrac { display: none; } .ust-sayac { flex-basis: 100%; } }
   .exam-timer { font-weight: 700; }
   .q-text { font-family: var(--font-display); font-size: 1.22rem; font-weight: 600; margin-bottom: 18px; white-space: pre-wrap; }
   .option-row {
@@ -4572,7 +4575,7 @@
       // Bitir onaysız sonuçlandırır: 24 Eyl 2026'ya kadar kartın altında, alt barın hemen
       // üstündeydi ve "Sonraki Soru" derken yanlışlıkla basılıyordu — üst bloğa alındı.
       '<button class="btn ' + (isLast ? "primary" : "ghost") + '" data-action="finish-exam" title="' + bitirAd + '" aria-label="' + bitirAd + '">🏁 ' +
-      (isLast ? "Sınavı Bitir" : '<span class="genis-etiket">Erken </span>Bitir') +
+      (isLast ? '<span class="genis-etiket">Sınavı </span>Bitir' : '<span class="genis-etiket">Erken </span>Bitir') +
       (cevapsizSayisi ? '<span class="genis-etiket"> (' + cevapsizSayisi + " boş)</span>" : "") + "</button>" +
       // AI denemesinin yarım kalan kaydı yok: "Kaydet ve Çık" yerine iki adımlı "Vazgeç".
       (currentExam.ai
