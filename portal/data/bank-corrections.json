@@ -4850,5 +4850,14 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "04 Kredi/Kredi YYS 2026.pdf s.244 (PDF s.261)",
   "tarihISO": "2026-09-26T23:11:29.325041+00:00"
+ },
+ {
+  "id": "gece-20260928-46375f2dca33",
+  "guid": "46375f2dca33",
+  "konu": "Mali Analiz",
+  "soru": "Konsolidasyona dahil edilen firmalar ve bu firmaların konsolidasyon yöntemleri ile ilgili aşağıdaki bilgilerden hangisi/hangileri doğrudur?\\n| Ortaklık Türü | Konsolidasyon Yöntemi |\\n|---|---|\\n| I. Bağlı Ortaklık | Tam Konsolidasyon |\\n| II. Müşterek Kontrol Edilen Ortaklık | Oransal/Özkaynak |\\n| III. İştirak | Özkaynak |",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "istihbarat_TKR_2026.pdf, s.49",
+  "tarihISO": "2026-09-27T23:09:04.218009+00:00"
  }
 ]
