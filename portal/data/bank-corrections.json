@@ -4859,5 +4859,86 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "istihbarat_TKR_2026.pdf, s.49",
   "tarihISO": "2026-09-27T23:09:04.218009+00:00"
+ },
+ {
+  "id": "gece-20260929-902a200cff22",
+  "guid": "902a200cff22",
+  "konu": "Kambiyo",
+  "soru": "Bankamızın yurt dışı muhabirlik ilişkileri ve yabancı para hesap mekanizması çerçevesinde; Bankamızın Almanya'da yerleşik M ve N bankalarıyla muhabirlik anlaşması bulunmakta olup, M bankası nezdinde Bankamız adına açtırılmış bir cari hesap ve bu hesaptan ödeme yapma yetkisi mevcut iken, N bankası nezdinde Bankamıza ait herhangi bir hesap bulunmamaktadır.\nI. N bankası, Bankamızın muhabir bankasıdır.\nII. M bankası, Bankamızın rambursman bankasıdır.\nIII. M bankası nezdinde Bankamız adına açtırılmış olan hesaba 'nostro hesap' denir.\n\nBuna göre, yukarıdaki ifadelerden hangileri doğrudur?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Temel İşlemler YYS 2026, s. 52; Döviz TKR 2026, s. 5–6",
+  "tarihISO": "2026-09-28T23:28:49.473750+00:00"
+ },
+ {
+  "id": "gece-20260929-cdde75242a68",
+  "guid": "cdde75242a68",
+  "konu": "Genel Ekonomi",
+  "soru": "Türk bankacılık sektörünün Haziran 2026 verilerine ilişkin aşağıdakilerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Bankacılık Sektörü - Haziran 2026.pdf, s. 3, 10, 15",
+  "tarihISO": "2026-09-28T23:28:49.473750+00:00"
+ },
+ {
+  "id": "gece-20260929-c8b0e69e53ca",
+  "guid": "c8b0e69e53ca",
+  "konu": "Mali Analiz",
+  "soru": "| Cari Oran | %200 |\n| Dönen Değerler | 100.000 TL |\n| Uzun Vadeli Borçlar | 150.000 TL |\nYukarıdaki bazı bilgileri yer alan firmada kasadaki fiktif 50.000 TL ile ilgili gerekli düzeltme işlemi yapılınca borçlanma oranı %100 oluyor. Buna göre düzeltme öncesi firmanın aktif toplamı ne kadardır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "BASİSEN İstihbarat Not ve Soruları 2026, s.83 (Düzeltme Kalemleri ve Mali Analiz 150)",
+  "tarihISO": "2026-09-28T23:28:49.473750+00:00"
+ },
+ {
+  "id": "gece-20260929-77591847f87f",
+  "guid": "77591847f87f",
+  "konu": "Hukuk",
+  "soru": "Adi tüketim ödüncü sözleşmelerinde kararlaştırılabilecek faiz oranının (akdi faiz) üst sınırı nedir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Hukuk_TKR_2026, s. 76",
+  "tarihISO": "2026-09-28T23:28:49.473750+00:00"
+ },
+ {
+  "id": "gece-20260929-accc1dd8d071",
+  "guid": "accc1dd8d071",
+  "konu": "Mali Analiz",
+  "soru": "İleri tarihli çeklerin \"alacak senetleri\" arasında izlenmesi muhasebenin hangi temel ilkesiyle ilgilidir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "İstihbarat TKR 2026, s. 78 (PDF s. 95)",
+  "tarihISO": "2026-09-28T23:28:49.473750+00:00"
+ },
+ {
+  "id": "gece-20260929-57d9491b60e9",
+  "guid": "57d9491b60e9",
+  "konu": "Ürünler",
+  "soru": "Fiziki kartlarla yapılabilecek temassız şifresiz online işlemlerin günlük toplam limiti nedir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "02 Ürünlerimiz/Ürünlerimiz YYS 2026.pdf s. 85",
+  "tarihISO": "2026-09-28T23:28:49.473750+00:00"
+ },
+ {
+  "id": "gece-20260929-fec61c465d34",
+  "guid": "fec61c465d34",
+  "konu": "Mali Analiz",
+  "soru": "Son yıl cirosu aşağıda verilen firmalardan hangisi için kullanılacak karar destek sistemi kesinlikle Derecelendirmedir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "05 İstihbarat/istihbarat_TKR_2026.pdf s.35",
+  "tarihISO": "2026-09-28T23:28:49.473750+00:00"
+ },
+ {
+  "id": "gece-20260929-7eb3dc60a916",
+  "guid": "7eb3dc60a916",
+  "konu": "Ürünler",
+  "soru": "Aşağıdakilerden hangisi İşCep Mobil Borsa üzerinden gerçekleştirilebilen işlemlerden değildir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, s. 22-23 (PDF s. 38-39)",
+  "tarihISO": "2026-09-28T23:28:49.473750+00:00"
+ },
+ {
+  "id": "gece-20260929-7a860d7b243f",
+  "guid": "7a860d7b243f",
+  "konu": "Kredi",
+  "soru": "I. Vergi\nII. Gün içi kasa kolaylığı\nIII. Maxipos\nYukarıdaki kredilerden hangisinde sıfır faizli BCH çalışır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Türkiye İş Bankası Ticari Nakdi Krediler — Gün İçi Kasa Kolaylığı Kredisi",
+  "tarihISO": "2026-09-28T23:28:49.473750+00:00"
  }
 ]
