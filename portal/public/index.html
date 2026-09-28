@@ -4354,14 +4354,14 @@
         : '<div class="muted">Henüz işaretlediğin bir checkpoint maddesi yok — bir checkpoint kartındaki 🔖 Hatırlatıcı butonuna basarak buraya ekleyebilirsin.</div>');
   }
 
-  // Soruyu (soru + şıklar + varsa kaynak) düz metin olarak panoya kopyalar —
+  // Soruyu (soru + şıklar) düz metin olarak panoya kopyalar —
   // WhatsApp/not uygulamasına yapıştırmak için. Bilerek doğru cevap/açıklama
-  // içermez — amaç soruyu birine sorabilmek, cevabı ifşa etmemek.
+  // içermez — amaç soruyu birine sorabilmek, cevabı ifşa etmemek. Kaynak satırı
+  // da eklenmez (kullanıcı isteği, 28 Eyl 2026).
   function kopyalaSoruMetni(q) {
     var harfler = ["A", "B", "C", "D"];
     var satirlar = [q.soru, ""];
     q.siklar.forEach(function (s, i) { if (s) satirlar.push(harfler[i] + ") " + s); });
-    if (q.kaynak) { satirlar.push(""); satirlar.push("Kaynak: " + q.kaynak); }
     return satirlar.join("\n");
   }
 
