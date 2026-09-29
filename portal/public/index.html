@@ -298,7 +298,8 @@
   .pill.warn { background: var(--warn-bg); color: var(--warn); }
   table.topic-table { width: 100%; border-collapse: collapse; margin: 14px 0 22px; font-size: 0.92rem; }
   table.topic-table th, table.topic-table td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); }
-  table.topic-table td.num, table.topic-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.topic-table td.num, table.topic-table th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  @media (max-width: 560px) { table.topic-table th, table.topic-table td { padding: 7px 5px; } }
   .bar-track { background: var(--surface-2); border-radius: 4px; height: 8px; overflow: hidden; width: 100%; min-width: 80px; }
   .bar-fill { height: 100%; background: var(--accent); }
   .review-item { border-top: 1px solid var(--border); padding: 14px 0; }
@@ -4812,7 +4813,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     if (!toplam) return '<span class="konu-dot" style="background:var(--border)"></span>';
     var pct = dogru / toplam;
     var renk = pct >= 0.8 ? "var(--good)" : pct >= 0.6 ? "var(--warn)" : "var(--bad)";
-    return '<span class="konu-dot" style="background:' + renk + '" title="Bu oturumdaki sonuç"></span>';
+    return '<span class="konu-dot" style="background:' + renk + '" title="Bu oturumdaki sonuç"></span>&#8288;';
   }
 
   function renderPratikModul() {
