@@ -4099,6 +4099,8 @@
       "</div></div>";
   }
 
+  var acikKkDersleri = {};
+
   function renderDenemeKonuSec() {
     if (STATE.sadeceDeneme && !remoteBankLoaded) {
       return '<div class="card" role="status">Soru geçmişi yükleniyor… <button class="btn" data-action="open-deneme-konu-sec">Tekrar Dene</button></div>';
@@ -4112,7 +4114,7 @@
       }, 0);
       var renk = "var(--seri-" + konuSeriIdx(konu) + ")";
       var konuAttr = ' data-konu="' + escapeHtml(konu) + '"';
-      return '<details class="card konu-calisma"' + konuAttr + ' style="border-left:4px solid ' + renk + '">' +
+      return '<details class="card konu-calisma"' + konuAttr + (typeof acikKkDersleri !== 'undefined' && acikKkDersleri[konu] ? ' open' : '') + ' style="border-left:4px solid ' + renk + '">' +
         '<summary><span class="konu-acma-isareti" aria-hidden="true"></span>' + konuDotHtml(konu) + '<span class="konu-ders-adi">' + escapeHtml(konu) + '</span></summary>' +
         '<div class="konu-sayaclar" aria-label="Ders soru sayıları">' +
         '<div><strong data-count="total">' + havuz.length + '</strong><span>Toplam soru</span></div>' +
@@ -5375,6 +5377,11 @@ function pratikEnIyiHtml(konu, modulKey) {
 
   // ------------------------------------------------------------- olaylar --
   document.addEventListener("click", function (e) {
+    var konuSummary = e.target.closest ? e.target.closest(".konu-calisma > summary") : null;
+    if (konuSummary && konuSummary.parentElement) {
+      var details = konuSummary.parentElement;
+      acikKkDersleri[details.getAttribute("data-konu")] = !details.open;
+    }
     var t = e.target.closest ? e.target.closest("[data-action]") : null;
     if (!t) return;
     var action = t.getAttribute("data-action");
@@ -5391,6 +5398,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "copy-soru") kopyalaAktifSoru(t.getAttribute("data-scope"));
     else if (action === "open-deneme-konu-sec") {
       if (STATE.sadeceDeneme && !remoteGirisTamamMi()) return;
+      acikKkDersleri = {};
       VIEW = "denemeKonuSec"; render();
       if (STATE.sadeceDeneme && !remoteBankLoaded) remoteLoadBankIfNeeded(function (ok) {
         if (VIEW !== "denemeKonuSec") return;
