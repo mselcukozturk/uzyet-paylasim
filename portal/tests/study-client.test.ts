@@ -16,6 +16,24 @@ function grab(name: string) {
 const studySource = script.slice(script.indexOf('  var remoteBankLoaded'), script.indexOf('  var remotePracticeBankLoaded'));
 const tick = () => new Promise((resolve) => setImmediate(resolve));
 
+// A display event must survive offline replay without becoming a wrong answer.
+test('görülme kaydı çevrimdışı yenilemede cevap sayılarını ve son sonucu değiştirmez', async () => {
+  const api = setupStudy(async (_path: string, _method: string, body: any) => {
+    if (body.action === 'bank') return { ok: true, data: { questions: [{ guid: 'q1' }], stats: {} } };
+    throw new Error('offline');
+  });
+  api.remoteInitStudyOwner();
+  api.remoteQueueStudyAnswer({ action: 'study-seen', questionGuid: 'q1' }, false);
+  await tick();
+  await api.remoteRefreshStudyStats();
+  assert.equal(api.STATE.stats.q1.gosterim, 0);
+  assert.equal(api.STATE.stats.q1.dogru, 0);
+  assert.equal(api.STATE.stats.q1.yanlis, 0);
+  assert.equal(api.STATE.stats.q1.sonSonucDogruMu, null);
+  assert.ok(api.STATE.stats.q1.sonGorulme);
+  assert.equal(api.remoteReadStudyQueue().length, 1);
+});
+
 function setupStudy(fetcher: (...args: any[]) => Promise<any>, storage = new Map<string, string>()) {
   const context = {
     STATE: { sadeceDeneme: true, bank: [], stats: {} },

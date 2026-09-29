@@ -135,7 +135,7 @@ void test('Konu Konu Bak kuyruğu görülmemiş ve yanlışları öne alır, yak
 });
 
 void test('istatistik yenilenirken Konu Konu Bak testi eski sırayla başlamaz', () => {
-  const start = script.match(/function startFlash\(kaynak, konuFiltre(?:, yalnizYanlis)?\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  const start = grab('startFlash');
   assert.match(start, /!remoteBankLoaded/);
   assert.match(start, /remoteLoadBankIfNeeded/);
 });
@@ -340,7 +340,7 @@ void test('(e) mevcut Konu Konu Bak davranışı (yalnız-yanlış KAPALIYKEN t�
   assert.deepEqual(guids, ['gorulmemis', 'yanlis1', 'dogru1']);
 });
 
-void test('renderDenemeKonuSec: yanlış sayısı > 0 olan konularda Yalnız Yanlışlar düğmesi gösterilir, iç içe button olmaz', () => {
+void test('renderDenemeKonuSec: her ders üç seçenek taşır, yanlış yoksa ilgili seçenek devre dışıdır', () => {
   const context: Record<string, unknown> = {
     KONU_SIRA: ['Kredi', 'Hukuk'],
     STATE: {
@@ -359,11 +359,11 @@ void test('renderDenemeKonuSec: yanlış sayısı > 0 olan konularda Yalnız Yan
     konuDotHtml: () => '<span class="dot"></span>',
   };
   vm.createContext(context);
-  vm.runInContext([grab('escapeHtml'), grab('renderDenemeKonuSec')].join('\n'), context);
+  vm.runInContext([grab('escapeHtml'), grab('soruGorulmemisMi'), grab('renderDenemeKonuSec')].join('\n'), context);
   const html = (vm.runInContext('renderDenemeKonuSec', context) as () => string)();
 
   assert.match(html, /data-action="start-deneme-konu-yanlis"[^>]*data-konu="Kredi"/);
-  assert.match(html, /1 yanlış soru/);
-  assert.doesNotMatch(html, /data-action="start-deneme-konu-yanlis"[^>]*data-konu="Hukuk"/);
+  assert.match(html, /data-count="wrong">1</);
+  assert.match(html, /data-action="start-deneme-konu-yanlis"[^>]*data-konu="Hukuk" disabled/);
   assert.doesNotMatch(html, /<button\b[^>]*>(?:(?!<\/button>)[\s\S])*?<button\b/);
 });

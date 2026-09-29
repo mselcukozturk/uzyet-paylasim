@@ -149,6 +149,7 @@ export type StudyBankResponse = {
 export type StudyAnswerResponse = { ok: true; correct: boolean; stat: QuestionStat };
 
 export type ExamApiRequest =
+  | { action: 'study-seen'; questionGuid: string; requestId?: string }
   | { action: 'study-answer'; questionGuid: string; selectedAnswer: string; requestId?: string }
   | { action: 'practice-answer'; questionGuid: string; selectedAnswer: string; requestId?: string }
   | { action: 'practice-session-save'; konu: string; modul: string; payload: unknown }

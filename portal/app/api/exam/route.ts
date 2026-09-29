@@ -789,6 +789,26 @@ async function handlePost(request: Request) {
       } satisfies StudyBankResponse);
     }
 
+    if (body.action === 'study-seen') {
+      if (typeof body.questionGuid !== 'string' || !body.questionGuid.trim()) return fail('Soru kimliği eksik.', 400);
+      const [question] = await db.select({ guid: schema.questions.guid }).from(schema.questions)
+        .innerJoin(schema.questionBanks, eq(schema.questions.bankId, schema.questionBanks.id))
+        .where(and(eq(schema.questions.guid, body.questionGuid), eq(schema.questionBanks.isActive, true))).limit(1);
+      if (!question) return fail('Soru geçersiz.', 400);
+      // First display is idempotent and never changes answer counts or last result.
+      // Replayed offline display events cannot overwrite a later answer timestamp.
+      const [stat] = await db.insert(schema.questionStats).values({
+        userId: user.id, questionGuid: body.questionGuid, lastSeenAt: new Date(),
+      }).onConflictDoUpdate({
+        target: [schema.questionStats.userId, schema.questionStats.questionGuid],
+        set: { lastSeenAt: sql`coalesce(${schema.questionStats.lastSeenAt}, excluded.last_seen_at)` },
+      }).returning();
+      return NextResponse.json({ ok: true, stat: {
+        gosterim: stat.shownCount, dogru: stat.correctCount, yanlis: stat.wrongCount,
+        sonSonucDogruMu: stat.lastResult, sonGorulme: stat.lastSeenAt?.toISOString() ?? null,
+      } });
+    }
+
     if (body.action === 'study-answer') {
       if (typeof body.questionGuid !== 'string' || !body.questionGuid.trim()) return fail('Soru kimliği eksik.', 400);
       if (body.requestId !== undefined && (typeof body.requestId !== 'string' || !/^[a-zA-Z0-9_-]{8,80}$/.test(body.requestId))) {
