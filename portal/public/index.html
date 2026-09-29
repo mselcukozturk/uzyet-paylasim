@@ -4116,9 +4116,9 @@
         '<summary><span class="konu-acma-isareti" aria-hidden="true"></span>' + konuDotHtml(konu) + '<span class="konu-ders-adi">' + escapeHtml(konu) + '</span></summary>' +
         '<div class="konu-sayaclar" aria-label="Ders soru sayıları">' +
         '<div><strong data-count="total">' + havuz.length + '</strong><span>Toplam soru</span></div>' +
-        '<div><strong data-count="unseen">' + gorulmemis + '</strong><span>Hiç görülmemiş soru</span></div>' +
+        '<div><strong data-count="repeat">' + tekrar + '</strong><span>Toplam tekrar</span></div>' +
         '<div><strong data-count="wrong">' + yanlis + '</strong><span>Yanlış soru</span></div>' +
-        '<div><strong data-count="repeat">' + tekrar + '</strong><span>Toplam tekrar</span></div></div>' +
+        '<div><strong data-count="unseen">' + gorulmemis + '</strong><span>Hiç görülmemiş soru</span></div></div>' +
         '<div class="konu-secenekler">' +
         '<button class="btn" data-action="start-deneme-konu-flash"' + konuAttr + (havuz.length ? '' : ' disabled') + '>🎲 Rastgele Sorular</button>' +
         '<button class="btn" data-action="start-deneme-konu-yanlis"' + konuAttr + (yanlis ? '' : ' disabled') + '>❌ Mevcut Yanlışlar</button>' +
