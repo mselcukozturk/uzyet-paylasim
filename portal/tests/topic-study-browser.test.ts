@@ -101,8 +101,26 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       STATE.flashOzet = {gosterim:0,dogru:0};
       VIEW = 'denemeKonuSec'; render();
       check(lesson() && !lesson().open && !currentFlash, 'Ders listesi oturum başlatmaz');
+      function checkHeadingAlignment() {
+        document.querySelectorAll('.konu-calisma summary').forEach(function(summary) {
+          var parts = ['.konu-acma-isareti','.konu-dot','.konu-ders-adi'].map(function(selector) {
+            var el = summary.querySelector(selector);
+            check(!!el, 'Hizalanabilir başlık öğesi: ' + selector);
+            return el.getBoundingClientRect();
+          });
+          var centers = parts.map(function(r) {return r.y+r.height/2;});
+          check(Math.max.apply(null,centers)-Math.min.apply(null,centers)<1, 'Ok, nokta ve ders adı düşey merkezleri aynı');
+          check(parts[0].right<parts[1].left && parts[1].right<parts[2].left, 'Başlık öğeleri aralıklı ve doğru sırada');
+        });
+      }
+      document.documentElement.dataset.theme = 'light';
+      checkHeadingAlignment();
+      document.documentElement.dataset.theme = 'dark';
+      checkHeadingAlignment();
+      document.documentElement.dataset.theme = 'light';
       click('details[data-konu="Kredi"] summary');
       check(lesson().open, 'Derse basınca seçenekler açılır');
+      checkHeadingAlignment();
       counters(4,2,1);
       check(lesson().querySelectorAll('button').length === 3, 'Üç seçenek');
       check(!lesson().querySelector('[data-action="start-deneme-konu-yanlis"]').textContent.match(/\\d/), 'Yanlış düğmesinde sayı yok');

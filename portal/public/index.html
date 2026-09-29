@@ -390,7 +390,14 @@
   .cp-content thead, .cp-content tbody { display: table; width: 100%; table-layout: fixed; }
   .konu-ders-listesi { display:grid; gap:12px; }
   .konu-calisma { margin:0; padding:16px 20px; }
-  .konu-calisma summary { cursor:pointer; font-weight:700; font-size:1.05rem; padding:6px 0; }
+  .konu-calisma summary { display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:700; font-size:1.05rem; padding:6px 0; list-style:none; }
+  .konu-calisma summary::-webkit-details-marker { display:none; }
+  .konu-calisma summary::marker { content:""; }
+  .konu-calisma summary .konu-dot { margin:0; }
+  .konu-ders-adi { min-width:0; line-height:1.4; }
+  .konu-acma-isareti { display:flex; align-items:center; justify-content:center; width:10px; height:10px; flex:0 0 10px; }
+  .konu-acma-isareti::before { content:""; border-top:4px solid transparent; border-bottom:4px solid transparent; border-left:6px solid currentColor; }
+  .konu-calisma[open] > summary .konu-acma-isareti { transform:rotate(90deg); }
   .konu-calisma summary:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
   .konu-sayaclar { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:18px 0; }
   .konu-sayaclar > div { display:flex; flex-direction:column; gap:4px; }
@@ -4103,7 +4110,7 @@
       var renk = "var(--seri-" + konuSeriIdx(konu) + ")";
       var konuAttr = ' data-konu="' + escapeHtml(konu) + '"';
       return '<details class="card konu-calisma"' + konuAttr + ' style="border-left:4px solid ' + renk + '">' +
-        '<summary>' + konuDotHtml(konu) + escapeHtml(konu) + '</summary>' +
+        '<summary><span class="konu-acma-isareti" aria-hidden="true"></span>' + konuDotHtml(konu) + '<span class="konu-ders-adi">' + escapeHtml(konu) + '</span></summary>' +
         '<div class="konu-sayaclar" aria-label="Ders soru sayıları">' +
         '<div><strong data-count="total">' + havuz.length + '</strong><span>Toplam soru</span></div>' +
         '<div><strong data-count="unseen">' + gorulmemis + '</strong><span>Hiç görülmemiş soru</span></div>' +
@@ -4117,7 +4124,7 @@
 
     return '<div class="link-row"><button class="btn ghost" data-action="open-menu-deneme">← Deneme Sınavı</button></div>' +
       '<div class="section-title">📖 Konu Konu Bak</div>' +
-      '<div class="desc" style="margin-bottom:12px">Bir ders seç, ardından çalışmak istediğin soruları aç. Açtığın sorular görülmemiş listesinden, doğru çözdüğün yanlışlar yanlış listesinden çıkar. Ayrı bir deneme geçmişi oluşmaz.</div>' +
+      '<div class="desc" style="margin-bottom:12px">Bir ders seç, ardından çalışmak istediğin soruları aç. Sayılar, bu hesaptaki tüm deneme ve soru çalışmalarını kapsar. Açtığın sorular görülmemiş listesinden, doğru çözdüğün yanlışlar yanlış listesinden çıkar. Ayrı bir deneme geçmişi oluşmaz.</div>' +
       '<div class="konu-ders-listesi">' + tiles + "</div>";
   }
 
