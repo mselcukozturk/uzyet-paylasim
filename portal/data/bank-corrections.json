@@ -4940,5 +4940,14 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "Türkiye İş Bankası Ticari Nakdi Krediler — Gün İçi Kasa Kolaylığı Kredisi",
   "tarihISO": "2026-09-28T23:28:49.473750+00:00"
+ },
+ {
+  "id": "gece-20260929-76e9a2440c1d",
+  "guid": "76e9a2440c1d",
+  "konu": "Kambiyo",
+  "soru": "Forfaiting işleminde alınan ücretler hangileridir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "HSBC Bank Malaysia Berhad, Product Disclosure Sheet: Export Forfaiting, Haziran 2025, s. 1",
+  "tarihISO": "2026-09-29T07:13:06.299209+00:00"
  }
 ]
