@@ -78,11 +78,12 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       el.click();
     }
     function lesson() { return document.querySelector('details[data-konu="Kredi"]'); }
-    function counters(total, unseen, wrong) {
+    function counters(total, unseen, wrong, repeat) {
       var box = lesson();
       check(box.querySelector('[data-count="total"]').textContent === String(total), 'Toplam: ' + total);
       check(box.querySelector('[data-count="unseen"]').textContent === String(unseen), 'Görülmemiş: ' + unseen);
       check(box.querySelector('[data-count="wrong"]').textContent === String(wrong), 'Yanlış: ' + wrong);
+      check(box.querySelector('[data-count="repeat"]').textContent === String(repeat), 'Toplam tekrar: ' + repeat);
     }
     function back() { click('[data-action="open-deneme-konu-sec"]'); }
     try {
@@ -96,7 +97,8 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       });
       STATE.stats = {
         w1:{gosterim:1,dogru:0,yanlis:1,sonSonucDogruMu:false,sonGorulme:'2026-09-01'},
-        c1:{gosterim:1,dogru:1,yanlis:0,sonSonucDogruMu:true,sonGorulme:'2026-09-01'}
+        c1:{gosterim:1,dogru:1,yanlis:0,sonSonucDogruMu:true,sonGorulme:'2026-09-01'},
+        other:{gosterim:5,dogru:5,yanlis:0,sonSonucDogruMu:true,sonGorulme:'2026-09-01'}
       };
       STATE.flashOzet = {gosterim:0,dogru:0};
       VIEW = 'denemeKonuSec'; render();
@@ -121,7 +123,8 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       click('details[data-konu="Kredi"] summary');
       check(lesson().open, 'Derse basınca seçenekler açılır');
       checkHeadingAlignment();
-      counters(4,2,1);
+      check(document.querySelector('details[data-konu="Hukuk"] [data-count="repeat"]').textContent === '5', 'Başka dersin tekrar sayısı ayrık');
+      counters(4,2,1,2);
       check(lesson().querySelectorAll('button').length === 3, 'Üç seçenek');
       check(!lesson().querySelector('[data-action="start-deneme-konu-yanlis"]').textContent.match(/\\d/), 'Yanlış düğmesinde sayı yok');
       click('details[data-konu="Kredi"] [data-action="start-deneme-konu-gorulmemis"]');
@@ -131,7 +134,7 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       check(STATE.stats[first].sonGorulme && STATE.stats[first].gosterim === 0 && STATE.stats[first].sonSonucDogruMu === null, 'Görmek cevap istatistiğini değiştirmez');
       check(!STATE.stats[currentFlash.gecmis[1].guid], 'Kuyruğa girmek görülmüş sayılmaz');
       click('[data-action="bos-flash"]');
-      back(); counters(4,1,1);
+      back(); counters(4,1,1,2);
       click('details[data-konu="Kredi"] summary');
       click('details[data-konu="Kredi"] [data-action="start-deneme-konu-gorulmemis"]');
       check(currentFlash.gecmis.length === 1 && currentFlash.guid !== first, 'Görülen soru yeni kuyruktan çıkar');
@@ -140,18 +143,23 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       check(document.querySelector('[data-action="start-flash-again"]').dataset.gorulmemis === '1', 'Yeniden başlatma modu korunur');
       click('[data-action="start-flash-again"]');
       check(VIEW === 'flashResult', 'Boş görülmemiş havuz oturum açmaz');
-      back(); counters(4,0,1);
+      back(); counters(4,0,1,3);
       check(lesson().querySelector('[data-action="start-deneme-konu-gorulmemis"]').disabled, 'Görülmemiş seçenek sıfırda devre dışı');
       click('details[data-konu="Kredi"] summary');
       click('details[data-konu="Kredi"] [data-action="start-deneme-konu-yanlis"]');
       check(currentFlash.gecmis.length === 1 && currentFlash.guid === 'w1', 'Mevcut yanlışlar filtresi');
       click('[data-action="select-flash-option"][data-idx="' + flashSoruBul(currentFlash).cevapIdx + '"]');
-      back(); counters(4,0,0);
+      back(); counters(4,0,0,4);
       check(lesson().querySelector('[data-action="start-deneme-konu-yanlis"]').disabled, 'Yanlışlar sıfırda devre dışı');
       click('details[data-konu="Kredi"] summary');
       click('details[data-konu="Kredi"] [data-action="start-deneme-konu-flash"]');
       check(currentFlash.gecmis.length === 4 && currentFlash.gecmis.every(x=>x.guid !== 'other'), 'Rastgele tüm ders havuzunu korur');
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      check(currentFlash.konum === 1, 'Ok ile sonraki soruya geçildi');
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+      check(currentFlash.konum === 0, 'Ok ile önceki soruya dönüldü');
       back(); bannerMsg = null; render(); click('details[data-konu="Kredi"] summary');
+      counters(4,0,0,4);
       check(document.documentElement.scrollWidth <= innerWidth, 'Yatay taşma yok');
       var result = document.createElement('pre'); result.id = 'browser-result';
       result.textContent = JSON.stringify({ok:true,viewport:innerWidth,checks:checks}); document.body.appendChild(result);

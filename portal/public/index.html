@@ -399,12 +399,12 @@
   .konu-acma-isareti::before { content:""; border-top:4px solid transparent; border-bottom:4px solid transparent; border-left:6px solid currentColor; }
   .konu-calisma[open] > summary .konu-acma-isareti { transform:rotate(90deg); }
   .konu-calisma summary:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
-  .konu-sayaclar { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:18px 0; }
+  .konu-sayaclar { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin:18px 0; }
   .konu-sayaclar > div { display:flex; flex-direction:column; gap:4px; }
   .konu-sayaclar strong { font-size:1.4rem; font-variant-numeric:tabular-nums; }
   .konu-sayaclar span { font-size:.8rem; color:var(--text-muted); }
   .konu-secenekler { display:flex; flex-wrap:wrap; gap:8px; }
-  @media(max-width:600px) { .konu-secenekler { flex-direction:column; } }
+  @media(max-width:600px) { .konu-sayaclar { grid-template-columns:repeat(2,minmax(0,1fr)); } .konu-secenekler { flex-direction:column; } }
 </style>
 </head>
 <body>
@@ -4107,6 +4107,9 @@
       var havuz = STATE.bank.filter(function (q) { return q.konu === konu; });
       var yanlis = havuz.filter(function (q) { return STATE.stats[q.guid] && STATE.stats[q.guid].sonSonucDogruMu === false; }).length;
       var gorulmemis = havuz.filter(soruGorulmemisMi).length;
+      var tekrar = havuz.reduce(function (toplam, q) {
+        return toplam + ((STATE.stats[q.guid] && STATE.stats[q.guid].gosterim) || 0);
+      }, 0);
       var renk = "var(--seri-" + konuSeriIdx(konu) + ")";
       var konuAttr = ' data-konu="' + escapeHtml(konu) + '"';
       return '<details class="card konu-calisma"' + konuAttr + ' style="border-left:4px solid ' + renk + '">' +
@@ -4114,7 +4117,8 @@
         '<div class="konu-sayaclar" aria-label="Ders soru sayıları">' +
         '<div><strong data-count="total">' + havuz.length + '</strong><span>Toplam soru</span></div>' +
         '<div><strong data-count="unseen">' + gorulmemis + '</strong><span>Hiç görülmemiş soru</span></div>' +
-        '<div><strong data-count="wrong">' + yanlis + '</strong><span>Yanlış soru</span></div></div>' +
+        '<div><strong data-count="wrong">' + yanlis + '</strong><span>Yanlış soru</span></div>' +
+        '<div><strong data-count="repeat">' + tekrar + '</strong><span>Toplam tekrar</span></div></div>' +
         '<div class="konu-secenekler">' +
         '<button class="btn" data-action="start-deneme-konu-flash"' + konuAttr + (havuz.length ? '' : ' disabled') + '>🎲 Rastgele Sorular</button>' +
         '<button class="btn" data-action="start-deneme-konu-yanlis"' + konuAttr + (yanlis ? '' : ' disabled') + '>❌ Mevcut Yanlışlar</button>' +
