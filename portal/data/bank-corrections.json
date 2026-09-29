@@ -4949,5 +4949,14 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "HSBC Bank Malaysia Berhad, Product Disclosure Sheet: Export Forfaiting, Haziran 2025, s. 1",
   "tarihISO": "2026-09-29T07:13:06.299209+00:00"
+ },
+ {
+  "id": "kullanici-20260929-032db06d2c05",
+  "guid": "032db06d2c05",
+  "konu": "Kambiyo",
+  "soru": "Dahilde işleme izninin veya Dahilde işleme izin belgesinin süreleriyle ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Kullanıcı bildirimi (WhatsApp, ekran görüntüsü): açıklama şık harfi anıyordu ve yeni şıkkın doğruluğunu anlatıp cevap şıkkının neden yanlış olduğunu söylemiyordu. Şıklar ve cevap kaynağa göre doğru; yalnız açıklama yeniden yazıldı.",
+  "kaynak_atif": "T.C. Ticaret Bakanlığı, Dahilde İşleme Rejimi Tebliği (İhracat: 2006/12), md. 20, 22/2, 22/5",
+  "tarihISO": "2026-09-29T11:34:53.972414+00:00"
  }
 ]
