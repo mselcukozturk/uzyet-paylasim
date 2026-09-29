@@ -658,7 +658,12 @@
         lastResult = p.lastResult || null;
         currentExam = p.currentExam || null;
         currentFlash = p.currentFlash || null;
-        lastFlashResult = p.lastFlashResult || null;
+        lastFlashResult = p.lastFlashResult ? {
+          kaynak: p.lastFlashResult.kaynak,
+          konuFiltre: p.lastFlashResult.konuFiltre,
+          yalnizYanlis: !!p.lastFlashResult.yalnizYanlis,
+          oturum: p.lastFlashResult.oturum || []
+        } : null;
         currentPratik = p.currentPratik || null;
         pratikSeciliKonu = p.pratikSeciliKonu || null;
         dersSekmesi = p.dersSekmesi || "test";
@@ -2657,6 +2662,8 @@
   // değişiklikleri buraya yazılmaz. ai: true olanlar yalnız Yapay Zekâ Kaynakları açık hesapta görünür.
   // Yalnız son 7 günün kayıtları gösterilir; eskiler arşiv olarak listede kalır. Metinler 1-2 cümle.
   var DUYURULAR = [
+    { tarih: "2026-09-29", baslik: "Konu Konu Bak: Yalnız Yanlışlar",
+      metin: "Konu Konu Bak ekranında, seçtiğin derste daha önce yanlış yaptığın soruları tek bir oturumda yeniden çözebilirsin. Doğru yanıtlanan sorular yanlış listesinden kendiliğinden çıkarılır." },
     { tarih: "2026-09-24", baslik: "2021 sınavı denemesi: UZY-S1SSSHD2",
       metin: "2021 sınavından hatırlanan 50 test sorusu, 2026 verileriyle güncellendi. Kod ile Çöz alanına UZY-S1SSSHD2 yaz; herkes aynı sırayla aynı soruları çözer. Sorular Deneme bankasına da eklendi (31 yeni)." },
     { tarih: "2026-09-18", ai: true, baslik: "Kambiyo testi açıldı",
@@ -3449,20 +3456,28 @@
     return havuz.filter(function (q) { return q.konu === secilenKonu; });
   }
 
-  function startFlash(kaynak, konuFiltre) {
+  function startFlash(kaynak, konuFiltre, yalnizYanlis) {
     if (STATE.sadeceDeneme && !remoteGirisTamamMi()) return;
     kaynak = kaynak === "practice" ? "practice" : "bank";
     konuFiltre = konuFiltre || null;
+    yalnizYanlis = !!(yalnizYanlis && kaynak === "bank" && konuFiltre);
     if (STATE.sadeceDeneme && kaynak === "bank" && !remoteBankLoaded) {
       showBanner("Soru geçmişin yenileniyor…");
       remoteLoadBankIfNeeded(function (applied) {
-        if (applied && remoteBankLoaded) startFlash(kaynak, konuFiltre);
+        if (applied && remoteBankLoaded) startFlash(kaynak, konuFiltre, yalnizYanlis);
         else showBanner("Soru geçmişi yüklenemedi; tekrar dene.", true);
       });
       return;
     }
     var havuz = flashHavuzu(kaynak, konuFiltre);
-    if (havuz.length === 0) { showBanner("Havuzda hiç soru yok.", true); return; }
+    if (yalnizYanlis) {
+      havuz = havuz.filter(function (q) {
+        return STATE.stats[q.guid] && STATE.stats[q.guid].sonSonucDogruMu === false;
+      });
+      if (havuz.length === 0) { showBanner("Bu konuda yanlış yaptığın soru yok.", true); return; }
+    } else {
+      if (havuz.length === 0) { showBanner("Havuzda hiç soru yok.", true); return; }
+    }
     var sabitKuyruk = kaynak === "bank" && !!konuFiltre;
     var kuyruk = sabitKuyruk ? flashKuyrukOlustur(havuz, kaynak) : null;
     var secimHavuzu = konuFiltre ? havuz : (agirlikliHavuzSec(havuz) || havuz);
@@ -3474,7 +3489,7 @@
     // gecmis/konum: bu oturumda gösterilen her sorunun {guid,secilen} kaydı ve şu an
     // hangisinin ekranda olduğu — "Önceki/Sonraki Soru" ile geçmişte gezinmeyi sağlar.
     currentFlash = {
-      guid: q0.guid, secilen: null, kaynak: kaynak, konuFiltre: konuFiltre, oturum: [],
+      guid: q0.guid, secilen: null, kaynak: kaynak, konuFiltre: konuFiltre, yalnizYanlis: yalnizYanlis, oturum: [],
       gecmis: sabitKuyruk
         ? kuyruk.map(function (q) { return { guid: q.guid, secilen: null }; })
         : [{ guid: q0.guid, secilen: null }],
@@ -3553,7 +3568,12 @@
 
   function finishFlash() {
     if (!currentFlash) { backToMenu(); return; }
-    lastFlashResult = { kaynak: currentFlash.kaynak, konuFiltre: currentFlash.konuFiltre, oturum: currentFlash.oturum };
+    lastFlashResult = {
+      kaynak: currentFlash.kaynak,
+      konuFiltre: currentFlash.konuFiltre,
+      yalnizYanlis: !!currentFlash.yalnizYanlis,
+      oturum: currentFlash.oturum
+    };
     currentFlash = null;
     VIEW = "flashResult";
     render();
@@ -4044,10 +4064,16 @@
       var yanlis = havuz.filter(function (q) { return STATE.stats[q.guid] && STATE.stats[q.guid].sonSonucDogruMu === false; }).length;
       var aktif = havuz.length > 0;
       var renk = "var(--seri-" + konuSeriIdx(konu) + ")";
-      return '<button class="mode-btn" style="border-left:4px solid ' + renk + '" ' + (aktif ? "" : "disabled") +
+      var konuBtn = '<button class="mode-btn" style="border-left:4px solid ' + renk + '" ' + (aktif ? "" : "disabled") +
         ' data-action="start-deneme-konu-flash" data-konu="' + escapeHtml(konu) + '">' +
         '<div class="title">' + konuDotHtml(konu) + escapeHtml(konu) + "</div>" +
         '<div class="desc">' + (aktif ? havuz.length + " soru" + (yanlis ? " · " + yanlis + " yanlış geçmişli" : "") : "Havuzda soru yok") + "</div></button>";
+      var yanlisBtn = yanlis > 0
+        ? '<button class="mode-btn" style="border-left:4px solid ' + renk + '" data-action="start-deneme-konu-yanlis" data-konu="' + escapeHtml(konu) + '">' +
+          '<div class="title">❌ Yalnız Yanlışlar</div>' +
+          '<div class="desc">' + yanlis + " yanlış soru</div></button>"
+        : "";
+      return '<div style="display:flex;flex-direction:column;gap:8px">' + konuBtn + yanlisBtn + "</div>";
     }).join("");
 
     return '<div class="link-row"><button class="btn ghost" data-action="open-menu-deneme">← Deneme Sınavı</button></div>' +
@@ -4733,8 +4759,9 @@
     var dersFlashMi = pratikMi && !!r.konuFiltre;
     var geriAction = dersFlashMi ? "pratik-listeye-don" : pratikMi ? "open-menu-test" : (konuBakMi ? "open-deneme-konu-sec" : "back-menu");
     var geriEtiket = dersFlashMi ? "← Modüller" : pratikMi ? "← Test Sayfası" : (konuBakMi ? "← Konu Seç" : "Ana Menüye Dön");
-    var baslikEk = pratikMi ? " (pratik havuzu)" : (konuBakMi ? " (Konu Konu Bak — " + escapeHtml(r.konuFiltre) + ")" : "");
-    var yeniOturumEtiket = konuBakMi ? "Bu Konuda Yeni Oturum" : "Yeni Rastgele Soru Oturumu";
+    var yalnizYanlisMi = konuBakMi && !!r.yalnizYanlis;
+    var baslikEk = pratikMi ? " (pratik havuzu)" : (konuBakMi ? (yalnizYanlisMi ? " (Konu Konu Bak — " + escapeHtml(r.konuFiltre) + " · yalnız yanlışlar)" : " (Konu Konu Bak — " + escapeHtml(r.konuFiltre) + ")") : "");
+    var yeniOturumEtiket = yalnizYanlisMi ? "Yanlışları Yeniden Çöz" : (konuBakMi ? "Bu Konuda Yeni Oturum" : "Yeni Rastgele Soru Oturumu");
 
     return '<div class="card">' +
       '<div class="section-title">Rastgele Soru — oturum özeti' + baslikEk + "</div>" +
@@ -4746,7 +4773,7 @@
           topicRows + "</tbody></table>"
         : '<div class="muted">Hiç soru cevaplanmadan bitirildi.</div>') +
       '<div class="link-row" style="margin-top:14px">' +
-      '<button class="btn primary" data-action="start-flash-again" data-kaynak="' + r.kaynak + '" data-konu="' + escapeHtml(r.konuFiltre || "") + '">' + yeniOturumEtiket + "</button>" +
+      '<button class="btn primary" data-action="start-flash-again" data-kaynak="' + r.kaynak + '" data-konu="' + escapeHtml(r.konuFiltre || "") + '"' + (yalnizYanlisMi ? ' data-yanlis="1"' : '') + '>' + yeniOturumEtiket + "</button>" +
       '<button class="btn ghost" data-action="' + geriAction + '">' + geriEtiket + "</button>" +
       "</div></div>";
   }
@@ -5308,6 +5335,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "copy-soru") kopyalaAktifSoru(t.getAttribute("data-scope"));
     else if (action === "open-deneme-konu-sec") { if (STATE.sadeceDeneme && !remoteGirisTamamMi()) return; VIEW = "denemeKonuSec"; render(); }
     else if (action === "start-deneme-konu-flash") startFlash("bank", t.getAttribute("data-konu"));
+    else if (action === "start-deneme-konu-yanlis") startFlash("bank", t.getAttribute("data-konu"), true);
     else if (action === "start-exam") startExam(t.getAttribute("data-mode"));
     else if (action === "start-exam-code") startExamWithCode();
     else if (action === "start-daily-exam") startExamRemote("rastgele", null, true);
@@ -5405,7 +5433,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "confirm-discard-paused") discardPausedExam();
     else if (action === "cancel-discard-paused") cancelDiscardPausedExam();
     else if (action === "start-flash") startFlash();
-    else if (action === "start-flash-again") startFlash(t.getAttribute("data-kaynak"), t.getAttribute("data-konu"));
+    else if (action === "start-flash-again") startFlash(t.getAttribute("data-kaynak"), t.getAttribute("data-konu"), t.getAttribute("data-yanlis") === "1");
     else if (action === "next-flash") nextFlash();
     else if (action === "bos-flash") bosFlash();
     else if (action === "prev-flash") prevFlash();

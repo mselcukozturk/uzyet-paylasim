@@ -135,7 +135,235 @@ void test('Konu Konu Bak kuyruğu görülmemiş ve yanlışları öne alır, yak
 });
 
 void test('istatistik yenilenirken Konu Konu Bak testi eski sırayla başlamaz', () => {
-  const start = script.match(/function startFlash\(kaynak, konuFiltre\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  const start = script.match(/function startFlash\(kaynak, konuFiltre(?:, yalnizYanlis)?\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   assert.match(start, /!remoteBankLoaded/);
   assert.match(start, /remoteLoadBankIfNeeded/);
+});
+
+function setupFlashEnv(overrides: Record<string, unknown> = {}) {
+  let bannerMsg: string | null = null;
+  let bannerIsError = false;
+  const context: Record<string, unknown> = {
+    STATE: {
+      sadeceDeneme: true,
+      bank: [],
+      practiceBank: [],
+      stats: {},
+      pStats: {},
+    },
+    remoteBankLoaded: true,
+    remoteGirisTamamMi: () => true,
+    remoteLoadBankIfNeeded: (_cb: (applied: boolean) => void) => {},
+    showBanner: (msg: string, isError = false) => {
+      bannerMsg = msg;
+      bannerIsError = isError;
+    },
+    shuffleSiklarInPlace: (q: unknown) => q,
+    render: () => {},
+    currentFlash: null,
+    VIEW: null,
+    Math,
+    Date,
+    ...overrides,
+  };
+  vm.createContext(context);
+  vm.runInContext(
+    [
+      grab('azGorulenSirala'),
+      grab('flashKuyrukOlustur'),
+      grab('flashHavuzu'),
+      grab('startFlash'),
+    ].join('\n'),
+    context
+  );
+  return {
+    context,
+    getBanner: () => ({ msg: bannerMsg, isError: bannerIsError }),
+    startFlash: (kaynak: string, konuFiltre: string | null, yalnizYanlis?: boolean) => {
+      const fn = vm.runInContext('startFlash', context) as (
+        k: string,
+        f: string | null,
+        y?: boolean
+      ) => void;
+      return fn(kaynak, konuFiltre, yalnizYanlis);
+    },
+    getCurrentFlash: () => context.currentFlash as any,
+    getView: () => context.VIEW,
+  };
+}
+
+function setupFlashResultEnv(lastFlashResult: unknown) {
+  const context: Record<string, unknown> = {
+    lastFlashResult,
+    KONU_SIRA: ['Kredi', 'Hukuk'],
+    modulAdi: () => '',
+    Math,
+  };
+  vm.createContext(context);
+  vm.runInContext(
+    [
+      grab('escapeHtml'),
+      grab('basariNoktaHtml'),
+      grab('flashYuzdeHtml'),
+      grab('flashSonucKirilimi'),
+      grab('renderFlashResult'),
+    ].join('\n'),
+    context
+  );
+  return (vm.runInContext('renderFlashResult', context) as () => string)();
+}
+
+void test('(a) yalnız-yanlış havuzu yalnız sonSonucDogruMu === false soruları içerir; görülmemiş ve doğru çözülenler dışarıda kalır', () => {
+  const env = setupFlashEnv();
+  (env.context.STATE as any).bank = [
+    { guid: 'yanlis1', konu: 'Kredi' },
+    { guid: 'yanlis2', konu: 'Kredi' },
+    { guid: 'dogru1', konu: 'Kredi' },
+    { guid: 'gorulmemis', konu: 'Kredi' },
+    { guid: 'nullStat', konu: 'Kredi' },
+    { guid: 'baskaKonuYanlis', konu: 'Hukuk' },
+  ];
+  (env.context.STATE as any).stats = {
+    yanlis1: { sonSonucDogruMu: false },
+    yanlis2: { sonSonucDogruMu: false },
+    dogru1: { sonSonucDogruMu: true },
+    nullStat: { sonSonucDogruMu: null },
+    baskaKonuYanlis: { sonSonucDogruMu: false },
+  };
+
+  env.startFlash('bank', 'Kredi', true);
+
+  const cf = env.getCurrentFlash();
+  assert.ok(cf, 'oturum başlamalı');
+  assert.equal(cf.yalnizYanlis, true, 'yalnizYanlis bayrağı true olmalı');
+  const guids = cf.gecmis.map((x: { guid: string }) => x.guid);
+  assert.deepEqual(guids.sort(), ['yanlis1', 'yanlis2']);
+  assert.equal(env.getView(), 'flash');
+});
+
+void test('(b) konudaki hiç yanlış yoksa oturum başlamaz, kullanıcıya "Bu konuda yanlış yaptığın soru yok." bannerı gösterilir', () => {
+  const env = setupFlashEnv();
+  (env.context.STATE as any).bank = [
+    { guid: 'dogru1', konu: 'Kredi' },
+    { guid: 'gorulmemis', konu: 'Kredi' },
+  ];
+  (env.context.STATE as any).stats = {
+    dogru1: { sonSonucDogruMu: true },
+  };
+
+  env.startFlash('bank', 'Kredi', true);
+
+  assert.equal(env.getCurrentFlash(), null, 'oturum başlamamalı');
+  assert.notEqual(env.getView(), 'flash', 'görünüm flash olmamalı');
+  assert.equal(env.getBanner().msg, 'Bu konuda yanlış yaptığın soru yok.');
+  assert.equal(env.getBanner().isError, true);
+});
+
+void test('(c) startFlash bank kaynağı yüklenmeden (!remoteBankLoaded) yalnız-yanlış oturumu başlatmaz, istatistik sunucudan yenilenince başlar', () => {
+  let loadCallback: ((applied: boolean) => void) | null = null;
+  const env = setupFlashEnv({
+    remoteBankLoaded: false,
+    remoteLoadBankIfNeeded: (cb: (applied: boolean) => void) => {
+      loadCallback = cb;
+    },
+  });
+  (env.context.STATE as any).bank = [
+    { guid: 'yanlis1', konu: 'Kredi' },
+  ];
+  (env.context.STATE as any).stats = {
+    yanlis1: { sonSonucDogruMu: false },
+  };
+
+  env.startFlash('bank', 'Kredi', true);
+
+  assert.equal(env.getCurrentFlash(), null, 'yükleme öncesi oturum başlamamalı');
+  assert.equal(env.getBanner().msg, 'Soru geçmişin yenileniyor…');
+  assert.ok(loadCallback, 'remoteLoadBankIfNeeded çağrılmış olmalı');
+
+  (env.context as any).remoteBankLoaded = true;
+  (loadCallback as (applied: boolean) => void)(true);
+
+  const cf = env.getCurrentFlash();
+  assert.ok(cf, 'yenileme sonrası oturum başlamalı');
+  assert.equal(cf.yalnizYanlis, true, 'yalnizYanlis korunmalı');
+  assert.deepEqual(cf.gecmis.map((x: { guid: string }) => x.guid), ['yanlis1']);
+});
+
+void test('(d) Bu Konuda Yeni Oturum düğmesi yalnız-yanlış modunu korur ve start-flash-again üçüncü öznitelik taşır', () => {
+  const yanlisHtml = setupFlashResultEnv({
+    kaynak: 'bank',
+    konuFiltre: 'Kredi',
+    yalnizYanlis: true,
+    oturum: [{ konu: 'Kredi', dogru: true }],
+  });
+
+  assert.match(yanlisHtml, /data-action="start-flash-again"/);
+  assert.match(yanlisHtml, /data-yanlis="1"/);
+  assert.match(yanlisHtml, /Yanlışları Yeniden Çöz/);
+  assert.match(yanlisHtml, /\(Konu Konu Bak — Kredi · yalnız yanlışlar\)/);
+
+  const normalHtml = setupFlashResultEnv({
+    kaynak: 'bank',
+    konuFiltre: 'Kredi',
+    yalnizYanlis: false,
+    oturum: [{ konu: 'Kredi', dogru: true }],
+  });
+
+  assert.match(normalHtml, /data-action="start-flash-again"/);
+  assert.doesNotMatch(normalHtml, /data-yanlis="1"/);
+  assert.match(normalHtml, /Bu Konuda Yeni Oturum/);
+  assert.match(normalHtml, /\(Konu Konu Bak — Kredi\)/);
+  assert.doesNotMatch(normalHtml, /· yalnız yanlışlar/);
+
+  const actionHandler = script.match(/else if \(action === "start-flash-again"\)[\s\S]*?;/)?.[0] ?? '';
+  assert.match(actionHandler, /data-yanlis/);
+});
+
+void test('(e) mevcut Konu Konu Bak davranışı (yalnız-yanlış KAPALIYKEN tüm konu havuzu, flashKuyrukOlustur sırası) değişmez', () => {
+  const env = setupFlashEnv();
+  (env.context.STATE as any).bank = [
+    { guid: 'yanlis1', konu: 'Kredi' },
+    { guid: 'dogru1', konu: 'Kredi' },
+    { guid: 'gorulmemis', konu: 'Kredi' },
+  ];
+  (env.context.STATE as any).stats = {
+    yanlis1: { sonSonucDogruMu: false, sonGorulme: '2026-09-01T00:00:00Z' },
+    dogru1: { sonSonucDogruMu: true, sonGorulme: '2026-09-02T00:00:00Z' },
+  };
+
+  env.startFlash('bank', 'Kredi');
+
+  const cf = env.getCurrentFlash();
+  assert.ok(cf);
+  assert.equal(!cf.yalnizYanlis, true, 'yalnizYanlis kapalı olmalı');
+  const guids = cf.gecmis.map((x: { guid: string }) => x.guid);
+  assert.deepEqual(guids, ['gorulmemis', 'yanlis1', 'dogru1']);
+});
+
+void test('renderDenemeKonuSec: yanlış sayısı > 0 olan konularda Yalnız Yanlışlar düğmesi gösterilir, iç içe button olmaz', () => {
+  const context: Record<string, unknown> = {
+    KONU_SIRA: ['Kredi', 'Hukuk'],
+    STATE: {
+      bank: [
+        { guid: 'k1', konu: 'Kredi' },
+        { guid: 'k2', konu: 'Kredi' },
+        { guid: 'h1', konu: 'Hukuk' },
+      ],
+      stats: {
+        k1: { sonSonucDogruMu: false },
+        k2: { sonSonucDogruMu: true },
+        h1: { sonSonucDogruMu: true },
+      },
+    },
+    konuSeriIdx: () => 0,
+    konuDotHtml: () => '<span class="dot"></span>',
+  };
+  vm.createContext(context);
+  vm.runInContext([grab('escapeHtml'), grab('renderDenemeKonuSec')].join('\n'), context);
+  const html = (vm.runInContext('renderDenemeKonuSec', context) as () => string)();
+
+  assert.match(html, /data-action="start-deneme-konu-yanlis"[^>]*data-konu="Kredi"/);
+  assert.match(html, /1 yanlış soru/);
+  assert.doesNotMatch(html, /data-action="start-deneme-konu-yanlis"[^>]*data-konu="Hukuk"/);
+  assert.doesNotMatch(html, /<button\b[^>]*>(?:(?!<\/button>)[\s\S])*?<button\b/);
 });
