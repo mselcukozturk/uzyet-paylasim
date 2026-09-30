@@ -5048,5 +5048,68 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "03 İthalat İhracat/ithalat_ihracat_TKR_2026.pdf s.141",
   "tarihISO": "2026-09-29T23:48:29.155476+00:00"
+ },
+ {
+  "id": "gece-20261001-44dc33df73bc",
+  "guid": "44dc33df73bc",
+  "konu": "Ürünler",
+  "soru": "Aşağıdakilerden hangisi Bireysel Dijital Bankacılık kullanıcılarının tercih edebileceği talimat kodlarından biri değildir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, s. 23",
+  "tarihISO": "2026-09-30T23:24:03.060854+00:00"
+ },
+ {
+  "id": "gece-20261001-224b8dd272f4",
+  "guid": "224b8dd272f4",
+  "konu": "Ürünler",
+  "soru": "Sınırsız Otomatik Servis (SOS) uygulaması kapsamında satılan fonların, satış sırası hangisinde doğru verilmiştir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz ve DBK s.24",
+  "tarihISO": "2026-09-30T23:24:03.060854+00:00"
+ },
+ {
+  "id": "gece-20261001-678ec3d80443",
+  "guid": "678ec3d80443",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 itibarıyla bankamız aktif yapısıyla ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/YatirimciSunumu.pdf s. 7 (slayt 6)",
+  "tarihISO": "2026-09-30T23:24:03.060854+00:00"
+ },
+ {
+  "id": "gece-20261001-e8ac3cf56db4",
+  "guid": "e8ac3cf56db4",
+  "konu": "Genel Ekonomi",
+  "soru": "İş Bankası hissedar dağılımı aşağıdakilerden hangisinde doğru bir şekilde verilmiştir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/YatirimciSunumu.pdf, s. 3 (sl. 2)",
+  "tarihISO": "2026-09-30T23:24:03.060854+00:00"
+ },
+ {
+  "id": "gece-20261001-9980faa38de2",
+  "guid": "9980faa38de2",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 itibarıyla bankamız pazar paylarıyla (özel bankalar) ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/YatirimciSunumu.pdf, sl. 3 (s. 4)",
+  "tarihISO": "2026-09-30T23:24:03.060854+00:00"
+ },
+ {
+  "id": "gece-20261001-ae7ab3b9bd5d",
+  "guid": "ae7ab3b9bd5d",
+  "konu": "Genel Ekonomi",
+  "soru": "En çok ihracat yapılan ülke aşağıdakilerden hangisidir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/Genel Ekonomi — Güncelleme Karşılaştırması (Ağu 2026).md, satır 21",
+  "tarihISO": "2026-09-30T23:24:03.060854+00:00"
+ },
+ {
+  "id": "gece-20261001-8e92895c5228",
+  "guid": "8e92895c5228",
+  "konu": "Hukuk",
+  "soru": "Kefaletten rücu ile ilgili aşağıda verilen bilgilerden hangisi/hangileri doğrudur?\n1. Kefil hiçbir koşulda kefaletten rücu edemez.\n2. Eğer borç doğmamışsa kefil kefaletten rücu edebilir.\n3. Borçlunun mali durumunun kefalet sözleşmesinin yapılmasından sonra ciddi anlamda kötüleşmesi kefaletten rücu sebebi olabilir.",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "04 Kredi/Kredi YYS 2026.pdf s. 133",
+  "tarihISO": "2026-09-30T23:24:03.060854+00:00"
  }
 ]
