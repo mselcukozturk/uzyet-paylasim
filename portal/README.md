@@ -126,3 +126,24 @@ deploy anında sabitlenir — yeni eklenen bir değişkeni mevcut preview'lar g�
 `DATABASE_URL` (Neon entegrasyonu) · `PIN_ENCRYPTION_KEY` · `FLAGS_EXPORT_TOKEN`
 (sync-bank + sync-practice + migrate + flagged-questions) · `ADMIN_SETUP_TOKEN` (yalnız
 geçici) · Neon Auth anahtarları.
+
+## 1 Ekim 2026: ilk Günün Denemesi için tek günlük seçim
+
+`/api/admin/daily-exam-override` yalnız `FLAGS_EXPORT_TOKEN` ile erişilir.
+`GET` aktif bankanın toplu `question_stats` verisini okur ve seçim raporunu döndürür;
+veritabanına yazmaz. `POST {"day":"2026-10-01"}` yalnız bu günün ilk denemesini
+`daily_exams` tablosuna hazırlar. İşlem 1 Ekim 07:00 İstanbul sonrasında kapanır;
+mevcut günlük kayıt veya aynı kodla başlatılmış deneme varsa 409 verir.
+
+Seçim: doğru + yanlış toplamı **10'dan büyük** olan sorular; yanlış yüzdesi azalan,
+eşitlikte yanlış adedi azalan, ikinci eşitlikte GUID artan sıra. İlk 50 alınır.
+Bu tek günlük istisnada konu kotaları seçim sırasını değiştirmez; rapor resmî kota
+ile farkı gösterir. 50 aday ve ilk deneme dışlandıktan sonra ikinci denemenin her
+konu kotasını karşılayacak havuz yoksa 503 döner. İkinci deneme önceden üretilmez;
+mevcut rastgele seçim, bitirme şartı ve kesişmeme kuralıyla gün içinde oluşur.
+Şıklar mevcut günlük deneme yöntemiyle karıştırılır, kod ve 50 soru / 60 dakika korunur.
+
+Tekrar üretilebilir E2E doğrulama: `node --test tests/daily-exams-e2e.test.ts`.
+Rapor ve mobil ekran görüntüleri `outputs/daily-exams/` altındadır.
+Canlı POST yanıtını yerel rapora kaydet; repo herkese açık olduğu için seçilen
+soru metinlerini veya soruların GUID listesini izlenen bir dosyada yayınlama.

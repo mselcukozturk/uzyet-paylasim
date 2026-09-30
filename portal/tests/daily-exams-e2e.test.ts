@@ -48,7 +48,21 @@ async function setup(day = "2026-10-01", multiplier = 3) {
     }));
     return { status: res.status, data: await res.json() };
   };
-  return { pg, db, bank, post, handler: exports.POST! };
+  const loadOverride = () => {
+    const result: any = {};
+    const source = readFileSync(new URL('../app/api/admin/daily-exam-override/route.ts', import.meta.url), 'utf8');
+    runInNewContext(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText,
+      { exports: result, require: (key: string) => mocks[key], console, Buffer,
+        Date: class extends Date { static now() { return Date.parse('2026-09-30T12:00:00Z'); } },
+        process: { env: { FLAGS_EXPORT_TOKEN: 'test-token' } } });
+    return async (method = 'GET', token = 'test-token', day = '2026-10-01') => {
+      const response = await result[method](new Request('https://test.invalid/api/admin/daily-exam-override', {
+        method, headers: { authorization: `Bearer ${token}` }, ...(method === 'POST' ? { body: JSON.stringify({ day }) } : {}),
+      }));
+      return { status: response.status, data: await response.json() };
+    };
+  };
+  return { pg, db, bank, post, handler: exports.POST!, loadOverride };
 }
 
 // Failure modes: code bypass, overlap, insufficient quotas, concurrent users, repeated scores,
@@ -62,6 +76,46 @@ async function finish(db: any, post: any, user: string, attempt: any, correct: n
   const result = await post(user, { action: 'finish', attemptId: attempt.id });
   assert.equal(result.status, 200); assert.equal(result.data.score.correct, correct);
 }
+
+// Override failure modes: >=10 instead of >10, shown counts instead of answers,
+// per-user instead of aggregate rates, rounding/tie errors, quota overriding ranking,
+// anonymous access, other-day writes, insufficient candidates, snapshot replacement,
+// changed options/correct answers, and a second daily exam intersecting the first.
+test('one-day ranked override: aggregate statistics, immutable official snapshot and disjoint second', async () => {
+  const { pg, db, bank, post, loadOverride } = await setup();
+  try {
+    const admin = loadOverride();
+    assert.equal((await admin('GET', 'invalid')).status, 401);
+    assert.equal((await admin('POST')).status, 503);
+    assert.equal((await admin('POST', 'test-token', '2026-10-02')).status, 400);
+    const rows = await db.select().from(schema.questions).where(orm.eq(schema.questions.bankId, bank.id)).orderBy(schema.questions.guid);
+    await db.insert(schema.questionStats).values(rows.flatMap((q, i) => [
+      { userId: 'stat-a', questionGuid: q.guid, shownCount: 1000, correctCount: i === 0 ? 0 : i % 7, wrongCount: i === 0 ? 5 : 5 },
+      { userId: 'stat-b', questionGuid: q.guid, shownCount: 1000, correctCount: i === 0 ? 0 : 6, wrongCount: i === 0 ? 5 : i % 11 },
+    ]));
+    const expected = rows.slice(1).map((q, i) => ({ ...q, correct: (i+1)%7+6, wrong: 5+(i+1)%11 }))
+      .sort((a,b) => b.wrong*(a.correct+a.wrong)-a.wrong*(b.correct+b.wrong) || b.wrong-a.wrong || a.guid.localeCompare(b.guid)).slice(0,50);
+    const preview = await admin(); assert.equal(preview.status, 200);
+    assert.equal(preview.data.eligibleCount, rows.length-1);
+    assert.deepEqual(Array.from(preview.data.selected, (q: any) => q.guid), expected.map(q=>q.guid));
+    assert.equal((await db.select().from(schema.dailyExams)).length, 0, 'GET must not write');
+    const applied = await admin('POST'); assert.equal(applied.status, 200, JSON.stringify(applied.data));
+    assert.equal((await db.select().from(schema.dailyExams)).length, 1, 'second is not precreated');
+    const first = await post('alice', start(1)); assert.equal(first.status, 200);
+    assert.equal(first.data.dailyNumber, 1); assert.equal(first.data.isDaily, true);
+    assert.deepEqual(guids(first.data), expected.map(q=>q.guid));
+    const snapshots = await db.select().from(schema.examAttemptQuestions).where(orm.eq(schema.examAttemptQuestions.attemptId, first.data.id)).orderBy(schema.examAttemptQuestions.position);
+    for (const [i,q] of snapshots.entries()) assert.equal(q.options[q.correctIndex], expected[i].options[expected[i].correctIndex]);
+    await finish(db, post, 'alice', first.data, 0);
+    const second = await post('alice', start(2)); assert.equal(second.status, 200, JSON.stringify(second.data));
+    assert.equal(guids(second.data).filter((g: string)=>guids(first.data).includes(g)).length, 0);
+    assert.equal((await admin('POST')).status, 409, 'existing snapshot must never be replaced');
+    const shared = await post('bob', { action: 'start', mode: 'rastgele', examCode: first.data.examCode });
+    assert.deepEqual(guids(shared.data), guids(first.data));
+    await mkdir(artifacts, { recursive: true });
+    await writeFile(new URL('ranked-override-report.json', artifacts), JSON.stringify({ passed: true, eligibleCount: preview.data.eligibleCount, firstCount: 50, secondCount: 50, intersection: 0, selection: applied.data }, null, 2));
+  } finally { await pg.close(); }
+});
 
 test('daily pair API: gate, disjoint immutable questions, independent scores and history', async () => {
   const { pg, db, post } = await setup();
