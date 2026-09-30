@@ -138,6 +138,8 @@ export const examAttempts = pgTable('exam_attempts', {
   // türetmeye yarar (bkz. /api/exam "start" examCode dalı). Eskiden UNIQUE'ti; ikinci
   // kullanıcı aynı kodu girince INSERT çakışması 500 hatası veriyordu (8 Eyl 2026 bulundu).
   examCode: text('exam_code').notNull(),
+  dailyDay: text('daily_day'),
+  dailyNumber: smallint('daily_number'),
   startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
   lastResumedAt: timestamp('last_resumed_at', { withTimezone: true }).defaultNow(),
   elapsedSeconds: integer('elapsed_seconds').notNull().default(0),
@@ -156,6 +158,24 @@ export const examAttempts = pgTable('exam_attempts', {
   // Paylaşılan bir kod açılırken "bu koda ait ilk deneme" aranır (bkz. /api/exam "start"),
   // UNIQUE değil (satır ~131 yorumu) ama sık sorgulandığı için sade bir index yeterli.
   index('exam_attempts_exam_code_idx').on(table.examCode),
+]);
+
+export type DailyQuestionSnapshot = {
+  questionId: string; questionGuid: string; topic: string; prompt: string;
+  options: string[]; correctIndex: number; explanation: string;
+};
+
+// Daily snapshots outlive personal history deletion and bank updates.
+export const dailyExams = pgTable('daily_exams', {
+  code: text('code').primaryKey(),
+  day: text('day').notNull(),
+  number: smallint('number').notNull(),
+  bankId: uuid('bank_id').notNull().references(() => questionBanks.id, { onDelete: 'restrict' }),
+  snapshots: jsonb('snapshots').$type<DailyQuestionSnapshot[]>().notNull(),
+}, (table) => [
+  unique('daily_exams_day_number_unique').on(table.day, table.number),
+  check('daily_exams_number_check', sql`${table.number} in (1, 2)`),
+  check('daily_exams_snapshots_check', sql`jsonb_array_length(${table.snapshots}) = 50`),
 ]);
 
 export const examAttemptQuestions = pgTable('exam_attempt_questions', {

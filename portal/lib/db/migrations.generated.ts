@@ -69,4 +69,8 @@ export const MIGRATIONS: readonly Migration[] = [
     name: "0015_fixed_exams.sql",
     content: "CREATE TABLE IF NOT EXISTS \"fixed_exams\" (\n  \"code\" text PRIMARY KEY,\n  \"title\" text NOT NULL,\n  \"question_guids\" text[] NOT NULL,\n  \"created_at\" timestamptz NOT NULL DEFAULT now()\n);\n",
   },
+  {
+    name: "0016_second_daily_exam.sql",
+    content: "ALTER TABLE exam_attempts ADD COLUMN IF NOT EXISTS daily_day text;\nALTER TABLE exam_attempts ADD COLUMN IF NOT EXISTS daily_number smallint;\nCREATE TABLE IF NOT EXISTS daily_exams (\n  code text PRIMARY KEY,\n  day text NOT NULL,\n  number smallint NOT NULL CHECK (number IN (1, 2)),\n  bank_id uuid NOT NULL REFERENCES question_banks(id) ON DELETE RESTRICT,\n  snapshots jsonb NOT NULL CHECK (jsonb_array_length(snapshots) = 50),\n  CONSTRAINT daily_exams_day_number_unique UNIQUE (day, number)\n);\n",
+  },
 ];

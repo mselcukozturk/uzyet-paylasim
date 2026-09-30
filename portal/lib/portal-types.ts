@@ -15,6 +15,7 @@ export type AttemptSummary = {
   status: 'active' | 'paused' | 'finished';
   examCode: string;
   isDaily: boolean;
+  dailyNumber: number | null;
   answeredCount: number;
   totalCount: number;
   elapsedSeconds: number;
@@ -78,12 +79,14 @@ export type DashboardData = {
   } | null;
   // Günün denemesi: myCorrect/avgCorrect (50 üzerinden doğru) yalnız kullanıcı çözdüyse dolu.
   daily: { day: string; code: string; solvedCount: number; myCorrect: number | null; avgCorrect: number | null };
+  dailySecond: DashboardData['daily'] & { unlocked: boolean };
 };
 
 // action "daily-solvers" (yalnız yönetici): bugünün günün denemesini çözenler, kişi başı ilk
 // bitmiş deneme, puana göre büyükten küçüğe. name kullanıcı adıdır; correct 50 üzerinden doğru.
 export type DailySolversResponse = {
   day: string;
+  dailyNumber: number;
   solvers: Array<{ name: string; finishedAt: string | null; correct: number }>;
 };
 
@@ -167,8 +170,8 @@ export type ExamApiRequest =
   | { action: 'ai-exam-detail'; attemptId: string }
   | { action: 'ai-exam-delete'; attemptId: string }
   | { action: 'dashboard' }
-  | { action: 'daily-solvers' }
-  | { action: 'start'; mode: ExamMode; examCode?: string; daily?: boolean }
+  | { action: 'daily-solvers'; dailyNumber?: 1 | 2 }
+  | { action: 'start'; mode: ExamMode; examCode?: string; daily?: boolean; dailyNumber?: 1 | 2 }
   | { action: 'resume'; attemptId: string }
   | { action: 'answer'; attemptId: string; questionId: string; selectedIndex: number }
   | { action: 'pause'; attemptId: string; answers?: Record<string, number> }

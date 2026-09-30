@@ -421,7 +421,7 @@
   var MOD_ADI = { rastgele: "Yeni Sınav", azgorulen: "Az Görülenler", yanlislar: "Yanlışlar", zor: "Zor Deneme", ai: "🤖 AI Denemesi" };
   function denemeAdi(a) {
     if (a.aiGunu) return "🤖☀️ AI Günün Denemesi";
-    return a.isDaily ? "☀️ Günün Denemesi" : (MOD_ADI[a.mode] || a.mode);
+    return a.isDaily ? "☀️ Günün " + (a.dailyNumber || 1) + ". Denemesi" : (MOD_ADI[a.mode] || a.mode);
   }
   var MOD_RENK = { rastgele: "var(--seri-6)", azgorulen: "var(--seri-5)", yanlislar: "var(--seri-3)", zor: "var(--seri-7)", ai: "var(--seri-2)" };
   var KONU_SIRA = Object.keys(RESMI_DAGILIM_DEFAULT);
@@ -2147,7 +2147,7 @@
     examBackupYaz(d.id, { cevaplar: mergedAnswers, bekleyen: bekleyenMap });
 
     currentExam = {
-      tip: d.mode, uzak: true, uzakAttemptId: d.id, examCode: d.examCode, isDaily: !!d.isDaily,
+      tip: d.mode, uzak: true, uzakAttemptId: d.id, examCode: d.examCode, isDaily: !!d.isDaily, dailyNumber: d.dailyNumber,
       sorular: d.questions.map(function (q) { return q.guid; }),
       index: 0, cevaplar: mergedAnswers, uyarilar: [], gecenSaniye: d.elapsedSeconds || 0
     };
@@ -2161,10 +2161,10 @@
     });
   }
 
-  function startExamRemote(mode, examCodeRaw, daily) {
+  function startExamRemote(mode, examCodeRaw, daily, dailyNumber) {
     if (remoteBusy) return;
     remoteBusy = true;
-    var body = daily ? { action: "start", mode: "rastgele", daily: true } : examCodeRaw ?{ action: "start", mode: "rastgele", examCode: examCodeRaw } : { action: "start", mode: mode };
+    var body = daily ? { action: "start", mode: "rastgele", daily: true, dailyNumber: dailyNumber || 1 } : examCodeRaw ?{ action: "start", mode: "rastgele", examCode: examCodeRaw } : { action: "start", mode: mode };
     remoteFetch("/api/exam", "POST", body).then(function (r) {
       remoteBusy = false;
       if (!r.ok) { showBanner((r.data && r.data.error) || "Sınav başlatılamadı.", true); render(); return; }
@@ -2756,18 +2756,26 @@
 
   // Günün denemesi: kodu sunucu her sabah 07:00'de değiştirir, herkese aynı 50 soru.
   // Puan ve ortalama yalnız çözdükten sonra gelir; menüye her dönüşte dashboard tazelenir.
+  var gununDenemesiNumarasi = 1;
   function gununDenemesiHtml() {
-    var g = remoteDash && remoteDash.daily;
+    var g = remoteDash && (gununDenemesiNumarasi === 2 ? remoteDash.dailySecond : remoteDash.daily);
     if (!g) return "";
     var tarih = new Date(g.day + "T12:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
-    var govde = g.myCorrect === null
+    var kilitli = gununDenemesiNumarasi === 2 && !g.unlocked;
+    var govde = kilitli
+      ? '<div class="muted" style="margin-bottom:10px">🔒 Önce günün 1. denemesini bitir ve puanını gör.</div>' +
+        '<button class="btn primary" data-action="start-daily-exam" disabled>Başla (60 dk)</button>'
+      : g.myCorrect === null
       ? '<div class="muted" style="margin-bottom:10px">Her sabah 07:00\'de yenilenir, herkese aynı 50 soru. ' +
         (g.solvedCount ? g.solvedCount + " kişi çözdü — ortalamayı çözünce görürsün." : "Bugün henüz çözen yok.") + "</div>" +
         '<button class="btn primary" data-action="start-daily-exam"' + (remoteBusy ? " disabled" : "") + ">Başla (60 dk)</button>"
       : '<div class="muted">Puanın <b style="color:' + renkEsigi(g.myCorrect * 2) + '">' + g.myCorrect + " / 50</b> · " +
         gununDenemesiOrtalamaHtml(g) + "</div>" + gununCozenlerHtml(g);
     return '<div class="card" style="margin-bottom:14px">' +
-      '<div class="section-title" style="font-size:1rem;margin-bottom:6px">☀️ Günün Denemesi — ' + tarih + "</div>" + govde + "</div>";
+      '<div class="duyuru-bas"><div class="section-title">☀️ Günün ' + gununDenemesiNumarasi + '. Denemesi — ' + tarih + '</div>' +
+      '<div class="duyuru-oklar"><button class="btn ghost" data-action="switch-daily-exam" style="font-size:.85rem;white-space:nowrap" aria-label="Günün ' +
+      (gununDenemesiNumarasi === 1 ? '2. denemesine geç">2. Deneme ›' : '1. denemesine geç">‹ 1. Deneme') +
+      '</button></div></div>' + govde + "</div>";
   }
   // Yalnız yönetici, çözdükten sonra: kim, ne zaman, kaç puan. Yetkiyi sunucu da zorlar
   // ("daily-solvers" 403 döner); buradaki kontrol yalnız görünürlüktür.
@@ -2781,7 +2789,7 @@
     var govde;
     if (c.yukleniyor) govde = '<div class="muted">Yükleniyor…</div>';
     else if (c.hata) govde = '<div class="muted">' + escapeHtml(c.hata) + "</div>";
-    else if (!c.veri || c.veri.day !== g.day || !c.veri.solvers.length) govde = '<div class="muted">Henüz çözen yok.</div>';
+    else if (!c.veri || c.veri.day !== g.day || c.veri.dailyNumber !== gununDenemesiNumarasi || !c.veri.solvers.length) govde = '<div class="muted">Henüz çözen yok.</div>';
     else govde = '<table style="width:100%;border-collapse:collapse;font-size:.92rem">' +
       '<thead><tr class="muted" style="text-align:left"><th style="padding:4px 6px 4px 0;font-weight:500">Kim</th>' +
       '<th style="padding:4px 6px;font-weight:500">Ne zaman</th><th style="padding:4px 0 4px 6px;font-weight:500;text-align:right">Puan</th></tr></thead><tbody>' +
@@ -2801,7 +2809,7 @@
     if (!c.acik || c.yukleniyor) { render(); return; }
     c.yukleniyor = true; c.hata = null;
     render();
-    remoteFetch("/api/exam", "POST", { action: "daily-solvers" }).then(function (r) {
+    remoteFetch("/api/exam", "POST", { action: "daily-solvers", dailyNumber: gununDenemesiNumarasi }).then(function (r) {
       c.yukleniyor = false;
       if (r.ok) c.veri = r.data;
       else c.hata = (r.data && r.data.error) || "Liste alınamadı.";
@@ -4666,7 +4674,7 @@
     var bitirAd = (isLast ? "Sınavı Bitir" : "Erken Bitir") + (cevapsizSayisi ? " (" + cevapsizSayisi + " boş)" : "");
     var ustHtml = soruUstBlokHtml(
       q.konu, (idx + 1) + " / " + currentExam.sorular.length,
-      '<span>' + denemeAdi({ isDaily: currentExam.isDaily, aiGunu: currentExam.aiGunu, mode: currentExam.tip }) + "</span>" +
+      '<span>' + denemeAdi({ isDaily: currentExam.isDaily, dailyNumber: currentExam.dailyNumber, aiGunu: currentExam.aiGunu, mode: currentExam.tip }) + "</span>" +
       '<span id="exam-timer" class="exam-timer" title="Geçen süre — resmi sınav 50 soru / 60 dk">⏱ ' + fmtSure(currentExam.gecenSaniye || 0) + "</span>",
       '<button class="btn ghost" data-action="copy-soru" data-scope="exam" title="Soruyu kopyala" aria-label="Soruyu kopyala">📋</button>' +
       // Bitir onaysız sonuçlandırır: 24 Eyl 2026'ya kadar kartın altında, alt barın hemen
@@ -5124,6 +5132,8 @@ function pratikEnIyiHtml(konu, modulKey) {
     var yuzdeHtml = yuzde === null ? "" : '<span class="pill" style="background:var(--surface-2);color:' + renkEsigi(yuzde) + '">%' + yuzde + "</span>";
     var sureHtml = typeof r.sureSaniye === "number" ? '<span class="muted" style="font-size:0.86rem">⏱ ' + fmtSure(r.sureSaniye) + " sürede bitti</span>" : "";
 
+    var gununSonucu = remoteDash && (remoteDash.daily && r.examCode === remoteDash.daily.code ? remoteDash.daily
+      : remoteDash.dailySecond && r.examCode === remoteDash.dailySecond.code ? remoteDash.dailySecond : null);
     var gozdenGecirKarti = '<div class="card" style="margin-top:16px">' +
       '<div class="section-title">Gözden geçir</div>' +
       sekmeHtml +
@@ -5136,8 +5146,8 @@ function pratikEnIyiHtml(konu, modulKey) {
       '<span class="pill bad">' + r.skor.yanlis + " yanlış</span>" +
       '<span class="pill warn">' + r.skor.bos + " boş</span>" +
       yuzdeHtml + sureHtml + "</div>" +
-      (r.uzak && remoteDash && remoteDash.daily && remoteDash.daily.avgCorrect !== null && r.examCode === remoteDash.daily.code
-        ? '<div class="muted" style="margin:8px 0">☀️ Günün denemesi — ' + gununDenemesiOrtalamaHtml(remoteDash.daily) + "</div>"
+      (r.uzak && gununSonucu && gununSonucu.avgCorrect !== null
+        ? '<div class="muted" style="margin:8px 0">☀️ Günün denemesi — ' + gununDenemesiOrtalamaHtml(gununSonucu) + "</div>"
         : "") +
       (r.ai && r.aiGunu && aiGunun && aiGunun.avgCorrect !== null && r.aiGunu === aiGunun.day
         ? '<div class="muted" style="margin:8px 0">🤖☀️ AI günün denemesi — ' + gununDenemesiOrtalamaHtml(aiGunun) + "</div>"
@@ -5411,7 +5421,12 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "start-deneme-konu-gorulmemis") startFlash("bank", t.getAttribute("data-konu"), false, true);
     else if (action === "start-exam") startExam(t.getAttribute("data-mode"));
     else if (action === "start-exam-code") startExamWithCode();
-    else if (action === "start-daily-exam") startExamRemote("rastgele", null, true);
+    else if (action === "switch-daily-exam") {
+      gununDenemesiNumarasi = gununDenemesiNumarasi === 1 ? 2 : 1;
+      gununCozenler = { acik: false, yukleniyor: false, veri: null, hata: null };
+      render();
+    }
+    else if (action === "start-daily-exam") startExamRemote("rastgele", null, true, gununDenemesiNumarasi);
     else if (action === "toggle-daily-solvers") toggleGununCozenler();
     else if (action === "ac-yeni-deneme-turleri") { denemeTurSecimiAcik = true; render(); }
     else if (action === "kapat-yeni-deneme-turleri") { denemeTurSecimiAcik = false; render(); }

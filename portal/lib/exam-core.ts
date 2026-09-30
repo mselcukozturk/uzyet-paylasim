@@ -83,6 +83,13 @@ export function dailyExamCode(day: string, secret = process.env.PIN_ENCRYPTION_K
   return examCode('rastgele', createHmac('sha256', secret).update(`gunun-denemesi:${day}`).digest().readUInt32BE(0));
 }
 
+export function secondDailyExamCode(day: string, secret = process.env.PIN_ENCRYPTION_KEY ?? '') {
+  if (day === '2026-09-30') return 'UZY-R17QNG8G';
+  const seed = createHmac('sha256', secret).update(`gunun-denemesi-2:${day}`).digest().readUInt32BE(0);
+  // The day stays recognizable even if nobody started this exam before 07:00.
+  return `UZY-D${day.replaceAll('-', '')}-${seed.toString(36).toUpperCase()}`;
+}
+
 // AI Günün Denemesi (Yapay Zekâ Kaynakları) resmi denemeden ayrı bir tohum kullanır — aynı gün
 // iki deneme de aynı 50 soruyu seçmesin diye etiket farklı. Resmi denemedeki gerekçe burada da
 // geçerli: repo public, tohum düz tarihten türeseydi yarının soruları önceden hesaplanabilirdi.
@@ -97,7 +104,15 @@ export function aiExamCode(seed: number) {
   return `UZA-${(seed >>> 0).toString(36).toUpperCase()}`;
 }
 
-export function parseExamCode(value: string): { mode: ExamMode; seed: number; fixed?: boolean } | null {
+export function parseExamCode(value: string): { mode: ExamMode; seed: number; fixed?: boolean; dailyDay?: string } | null {
+  const daily = value.trim().toUpperCase().match(/^UZY-D(\d{4})(\d{2})(\d{2})-([0-9A-Z]+)$/);
+  if (daily) {
+    const day = `${daily[1]}-${daily[2]}-${daily[3]}`;
+    const date = new Date(`${day}T12:00:00Z`);
+    const seed = Number.parseInt(daily[4], 36);
+    if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== day || seed > 0xffffffff) return null;
+    return { mode: 'rastgele', seed, dailyDay: day };
+  }
   const clean = value.trim().toUpperCase().replace(/^UZY-?/, '');
   const modes: Record<string, ExamMode> = { R: 'rastgele', A: 'azgorulen', Y: 'yanlislar', Z: 'zor', S: 'rastgele' };
   const mode = modes[clean[0]];
