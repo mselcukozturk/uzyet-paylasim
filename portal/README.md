@@ -22,6 +22,26 @@ Canlı: <https://uzyet-portal.vercel.app/> · Vercel projesi `uzyet-portal`, Roo
   - `app/api/admin/*` — token korumalı bakım uçları (aşağıda).
   - `app/api/auth/[...path]` — Neon Auth (yalnız yönetici hesabı).
 
+## Uygulama sürümü bildirimi
+
+`public/index.html` elle düzenlenen kaynak olarak kalır. `prebuild`/`predev`, Git revizyonu
+ve HTML içeriğinden sürüm kimliği üretir; kimliği gömülü `public/application.html` kopyasını
+ve `public/version.json` dosyasını oluşturur. Bu çıktılar git'e eklenmez. `/` ve `/index.html`
+üretilen kopyayı sunar; `/version.json` tarayıcı ve CDN için `no-store` başlıkları taşır.
+Soru bankası senkronu bu sürümü değiştirmez.
+
+İstemci görünürken 120 saniyede bir, sekmeye dönünce ve bağlantı gelince kontrol eder.
+“Yeni sürüm hazır. Yenile” yalnız giriş yapılmış resmî/AI ana menülerinin üst bildirim
+yığınında görünür; deneme ve çalışma ekranlarında gösterilmez. Otomatik yenileme yoktur.
+Bekleyen kayıt veya devam eden yazma işlemi varken düğme pasiftir. Mevcut kayıt/hata
+bildirimleri korunur; sürüm sorgusu ekranın tamamını yeniden çizmez.
+
+Tekrarlanabilir E2E: `node --test tests/application-version-e2e.test.ts`.
+Windows'ta Edge, diğer sistemlerde Playwright Chromium gerekir. Rapor ve mobil/masaüstü
+ekran görüntüleri `outputs/application-version/` altına yazılır; canlı veritabanına yazılmaz.
+Yayın sonrası salt okunur kontrol: `node scripts/verify-application-deployment.mjs`.
+Yerel üretim sunucusu için adres argümanı verilebilir: `http://127.0.0.1:3107`.
+
 ## Yetki katmanları
 
 Sırayla: **oturum** (isim + 4 haneli PIN; PIN `PIN_ENCRYPTION_KEY` ile AES-256-GCM

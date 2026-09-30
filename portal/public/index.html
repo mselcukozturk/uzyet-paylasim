@@ -172,6 +172,13 @@
     width: max-content; max-width: calc(100% - 32px); pointer-events: none;
   }
   .anlik-bildirim-yigin > .anlik-bildirim { position: static; transform: none; width: auto; max-width: 100%; }
+  [data-application-update-slot]:empty { display: none; }
+  .application-update { display: flex; align-items: center; gap: 12px; pointer-events: none;
+    font-size: 0.85rem; background: var(--surface); color: var(--text-muted);
+    border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 12px; }
+  .application-update button { font: inherit; color: var(--accent); background: transparent;
+    border: 0; padding: 4px; cursor: pointer; white-space: nowrap; pointer-events: auto; }
+  .application-update button:disabled { opacity: 0.5; cursor: default; }
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -645,6 +652,52 @@
   var bannerMsg = null;
   var ekAnlikBildirimHtml = "";   // render() sırasında ekranların bannerla aynı sabit yığına koyduğu geçici satır
   var bannerIsError = false;
+  var APPLICATION_VERSION = "__APPLICATION_VERSION__";
+  var applicationUpdateAvailable = false;
+  var applicationVersionChecking = false;
+
+  function applicationUpdateHome() {
+    return remoteGirisTamamMi() && !currentExam && !aiUyariAcik && !aiYukleniyor &&
+      (VIEW === "menuDeneme" || VIEW === "menuTest");
+  }
+  function applicationReloadSafe() {
+    if (!applicationUpdateHome() || !navigator.onLine || !remoteDash || remoteBusy || remoteStudyInFlight || remotePracticeFlushing) return false;
+    try {
+      if (remoteReadStudyQueue().length || remoteReadPracticeQueue().length) return false;
+      var attempt = remoteDash && remoteDash.activeAttempt;
+      var backup = attempt && examBackupOku(attempt.id);
+      return !backup || !Object.keys(backup.bekleyen).length;
+    } catch (e) { return false; }
+  }
+  function applicationUpdateHtml() {
+    if (!applicationUpdateAvailable || !applicationUpdateHome()) return "";
+    var safe = applicationReloadSafe();
+    return '<div class="application-update" data-application-update role="status">' +
+      '<span>Yeni sürüm hazır.</span><button type="button" data-action="reload-application"' +
+      (safe ? '' : ' disabled title="Bekleyen kayıtlar tamamlanınca yenileyebilirsiniz."') + '>Yenile</button></div>';
+  }
+  function updateApplicationNotice() {
+    var slot = document.querySelector('[data-application-update-slot]');
+    if (slot) {
+      var html = applicationUpdateHtml();
+      if (slot.innerHTML !== html) slot.innerHTML = html;
+    }
+  }
+  function checkApplicationVersion() {
+    if (document.hidden || applicationVersionChecking || APPLICATION_VERSION === "__APPLICATION_" + "VERSION__") return;
+    applicationVersionChecking = true;
+    var controller = new AbortController();
+    var timeout = setTimeout(function () { controller.abort(); }, 10000);
+    // This request must follow the current production alias, never a pinned deployment.
+    fetch('/version.json', { cache: 'no-store', credentials: 'omit', signal: controller.signal })
+      .then(function (res) { if (!res.ok) throw new Error('Version unavailable'); return res.json(); })
+      .then(function (data) {
+        if (!data || typeof data.version !== 'string' || !/^[a-f0-9]{64}$/.test(data.version)) return;
+        applicationUpdateAvailable = data.version !== APPLICATION_VERSION;
+        updateApplicationNotice();
+      }).catch(function () { /* Offline/failed checks leave the page and previous result intact. */ })
+      .then(function () { clearTimeout(timeout); applicationVersionChecking = false; });
+  }
   var pausedDeleteConfirm = false;   // "Sil" iki adımlı onay — window.confirm() Artifact sandbox'ında çalışmıyor
   // Deneme dışı ekranlarda "Boş" butonunun seçimi: cevap açılır ama hiçbir istatistiğe
   // (stats/pStats, sunucu, oturum özeti, yanlış havuzu) yazılmaz — soru görülmemiş sayılır.
@@ -5347,7 +5400,8 @@ function pratikEnIyiHtml(konu, modulKey) {
       else { VIEW = "menu"; html = renderMenu(); }
     }
     var bannerHtml = bannerMsg ? '<div class="banner anlik-bildirim' + (bannerIsError ? " error" : "") + '" role="status">' + escapeHtml(bannerMsg) + "</div>" : "";
-    if (bannerHtml || ekAnlikBildirimHtml) bannerHtml = '<div class="anlik-bildirim-yigin">' + bannerHtml + ekAnlikBildirimHtml + "</div>";
+    var applicationSlotHtml = applicationUpdateHome() ? '<div data-application-update-slot>' + applicationUpdateHtml() + '</div>' : '';
+    if (bannerHtml || ekAnlikBildirimHtml || applicationSlotHtml) bannerHtml = '<div class="anlik-bildirim-yigin">' + applicationSlotHtml + bannerHtml + ekAnlikBildirimHtml + "</div>";
     var narrowViews = { settings: true, import: true };
     var shellClass = "shell" + (narrowViews[VIEW] ? " narrow" : "");
     // AI denemesi sürerken üst çubuk gizlenir: 🏠 ve 📊 leaveAiSources() çağırıp yarım
@@ -5397,6 +5451,10 @@ function pratikEnIyiHtml(konu, modulKey) {
     var t = e.target.closest ? e.target.closest("[data-action]") : null;
     if (!t) return;
     var action = t.getAttribute("data-action");
+    if (action === "reload-application") {
+      if (applicationUpdateAvailable && applicationReloadSafe()) { sonOturumuKaydet(); window.location.reload(); }
+      return;
+    }
     if (aiUyariAcik) {
       // Modal açıkken arkadaki ekran tıklanamaz; yalnız kabul veya kapatma işler.
       if (action === "accept-ai-sources") acceptAiSources();
@@ -5696,6 +5754,11 @@ function pratikEnIyiHtml(konu, modulKey) {
     }
   });
   setInterval(tickExamTimer, 1000);
+  checkApplicationVersion();
+  setInterval(checkApplicationVersion, 120000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) checkApplicationVersion(); });
+  window.addEventListener('online', checkApplicationVersion);
+  window.addEventListener('offline', updateApplicationNotice);
 })();
 </script>
 </body>

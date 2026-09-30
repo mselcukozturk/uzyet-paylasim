@@ -1,10 +1,26 @@
-import type { NextConfig } from 'next';
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Kök adres, ayrı bir GitHub Pages/kullanıcı adı gerektirmeden, statik paylaşım
-  // sitesini (public/index.html) sunar. /admin ve /api/* değişmez.
+  // public/index.html remains the source; prebuild/predev stamp the served copy.
   async rewrites() {
-    return [{ source: '/', destination: '/index.html' }];
+    return {
+      beforeFiles: [
+        { source: "/", destination: "/application.html" },
+        { source: "/index.html", destination: "/application.html" },
+      ],
+    };
+  },
+  async headers() {
+    return [
+      {
+        source: "/version.json",
+        headers: [
+          { key: "Cache-Control", value: "no-store, max-age=0" },
+          { key: "CDN-Cache-Control", value: "no-store" },
+          { key: "Vercel-CDN-Cache-Control", value: "no-store" },
+        ],
+      },
+    ];
   },
 };
 

@@ -42,3 +42,5 @@ next-env.d.ts
 .vercel
 .env*
 *.tsbuildinfo
+/public/application.html
+/public/version.json

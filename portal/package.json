@@ -6,8 +6,9 @@
     "node": "24.x"
   },
   "scripts": {
+    "predev": "node scripts/generate-application-version.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/gen-migrations.mjs",
+    "prebuild": "node scripts/gen-migrations.mjs && node scripts/generate-application-version.mjs",
     "build": "next build",
     "db:gen": "node scripts/gen-migrations.mjs",
     "start": "next start",
