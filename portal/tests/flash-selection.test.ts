@@ -359,7 +359,7 @@ void test('renderDenemeKonuSec: her ders üç seçenek taşır, yanlış yoksa i
     konuDotHtml: () => '<span class="dot"></span>',
   };
   vm.createContext(context);
-  vm.runInContext([grab('escapeHtml'), grab('soruGorulmemisMi'), grab('renderDenemeKonuSec')].join('\n'), context);
+  vm.runInContext([grab('escapeHtml'), grab('soruGorulmemisMi'), grab('konuSayaclariHtml'), grab('renderDenemeKonuSec')].join('\n'), context);
   const html = (vm.runInContext('renderDenemeKonuSec', context) as () => string)();
 
   assert.match(html, /data-action="start-deneme-konu-yanlis"[^>]*data-konu="Kredi"/);

@@ -406,6 +406,8 @@
   .konu-acma-isareti::before { content:""; border-top:4px solid transparent; border-bottom:4px solid transparent; border-left:6px solid currentColor; }
   .konu-calisma[open] > summary .konu-acma-isareti { transform:rotate(90deg); }
   .konu-calisma summary:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
+  .konu-toplam { margin-bottom:12px; }
+  .konu-toplam-baslik { font-weight:700; font-size:1.05rem; }
   .konu-sayaclar { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin:18px 0; }
   .konu-sayaclar > div { display:flex; flex-direction:column; gap:4px; }
   .konu-sayaclar strong { font-size:1.4rem; font-variant-numeric:tabular-nums; }
@@ -4162,12 +4164,21 @@
       "</div></div>";
   }
 
+  function konuSayaclariHtml(toplam, tekrar, yanlis, gorulmemis, etiket) {
+    return '<div class="konu-sayaclar" aria-label="' + escapeHtml(etiket || "Ders soru sayıları") + '">' +
+      '<div><strong data-count="total">' + toplam + '</strong><span>Toplam soru</span></div>' +
+      '<div><strong data-count="repeat">' + tekrar + '</strong><span>Toplam tekrar</span></div>' +
+      '<div><strong data-count="wrong">' + yanlis + '</strong><span>Yanlış soru</span></div>' +
+      '<div><strong data-count="unseen">' + gorulmemis + '</strong><span>Hiç görülmemiş soru</span></div></div>';
+  }
+
   var acikKkDersleri = {};
 
   function renderDenemeKonuSec() {
     if (STATE.sadeceDeneme && !remoteBankLoaded) {
       return '<div class="card" role="status">Soru geçmişi yükleniyor… <button class="btn" data-action="open-deneme-konu-sec">Tekrar Dene</button></div>';
     }
+    var toplamSoru = 0, toplamTekrar = 0, toplamYanlis = 0, toplamGorulmemis = 0;
     var tiles = KONU_SIRA.map(function (konu) {
       var havuz = STATE.bank.filter(function (q) { return q.konu === konu; });
       var yanlis = havuz.filter(function (q) { return STATE.stats[q.guid] && STATE.stats[q.guid].sonSonucDogruMu === false; }).length;
@@ -4175,15 +4186,15 @@
       var tekrar = havuz.reduce(function (toplam, q) {
         return toplam + ((STATE.stats[q.guid] && STATE.stats[q.guid].gosterim) || 0);
       }, 0);
+      toplamSoru += havuz.length;
+      toplamTekrar += tekrar;
+      toplamYanlis += yanlis;
+      toplamGorulmemis += gorulmemis;
       var renk = "var(--seri-" + konuSeriIdx(konu) + ")";
       var konuAttr = ' data-konu="' + escapeHtml(konu) + '"';
       return '<details class="card konu-calisma"' + konuAttr + (typeof acikKkDersleri !== 'undefined' && acikKkDersleri[konu] ? ' open' : '') + ' style="border-left:4px solid ' + renk + '">' +
         '<summary><span class="konu-acma-isareti" aria-hidden="true"></span>' + konuDotHtml(konu) + '<span class="konu-ders-adi">' + escapeHtml(konu) + '</span></summary>' +
-        '<div class="konu-sayaclar" aria-label="Ders soru sayıları">' +
-        '<div><strong data-count="total">' + havuz.length + '</strong><span>Toplam soru</span></div>' +
-        '<div><strong data-count="repeat">' + tekrar + '</strong><span>Toplam tekrar</span></div>' +
-        '<div><strong data-count="wrong">' + yanlis + '</strong><span>Yanlış soru</span></div>' +
-        '<div><strong data-count="unseen">' + gorulmemis + '</strong><span>Hiç görülmemiş soru</span></div></div>' +
+        konuSayaclariHtml(havuz.length, tekrar, yanlis, gorulmemis, "Ders soru sayıları") +
         '<div class="konu-secenekler">' +
         '<button class="btn" data-action="start-deneme-konu-flash"' + konuAttr + (havuz.length ? '' : ' disabled') + '>🎲 Rastgele Sorular</button>' +
         '<button class="btn" data-action="start-deneme-konu-yanlis"' + konuAttr + (yanlis ? '' : ' disabled') + '>❌ Mevcut Yanlışlar</button>' +
@@ -4191,9 +4202,15 @@
         '</div></details>';
     }).join("");
 
+    var toplamHtml = '<div class="card konu-toplam" data-toplam="1" aria-label="Tüm derslerin toplamı">' +
+      '<div class="konu-toplam-baslik">Tüm dersler</div>' +
+      konuSayaclariHtml(toplamSoru, toplamTekrar, toplamYanlis, toplamGorulmemis, "Tüm derslerin soru sayıları") +
+      '</div>';
+
     return '<div class="link-row"><button class="btn ghost" data-action="open-menu-deneme">← Deneme Sınavı</button></div>' +
       '<div class="section-title">📖 Konu Konu Bak</div>' +
       '<div class="desc" style="margin-bottom:12px">Bir ders seç, ardından çalışmak istediğin soruları aç. Sayılar, bu hesaptaki tüm deneme ve soru çalışmalarını kapsar. Açtığın sorular görülmemiş listesinden, doğru çözdüğün yanlışlar yanlış listesinden çıkar. Ayrı bir deneme geçmişi oluşmaz.</div>' +
+      toplamHtml +
       '<div class="konu-ders-listesi">' + tiles + "</div>";
   }
 

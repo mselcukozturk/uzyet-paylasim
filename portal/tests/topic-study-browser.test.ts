@@ -78,12 +78,59 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       el.click();
     }
     function lesson() { return document.querySelector('details[data-konu="Kredi"]'); }
+    function checkCounterLayout(container) {
+      var box = container || lesson();
+      var countEls = Array.from(box.querySelectorAll('.konu-sayaclar [data-count]'));
+      var order = countEls.map(function(el) { return el.getAttribute('data-count'); });
+      check(order.join(',') === 'total,repeat,wrong,unseen', 'Sayaç kutuları DOM sırası: total, repeat, wrong, unseen');
+      var rTotal = box.querySelector('[data-count="total"]').parentElement.getBoundingClientRect();
+      var rRepeat = box.querySelector('[data-count="repeat"]').parentElement.getBoundingClientRect();
+      var rWrong = box.querySelector('[data-count="wrong"]').parentElement.getBoundingClientRect();
+      var rUnseen = box.querySelector('[data-count="unseen"]').parentElement.getBoundingClientRect();
+      if (innerWidth <= 600) {
+        check(Math.abs(rTotal.top - rRepeat.top) < 1 && rTotal.right < rRepeat.left, 'Sayaç kutuları 2x2: total sol-üst ve repeat sağ-üst aynı satırda');
+        check(Math.abs(rWrong.top - rUnseen.top) < 1 && rWrong.right < rUnseen.left, 'Sayaç kutuları 2x2: wrong sol-alt ve unseen sağ-alt aynı satırda');
+        check(rTotal.bottom < rWrong.top && rRepeat.bottom < rUnseen.top, 'Sayaç kutuları 2x2: ikinci satır birincinin altında');
+      } else {
+        var tops = [rTotal.top, rRepeat.top, rWrong.top, rUnseen.top];
+        check(Math.max.apply(null, tops) - Math.min.apply(null, tops) < 1, 'Dört sayaç kutusu aynı satırda');
+        check(rTotal.right < rRepeat.left && rRepeat.right < rWrong.left && rWrong.right < rUnseen.left, 'Dört sayaç kutusu soldan sağa: total, repeat, wrong, unseen');
+      }
+    }
+    function toplamKontrol() {
+      var topBlock = document.querySelector('[data-toplam="1"]');
+      check(!!topBlock, 'Toplam sayaç bloğu mevcut: [data-toplam="1"]');
+      var countEls = Array.from(topBlock.querySelectorAll('.konu-sayaclar [data-count]'));
+      var order = countEls.map(function(el) { return el.getAttribute('data-count'); });
+      check(order.join(',') === 'total,repeat,wrong,unseen', 'Üst blok sayaç kutuları DOM sırası: total, repeat, wrong, unseen');
+      var allLessons = Array.from(document.querySelectorAll('details.konu-calisma'));
+      check(allLessons.length > 0, 'Ders kutuları mevcut');
+      var sumTotal = 0, sumRepeat = 0, sumWrong = 0, sumUnseen = 0;
+      allLessons.forEach(function(l) {
+        sumTotal += parseInt(l.querySelector('[data-count="total"]').textContent, 10) || 0;
+        sumRepeat += parseInt(l.querySelector('[data-count="repeat"]').textContent, 10) || 0;
+        sumWrong += parseInt(l.querySelector('[data-count="wrong"]').textContent, 10) || 0;
+        sumUnseen += parseInt(l.querySelector('[data-count="unseen"]').textContent, 10) || 0;
+      });
+      var topTotal = parseInt(topBlock.querySelector('[data-count="total"]').textContent, 10);
+      var topRepeat = parseInt(topBlock.querySelector('[data-count="repeat"]').textContent, 10);
+      var topWrong = parseInt(topBlock.querySelector('[data-count="wrong"]').textContent, 10);
+      var topUnseen = parseInt(topBlock.querySelector('[data-count="unseen"]').textContent, 10);
+      check(topTotal === sumTotal, 'Üst blok toplam soru derslerin toplamına eşit: ' + topTotal + ' === ' + sumTotal);
+      check(topRepeat === sumRepeat, 'Üst blok toplam tekrar derslerin toplamına eşit: ' + topRepeat + ' === ' + sumRepeat);
+      check(topWrong === sumWrong, 'Üst blok yanlış soru derslerin toplamına eşit: ' + topWrong + ' === ' + sumWrong);
+      check(topUnseen === sumUnseen, 'Üst blok görülmemiş soru derslerin toplamına eşit: ' + topUnseen + ' === ' + sumUnseen);
+      var firstDetails = document.querySelector('details.konu-calisma');
+      check(topBlock.getBoundingClientRect().bottom <= firstDetails.getBoundingClientRect().top, 'Üst blok ders listesinden önce');
+      checkCounterLayout(topBlock);
+    }
     function counters(total, unseen, wrong, repeat) {
       var box = lesson();
       check(box.querySelector('[data-count="total"]').textContent === String(total), 'Toplam: ' + total);
       check(box.querySelector('[data-count="unseen"]').textContent === String(unseen), 'Görülmemiş: ' + unseen);
       check(box.querySelector('[data-count="wrong"]').textContent === String(wrong), 'Yanlış: ' + wrong);
       check(box.querySelector('[data-count="repeat"]').textContent === String(repeat), 'Toplam tekrar: ' + repeat);
+      toplamKontrol();
     }
     function back() { click('[data-action="open-deneme-konu-sec"]'); }
     try {
@@ -115,25 +162,6 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
           check(parts[0].right<parts[1].left && parts[1].right<parts[2].left, 'Başlık öğeleri aralıklı ve doğru sırada');
         });
       }
-      function checkCounterLayout() {
-        var box = lesson();
-        var countEls = Array.from(box.querySelectorAll('.konu-sayaclar [data-count]'));
-        var order = countEls.map(function(el) { return el.getAttribute('data-count'); });
-        check(order.join(',') === 'total,repeat,wrong,unseen', 'Sayaç kutuları DOM sırası: total, repeat, wrong, unseen');
-        var rTotal = box.querySelector('[data-count="total"]').parentElement.getBoundingClientRect();
-        var rRepeat = box.querySelector('[data-count="repeat"]').parentElement.getBoundingClientRect();
-        var rWrong = box.querySelector('[data-count="wrong"]').parentElement.getBoundingClientRect();
-        var rUnseen = box.querySelector('[data-count="unseen"]').parentElement.getBoundingClientRect();
-        if (innerWidth <= 600) {
-          check(Math.abs(rTotal.top - rRepeat.top) < 1 && rTotal.right < rRepeat.left, 'Sayaç kutuları 2x2: total sol-üst ve repeat sağ-üst aynı satırda');
-          check(Math.abs(rWrong.top - rUnseen.top) < 1 && rWrong.right < rUnseen.left, 'Sayaç kutuları 2x2: wrong sol-alt ve unseen sağ-alt aynı satırda');
-          check(rTotal.bottom < rWrong.top && rRepeat.bottom < rUnseen.top, 'Sayaç kutuları 2x2: ikinci satır birincinin altında');
-        } else {
-          var tops = [rTotal.top, rRepeat.top, rWrong.top, rUnseen.top];
-          check(Math.max.apply(null, tops) - Math.min.apply(null, tops) < 1, 'Dört sayaç kutusu aynı satırda');
-          check(rTotal.right < rRepeat.left && rRepeat.right < rWrong.left && rWrong.right < rUnseen.left, 'Dört sayaç kutusu soldan sağa: total, repeat, wrong, unseen');
-        }
-      }
       document.documentElement.dataset.theme = 'light';
       checkHeadingAlignment();
       document.documentElement.dataset.theme = 'dark';
@@ -157,6 +185,10 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       checkHeadingAlignment();
       check(document.querySelector('details[data-konu="Hukuk"] [data-count="repeat"]').textContent === '5', 'Başka dersin tekrar sayısı ayrık');
       counters(4,2,1,2);
+      check(document.querySelector('[data-toplam="1"] [data-count="total"]').textContent === '5', 'Açık sayı üst blok toplam: 5');
+      check(document.querySelector('[data-toplam="1"] [data-count="repeat"]').textContent === '7', 'Açık sayı üst blok toplam tekrar: 7');
+      check(document.querySelector('[data-toplam="1"] [data-count="wrong"]').textContent === '1', 'Açık sayı üst blok yanlış: 1');
+      check(document.querySelector('[data-toplam="1"] [data-count="unseen"]').textContent === '2', 'Açık sayı üst blok görülmemiş: 2');
       checkCounterLayout();
       check(lesson().querySelectorAll('button').length === 3, 'Üç seçenek');
       check(!lesson().querySelector('[data-action="start-deneme-konu-yanlis"]').textContent.match(/\\d/), 'Yanlış düğmesinde sayı yok');
