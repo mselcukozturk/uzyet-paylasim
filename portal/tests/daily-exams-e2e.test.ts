@@ -55,9 +55,9 @@ async function setup(day = "2026-10-01", multiplier = 3) {
       { exports: result, require: (key: string) => mocks[key], console, Buffer,
         Date: class extends Date { static now() { return Date.parse('2026-09-30T12:00:00Z'); } },
         process: { env: { FLAGS_EXPORT_TOKEN: 'test-token' } } });
-    return async (method = 'GET', token = 'test-token', day = '2026-10-01') => {
+    return async (method = 'GET', token = 'test-token', day = '2026-10-01', replaceCode?: string) => {
       const response = await result[method](new Request('https://test.invalid/api/admin/daily-exam-override', {
-        method, headers: { authorization: `Bearer ${token}` }, ...(method === 'POST' ? { body: JSON.stringify({ day }) } : {}),
+        method, headers: { authorization: `Bearer ${token}` }, ...(method === 'POST' ? { body: JSON.stringify({ day, replaceCode }) } : {}),
       }));
       return { status: response.status, data: await response.json() };
     };
@@ -78,10 +78,10 @@ async function finish(db: any, post: any, user: string, attempt: any, correct: n
 }
 
 // Override failure modes: >=10 instead of >10, shown counts instead of answers,
-// per-user instead of aggregate rates, rounding/tie errors, quota overriding ranking,
-// anonymous access, other-day writes, insufficient candidates, snapshot replacement,
+// per-user instead of aggregate rates, rounding/tie errors, global instead of topic ranking,
+// anonymous access, other-day writes, insufficient topic candidates, started snapshot replacement,
 // changed options/correct answers, and a second daily exam intersecting the first.
-test('one-day ranked override: aggregate statistics, immutable official snapshot and disjoint second', async () => {
+test('one-day ranked override: topic quotas, Kambiyo threshold, unstarted replacement and disjoint second', async () => {
   const { pg, db, bank, post, loadOverride } = await setup();
   try {
     const admin = loadOverride();
@@ -89,17 +89,33 @@ test('one-day ranked override: aggregate statistics, immutable official snapshot
     assert.equal((await admin('POST')).status, 503);
     assert.equal((await admin('POST', 'test-token', '2026-10-02')).status, 400);
     const rows = await db.select().from(schema.questions).where(orm.eq(schema.questions.bankId, bank.id)).orderBy(schema.questions.guid);
-    await db.insert(schema.questionStats).values(rows.flatMap((q, i) => [
-      { userId: 'stat-a', questionGuid: q.guid, shownCount: 1000, correctCount: i === 0 ? 0 : i % 7, wrongCount: i === 0 ? 5 : 5 },
+    const stats = rows.flatMap((q, i) => q.topic === 'Kambiyo' ? [
+      { userId: 'stat-a', questionGuid: q.guid, shownCount: 1000, correctCount: 3, wrongCount: q.guid.endsWith('-0') ? 0 : 1 },
+      { userId: 'stat-b', questionGuid: q.guid, shownCount: 1000, correctCount: 2, wrongCount: 2 },
+    ] : [
+      { userId: 'stat-a', questionGuid: q.guid, shownCount: 1000, correctCount: i === 0 ? 0 : i % 7, wrongCount: 5 },
       { userId: 'stat-b', questionGuid: q.guid, shownCount: 1000, correctCount: i === 0 ? 0 : 6, wrongCount: i === 0 ? 5 : i % 11 },
-    ]));
-    const expected = rows.slice(1).map((q, i) => ({ ...q, correct: (i+1)%7+6, wrong: 5+(i+1)%11 }))
-      .sort((a,b) => b.wrong*(a.correct+a.wrong)-a.wrong*(b.correct+b.wrong) || b.wrong-a.wrong || a.guid.localeCompare(b.guid)).slice(0,50);
+    ]);
+    await db.insert(schema.questionStats).values(stats);
+    const eligible = rows.map(q => ({...q,
+      correct: stats.filter(s=>s.questionGuid===q.guid).reduce((sum,s)=>sum+s.correctCount,0),
+      wrong: stats.filter(s=>s.questionGuid===q.guid).reduce((sum,s)=>sum+s.wrongCount,0),
+    })).filter(q=>q.correct+q.wrong >= (q.topic==='Kambiyo'?8:11));
+    const expected = Object.entries(examCore.OFFICIAL_DISTRIBUTION).flatMap(([topic,quota])=>eligible.filter(q=>q.topic===topic)
+      .sort((a,b) => b.wrong*(a.correct+a.wrong)-a.wrong*(b.correct+b.wrong) || b.wrong-a.wrong || a.guid.localeCompare(b.guid)).slice(0,quota));
     const preview = await admin(); assert.equal(preview.status, 200);
-    assert.equal(preview.data.eligibleCount, rows.length-1);
+    assert.equal(preview.data.eligibleCount, eligible.length);
+    assert.deepEqual(JSON.parse(JSON.stringify(preview.data.distribution)), examCore.OFFICIAL_DISTRIBUTION);
+    assert.equal(preview.data.topicSummary.find((t:any)=>t.topic==='Kambiyo').minimumAnswered,8);
     assert.deepEqual(Array.from(preview.data.selected, (q: any) => q.guid), expected.map(q=>q.guid));
     assert.equal((await db.select().from(schema.dailyExams)).length, 0, 'GET must not write');
-    const applied = await admin('POST'); assert.equal(applied.status, 200, JSON.stringify(applied.data));
+    const code=examCore.dailyExamCode('2026-10-01');
+    const oldSnapshots=rows.slice(0,50).map(q=>({questionId:q.id,questionGuid:q.guid,topic:q.topic,prompt:q.prompt,options:q.options,correctIndex:q.correctIndex,explanation:q.explanation}));
+    await db.insert(schema.dailyExams).values({code,day:'2026-10-01',number:1,bankId:bank.id,snapshots:oldSnapshots});
+    assert.equal((await admin('POST')).status,409,'replacement requires the exact existing code');
+    assert.equal((await admin('POST','test-token','2026-10-01','UZY-R1')).status,409);
+    const applied = await admin('POST','test-token','2026-10-01',code); assert.equal(applied.status, 200, JSON.stringify(applied.data));
+    assert.equal(applied.data.replaced,true);
     assert.equal((await db.select().from(schema.dailyExams)).length, 1, 'second is not precreated');
     const first = await post('alice', start(1)); assert.equal(first.status, 200);
     assert.equal(first.data.dailyNumber, 1); assert.equal(first.data.isDaily, true);
@@ -109,12 +125,24 @@ test('one-day ranked override: aggregate statistics, immutable official snapshot
     await finish(db, post, 'alice', first.data, 0);
     const second = await post('alice', start(2)); assert.equal(second.status, 200, JSON.stringify(second.data));
     assert.equal(guids(second.data).filter((g: string)=>guids(first.data).includes(g)).length, 0);
-    assert.equal((await admin('POST')).status, 409, 'existing snapshot must never be replaced');
+    assert.equal((await admin('POST','test-token','2026-10-01',code)).status, 409, 'started snapshot must never be replaced');
     const shared = await post('bob', { action: 'start', mode: 'rastgele', examCode: first.data.examCode });
     assert.deepEqual(guids(shared.data), guids(first.data));
     await mkdir(artifacts, { recursive: true });
     await writeFile(new URL('ranked-override-report.json', artifacts), JSON.stringify({ passed: true, eligibleCount: preview.data.eligibleCount, firstCount: 50, secondCount: 50, intersection: 0, selection: applied.data }, null, 2));
   } finally { await pg.close(); }
+});
+
+test('ranked override refuses missing topic quota even with more than 50 eligible questions overall', async () => {
+  const {pg,db,bank,loadOverride}=await setup();
+  try {
+    const rows=await db.select().from(schema.questions).where(orm.eq(schema.questions.bankId,bank.id));
+    await db.insert(schema.questionStats).values(rows.map(q=>({userId:'stats',questionGuid:q.guid,correctCount:0,wrongCount:q.topic==='Kambiyo'?7:11})));
+    const response=await loadOverride()('POST');
+    assert.equal(response.status,503);
+    assert.equal(response.data.topicSummary.find((t:any)=>t.topic==='Kambiyo').missing,3);
+    assert.equal((await db.select().from(schema.dailyExams)).length,0);
+  } finally {await pg.close();}
 });
 
 test('daily pair API: gate, disjoint immutable questions, independent scores and history', async () => {

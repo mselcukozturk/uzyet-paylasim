@@ -132,14 +132,19 @@ geçici) · Neon Auth anahtarları.
 `/api/admin/daily-exam-override` yalnız `FLAGS_EXPORT_TOKEN` ile erişilir.
 `GET` aktif bankanın toplu `question_stats` verisini okur ve seçim raporunu döndürür;
 veritabanına yazmaz. `POST {"day":"2026-10-01"}` yalnız bu günün ilk denemesini
-`daily_exams` tablosuna hazırlar. İşlem 1 Ekim 07:00 İstanbul sonrasında kapanır;
-mevcut günlük kayıt veya aynı kodla başlatılmış deneme varsa 409 verir.
+`daily_exams` tablosuna hazırlar. İşlem 1 Ekim 00:00 İstanbul sonrasında kapanır.
+Başlatılmamış ilk kaydı düzeltmek için aynı kodla
+`POST {"day":"2026-10-01","replaceCode":"UZY-RYB3J1F"}` kullanılır.
+Günlük çift ve kod kilitleri altında başlatan kontrolü yeniden yapılır; ilk/ikinci
+deneme başlatılmış veya ikinci günlük kayıt oluşturulmuşsa 409 verir.
 
-Seçim: doğru + yanlış toplamı **10'dan büyük** olan sorular; yanlış yüzdesi azalan,
-eşitlikte yanlış adedi azalan, ikinci eşitlikte GUID artan sıra. İlk 50 alınır.
-Bu tek günlük istisnada konu kotaları seçim sırasını değiştirmez; rapor resmî kota
-ile farkı gösterir. 50 aday ve ilk deneme dışlandıktan sonra ikinci denemenin her
-konu kotasını karşılayacak havuz yoksa 503 döner. İkinci deneme önceden üretilmez;
+Seçim mevcut `OFFICIAL_DISTRIBUTION` konu kotalarıyla yapılır. Her konunun adayları
+yanlış yüzdesi azalan, eşitlikte yanlış adedi azalan, ikinci eşitlikte GUID artan
+sırayla seçilir. Doğru + yanlış toplamı diğer konularda **en az 11**, yalnız
+Kambiyo'da **en az 8** olmalıdır (30 Eylül kullanıcı onayı). Bir konu kotası eksikse
+başka konudan tamamlanmaz veya eşik kendiliğinden düşürülmez; 503 ve konu raporu döner.
+İlk deneme dışlandıktan sonra ikinci denemenin her konu kotasını karşılayacak havuz
+yoksa da 503 döner. İkinci deneme önceden üretilmez;
 mevcut rastgele seçim, bitirme şartı ve kesişmeme kuralıyla gün içinde oluşur.
 Şıklar mevcut günlük deneme yöntemiyle karıştırılır, kod ve 50 soru / 60 dakika korunur.
 
