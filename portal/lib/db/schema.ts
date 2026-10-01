@@ -25,6 +25,7 @@ export const profiles = pgTable('profiles', {
   displayName: text('display_name'),
   isActive: boolean('is_active').notNull().default(false),
   isAdmin: boolean('is_admin').notNull().default(false),
+  canViewStatistics: boolean('can_view_statistics').notNull().default(false),
   canSeeAiSources: boolean('can_see_ai_sources').notNull().default(false),
   disclaimerAcceptedAt: timestamp('disclaimer_accepted_at', { withTimezone: true }),
   aiDisclaimerAcceptedAt: timestamp('ai_disclaimer_accepted_at', { withTimezone: true }),

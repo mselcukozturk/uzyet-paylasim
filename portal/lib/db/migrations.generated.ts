@@ -73,4 +73,8 @@ export const MIGRATIONS: readonly Migration[] = [
     name: "0016_second_daily_exam.sql",
     content: "ALTER TABLE exam_attempts ADD COLUMN IF NOT EXISTS daily_day text;\nALTER TABLE exam_attempts ADD COLUMN IF NOT EXISTS daily_number smallint;\nCREATE TABLE IF NOT EXISTS daily_exams (\n  code text PRIMARY KEY,\n  day text NOT NULL,\n  number smallint NOT NULL CHECK (number IN (1, 2)),\n  bank_id uuid NOT NULL REFERENCES question_banks(id) ON DELETE RESTRICT,\n  snapshots jsonb NOT NULL CHECK (jsonb_array_length(snapshots) = 50),\n  CONSTRAINT daily_exams_day_number_unique UNIQUE (day, number)\n);\n",
   },
+  {
+    name: "0017_statistics_access.sql",
+    content: "ALTER TABLE profiles ADD COLUMN IF NOT EXISTS can_view_statistics boolean NOT NULL DEFAULT false;\n--> statement-breakpoint\nUPDATE profiles SET can_view_statistics = true, updated_at = now()\nWHERE lower(username) IN ('emrebot', 'numanbaba');\n",
+  },
 ];

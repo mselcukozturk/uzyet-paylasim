@@ -15,7 +15,7 @@ function fail(message: string, status: number) {
 }
 
 function statusPayload(profile: {
-  username: string; isActive: boolean; isAdmin?: boolean; canSeeAiSources: boolean;
+  username: string; isActive: boolean; isAdmin?: boolean; canViewStatistics?: boolean; canSeeAiSources: boolean;
   disclaimerAcceptedAt: Date | null; aiDisclaimerAcceptedAt?: Date | null;
 }, token?: string) {
   return {
@@ -23,6 +23,7 @@ function statusPayload(profile: {
     username: profile.username,
     isActive: profile.isActive,
     isAdmin: !!profile.isAdmin,
+    canViewStatistics: profile.isActive && (!!profile.isAdmin || profile.canViewStatistics === true),
     canSeeAiSources: profile.canSeeAiSources,
     disclaimerAccepted: !!profile.disclaimerAcceptedAt,
     aiDisclaimerAccepted: !!profile.aiDisclaimerAcceptedAt,
@@ -74,6 +75,7 @@ export async function POST(request: Request) {
     username: schema.profiles.username,
     isActive: schema.profiles.isActive,
     isAdmin: schema.profiles.isAdmin,
+    canViewStatistics: schema.profiles.canViewStatistics,
     canSeeAiSources: schema.profiles.canSeeAiSources,
     disclaimerAcceptedAt: schema.profiles.disclaimerAcceptedAt,
     aiDisclaimerAcceptedAt: schema.profiles.aiDisclaimerAcceptedAt,

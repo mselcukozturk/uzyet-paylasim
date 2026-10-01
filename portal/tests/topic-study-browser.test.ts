@@ -227,6 +227,29 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       counters(4,0,0,4);
       check(document.documentElement.scrollWidth <= innerWidth, 'Yatay taşma yok');
       check(!document.querySelector('[data-action="toggle-study-repeats"]'), 'Normal kullanıcı tekrar listesini göremez');
+      for (var viewerName of ['emrebot','numanbaba']) {
+        var originalAuthChange = afterAuthStateChange;
+        afterAuthStateChange = function(cb){if(cb)cb();};
+        remoteFetch = function(){return Promise.resolve({ok:true,data:{authenticated:true,isActive:true,username:viewerName,isAdmin:false,canViewStatistics:true,disclaimerAccepted:true}});};
+        await new Promise(resolve=>remoteCheckStatus(resolve));
+        afterAuthStateChange = originalAuthChange;
+        check(remoteAuth.canViewStatistics === true && remoteAuth.isAdmin === false, 'Oturum yanıtı görüntüleme iznini taşır');
+        konuTekrarListesi = {acik:false,yukleniyor:false,veri:null,hata:null};
+        remoteFetch = function(path,method,body) {
+          check(body.action === 'study-repeats', 'Görüntüleme hesabı istatistik API kullanır');
+          return Promise.resolve({ok:true,data:{users:[{name:'yonetici',totalRepeats:7,avgCorrect:30.5}]}});
+        };
+        render(); click('[data-action="toggle-study-repeats"]');
+        await new Promise(resolve=>setTimeout(resolve,0));
+        check(document.querySelector('[data-study-repeats] table').textContent.includes('30,5 / 50'), viewerName + ' tekrar ve ortalama listesini görür');
+        check(gununCozenlerHtml({day:'2026-10-01'}).includes('toggle-daily-solvers'), viewerName + ' denemeyi çözenler düğmesini görür');
+        check(remoteAuth.isAdmin === false, viewerName + ' yönetici değildir');
+        remoteAuth.canViewStatistics = false;
+        render();
+        check(!document.querySelector('[data-study-repeats]'), 'İzin kalkınca liste gizlenir');
+        check(gununCozenlerHtml({day:'2026-10-01'}) === '', 'İzinsiz günlük çözenler gizlenir');
+      }
+      konuTekrarListesi = {acik:false,yukleniyor:false,veri:null,hata:null};
       remoteAuth.isAdmin = true; remoteAuth.username = 'yonetici'; render();
       var repeatRequests = 0;
       remoteFetch = function(path,method,body) {

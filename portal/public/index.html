@@ -1501,7 +1501,7 @@
   var REMOTE_TOKEN_KEY = "uzyet_portal_token";
   // TODO: kullanıcı gerçek metni verince buraya yazılacak — şimdilik yer tutucu.
   var DISCLAIMER_METNI = "Bu, gerçek sınavın simülasyonudur; sorular ve açıklamalar UZYET ekibi tarafından hazırlanmıştır, resmi kaynak yerine geçmez. Kendi sorumluluğunda kullan.";
-  var remoteAuth = { checked: false, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
+  var remoteAuth = { checked: false, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, canViewStatistics: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
   var remoteDash = null;
   var remoteBusy = false;
   // Kayıt formu her render()'da sıfırdan kurulduğu için, hatalı gönderim sonrası
@@ -1994,12 +1994,12 @@
     remoteFetch("/api/access", "GET").then(function (r) {
       if (r.ok && r.data && r.data.authenticated) {
         if (r.data.token) remoteSetToken(r.data.token);
-        remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, isAdmin: !!r.data.isAdmin, disclaimerAccepted: !!r.data.disclaimerAccepted, canSeeAiSources: r.data.canSeeAiSources === true, aiDisclaimerAccepted: !!r.data.aiDisclaimerAccepted };
+        remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, isAdmin: !!r.data.isAdmin, canViewStatistics: r.data.canViewStatistics === true, disclaimerAccepted: !!r.data.disclaimerAccepted, canSeeAiSources: r.data.canSeeAiSources === true, aiDisclaimerAccepted: !!r.data.aiDisclaimerAccepted };
       } else {
-        remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
+        remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, canViewStatistics: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
       }
     }).catch(function () {
-      remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
+      remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, canViewStatistics: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
     }).then(function () {
       afterAuthStateChange(cb);
     });
@@ -2070,7 +2070,7 @@
       if (!r.ok) { showBanner((r.data && r.data.error) || "Kayıt başarısız.", true); render(); return; }
       denemeIsimTaslak = ""; denemePinTaslak = "";
       if (r.data.token) remoteSetToken(r.data.token);
-      remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, isAdmin: !!r.data.isAdmin, disclaimerAccepted: !!r.data.disclaimerAccepted, canSeeAiSources: r.data.canSeeAiSources === true, aiDisclaimerAccepted: !!r.data.aiDisclaimerAccepted };
+      remoteAuth = { checked: true, checking: false, authenticated: true, username: r.data.username, isActive: !!r.data.isActive, isAdmin: !!r.data.isAdmin, canViewStatistics: r.data.canViewStatistics === true, disclaimerAccepted: !!r.data.disclaimerAccepted, canSeeAiSources: r.data.canSeeAiSources === true, aiDisclaimerAccepted: !!r.data.aiDisclaimerAccepted };
       render();
       afterAuthStateChange(render);
     }).catch(function () { remoteBusy = false; showBanner("Bağlantı hatası — internet bağlantını kontrol et.", true); render(); });
@@ -2104,7 +2104,7 @@
     currentPratik = null; currentCheckpoint = null; currentFlash = null;
     clearTimeout(remoteStudyRetryTimer); clearTimeout(remotePracticeRetryTimer);
     localStorage.removeItem(REMOTE_TOKEN_KEY);
-    remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
+    remoteAuth = { checked: true, checking: false, authenticated: false, username: null, isActive: false, isAdmin: false, canViewStatistics: false, disclaimerAccepted: false, canSeeAiSources: false, aiDisclaimerAccepted: false };
     denemeIsimTaslak = "";
     denemePinTaslak = "";
     remoteDash = null;
@@ -2839,7 +2839,7 @@
   // ("daily-solvers" 403 döner); buradaki kontrol yalnız görünürlüktür.
   var gununCozenler = { acik: false, yukleniyor: false, veri: null, hata: null };
   function gununCozenlerHtml(g) {
-    if (!remoteAuth.isAdmin) return "";
+    if (!remoteAuth.isAdmin && !remoteAuth.canViewStatistics) return "";
     var c = gununCozenler;
     var btn = '<button class="btn ghost" style="margin-top:10px" data-action="toggle-daily-solvers" aria-expanded="' + c.acik + '">' +
       (c.acik ? "Listeyi gizle" : "👥 Kimler çözdü?") + "</button>";
@@ -2862,6 +2862,7 @@
     return btn + '<div style="margin-top:10px">' + govde + "</div>";
   }
   function toggleGununCozenler() {
+    if (!remoteAuth.isAdmin && !remoteAuth.canViewStatistics) return;
     var c = gununCozenler;
     c.acik = !c.acik;
     if (!c.acik || c.yukleniyor) { render(); return; }
@@ -4175,7 +4176,7 @@
 
   var konuTekrarListesi = { acik: false, yukleniyor: false, veri: null, hata: null };
   function konuTekrarListesiHtml() {
-    if (!remoteAuth.isAdmin) return "";
+    if (!remoteAuth.isAdmin && !remoteAuth.canViewStatistics) return "";
     var c = konuTekrarListesi;
     var btn = '<button class="btn ghost" data-action="toggle-study-repeats" aria-expanded="' + c.acik + '" aria-controls="konu-tekrar-listesi">' +
       (c.acik ? "Listeyi gizle" : "👥 Kullanıcıların Toplam Tekrarı") + "</button>";
@@ -4193,7 +4194,7 @@
       '<div class="muted" style="margin:12px 0">Tekrar: aktif sorular · Ortalama deneme: tüm zamanlar, 50 üzerinden</div>' + govde + '</div>';
   }
   function toggleKonuTekrarListesi() {
-    if (!remoteAuth.isAdmin) return;
+    if (!remoteAuth.isAdmin && !remoteAuth.canViewStatistics) return;
     var c = konuTekrarListesi;
     c.acik = !c.acik;
     if (!c.acik || c.yukleniyor) { render(); return; }
@@ -4202,13 +4203,13 @@
     var generation = remoteStudyOwnerGeneration;
     render();
     remoteFetch("/api/exam", "POST", { action: "study-repeats" }).then(function (r) {
-      if (c !== konuTekrarListesi || owner !== remoteAuth.username || generation !== remoteStudyOwnerGeneration || !remoteAuth.isAdmin) return;
+      if (c !== konuTekrarListesi || owner !== remoteAuth.username || generation !== remoteStudyOwnerGeneration || (!remoteAuth.isAdmin && !remoteAuth.canViewStatistics)) return;
       c.yukleniyor = false;
       if (r.ok) c.veri = r.data;
       else c.hata = (r.data && r.data.error) || "Liste alınamadı. Gizleyip yeniden açarak tekrar deneyebilirsin.";
       render();
     }).catch(function () {
-      if (c !== konuTekrarListesi || owner !== remoteAuth.username || generation !== remoteStudyOwnerGeneration || !remoteAuth.isAdmin) return;
+      if (c !== konuTekrarListesi || owner !== remoteAuth.username || generation !== remoteStudyOwnerGeneration || (!remoteAuth.isAdmin && !remoteAuth.canViewStatistics)) return;
       c.yukleniyor = false; c.hata = "Liste alınamadı. Gizleyip yeniden açarak tekrar deneyebilirsin.";
       render();
     });

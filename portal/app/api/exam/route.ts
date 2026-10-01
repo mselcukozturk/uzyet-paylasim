@@ -821,7 +821,7 @@ async function handlePost(request: Request) {
     }
 
     if (body.action === 'study-repeats') {
-      if (!profile.isAdmin) return fail('Bu bilgi yalnız yöneticiye açık.', 403);
+      if (!profile.isAdmin && !profile.canViewStatistics) return fail('İstatistik görüntüleme yetkisi gerekli.', 403);
       const activeGuids = db.select({ guid: schema.questions.guid }).from(schema.questions)
         .innerJoin(schema.questionBanks, eq(schema.questions.bankId, schema.questionBanks.id))
         .where(eq(schema.questionBanks.isActive, true));
@@ -849,7 +849,7 @@ async function handlePost(request: Request) {
     }
 
     if (body.action === 'daily-solvers') {
-      if (!profile.isAdmin) return fail('Bu bilgi yalnız yöneticiye açık.', 403);
+      if (!profile.isAdmin && !profile.canViewStatistics) return fail('İstatistik görüntüleme yetkisi gerekli.', 403);
       if (body.dailyNumber !== undefined && body.dailyNumber !== 1 && body.dailyNumber !== 2) return fail('Deneme numarası geçersiz.', 400);
       return NextResponse.json(await dailySolvers(body.dailyNumber));
     }

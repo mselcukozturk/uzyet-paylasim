@@ -82,6 +82,7 @@ export async function getSessionProfile(request: Request) {
     displayName: schema.profiles.displayName,
     isActive: schema.profiles.isActive,
     isAdmin: schema.profiles.isAdmin,
+    canViewStatistics: schema.profiles.canViewStatistics,
     canSeeAiSources: schema.profiles.canSeeAiSources,
     disclaimerAcceptedAt: schema.profiles.disclaimerAcceptedAt,
     aiDisclaimerAcceptedAt: schema.profiles.aiDisclaimerAcceptedAt,
