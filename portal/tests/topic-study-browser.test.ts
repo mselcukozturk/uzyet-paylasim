@@ -232,13 +232,17 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       remoteFetch = function(path,method,body) {
         check(body.action === 'study-repeats', 'Tekrar listesi doğru API ile alınır');
         repeatRequests++;
-        return Promise.resolve({ok:true,data:{users:[{name:'ikinci',totalRepeats:11},{name:'<script>',totalRepeats:7},{name:'yeni',totalRepeats:0}]}});
+        return Promise.resolve({ok:true,data:{users:[{name:'ikinci',totalRepeats:11,avgCorrect:30.5},{name:'<script>',totalRepeats:7,avgCorrect:0},{name:'yeni',totalRepeats:0,avgCorrect:null}]}});
       };
       click('[data-action="toggle-study-repeats"]');
       check(document.querySelector('[data-study-repeats]').textContent.includes('Yükleniyor'), 'Liste yükleme durumu');
       await new Promise(resolve=>setTimeout(resolve,0));
       check(document.querySelector('[data-study-repeats] tbody').textContent.includes('ikinci'), 'Yönetici kullanıcı adını görür');
       check(document.querySelector('[data-study-repeats] tbody').textContent.includes('11'), 'Tekrar sayısı görünür');
+      var repeatRows = document.querySelectorAll('[data-study-repeats] tbody tr');
+      check(repeatRows[0].cells.length === 3 && repeatRows[0].cells[2].textContent === '30,5 / 50', 'Tekrarın yanında tüm zamanlar ortalama deneme skoru');
+      check(repeatRows[1].cells[2].textContent === '0,0 / 50', 'Sıfır puan kayıp veri değildir');
+      check(repeatRows[2].cells[2].textContent === '—', 'Denemesiz kullanıcı için tire');
       check(!document.querySelector('[data-study-repeats] script'), 'Kullanıcı adı HTML olarak çalışmaz');
       click('[data-action="toggle-study-repeats"]');
       check(!document.querySelector('[data-study-repeats] table'), 'Liste gizlenir');
@@ -260,7 +264,7 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       // Return to an administrator with a fresh view for the screenshot artifact.
       remoteAuth.isAdmin = true; remoteAuth.username = 'yonetici';
       konuTekrarListesi = {acik:false,yukleniyor:false,veri:null,hata:null};
-      remoteFetch = function(){return Promise.resolve({ok:true,data:{users:[{name:'ikinci',totalRepeats:11},{name:'yonetici',totalRepeats:7},{name:'yeni',totalRepeats:0}]}});};
+      remoteFetch = function(){return Promise.resolve({ok:true,data:{users:[{name:'ikinci',totalRepeats:11,avgCorrect:30.5},{name:'yonetici',totalRepeats:7,avgCorrect:0},{name:'yeni',totalRepeats:0,avgCorrect:null}]}});};
       render(); click('[data-action="toggle-study-repeats"]');
       await new Promise(resolve=>setTimeout(resolve,0));
       check(document.documentElement.scrollWidth <= innerWidth, 'Yönetici tablosu yatay taşmaz');

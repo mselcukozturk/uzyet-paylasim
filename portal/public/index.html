@@ -4184,12 +4184,13 @@
     if (c.yukleniyor) govde = '<div class="muted" role="status">Yükleniyor…</div>';
     else if (c.hata) govde = '<div class="muted" role="alert">' + escapeHtml(c.hata) + '</div>';
     else if (!c.veri || !c.veri.users.length) govde = '<div class="muted">Henüz kullanıcı yok.</div>';
-    else govde = '<table class="topic-table"><thead><tr><th>Kullanıcı</th><th class="num">Toplam tekrar</th></tr></thead><tbody>' +
+    else govde = '<table class="topic-table"><thead><tr><th>Kullanıcı</th><th class="num">Toplam tekrar</th><th class="num">Ortalama<br>deneme</th></tr></thead><tbody>' +
       c.veri.users.map(function (u) {
-        return '<tr><td style="overflow-wrap:anywhere">' + escapeHtml(u.name) + '</td><td class="num">' + u.totalRepeats + '</td></tr>';
+        return '<tr><td style="overflow-wrap:anywhere">' + escapeHtml(u.name) + '</td><td class="num">' + u.totalRepeats + '</td><td class="num">' +
+          (u.avgCorrect == null ? '—' : fmtOrt(u.avgCorrect) + ' / 50') + '</td></tr>';
       }).join('') + '</tbody></table>';
     return '<div class="card" id="konu-tekrar-listesi" data-study-repeats>' + btn +
-      '<div class="muted" style="margin:12px 0">Tüm dersler · Deneme ve soru çalışmaları · Aktif sorular</div>' + govde + '</div>';
+      '<div class="muted" style="margin:12px 0">Tekrar: aktif sorular · Ortalama deneme: tüm zamanlar, 50 üzerinden</div>' + govde + '</div>';
   }
   function toggleKonuTekrarListesi() {
     if (!remoteAuth.isAdmin) return;

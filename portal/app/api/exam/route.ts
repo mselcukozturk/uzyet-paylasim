@@ -826,16 +826,25 @@ async function handlePost(request: Request) {
         .innerJoin(schema.questionBanks, eq(schema.questions.bankId, schema.questionBanks.id))
         .where(eq(schema.questionBanks.isActive, true));
       const totalRepeats = sql<string>`coalesce(sum(${schema.questionStats.shownCount}), 0)::bigint`;
-      const rows = await db.select({ name: schema.profiles.username, totalRepeats })
+      // Separate aggregates prevent each completed exam multiplying repeat counts.
+      const [rows, averageRows] = await Promise.all([
+        db.select({ userId: schema.profiles.userId, name: schema.profiles.username, totalRepeats })
         .from(schema.profiles)
         .leftJoin(schema.questionStats, and(
           eq(schema.questionStats.userId, schema.profiles.userId),
           inArray(schema.questionStats.questionGuid, activeGuids),
         ))
         .groupBy(schema.profiles.userId, schema.profiles.username)
-        .orderBy(desc(totalRepeats), asc(schema.profiles.username));
+        .orderBy(desc(totalRepeats), asc(schema.profiles.username)),
+        db.select({ userId: schema.examAttempts.userId, avgCorrect: avg(schema.examAttempts.correctCount) })
+          .from(schema.examAttempts).where(eq(schema.examAttempts.status, 'finished'))
+          .groupBy(schema.examAttempts.userId),
+      ]);
+      const averages = new Map(averageRows.map(row => [
+        row.userId, row.avgCorrect === null ? null : Math.round(Number(row.avgCorrect) * 10) / 10,
+      ]));
       return NextResponse.json({ users: rows.map(row => ({
-        name: row.name, totalRepeats: Number(row.totalRepeats),
+        name: row.name, totalRepeats: Number(row.totalRepeats), avgCorrect: averages.get(row.userId) ?? null,
       })) } satisfies StudyRepeatsResponse);
     }
 

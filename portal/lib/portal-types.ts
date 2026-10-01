@@ -90,7 +90,7 @@ export type DailySolversResponse = {
   solvers: Array<{ name: string; finishedAt: string | null; correct: number }>;
 };
 
-export type StudyRepeatsResponse = { users: Array<{ name: string; totalRepeats: number }> };
+export type StudyRepeatsResponse = { users: Array<{ name: string; totalRepeats: number; avgCorrect: number | null }> };
 
 // action "history": bitmiş denemeler, en yeniden eskiye, pageSize'lık sayfalar (page 0'dan).
 export type HistoryPage = { attempts: AttemptSummary[]; total: number; page: number; pageSize: number };
