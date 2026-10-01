@@ -5111,5 +5111,77 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "04 Kredi/Kredi YYS 2026.pdf s. 133",
   "tarihISO": "2026-09-30T23:24:03.060854+00:00"
+ },
+ {
+  "id": "gece-20261002-8dcbbd02f820",
+  "guid": "8dcbbd02f820",
+  "konu": "Kambiyo",
+  "soru": "Aşağıdakilerden hangileri UCP 600'e göre yanlıştır?\ni. Deniz konşimentosu ciro edilebilir. \nii. Fatura imzalı olmak zorundadır. \niii. Koli listesi tarihi akreditif tarihinden önce olabilir.",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "ithalat_ihracat_TKR_2026.pdf s. 69, 82, 94",
+  "tarihISO": "2026-10-01T23:13:07.375994+00:00"
+ },
+ {
+  "id": "gece-20261002-2a6915fcca85",
+  "guid": "2a6915fcca85",
+  "konu": "Kredi",
+  "soru": "TARDES’te istenilen limitin önerildiği ya da talep edilenden düşük limit önerildiği durumlarda, limit önerisi aşılmamak kaydıyla entegre skorları 1-7 arasında olan müşterilere kaç TL’ye kadar açık imece kart kredisi tahsis edilir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026 s.172",
+  "tarihISO": "2026-10-01T23:13:07.375994+00:00"
+ },
+ {
+  "id": "gece-20261002-cf07bf86f872",
+  "guid": "cf07bf86f872",
+  "konu": "Temel İşlemler",
+  "soru": "Sabit Hesap ile ilgili aşağıdakilerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Temel Islemler_YYS_2026.pdf s. 112 (PDF s. 129)",
+  "tarihISO": "2026-10-01T23:13:07.375994+00:00"
+ },
+ {
+  "id": "gece-20261002-2d21edd81d7e",
+  "guid": "2d21edd81d7e",
+  "konu": "Temel İşlemler",
+  "soru": "Bankamıza EFT ile gelecek paralar ve yapılacak ödemeler için Hazine Bölümü’ne bildirim yapılması gereken minimum tutar aşağıdakilerden hangisidir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Temel Islemler_YYS_2026.pdf s.168-169 (PDF s.185)",
+  "tarihISO": "2026-10-01T23:13:07.375994+00:00"
+ },
+ {
+  "id": "gece-20261002-5a5f2cd5f9e1",
+  "guid": "5a5f2cd5f9e1",
+  "konu": "İK Politikaları",
+  "soru": "1. İhtar\n2. Kınama\n3. Uyarı\n\nYukarıda sayılanlardan hangileri yükselmeleri olumsuz etkilemez?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "UZYET İK NOTU s.3 | Toplu İş Sözleşmesi m.64-65",
+  "tarihISO": "2026-10-01T23:13:07.375994+00:00"
+ },
+ {
+  "id": "gece-20261002-a01fe4685cf7",
+  "guid": "a01fe4685cf7",
+  "konu": "Temel İşlemler",
+  "soru": "30 Ocak 2026 tarihinden itibaren tahsil edilmek üzere ibraz edilen hangi çek için hamil yasal yükümlülük tutarını reddedemez?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "06 Döviz Temel İşlemler/Temel Islemler_YYS_2026.pdf s.242, 246-249",
+  "tarihISO": "2026-10-01T23:13:07.375994+00:00"
+ },
+ {
+  "id": "gece-20261002-cf927fb424c9",
+  "guid": "cf927fb424c9",
+  "konu": "Kredi",
+  "soru": "Aşağıdaki kredilerden hangisi zorunlu karşılık tesisinden istisna değildir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "TCMB Zorunlu Karşılıklar Hakkında Tebliğ Uygulama Talimatı (14.09.2026), Geçici 16. Madde, s. 17",
+  "tarihISO": "2026-10-01T23:13:07.375994+00:00"
+ },
+ {
+  "id": "gece-20261002-f9b3ff71a50d",
+  "guid": "f9b3ff71a50d",
+  "konu": "Ürünler",
+  "soru": "Enflasyona Endeksli Vadeli TL Mevduat Hesabı ile ilgili hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Türkiye İş Bankası — Enflasyona Endeksli Vadeli TL Mevduat Hesabı",
+  "tarihISO": "2026-10-01T23:13:07.375994+00:00"
  }
 ]
