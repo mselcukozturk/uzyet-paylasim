@@ -1647,6 +1647,7 @@
     if (remoteStudyOwner === remoteAuth.username) return;
     remoteStudyOwner = remoteAuth.username;
     remoteStudyOwnerGeneration++;
+    konuTekrarListesi = { acik: false, yukleniyor: false, veri: null, hata: null };
     remoteBankGeneration++;
     remoteBankLoaded = false;
     STATE.bank = [];
@@ -4172,6 +4173,46 @@
       '<div><strong data-count="unseen">' + gorulmemis + '</strong><span>Hiç görülmemiş soru</span></div></div>';
   }
 
+  var konuTekrarListesi = { acik: false, yukleniyor: false, veri: null, hata: null };
+  function konuTekrarListesiHtml() {
+    if (!remoteAuth.isAdmin) return "";
+    var c = konuTekrarListesi;
+    var btn = '<button class="btn ghost" data-action="toggle-study-repeats" aria-expanded="' + c.acik + '" aria-controls="konu-tekrar-listesi">' +
+      (c.acik ? "Listeyi gizle" : "👥 Kullanıcıların Toplam Tekrarı") + "</button>";
+    if (!c.acik) return '<div class="link-row" style="margin-bottom:14px">' + btn + '</div>';
+    var govde;
+    if (c.yukleniyor) govde = '<div class="muted" role="status">Yükleniyor…</div>';
+    else if (c.hata) govde = '<div class="muted" role="alert">' + escapeHtml(c.hata) + '</div>';
+    else if (!c.veri || !c.veri.users.length) govde = '<div class="muted">Henüz kullanıcı yok.</div>';
+    else govde = '<table class="topic-table"><thead><tr><th>Kullanıcı</th><th class="num">Toplam tekrar</th></tr></thead><tbody>' +
+      c.veri.users.map(function (u) {
+        return '<tr><td style="overflow-wrap:anywhere">' + escapeHtml(u.name) + '</td><td class="num">' + u.totalRepeats + '</td></tr>';
+      }).join('') + '</tbody></table>';
+    return '<div class="card" id="konu-tekrar-listesi" data-study-repeats>' + btn +
+      '<div class="muted" style="margin:12px 0">Tüm dersler · Deneme ve soru çalışmaları · Aktif sorular</div>' + govde + '</div>';
+  }
+  function toggleKonuTekrarListesi() {
+    if (!remoteAuth.isAdmin) return;
+    var c = konuTekrarListesi;
+    c.acik = !c.acik;
+    if (!c.acik || c.yukleniyor) { render(); return; }
+    c.yukleniyor = true; c.hata = null; c.veri = null;
+    var owner = remoteAuth.username;
+    var generation = remoteStudyOwnerGeneration;
+    render();
+    remoteFetch("/api/exam", "POST", { action: "study-repeats" }).then(function (r) {
+      if (c !== konuTekrarListesi || owner !== remoteAuth.username || generation !== remoteStudyOwnerGeneration || !remoteAuth.isAdmin) return;
+      c.yukleniyor = false;
+      if (r.ok) c.veri = r.data;
+      else c.hata = (r.data && r.data.error) || "Liste alınamadı. Gizleyip yeniden açarak tekrar deneyebilirsin.";
+      render();
+    }).catch(function () {
+      if (c !== konuTekrarListesi || owner !== remoteAuth.username || generation !== remoteStudyOwnerGeneration || !remoteAuth.isAdmin) return;
+      c.yukleniyor = false; c.hata = "Liste alınamadı. Gizleyip yeniden açarak tekrar deneyebilirsin.";
+      render();
+    });
+  }
+
   var acikKkDersleri = {};
 
   function renderDenemeKonuSec() {
@@ -4211,6 +4252,7 @@
       '<div class="section-title">📖 Konu Konu Bak</div>' +
       '<div class="desc" style="margin-bottom:12px">Bir ders seç, ardından çalışmak istediğin soruları aç. Sayılar, bu hesaptaki tüm deneme ve soru çalışmalarını kapsar. Açtığın sorular görülmemiş listesinden, doğru çözdüğün yanlışlar yanlış listesinden çıkar. Ayrı bir deneme geçmişi oluşmaz.</div>' +
       toplamHtml +
+      konuTekrarListesiHtml() +
       '<div class="konu-ders-listesi">' + tiles + "</div>";
   }
 
@@ -5505,6 +5547,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     }
     else if (action === "start-daily-exam") startExamRemote("rastgele", null, true, gununDenemesiNumarasi);
     else if (action === "toggle-daily-solvers") toggleGununCozenler();
+    else if (action === "toggle-study-repeats") toggleKonuTekrarListesi();
     else if (action === "ac-yeni-deneme-turleri") { denemeTurSecimiAcik = true; render(); }
     else if (action === "kapat-yeni-deneme-turleri") { denemeTurSecimiAcik = false; render(); }
     else if (action === "start-ai-daily") startAiGununDenemesi();

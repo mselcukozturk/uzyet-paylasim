@@ -342,6 +342,7 @@ void test('(e) mevcut Konu Konu Bak davranışı (yalnız-yanlış KAPALIYKEN t�
 
 void test('renderDenemeKonuSec: her ders üç seçenek taşır, yanlış yoksa ilgili seçenek devre dışıdır', () => {
   const context: Record<string, unknown> = {
+    remoteAuth: { isAdmin: false },
     KONU_SIRA: ['Kredi', 'Hukuk'],
     STATE: {
       bank: [
@@ -359,7 +360,7 @@ void test('renderDenemeKonuSec: her ders üç seçenek taşır, yanlış yoksa i
     konuDotHtml: () => '<span class="dot"></span>',
   };
   vm.createContext(context);
-  vm.runInContext([grab('escapeHtml'), grab('soruGorulmemisMi'), grab('konuSayaclariHtml'), grab('renderDenemeKonuSec')].join('\n'), context);
+  vm.runInContext([grab('escapeHtml'), grab('soruGorulmemisMi'), grab('konuSayaclariHtml'), grab('konuTekrarListesiHtml'), grab('renderDenemeKonuSec')].join('\n'), context);
   const html = (vm.runInContext('renderDenemeKonuSec', context) as () => string)();
 
   assert.match(html, /data-action="start-deneme-konu-yanlis"[^>]*data-konu="Kredi"/);

@@ -90,6 +90,8 @@ export type DailySolversResponse = {
   solvers: Array<{ name: string; finishedAt: string | null; correct: number }>;
 };
 
+export type StudyRepeatsResponse = { users: Array<{ name: string; totalRepeats: number }> };
+
 // action "history": bitmiş denemeler, en yeniden eskiye, pageSize'lık sayfalar (page 0'dan).
 export type HistoryPage = { attempts: AttemptSummary[]; total: number; page: number; pageSize: number };
 
@@ -171,6 +173,7 @@ export type ExamApiRequest =
   | { action: 'ai-exam-delete'; attemptId: string }
   | { action: 'dashboard' }
   | { action: 'daily-solvers'; dailyNumber?: 1 | 2 }
+  | { action: 'study-repeats' }
   | { action: 'start'; mode: ExamMode; examCode?: string; daily?: boolean; dailyNumber?: 1 | 2 }
   | { action: 'resume'; attemptId: string }
   | { action: 'answer'; attemptId: string; questionId: string; selectedIndex: number }

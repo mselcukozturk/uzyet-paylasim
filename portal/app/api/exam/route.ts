@@ -22,6 +22,7 @@ import {
 } from '@/lib/exam-core';
 import type {
   DailySolversResponse,
+  StudyRepeatsResponse,
   ExamApiRequest,
   PracticeBankResponse,
   PracticeCheckpointsResponse,
@@ -817,6 +818,25 @@ async function handlePost(request: Request) {
 
     if (body.action === 'dashboard') {
       return NextResponse.json(await dashboard(user.id));
+    }
+
+    if (body.action === 'study-repeats') {
+      if (!profile.isAdmin) return fail('Bu bilgi yalnız yöneticiye açık.', 403);
+      const activeGuids = db.select({ guid: schema.questions.guid }).from(schema.questions)
+        .innerJoin(schema.questionBanks, eq(schema.questions.bankId, schema.questionBanks.id))
+        .where(eq(schema.questionBanks.isActive, true));
+      const totalRepeats = sql<string>`coalesce(sum(${schema.questionStats.shownCount}), 0)::bigint`;
+      const rows = await db.select({ name: schema.profiles.username, totalRepeats })
+        .from(schema.profiles)
+        .leftJoin(schema.questionStats, and(
+          eq(schema.questionStats.userId, schema.profiles.userId),
+          inArray(schema.questionStats.questionGuid, activeGuids),
+        ))
+        .groupBy(schema.profiles.userId, schema.profiles.username)
+        .orderBy(desc(totalRepeats), asc(schema.profiles.username));
+      return NextResponse.json({ users: rows.map(row => ({
+        name: row.name, totalRepeats: Number(row.totalRepeats),
+      })) } satisfies StudyRepeatsResponse);
     }
 
     if (body.action === 'daily-solvers') {

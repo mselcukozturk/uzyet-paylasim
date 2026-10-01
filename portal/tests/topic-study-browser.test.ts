@@ -226,6 +226,44 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       back(); bannerMsg = null; render(); click('details[data-konu="Kredi"] summary');
       counters(4,0,0,4);
       check(document.documentElement.scrollWidth <= innerWidth, 'Yatay taşma yok');
+      check(!document.querySelector('[data-action="toggle-study-repeats"]'), 'Normal kullanıcı tekrar listesini göremez');
+      remoteAuth.isAdmin = true; remoteAuth.username = 'yonetici'; render();
+      var repeatRequests = 0;
+      remoteFetch = function(path,method,body) {
+        check(body.action === 'study-repeats', 'Tekrar listesi doğru API ile alınır');
+        repeatRequests++;
+        return Promise.resolve({ok:true,data:{users:[{name:'ikinci',totalRepeats:11},{name:'<script>',totalRepeats:7},{name:'yeni',totalRepeats:0}]}});
+      };
+      click('[data-action="toggle-study-repeats"]');
+      check(document.querySelector('[data-study-repeats]').textContent.includes('Yükleniyor'), 'Liste yükleme durumu');
+      await new Promise(resolve=>setTimeout(resolve,0));
+      check(document.querySelector('[data-study-repeats] tbody').textContent.includes('ikinci'), 'Yönetici kullanıcı adını görür');
+      check(document.querySelector('[data-study-repeats] tbody').textContent.includes('11'), 'Tekrar sayısı görünür');
+      check(!document.querySelector('[data-study-repeats] script'), 'Kullanıcı adı HTML olarak çalışmaz');
+      click('[data-action="toggle-study-repeats"]');
+      check(!document.querySelector('[data-study-repeats] table'), 'Liste gizlenir');
+      click('[data-action="toggle-study-repeats"]');
+      await new Promise(resolve=>setTimeout(resolve,0));
+      check(repeatRequests === 2, 'Yeniden açılınca güncel sayılar alınır');
+      remoteFetch = function(){return Promise.resolve({ok:false,data:{error:'Liste alınamadı.'}});};
+      click('[data-action="toggle-study-repeats"]'); click('[data-action="toggle-study-repeats"]');
+      await new Promise(resolve=>setTimeout(resolve,0));
+      check(document.querySelector('[data-study-repeats]').textContent.includes('Liste alınamadı'), 'Hata kullanıcıya gösterilir');
+      click('[data-action="toggle-study-repeats"]');
+      var finishRequest;
+      remoteFetch = function(){return new Promise(resolve=>{finishRequest=resolve;});};
+      click('[data-action="toggle-study-repeats"]');
+      remoteAuth.isAdmin = false; remoteAuth.username = 'diger'; render();
+      finishRequest({ok:true,data:{users:[{name:'gizli',totalRepeats:99}]}});
+      await new Promise(resolve=>setTimeout(resolve,0));
+      check(!document.querySelector('[data-study-repeats]') && !document.querySelector('.shell').textContent.includes('gizli'), 'Hesap değişince geciken yanıt gösterilmez');
+      // Return to an administrator with a fresh view for the screenshot artifact.
+      remoteAuth.isAdmin = true; remoteAuth.username = 'yonetici';
+      konuTekrarListesi = {acik:false,yukleniyor:false,veri:null,hata:null};
+      remoteFetch = function(){return Promise.resolve({ok:true,data:{users:[{name:'ikinci',totalRepeats:11},{name:'yonetici',totalRepeats:7},{name:'yeni',totalRepeats:0}]}});};
+      render(); click('[data-action="toggle-study-repeats"]');
+      await new Promise(resolve=>setTimeout(resolve,0));
+      check(document.documentElement.scrollWidth <= innerWidth, 'Yönetici tablosu yatay taşmaz');
       var result = document.createElement('pre'); result.id = 'browser-result';
       result.textContent = JSON.stringify({ok:true,viewport:innerWidth,checks:checks}); document.body.appendChild(result);
     } catch (e) {
