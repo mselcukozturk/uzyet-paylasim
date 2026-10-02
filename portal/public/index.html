@@ -395,26 +395,47 @@
   .cp-content thead th { color: var(--text-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }
   .cp-content table { overflow-x: auto; display: block; }
   .cp-content thead, .cp-content tbody { display: table; width: 100%; table-layout: fixed; }
-  .konu-ders-listesi { display:grid; gap:12px; }
-  .konu-calisma { margin:0; padding:16px 20px; }
-  .konu-calisma summary { display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:700; font-size:1.05rem; padding:6px 0; list-style:none; }
+  .konu-ders-listesi { display:grid; gap:10px; }
+  .konu-calisma { margin:0; padding:8px 16px; }
+  .konu-calisma summary { display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:700; font-size:1rem; padding:6px 0; list-style:none; }
   .konu-calisma summary::-webkit-details-marker { display:none; }
   .konu-calisma summary::marker { content:""; }
   .konu-calisma summary .konu-dot { margin:0; }
   .konu-ders-adi { min-width:0; line-height:1.4; }
-  .konu-acma-isareti { display:flex; align-items:center; justify-content:center; width:10px; height:10px; flex:0 0 10px; }
+  .konu-ders-sayi { margin-left:auto; flex-shrink:0; color:var(--text-muted); font-weight:400; font-size:.84rem; font-variant-numeric:tabular-nums; }
+  .konu-acma-isareti { display:flex; align-items:center; justify-content:center; width:10px; height:10px; flex:0 0 10px; color:var(--text-muted); }
   .konu-acma-isareti::before { content:""; border-top:4px solid transparent; border-bottom:4px solid transparent; border-left:6px solid currentColor; }
   .konu-calisma[open] > summary .konu-acma-isareti { transform:rotate(90deg); }
+  .konu-calisma[open] > summary { padding-bottom:12px; margin-bottom:12px; border-bottom:1px solid var(--border); }
   .konu-calisma summary:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
-  .konu-toplam { margin-bottom:12px; }
-  .konu-toplam-baslik { font-weight:700; font-size:1.05rem; display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  .konu-sayaclar { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin:18px 0; }
-  .konu-sayaclar > div { display:flex; flex-direction:column; gap:4px; }
-  .konu-sayaclar strong { font-size:1.4rem; font-variant-numeric:tabular-nums; }
-  .konu-sayaclar span { font-size:.8rem; color:var(--text-muted); }
-  .konu-secenekler { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:14px; }
+  .konu-toplam-baslik { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px; }
+  .konu-toplam-baslik .section-title { margin:0; }
+  .konu-toplam-baslik .btn { padding:6px 10px; }
+  .konu-sayaclar { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:0 0 12px; }
+  .konu-sayaclar > div { display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; }
+  .konu-sayaclar strong { font-family:var(--font-display); font-size:1.6rem; font-weight:700; line-height:1.25; font-variant-numeric:tabular-nums; }
+  .konu-sayaclar span { color:var(--text-muted); font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; margin-top:2px; }
+  .konu-calisma .konu-sayaclar { gap:8px; }
+  .konu-calisma .konu-sayaclar > div { background:var(--surface-2); border:0; border-radius:8px; padding:10px 12px; }
+  .konu-calisma .konu-sayaclar strong { font-size:1.3rem; }
+  .konu-secenekler { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:22px; }
+  .konu-calisma .konu-secenekler { margin-bottom:8px; }
+  .konu-calisma .konu-secenekler .btn { font-size:.84rem; }
   .konu-secenekler .btn { min-width:0; white-space:normal; overflow-wrap:anywhere; padding:10px 6px; }
-  @media(max-width:600px) { .konu-sayaclar { grid-template-columns:repeat(2,minmax(0,1fr)); } .konu-secenekler { gap:4px; } .konu-secenekler .btn { font-size:.72rem; padding:8px 3px; } }
+  .konu-tekrar-listesi { margin-bottom:22px; }
+  .konu-tekrar-listesi .section-title { font-size:1rem; margin-bottom:4px; }
+  .konu-tekrar-listesi .muted { font-size:.84rem; }
+  .konu-tekrar-listesi table.topic-table { margin:12px 0 0; }
+  .konu-tekrar-listesi table.topic-table tr:last-child td { border-bottom:0; }
+  @media(max-width:600px) {
+    .konu-sayaclar { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+    .konu-sayaclar > div { padding:10px 12px; }
+    .konu-sayaclar span { font-size:.66rem; letter-spacing:.04em; }
+    .konu-secenekler { gap:6px; }
+    .konu-secenekler .btn, .konu-calisma .konu-secenekler .btn { display:flex; flex-direction:column; align-items:center; gap:4px; font-size:.72rem; line-height:1.25; padding:10px 3px; }
+    .konu-secenek-simge { font-size:1.15rem; line-height:1; }
+    .konu-calisma { padding:8px 12px; }
+  }
 </style>
 </head>
 <body>
@@ -4025,10 +4046,10 @@
     var yanlis = yanlisGuidListesi("deneme").length;
     var hatirlatici = hatirlaticiGuidListesi("deneme").length;
     return '<div class="konu-secenekler" data-tum-banka>' +
-      '<button class="btn" data-action="start-flash"' + (STATE.bank.length ? '' : ' disabled') + '>🎲 Rastgele Sorular</button>' +
-      '<button class="btn" data-action="start-yanlis-tekrar-test" data-havuz="deneme"' + (yanlis ? '' : ' disabled') + '>❌ Mevcut Yanlışlar</button>' +
-      '<button class="btn" data-action="start-deneme-konu-gorulmemis"' + (gorulmemis ? '' : ' disabled') + '>📖 Hiç Görülmemiş Sorular</button>' +
-      '<button class="btn" data-action="start-hatirlatici-test" data-havuz="deneme"' + (hatirlatici ? '' : ' disabled') + '>🔖 Hatırlatıcı İşaretli Sorular</button></div>';
+      '<button class="btn" data-action="start-flash"' + (STATE.bank.length ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">🎲</span> Rastgele Sorular</button>' +
+      '<button class="btn" data-action="start-yanlis-tekrar-test" data-havuz="deneme"' + (yanlis ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">❌</span> Mevcut Yanlışlar</button>' +
+      '<button class="btn" data-action="start-deneme-konu-gorulmemis"' + (gorulmemis ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">📖</span> Hiç Görülmemiş Sorular</button>' +
+      '<button class="btn" data-action="start-hatirlatici-test" data-havuz="deneme"' + (hatirlatici ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">🔖</span> Hatırlatıcı İşaretli Sorular</button></div>';
   }
 
   function renderMenuDeneme() {
@@ -4209,8 +4230,9 @@
         return '<tr><td style="overflow-wrap:anywhere">' + escapeHtml(u.name) + '</td><td class="num">' + u.totalRepeats + '</td><td class="num">' +
           (u.avgCorrect == null ? '—' : fmtOrt(u.avgCorrect) + ' / 50') + '</td></tr>';
       }).join('') + '</tbody></table>';
-    return '<div class="card" id="konu-tekrar-listesi" data-study-repeats>' +
-      '<div class="muted" style="margin:12px 0">Tekrar: aktif sorular · Ortalama deneme: tüm zamanlar, 50 üzerinden</div>' + govde + '</div>';
+    return '<div class="card konu-tekrar-listesi" id="konu-tekrar-listesi" data-study-repeats>' +
+      '<div class="section-title">👥 Kullanıcıların Toplam Tekrarı</div>' +
+      '<div class="muted">Tekrar: aktif sorular · Ortalama deneme: tüm zamanlar, 50 üzerinden</div>' + govde + '</div>';
   }
   function toggleKonuTekrarListesi() {
     if (!remoteAuth.isAdmin && !remoteAuth.canViewStatistics) return;
@@ -4257,23 +4279,22 @@
       var renk = "var(--seri-" + konuSeriIdx(konu) + ")";
       var konuAttr = ' data-konu="' + escapeHtml(konu) + '"';
       return '<details class="card konu-calisma"' + konuAttr + (typeof acikKkDersleri !== 'undefined' && acikKkDersleri[konu] ? ' open' : '') + ' style="border-left:4px solid ' + renk + '">' +
-        '<summary><span class="konu-acma-isareti" aria-hidden="true"></span>' + konuDotHtml(konu) + '<span class="konu-ders-adi">' + escapeHtml(konu) + '</span></summary>' +
+        '<summary><span class="konu-acma-isareti" aria-hidden="true"></span>' + konuDotHtml(konu) + '<span class="konu-ders-adi">' + escapeHtml(konu) + '</span><span class="konu-ders-sayi">' + havuz.length + ' soru</span></summary>' +
         konuSayaclariHtml(havuz.length, tekrar, yanlis, gorulmemis, "Ders soru sayıları") +
         '<div class="konu-secenekler">' +
-        '<button class="btn" data-action="start-deneme-konu-flash"' + konuAttr + (havuz.length ? '' : ' disabled') + '>🎲 Rastgele Sorular</button>' +
-        '<button class="btn" data-action="start-deneme-konu-yanlis"' + konuAttr + (yanlis ? '' : ' disabled') + '>❌ Mevcut Yanlışlar</button>' +
-        '<button class="btn" data-action="start-deneme-konu-gorulmemis"' + konuAttr + (gorulmemis ? '' : ' disabled') + '>📖 Hiç Görülmemiş Sorular</button>' +
-        '<button class="btn" data-action="start-hatirlatici-test" data-havuz="deneme"' + konuAttr + (hatirlatici ? '' : ' disabled') + '>🔖 Hatırlatıcı İşaretli Sorular</button>' +
+        '<button class="btn" data-action="start-deneme-konu-flash"' + konuAttr + (havuz.length ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">🎲</span> Rastgele Sorular</button>' +
+        '<button class="btn" data-action="start-deneme-konu-yanlis"' + konuAttr + (yanlis ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">❌</span> Mevcut Yanlışlar</button>' +
+        '<button class="btn" data-action="start-deneme-konu-gorulmemis"' + konuAttr + (gorulmemis ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">📖</span> Hiç Görülmemiş Sorular</button>' +
+        '<button class="btn" data-action="start-hatirlatici-test" data-havuz="deneme"' + konuAttr + (hatirlatici ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">🔖</span> Hatırlatıcı İşaretli Sorular</button>' +
         '</div></details>';
     }).join("");
 
-    var toplamHtml = '<div class="card konu-toplam" data-toplam="1" aria-label="Tüm derslerin toplamı">' +
-      '<div class="konu-toplam-baslik"><span>Tüm dersler</span>' + konuTekrarDugmesiHtml() + '</div>' +
+    var toplamHtml = '<div class="konu-toplam" data-toplam="1" aria-label="Tüm derslerin toplamı">' +
+      '<div class="konu-toplam-baslik"><div class="section-title">📖 Konu Konu Bak</div>' + konuTekrarDugmesiHtml() + '</div>' +
       konuSayaclariHtml(toplamSoru, toplamTekrar, toplamYanlis, toplamGorulmemis, "Tüm derslerin soru sayıları") +
       '</div>';
 
     return (STATE.sadeceDeneme ? ustBarHtml() : '') + anaSayfaSekmeleriHtml(true) +
-      '<div class="section-title">📖 Konu Konu Bak</div>' +
       toplamHtml +
       tumBankaCalismaHtml() +
       konuTekrarListesiHtml() +
