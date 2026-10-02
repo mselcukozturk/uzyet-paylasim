@@ -340,10 +340,12 @@ void test('(e) mevcut Konu Konu Bak davranışı (yalnız-yanlış KAPALIYKEN t�
   assert.deepEqual(guids, ['gorulmemis', 'yanlis1', 'dogru1']);
 });
 
-void test('renderDenemeKonuSec: her ders üç seçenek taşır, yanlış yoksa ilgili seçenek devre dışıdır', () => {
+void test('renderDenemeKonuSec: ders seçenekleri korunur, yanlış yoksa ilgili seçenek devre dışıdır', () => {
   const context: Record<string, unknown> = {
     anaSayfaSekmeleriHtml: () => '',
     tumBankaCalismaHtml: () => '',
+    hatirlaticiGuidListesi: () => [],
+    konuTekrarDugmesiHtml: () => '',
     remoteAuth: { isAdmin: false },
     KONU_SIRA: ['Kredi', 'Hukuk'],
     STATE: {

@@ -18,7 +18,7 @@ void test('üretilen deneme kabuğunun JavaScript sözdizimi geçerlidir ve soru
 });
 
 void test('tekrar testi karışık başlar ve doğru cevap hatırlatıcı işaretini kaldırmaz', () => {
-  const start = script.match(/function startTekrarTest\(tur, havuz\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  const start = script.match(/function startTekrarTest\(tur, havuz, konuFiltre\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   const select = script.match(/function selectTekrarOption\(idx\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   assert.match(start, /sampleRandom\(guids, guids\.length\)/);
   assert.match(start, /shuffleSiklarInPlace/);
@@ -82,14 +82,14 @@ void test('Rastgele Soru üstünde çıkış ve testi bitirme ayrı kontrollerdi
 
 void test('Deneme ve AI kartları aynı motoru ayrı havuzlarla kullanır', () => {
   const aiMenu = script.match(/function renderMenuTest\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
-  const start = script.match(/function startTekrarTest\(tur, havuz\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
+  const start = script.match(/function startTekrarTest\(tur, havuz, konuFiltre\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   const finishAi = script.match(/function finishAiExam\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   const kaydet = script.match(/function tekrarCevapKaydet\(kayit\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   const flagBar = script.match(/function flagBarHtml\(guid, showPratikExtras\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
 
   assert.match(aiMenu, /hatirlaticiBolumHtml\("ai"\)[\s\S]*yanlisSorularBolumHtml\("ai"\)/);
   assert.match(start, /currentTekrar = \{[\s\S]*havuz: havuz/);
-  assert.match(script, /startTekrarTest\("hatirlatici", t\.getAttribute\("data-havuz"\)\)/);
+  assert.match(script, /startTekrarTest\("hatirlatici", t\.getAttribute\("data-havuz"\), t\.getAttribute\("data-konu"\)\)/);
   assert.match(script, /startTekrarTest\("yanlis", t\.getAttribute\("data-havuz"\)\)/);
   assert.match(finishAi, /recordPratikStat\(guid, dogru/);
   assert.doesNotMatch(finishAi, /if \(pratikGuid\[guid\]\) recordPratikStat/);

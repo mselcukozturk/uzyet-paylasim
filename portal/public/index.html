@@ -407,13 +407,14 @@
   .konu-calisma[open] > summary .konu-acma-isareti { transform:rotate(90deg); }
   .konu-calisma summary:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
   .konu-toplam { margin-bottom:12px; }
-  .konu-toplam-baslik { font-weight:700; font-size:1.05rem; }
+  .konu-toplam-baslik { font-weight:700; font-size:1.05rem; display:flex; align-items:center; justify-content:space-between; gap:8px; }
   .konu-sayaclar { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin:18px 0; }
   .konu-sayaclar > div { display:flex; flex-direction:column; gap:4px; }
   .konu-sayaclar strong { font-size:1.4rem; font-variant-numeric:tabular-nums; }
   .konu-sayaclar span { font-size:.8rem; color:var(--text-muted); }
-  .konu-secenekler { display:flex; flex-wrap:wrap; gap:8px; }
-  @media(max-width:600px) { .konu-sayaclar { grid-template-columns:repeat(2,minmax(0,1fr)); } .konu-secenekler { flex-direction:column; } }
+  .konu-secenekler { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:14px; }
+  .konu-secenekler .btn { min-width:0; white-space:normal; overflow-wrap:anywhere; padding:10px 6px; }
+  @media(max-width:600px) { .konu-sayaclar { grid-template-columns:repeat(2,minmax(0,1fr)); } .konu-secenekler { gap:4px; } .konu-secenekler .btn { font-size:.72rem; padding:8px 3px; } }
 </style>
 </head>
 <body>
@@ -3172,16 +3173,21 @@
   var currentTekrar = null;
   var lastTekrarSonuc = null; // {tur, oturum:[{konu,dogru}...], soruSayisi} — "Testi Bitir" özeti
 
-  function startTekrarTest(tur, havuz) {
+  function startTekrarTest(tur, havuz, konuFiltre) {
     var cfg = TEKRAR_TUR[tur];
     if (!cfg) return;
     havuz = havuz === "ai" ? "ai" : "deneme";
-    var guids = cfg.guidler(havuz).filter(function (g) { return hatirlaticiSoruBul(g); });
+    konuFiltre = konuFiltre || null;
+    var guids = cfg.guidler(havuz).filter(function (g) {
+      var q = hatirlaticiSoruBul(g);
+      return q && (!konuFiltre || q.konu === konuFiltre);
+    });
     if (!guids.length) { showBanner(cfg.bosMesaj, true); return; }
     var kuyruk = sampleRandom(guids, guids.length);
     kuyruk.forEach(function (g) { shuffleSiklarInPlace(hatirlaticiSoruBul(g)); });
     currentTekrar = {
-      tur: tur, havuz: havuz, kuyruk: kuyruk, konum: 0,
+      tur: tur, havuz: havuz, konuFiltre: konuFiltre, kuyruk: kuyruk, konum: 0,
+      donusEkrani: VIEW === "denemeKonuSec" || (VIEW === "tekrarSonuc" && lastTekrarSonuc && lastTekrarSonuc.donusEkrani === "denemeKonuSec") ? "denemeKonuSec" : (aiModu ? "menuTest" : "menuDeneme"),
       kayitlar: kuyruk.map(function (g) { return { guid: g, secilen: null, dogru: null, kayit: "", kayitHatasi: "" }; })
     };
     lastTekrarSonuc = null;
@@ -3261,15 +3267,16 @@
       var q = hatirlaticiSoruBul(k.guid);
       if (q) oturum.push({ konu: q.konu, dogru: !!k.dogru });
     });
-    lastTekrarSonuc = { tur: currentTekrar.tur, havuz: currentTekrar.havuz, oturum: oturum, soruSayisi: currentTekrar.kuyruk.length };
+    lastTekrarSonuc = { tur: currentTekrar.tur, havuz: currentTekrar.havuz, konuFiltre: currentTekrar.konuFiltre, donusEkrani: currentTekrar.donusEkrani, oturum: oturum, soruSayisi: currentTekrar.kuyruk.length };
     currentTekrar = null;
     VIEW = "tekrarSonuc";
     render();
   }
   function tekrarCik() {
+    var donusEkrani = (currentTekrar && currentTekrar.donusEkrani) || (lastTekrarSonuc && lastTekrarSonuc.donusEkrani);
     currentTekrar = null;
     lastTekrarSonuc = null;
-    VIEW = aiModu ? "menuTest" : "menuDeneme";
+    VIEW = donusEkrani || (aiModu ? "menuTest" : "menuDeneme");
     render();
   }
 
@@ -3550,7 +3557,7 @@
   }
 
   function kaydetFlashGorulme(q) {
-    if (currentFlash.kaynak !== "bank" || !currentFlash.konuFiltre || !soruGorulmemisMi(q)) return;
+    if (currentFlash.kaynak !== "bank" || !(currentFlash.konuFiltre || currentFlash.yalnizGorulmemis) || !soruGorulmemisMi(q)) return;
     var s = STATE.stats[q.guid] || { gosterim: 0, dogru: 0, yanlis: 0, sonSonucDogruMu: null };
     s.sonGorulme = new Date().toISOString();
     STATE.stats[q.guid] = s;
@@ -3563,7 +3570,7 @@
     kaynak = kaynak === "practice" ? "practice" : "bank";
     konuFiltre = konuFiltre || null;
     yalnizYanlis = !!(yalnizYanlis && kaynak === "bank" && konuFiltre);
-    yalnizGorulmemis = !!(yalnizGorulmemis && !yalnizYanlis && kaynak === "bank" && konuFiltre);
+    yalnizGorulmemis = !!(yalnizGorulmemis && !yalnizYanlis && kaynak === "bank");
     if (STATE.sadeceDeneme && kaynak === "bank" && !remoteBankLoaded) {
       showBanner("Soru geçmişin yenileniyor…");
       remoteLoadBankIfNeeded(function (applied) {
@@ -3584,7 +3591,7 @@
     } else {
       if (havuz.length === 0) { showBanner("Havuzda hiç soru yok.", true); return; }
     }
-    var sabitKuyruk = kaynak === "bank" && !!konuFiltre;
+    var sabitKuyruk = kaynak === "bank" && !!(konuFiltre || yalnizGorulmemis);
     var kuyruk = sabitKuyruk ? flashKuyrukOlustur(havuz, kaynak) : null;
     var secimHavuzu = konuFiltre ? havuz : (agirlikliHavuzSec(havuz) || havuz);
     var q0 = sabitKuyruk ? kuyruk[0] : flashSecimYap(secimHavuzu, kaynak, []);
@@ -4014,15 +4021,14 @@
   }
 
   function tumBankaCalismaHtml() {
-    var toplamSoru = STATE.bank.length;
-    var flashDisabled = (toplamSoru === 0 || (STATE.sadeceDeneme && !remoteGirisTamamMi())) ? "disabled" : "";
-
-
-    var flashCards =
-      '<button class="mode-btn" style="border-left:4px solid var(--seri-7)" ' + flashDisabled + ' data-action="start-flash">' +
-      '<div class="title">🎲 Rastgele Soru</div><div class="desc">Tüm soru bankasından tek soru, anında cevap.</div></button>';
-
-    return '<div class="mode-grid">' + flashCards + '</div>' + yanlisSorularBolumHtml("deneme");
+    var gorulmemis = STATE.bank.filter(soruGorulmemisMi).length;
+    var yanlis = yanlisGuidListesi("deneme").length;
+    var hatirlatici = hatirlaticiGuidListesi("deneme").length;
+    return '<div class="konu-secenekler" data-tum-banka>' +
+      '<button class="btn" data-action="start-flash"' + (STATE.bank.length ? '' : ' disabled') + '>🎲 Rastgele Sorular</button>' +
+      '<button class="btn" data-action="start-yanlis-tekrar-test" data-havuz="deneme"' + (yanlis ? '' : ' disabled') + '>❌ Mevcut Yanlışlar</button>' +
+      '<button class="btn" data-action="start-deneme-konu-gorulmemis"' + (gorulmemis ? '' : ' disabled') + '>📖 Hiç Görülmemiş Sorular</button>' +
+      '<button class="btn" data-action="start-hatirlatici-test" data-havuz="deneme"' + (hatirlatici ? '' : ' disabled') + '>🔖 Hatırlatıcı İşaretli Sorular</button></div>';
   }
 
   function renderMenuDeneme() {
@@ -4033,8 +4039,7 @@
         '<button class="btn" data-action="open-history">Geçmiş</button></div>') +
       anaSayfaSekmeleriHtml(false) +
       '<div class="section-title">📝 Deneme Sınavı</div>' +
-      renderDenemeUzakBolum() +
-      hatirlaticiBolumHtml("deneme");
+      renderDenemeUzakBolum();
   }
 
   // Ana ekrandaki "hatırlatıcı içeren sorular" kartı — yalnız giriş+onay+disclaimer
@@ -4155,7 +4160,10 @@
         '</td><td class="num">' + flashYuzdeHtml(k.dogru, kToplam) +
         '</td><td class="num">' + flashYuzdeHtml(k.yanlis, kToplam) + "</td></tr>";
     }).join("");
-    var kalan = cfg.guidler(lastTekrarSonuc.havuz).filter(function (g) { return hatirlaticiSoruBul(g); }).length;
+    var kalan = cfg.guidler(lastTekrarSonuc.havuz).filter(function (g) {
+      var q = hatirlaticiSoruBul(g);
+      return q && (!lastTekrarSonuc.konuFiltre || q.konu === lastTekrarSonuc.konuFiltre);
+    }).length;
     var kalanEtiket = lastTekrarSonuc.tur === "yanlis"
       ? "Havuzda " + kalan + " yanlış soru kaldı."
       : "İşaretli " + kalan + " soru var.";
@@ -4170,7 +4178,7 @@
         : '<div class="muted">Hiç soru cevaplanmadan bitirildi.</div>') +
       '<div class="muted" style="margin-top:10px">' + lastTekrarSonuc.soruSayisi + " soruluk oturum · " + kalanEtiket + "</div>" +
       '<div class="link-row" style="margin-top:14px">' +
-      (kalan ? '<button class="btn primary" data-action="start-tekrar-again" data-tur="' + lastTekrarSonuc.tur + '" data-havuz="' + lastTekrarSonuc.havuz + '">' + cfg.yeniOturum + "</button>" : "") +
+      (kalan ? '<button class="btn primary" data-action="start-tekrar-again" data-tur="' + lastTekrarSonuc.tur + '" data-havuz="' + lastTekrarSonuc.havuz + '" data-konu="' + escapeHtml(lastTekrarSonuc.konuFiltre || '') + '">' + cfg.yeniOturum + "</button>" : "") +
       '<button class="btn ghost" data-action="tekrar-cik">Ana Sayfa</button>' +
       "</div></div>";
   }
@@ -4184,12 +4192,14 @@
   }
 
   var konuTekrarListesi = { acik: false, yukleniyor: false, veri: null, hata: null };
+  function konuTekrarDugmesiHtml() {
+    if (!remoteAuth.isAdmin && !remoteAuth.canViewStatistics) return "";
+    return '<button class="btn ghost" data-action="toggle-study-repeats" title="Kullanıcıların Toplam Tekrarı" aria-label="Kullanıcıların Toplam Tekrarı" aria-expanded="' + konuTekrarListesi.acik + '" aria-controls="konu-tekrar-listesi">👥</button>';
+  }
   function konuTekrarListesiHtml() {
     if (!remoteAuth.isAdmin && !remoteAuth.canViewStatistics) return "";
     var c = konuTekrarListesi;
-    var btn = '<button class="btn ghost" data-action="toggle-study-repeats" aria-expanded="' + c.acik + '" aria-controls="konu-tekrar-listesi">' +
-      (c.acik ? "Listeyi gizle" : "👥 Kullanıcıların Toplam Tekrarı") + "</button>";
-    if (!c.acik) return '<div class="link-row" style="margin-bottom:14px">' + btn + '</div>';
+    if (!c.acik) return "";
     var govde;
     if (c.yukleniyor) govde = '<div class="muted" role="status">Yükleniyor…</div>';
     else if (c.hata) govde = '<div class="muted" role="alert">' + escapeHtml(c.hata) + '</div>';
@@ -4199,7 +4209,7 @@
         return '<tr><td style="overflow-wrap:anywhere">' + escapeHtml(u.name) + '</td><td class="num">' + u.totalRepeats + '</td><td class="num">' +
           (u.avgCorrect == null ? '—' : fmtOrt(u.avgCorrect) + ' / 50') + '</td></tr>';
       }).join('') + '</tbody></table>';
-    return '<div class="card" id="konu-tekrar-listesi" data-study-repeats>' + btn +
+    return '<div class="card" id="konu-tekrar-listesi" data-study-repeats>' +
       '<div class="muted" style="margin:12px 0">Tekrar: aktif sorular · Ortalama deneme: tüm zamanlar, 50 üzerinden</div>' + govde + '</div>';
   }
   function toggleKonuTekrarListesi() {
@@ -4231,10 +4241,12 @@
       return ustBarHtml() + anaSayfaSekmeleriHtml(true) + '<div class="card" role="status">Soru geçmişi yükleniyor… <button class="btn" data-action="open-deneme-konu-sec">Tekrar Dene</button></div>';
     }
     var toplamSoru = 0, toplamTekrar = 0, toplamYanlis = 0, toplamGorulmemis = 0;
+    var hatirlaticilar = hatirlaticiGuidListesi("deneme");
     var tiles = KONU_SIRA.map(function (konu) {
       var havuz = STATE.bank.filter(function (q) { return q.konu === konu; });
       var yanlis = havuz.filter(function (q) { return STATE.stats[q.guid] && STATE.stats[q.guid].sonSonucDogruMu === false; }).length;
       var gorulmemis = havuz.filter(soruGorulmemisMi).length;
+      var hatirlatici = havuz.filter(function (q) { return hatirlaticilar.indexOf(q.guid) !== -1; }).length;
       var tekrar = havuz.reduce(function (toplam, q) {
         return toplam + ((STATE.stats[q.guid] && STATE.stats[q.guid].gosterim) || 0);
       }, 0);
@@ -4251,19 +4263,19 @@
         '<button class="btn" data-action="start-deneme-konu-flash"' + konuAttr + (havuz.length ? '' : ' disabled') + '>🎲 Rastgele Sorular</button>' +
         '<button class="btn" data-action="start-deneme-konu-yanlis"' + konuAttr + (yanlis ? '' : ' disabled') + '>❌ Mevcut Yanlışlar</button>' +
         '<button class="btn" data-action="start-deneme-konu-gorulmemis"' + konuAttr + (gorulmemis ? '' : ' disabled') + '>📖 Hiç Görülmemiş Sorular</button>' +
+        '<button class="btn" data-action="start-hatirlatici-test" data-havuz="deneme"' + konuAttr + (hatirlatici ? '' : ' disabled') + '>🔖 Hatırlatıcı İşaretli Sorular</button>' +
         '</div></details>';
     }).join("");
 
     var toplamHtml = '<div class="card konu-toplam" data-toplam="1" aria-label="Tüm derslerin toplamı">' +
-      '<div class="konu-toplam-baslik">Tüm dersler</div>' +
+      '<div class="konu-toplam-baslik"><span>Tüm dersler</span>' + konuTekrarDugmesiHtml() + '</div>' +
       konuSayaclariHtml(toplamSoru, toplamTekrar, toplamYanlis, toplamGorulmemis, "Tüm derslerin soru sayıları") +
       '</div>';
 
     return (STATE.sadeceDeneme ? ustBarHtml() : '') + anaSayfaSekmeleriHtml(true) +
       '<div class="section-title">📖 Konu Konu Bak</div>' +
-      tumBankaCalismaHtml() +
-      '<div class="desc" style="margin-bottom:12px">Bir ders seç, ardından çalışmak istediğin soruları aç. Sayılar, bu hesaptaki tüm deneme ve soru çalışmalarını kapsar. Açtığın sorular görülmemiş listesinden, doğru çözdüğün yanlışlar yanlış listesinden çıkar. Ayrı bir deneme geçmişi oluşmaz.</div>' +
       toplamHtml +
+      tumBankaCalismaHtml() +
       konuTekrarListesiHtml() +
       '<div class="konu-ders-listesi">' + tiles + "</div>";
   }
@@ -4846,7 +4858,7 @@
     if (!q) return '<div class="card">Bu soru artık havuzda yok. <button class="btn" data-action="next-flash">Sonraki Soru</button></div>';
     kaydetFlashGorulme(q);
     var pratikMi = currentFlash.kaynak === "practice";
-    var konuBakMi = !pratikMi && !!currentFlash.konuFiltre;
+    var konuBakMi = !pratikMi && !!(currentFlash.konuFiltre || currentFlash.yalnizGorulmemis);
     var secilen = currentFlash.secilen;
     var answered = secilen !== null;
     var harfler = ["A", "B", "C", "D"];
@@ -4924,7 +4936,7 @@
   function renderFlashResult() {
     var r = lastFlashResult;
     var pratikMi = r.kaynak === "practice";
-    var konuBakMi = !pratikMi && !!r.konuFiltre;
+    var konuBakMi = !pratikMi && !!(r.konuFiltre || r.yalnizGorulmemis);
     var toplam = r.oturum.length;
     var dogru = r.oturum.filter(function (k) { return k.dogru; }).length;
     var yanlis = toplam - dogru;
@@ -4951,7 +4963,7 @@
     var baslikEk = pratikMi ? " (pratik havuzu)" : (konuBakMi ? (yalnizYanlisMi ? " (Konu Konu Bak — " + escapeHtml(r.konuFiltre) + " · yalnız yanlışlar)" : " (Konu Konu Bak — " + escapeHtml(r.konuFiltre) + ")") : "");
     var yeniOturumEtiket = yalnizYanlisMi ? "Yanlışları Yeniden Çöz" : (konuBakMi ? "Bu Konuda Yeni Oturum" : "Yeni Rastgele Soru Oturumu");
     if (yalnizGorulmemisMi) {
-      baslikEk = " (Konu Konu Bak — " + escapeHtml(r.konuFiltre) + " · hiç görülmemişler)";
+      baslikEk = " (Konu Konu Bak — " + escapeHtml(r.konuFiltre || "Tüm dersler") + " · hiç görülmemişler)";
       yeniOturumEtiket = "Kalan Görülmemişleri Aç";
     }
 
@@ -5636,9 +5648,9 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "clear-duzeltmeler") { STATE.duzeltmeler = []; pendingSaveDirty = true; render(); }
     else if (action === "toggle-flag") toggleFlag(t.getAttribute("data-guid"), t.getAttribute("data-kind"));
     else if (action === "set-flag-kategori") setFlagKategori(t.getAttribute("data-guid"), t.getAttribute("data-kategori"));
-    else if (action === "start-hatirlatici-test") startTekrarTest("hatirlatici", t.getAttribute("data-havuz"));
+    else if (action === "start-hatirlatici-test") startTekrarTest("hatirlatici", t.getAttribute("data-havuz"), t.getAttribute("data-konu"));
     else if (action === "start-yanlis-tekrar-test") startTekrarTest("yanlis", t.getAttribute("data-havuz"));
-    else if (action === "start-tekrar-again") startTekrarTest(t.getAttribute("data-tur"), t.getAttribute("data-havuz"));
+    else if (action === "start-tekrar-again") startTekrarTest(t.getAttribute("data-tur"), t.getAttribute("data-havuz"), t.getAttribute("data-konu"));
     else if (action === "select-tekrar-option") selectTekrarOption(parseInt(t.getAttribute("data-idx"), 10));
     else if (action === "bos-tekrar") bosTekrar();
     else if (action === "next-tekrar-soru") nextTekrarSoru();
