@@ -5183,5 +5183,59 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "Türkiye İş Bankası — Enflasyona Endeksli Vadeli TL Mevduat Hesabı",
   "tarihISO": "2026-10-01T23:13:07.375994+00:00"
+ },
+ {
+  "id": "gece-20261003-cd0e74538ac8",
+  "guid": "cd0e74538ac8",
+  "konu": "Temel İşlemler",
+  "soru": "Aşağıdakilerden hangisi Bankaların \"Suç Gelirlerinin Aklanmasının Önlenmesi Hakkında Kanun\" kapsamındaki kanuni yükümlülüklerindendir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "06 Döviz Temel İşlemler/Doviz_TKR_2026.pdf s. 22-23 (baskı s. 8)",
+  "tarihISO": "2026-10-02T23:16:42.250624+00:00"
+ },
+ {
+  "id": "gece-20261003-df6ee0c03897",
+  "guid": "df6ee0c03897",
+  "konu": "Mali Analiz",
+  "soru": "Bir firmanın değerlendirmeye esas segmentinin KOBİ olabilmesi için son 2 yıl cirosunun hangi aralıkta olması gerekir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "istihbarat_TKR_2026.pdf s. 35 (kitap s. 18)",
+  "tarihISO": "2026-10-02T23:16:42.250624+00:00"
+ },
+ {
+  "id": "gece-20261003-6322605e0b29",
+  "guid": "6322605e0b29",
+  "konu": "İK Politikaları",
+  "soru": "1. TİS’le değişen zamlardan ücretsiz izindekiler yararlanamaz.\n2. Eşin doğum yapması halinde kullanılan izin 10 gündür.\n3. İzin hak etmek için deneme süresi dahil en az 1 yıl çalışmak gerekir.\n\nYukarıda sayılanlardan hangileri yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Toplu İş Sözleşmesi Md.21, s.12",
+  "tarihISO": "2026-10-02T23:16:42.250624+00:00"
+ },
+ {
+  "id": "gece-20261003-b06578861e4d",
+  "guid": "b06578861e4d",
+  "konu": "Genel Ekonomi",
+  "soru": "TCMB'nin bankalara bir hafta vadeli repo işlemleriyle fon sağlarken (borç verirken) uyguladığı temel faizin adı nedir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026, s. 183",
+  "tarihISO": "2026-10-02T23:16:42.250624+00:00"
+ },
+ {
+  "id": "gece-20261003-17d32a5d91eb",
+  "guid": "17d32a5d91eb",
+  "konu": "Temel İşlemler",
+  "soru": "Aşağıdakilerden hangisi için hesap açılamaz?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/İŞ Dergisi.pdf, s. 24",
+  "tarihISO": "2026-10-02T23:16:42.250624+00:00"
+ },
+ {
+  "id": "gece-20261003-9031c3864fee",
+  "guid": "9031c3864fee",
+  "konu": "Genel Ekonomi",
+  "soru": "2025 Yılında Ülke Büyüme oranımız kaçtır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "TÜİK Yıllık Gayrisafi Yurt İçi Hasıla, 2025 Haber Bülteni (31.08.2026) / DHA",
+  "tarihISO": "2026-10-02T23:16:42.250624+00:00"
  }
 ]
