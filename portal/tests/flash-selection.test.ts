@@ -342,6 +342,8 @@ void test('(e) mevcut Konu Konu Bak davranışı (yalnız-yanlış KAPALIYKEN t�
 
 void test('renderDenemeKonuSec: her ders üç seçenek taşır, yanlış yoksa ilgili seçenek devre dışıdır', () => {
   const context: Record<string, unknown> = {
+    anaSayfaSekmeleriHtml: () => '',
+    tumBankaCalismaHtml: () => '',
     remoteAuth: { isAdmin: false },
     KONU_SIRA: ['Kredi', 'Hukuk'],
     STATE: {

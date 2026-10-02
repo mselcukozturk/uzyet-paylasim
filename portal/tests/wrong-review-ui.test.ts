@@ -53,9 +53,8 @@ void test('tekrar testi Rastgele Soru mekaniğini kullanır: ileri/geri gezinme 
   assert.match(script, /action === "start-yanlis-tekrar-test"\) startTekrarTest\("yanlis",/);
 });
 
-void test('yanlış sorular hatırlatıcıların altında gösterilir ve cevap sunucuya kaydedilir', () => {
-  const menu = script.match(/function renderMenuDeneme\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
-  assert.ok(menu.indexOf('hatirlaticiBolumHtml("deneme")') < menu.indexOf('yanlisSorularBolumHtml("deneme")'));
+void test('yanlış soru cevabı sunucuya kaydedilir', () => {
+  // Ana sayfa yerleşimi topic-study-browser.test.ts tarayıcı akışında doğrulanır.
   assert.match(script, /action: "wrong-questions"/);
   assert.match(script, /action: "wrong-question-answer", questionGuid: kayit\.guid, selectedAnswer: q\.siklar\[kayit\.secilen\]/);
   assert.match(script, /if \(r\.data && r\.data\.guids\) remoteWrongGuids = r\.data\.guids/);
@@ -82,14 +81,12 @@ void test('Rastgele Soru üstünde çıkış ve testi bitirme ayrı kontrollerdi
 });
 
 void test('Deneme ve AI kartları aynı motoru ayrı havuzlarla kullanır', () => {
-  const denemeMenu = script.match(/function renderMenuDeneme\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   const aiMenu = script.match(/function renderMenuTest\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   const start = script.match(/function startTekrarTest\(tur, havuz\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   const finishAi = script.match(/function finishAiExam\(\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   const kaydet = script.match(/function tekrarCevapKaydet\(kayit\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
   const flagBar = script.match(/function flagBarHtml\(guid, showPratikExtras\) \{[\s\S]*?^  \}/m)?.[0] ?? '';
 
-  assert.match(denemeMenu, /hatirlaticiBolumHtml\("deneme"\)[\s\S]*yanlisSorularBolumHtml\("deneme"\)/);
   assert.match(aiMenu, /hatirlaticiBolumHtml\("ai"\)[\s\S]*yanlisSorularBolumHtml\("ai"\)/);
   assert.match(start, /currentTekrar = \{[\s\S]*havuz: havuz/);
   assert.match(script, /startTekrarTest\("hatirlatici", t\.getAttribute\("data-havuz"\)\)/);

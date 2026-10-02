@@ -4006,26 +4006,35 @@
       '<button class="btn ghost" data-action="deneme-cikis-yap" title="Çıkış" aria-label="Çıkış">🚪</button></span></div>';
   }
 
-  function renderMenuDeneme() {
+  function anaSayfaSekmeleriHtml(konuSekmesi) {
+    if (STATE.sadeceDeneme && !remoteGirisTamamMi()) return "";
+    return '<div class="ders-sekmeler" role="tablist" aria-label="Ana sayfa bölümleri">' +
+      '<button class="btn' + (konuSekmesi ? '' : ' active') + '" role="tab" aria-selected="' + (!konuSekmesi) + '" tabindex="' + (konuSekmesi ? '-1' : '0') + '" data-action="open-menu-deneme">Deneme</button>' +
+      '<button class="btn' + (konuSekmesi ? ' active' : '') + '" role="tab" aria-selected="' + konuSekmesi + '" tabindex="' + (konuSekmesi ? '0' : '-1') + '" data-action="open-deneme-konu-sec">Konu Konu Bak</button></div>';
+  }
+
+  function tumBankaCalismaHtml() {
     var toplamSoru = STATE.bank.length;
     var flashDisabled = (toplamSoru === 0 || (STATE.sadeceDeneme && !remoteGirisTamamMi())) ? "disabled" : "";
 
 
     var flashCards =
       '<button class="mode-btn" style="border-left:4px solid var(--seri-7)" ' + flashDisabled + ' data-action="start-flash">' +
-      '<div class="title">🎲 Rastgele Soru</div><div class="desc">Tek soru, anında cevap — hızlı pratik veya keyfine bakmak için.</div></button>' +
-      '<button class="mode-btn" style="border-left:4px solid var(--seri-8)" ' + flashDisabled + ' data-action="open-deneme-konu-sec">' +
-      '<div class="title">📖 Konu Konu Bak</div><div class="desc">Sınav dışında, seçtiğin konudaki sorulara tek tek bak.</div></button>';
+      '<div class="title">🎲 Rastgele Soru</div><div class="desc">Tüm soru bankasından tek soru, anında cevap.</div></button>';
+
+    return '<div class="mode-grid">' + flashCards + '</div>' + yanlisSorularBolumHtml("deneme");
+  }
+
+  function renderMenuDeneme() {
 
     return (STATE.sadeceDeneme
       ? ustBarHtml()
       : '<div class="link-row"><button class="btn ghost" data-action="back-menu">← Ana Menü</button>' +
         '<button class="btn" data-action="open-history">Geçmiş</button></div>') +
+      anaSayfaSekmeleriHtml(false) +
       '<div class="section-title">📝 Deneme Sınavı</div>' +
       renderDenemeUzakBolum() +
-      hatirlaticiBolumHtml("deneme") +
-      yanlisSorularBolumHtml("deneme") +
-      '<div class="mode-grid" style="margin-top:14px">' + flashCards + "</div>";
+      hatirlaticiBolumHtml("deneme");
   }
 
   // Ana ekrandaki "hatırlatıcı içeren sorular" kartı — yalnız giriş+onay+disclaimer
@@ -4219,7 +4228,7 @@
 
   function renderDenemeKonuSec() {
     if (STATE.sadeceDeneme && !remoteBankLoaded) {
-      return '<div class="card" role="status">Soru geçmişi yükleniyor… <button class="btn" data-action="open-deneme-konu-sec">Tekrar Dene</button></div>';
+      return ustBarHtml() + anaSayfaSekmeleriHtml(true) + '<div class="card" role="status">Soru geçmişi yükleniyor… <button class="btn" data-action="open-deneme-konu-sec">Tekrar Dene</button></div>';
     }
     var toplamSoru = 0, toplamTekrar = 0, toplamYanlis = 0, toplamGorulmemis = 0;
     var tiles = KONU_SIRA.map(function (konu) {
@@ -4250,8 +4259,9 @@
       konuSayaclariHtml(toplamSoru, toplamTekrar, toplamYanlis, toplamGorulmemis, "Tüm derslerin soru sayıları") +
       '</div>';
 
-    return '<div class="link-row"><button class="btn ghost" data-action="open-menu-deneme">← Deneme Sınavı</button></div>' +
+    return (STATE.sadeceDeneme ? ustBarHtml() : '') + anaSayfaSekmeleriHtml(true) +
       '<div class="section-title">📖 Konu Konu Bak</div>' +
+      tumBankaCalismaHtml() +
       '<div class="desc" style="margin-bottom:12px">Bir ders seç, ardından çalışmak istediğin soruları aç. Sayılar, bu hesaptaki tüm deneme ve soru çalışmalarını kapsar. Açtığın sorular görülmemiş listesinden, doğru çözdüğün yanlışlar yanlış listesinden çıkar. Ayrı bir deneme geçmişi oluşmaz.</div>' +
       toplamHtml +
       konuTekrarListesiHtml() +
@@ -5721,6 +5731,16 @@ function pratikEnIyiHtml(konu, modulKey) {
   document.addEventListener("keydown", function (e) {
     if (aiUyariAcik) {
       if (e.key === "Escape") { e.preventDefault(); closeAiUyari(); }
+      return;
+    }
+    if ((VIEW === "menuDeneme" || VIEW === "denemeKonuSec") && document.activeElement.closest('[aria-label="Ana sayfa bölümleri"]') &&
+      (e.key === "ArrowRight" || e.key === "ArrowLeft" || e.key === "Home" || e.key === "End")) {
+      e.preventDefault();
+      var konuSekmesi = e.key === "End" || (e.key !== "Home" && VIEW === "menuDeneme");
+      var hedefSekme = document.querySelector('[role="tab"][data-action="' + (konuSekmesi ? "open-deneme-konu-sec" : "open-menu-deneme") + '"]');
+      if (hedefSekme) hedefSekme.click();
+      var seciliSekme = document.querySelector('[aria-label="Ana sayfa bölümleri"] [aria-selected="true"]');
+      if (seciliSekme) seciliSekme.focus();
       return;
     }
     if (VIEW === "pratikModul" && document.activeElement.getAttribute("role") === "tab" &&
