@@ -402,7 +402,6 @@
   .konu-calisma summary::marker { content:""; }
   .konu-calisma summary .konu-dot { margin:0; }
   .konu-ders-adi { min-width:0; line-height:1.4; }
-  .konu-ders-sayi { margin-left:auto; flex-shrink:0; color:var(--text-muted); font-weight:400; font-size:.84rem; font-variant-numeric:tabular-nums; }
   .konu-acma-isareti { display:flex; align-items:center; justify-content:center; width:10px; height:10px; flex:0 0 10px; color:var(--text-muted); }
   .konu-acma-isareti::before { content:""; border-top:4px solid transparent; border-bottom:4px solid transparent; border-left:6px solid currentColor; }
   .konu-calisma[open] > summary .konu-acma-isareti { transform:rotate(90deg); }
@@ -432,8 +431,8 @@
     .konu-sayaclar > div { padding:10px 12px; }
     .konu-sayaclar span { font-size:.66rem; letter-spacing:.04em; }
     .konu-secenekler { gap:6px; }
-    .konu-secenekler .btn, .konu-calisma .konu-secenekler .btn { display:flex; flex-direction:column; align-items:center; gap:4px; font-size:.72rem; line-height:1.25; padding:10px 3px; }
-    .konu-secenek-simge { font-size:1.15rem; line-height:1; }
+    .konu-secenekler .btn, .konu-calisma .konu-secenekler .btn { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:.68rem; line-height:1.2; padding:6px 3px; }
+    .konu-secenek-simge { font-size:.95rem; line-height:1; }
     .konu-calisma { padding:8px 12px; }
   }
 </style>
@@ -4279,7 +4278,7 @@
       var renk = "var(--seri-" + konuSeriIdx(konu) + ")";
       var konuAttr = ' data-konu="' + escapeHtml(konu) + '"';
       return '<details class="card konu-calisma"' + konuAttr + (typeof acikKkDersleri !== 'undefined' && acikKkDersleri[konu] ? ' open' : '') + ' style="border-left:4px solid ' + renk + '">' +
-        '<summary><span class="konu-acma-isareti" aria-hidden="true"></span>' + konuDotHtml(konu) + '<span class="konu-ders-adi">' + escapeHtml(konu) + '</span><span class="konu-ders-sayi">' + havuz.length + ' soru</span></summary>' +
+        '<summary><span class="konu-acma-isareti" aria-hidden="true"></span>' + konuDotHtml(konu) + '<span class="konu-ders-adi">' + escapeHtml(konu) + '</span></summary>' +
         konuSayaclariHtml(havuz.length, tekrar, yanlis, gorulmemis, "Ders soru sayıları") +
         '<div class="konu-secenekler">' +
         '<button class="btn" data-action="start-deneme-konu-flash"' + konuAttr + (havuz.length ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">🎲</span> Rastgele Sorular</button>' +
