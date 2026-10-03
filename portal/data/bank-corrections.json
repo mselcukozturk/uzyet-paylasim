@@ -5237,5 +5237,50 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "TÜİK Yıllık Gayrisafi Yurt İçi Hasıla, 2025 Haber Bülteni (31.08.2026) / DHA",
   "tarihISO": "2026-10-02T23:16:42.250624+00:00"
+ },
+ {
+  "id": "gece-20261004-4464e793bae2",
+  "guid": "4464e793bae2",
+  "konu": "Mali Analiz",
+  "soru": "Aşağıdaki tabloda yer alan bilgiler ışığında A ve B firmalarının karar destek sistemi hangi seçenekte doğru olarak verilmiştir?\n| | A Firması | B Firması |\n| 2024 Yılı Ciro (USD) | 1.200.000 | 890.000 |\n| 2025 Yılı Ciro (USD) | 960.000 | 6.500.000 |\n| Teklif Sonrası Ulaşılacak Limit (USD) | 45.000 | 1.050.000 |",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026, s.59, 110; BASİSEN İstihbarat Not ve Soruları 2026, s.33 (Genel Hususlar 42)",
+  "tarihISO": "2026-10-03T23:22:14.022743+00:00"
+ },
+ {
+  "id": "gece-20261004-46375f2dca33",
+  "guid": "46375f2dca33",
+  "konu": "Mali Analiz",
+  "soru": "Konsolidasyona dahil edilen firmalar ve bu firmaların konsolidasyon yöntemleri ile ilgili aşağıdaki bilgilerden hangisi/hangileri doğrudur?\nI. Bağlı Ortaklık: Tam Konsolidasyon\nII. Müşterek Kontrol Edilen Ortaklık: Oransal/Özkaynak\nIII. İştirak: Özkaynak",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "istihbarat_TKR_2026.pdf, s.49",
+  "tarihISO": "2026-10-03T23:22:14.022743+00:00"
+ },
+ {
+  "id": "gece-20261004-09d37ff95dd7",
+  "guid": "09d37ff95dd7",
+  "konu": "Mali Analiz",
+  "soru": "| $ | A | B | C |\n| Son Yıl Ciro | 500.000 | 10.000.000 | 3.000.000 |\n| Önceki Yıl Ciro | 700.000 | 7.000.000 | 5.000.000 |\n| Ulaşılacak Genel Limit | 50.000 | 40.000 | 2.000.000 |\nYukarıdaki tabloya göre firmaların karar destek sistemi hangi şıkta doğru olarak verilmiştir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026, s.42 (PDF s.59)",
+  "tarihISO": "2026-10-03T23:22:14.022743+00:00"
+ },
+ {
+  "id": "gece-20261004-54bd2c2617f4",
+  "guid": "54bd2c2617f4",
+  "konu": "Mali Analiz",
+  "soru": "Teklif sonrası ulaşılan genel limiti 500.000 USD, cirosu 7.000.000 USD olan firma Bankamız kredi süreci açısından hangi segmentte yer almaktadır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026, s.42 (PDF s.59)",
+  "tarihISO": "2026-10-03T23:22:14.022743+00:00"
+ },
+ {
+  "id": "gece-20261004-1c670ed7517f",
+  "guid": "1c670ed7517f",
+  "konu": "Hukuk",
+  "soru": "Hangi çeklerde karşılıksız işlemi yapılır? (yasal yükümlülük 16.350 TL)\n\nI) Hesapta 10.050 tl olan müşterinin 22.000 tl’lik çeki\nII) Hesapta 0 tl olan müşterinin 12.050 tl ‘lik çeki\nIII) Hesapta 3.000 tl olan müşterinin 21.000 tl’lik çeki",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "01 Hukuk/Hukuk Kitap Notları (revize 2026).docx; TCMB Tebliğ 2026/4",
+  "tarihISO": "2026-10-03T23:22:14.022743+00:00"
  }
 ]
