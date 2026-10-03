@@ -345,6 +345,8 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       check(document.querySelector('[data-study-repeats] tbody').textContent.includes('ikinci'), 'Yönetici kullanıcı adını görür');
       check(document.querySelector('[data-tum-banka]').previousElementSibling.matches('[data-toplam]'), 'Tekrar listesi açıkken de dört düğme istatistiklerin hemen altında');
       check(document.querySelector('[data-study-repeats] tbody').textContent.includes('11'), 'Tekrar sayısı görünür');
+      check(document.querySelector('[data-study-repeats] thead').textContent.includes('Son 1 hafta'), 'Ortalama sütunu son haftayı belirtir');
+      check(document.querySelector('[data-study-repeats] .muted').textContent.includes('son 7 gün (bugün dahil)'), 'Ortalama açıklaması yedi takvim günü kapsamını belirtir');
       var repeatRows = document.querySelectorAll('[data-study-repeats] tbody tr');
       check(repeatRows[0].cells.length === 3 && repeatRows[0].cells[2].textContent === '30,5 / 50', 'Tekrarın yanında tüm zamanlar ortalama deneme skoru');
       check(repeatRows[1].cells[2].textContent === '0,0 / 50', 'Sıfır puan kayıp veri değildir');

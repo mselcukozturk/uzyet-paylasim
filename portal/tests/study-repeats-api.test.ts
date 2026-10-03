@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 import { PGlite } from '@electric-sql/pglite';
@@ -14,7 +14,8 @@ import ts from 'typescript';
 // old banks double-counted, retired/practice/display-only questions counted,
 // counts mixed between users, incorrect order, empty active bank, write effects.
 // Score failures: unfinished/cancelled attempts included, old-bank or old-date
-// completions excluded, score average multiplying repetition sums, null vs zero.
+// completions mishandled at the seven-calendar-day boundary, score average
+// multiplying repetition sums, null vs zero, no recent completions.
 test('yönetici tekrar listesi kullanıcı bazında aktif banka toplamını verir ve yetkisiz erişimi reddeder', async () => {
   const pg = new PGlite();
   try {
@@ -39,9 +40,13 @@ test('yönetici tekrar listesi kullanıcı bazında aktif banka toplamını veri
       {userId:'admin',questionGuid:'practice_q',shownCount:200},
       {userId:'second',questionGuid:'q1',shownCount:11},
     ]);
+    const weekStart = examCore.takvimGunuBaslangici(7);
     await db.insert(schema.examAttempts).values([
       {userId:'admin',bankId:old.id,mode:'rastgele',status:'finished',examCode:'OLD',correctCount:20,finishedAt:new Date('2024-01-01')},
       {userId:'admin',bankId:bank.id,mode:'rastgele',status:'finished',examCode:'NEW',correctCount:41,finishedAt:new Date()},
+      {userId:'admin',bankId:old.id,mode:'rastgele',status:'finished',examCode:'BOUNDARY',correctCount:20,finishedAt:weekStart},
+      {userId:'admin',bankId:bank.id,mode:'rastgele',status:'finished',examCode:'BEFORE',correctCount:50,finishedAt:new Date(weekStart.getTime()-1)},
+      {userId:'zero',bankId:bank.id,mode:'rastgele',status:'finished',examCode:'OLDONLY',correctCount:50,finishedAt:new Date('2024-01-01')},
       {userId:'admin',bankId:bank.id,mode:'rastgele',status:'active',examCode:'OPEN',correctCount:50},
       {userId:'admin',bankId:bank.id,mode:'rastgele',status:'cancelled',examCode:'CANCELLED',correctCount:50},
       {userId:'second',bankId:bank.id,mode:'rastgele',status:'finished',examCode:'ZERO',correctCount:0,finishedAt:new Date()},
@@ -63,9 +68,13 @@ test('yönetici tekrar listesi kullanıcı bazında aktif banka toplamını veri
     const send=()=>exports.POST!(new Request('https://test.invalid/api/exam',{method:'POST',body:JSON.stringify({action:'study-repeats'})}));
     const response=await send();
     assert.equal(response.status,200);
-    assert.deepEqual(await response.json(),{users:[
+    const payload = await response.json();
+    assert.deepEqual(payload,{users:[
       {name:'ikinci',totalRepeats:11,avgCorrect:0},{name:'yonetici',totalRepeats:7,avgCorrect:30.5},{name:'yeni',totalRepeats:0,avgCorrect:null},
     ]});
+    const output = new URL('../outputs/study-repeats/', import.meta.url);
+    mkdirSync(output,{recursive:true});
+    writeFileSync(new URL('api-result.json',output),JSON.stringify({ok:true,weekStart:weekStart.toISOString(),users:payload.users},null,2));
     assert.equal((await db.select().from(schema.questionStats)).length,5,'okuma istatistik yazmamalı');
     profile={userId:'second',isActive:true,isAdmin:false}; assert.equal((await send()).status,403);
     profile={userId:'admin',isActive:false,isAdmin:true}; assert.equal((await send()).status,403);

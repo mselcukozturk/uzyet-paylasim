@@ -837,7 +837,10 @@ async function handlePost(request: Request) {
         .groupBy(schema.profiles.userId, schema.profiles.username)
         .orderBy(desc(totalRepeats), asc(schema.profiles.username)),
         db.select({ userId: schema.examAttempts.userId, avgCorrect: avg(schema.examAttempts.correctCount) })
-          .from(schema.examAttempts).where(eq(schema.examAttempts.status, 'finished'))
+          .from(schema.examAttempts).where(and(
+            eq(schema.examAttempts.status, 'finished'),
+            gte(schema.examAttempts.finishedAt, takvimGunuBaslangici(7)),
+          ))
           .groupBy(schema.examAttempts.userId),
       ]);
       const averages = new Map(averageRows.map(row => [

@@ -4224,14 +4224,14 @@
     if (c.yukleniyor) govde = '<div class="muted" role="status">Yükleniyor…</div>';
     else if (c.hata) govde = '<div class="muted" role="alert">' + escapeHtml(c.hata) + '</div>';
     else if (!c.veri || !c.veri.users.length) govde = '<div class="muted">Henüz kullanıcı yok.</div>';
-    else govde = '<table class="topic-table"><thead><tr><th>Kullanıcı</th><th class="num">Toplam tekrar</th><th class="num">Ortalama<br>deneme</th></tr></thead><tbody>' +
+    else govde = '<table class="topic-table"><thead><tr><th>Kullanıcı</th><th class="num">Toplam tekrar</th><th class="num">Son 1 hafta<br>ortalama deneme</th></tr></thead><tbody>' +
       c.veri.users.map(function (u) {
         return '<tr><td style="overflow-wrap:anywhere">' + escapeHtml(u.name) + '</td><td class="num">' + u.totalRepeats + '</td><td class="num">' +
           (u.avgCorrect == null ? '—' : fmtOrt(u.avgCorrect) + ' / 50') + '</td></tr>';
       }).join('') + '</tbody></table>';
     return '<div class="card konu-tekrar-listesi" id="konu-tekrar-listesi" data-study-repeats>' +
       '<div class="section-title">👥 Kullanıcıların Toplam Tekrarı</div>' +
-      '<div class="muted">Tekrar: aktif sorular · Ortalama deneme: tüm zamanlar, 50 üzerinden</div>' + govde + '</div>';
+      '<div class="muted">Tekrar: aktif sorular · Ortalama deneme: son 7 gün (bugün dahil), 50 üzerinden</div>' + govde + '</div>';
   }
   function toggleKonuTekrarListesi() {
     if (!remoteAuth.isAdmin && !remoteAuth.canViewStatistics) return;
