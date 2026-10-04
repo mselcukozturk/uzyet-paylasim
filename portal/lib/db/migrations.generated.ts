@@ -77,4 +77,8 @@ export const MIGRATIONS: readonly Migration[] = [
     name: "0017_statistics_access.sql",
     content: "ALTER TABLE profiles ADD COLUMN IF NOT EXISTS can_view_statistics boolean NOT NULL DEFAULT false;\n--> statement-breakpoint\nUPDATE profiles SET can_view_statistics = true, updated_at = now()\nWHERE lower(username) IN ('emrebot', 'numanbaba');\n",
   },
+  {
+    name: "0018_third_daily_exam.sql",
+    content: "ALTER TABLE daily_exams DROP CONSTRAINT IF EXISTS daily_exams_number_check;\nALTER TABLE daily_exams ADD CONSTRAINT daily_exams_number_check CHECK (number IN (1, 2, 3));\n",
+  },
 ];

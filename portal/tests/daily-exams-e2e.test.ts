@@ -145,20 +145,34 @@ test('ranked override refuses missing topic quota even with more than 50 eligibl
   } finally {await pg.close();}
 });
 
-test('daily pair API: gate, disjoint immutable questions, independent scores and history', async () => {
-  const { pg, db, post } = await setup();
+test('daily trio API: gate, disjoint immutable questions, independent scores and history', async () => {
+  const { pg: pg4, post: post4 } = await setup('2026-10-04');
+  try {
+    const oct4Dash = (await post4('alice', { action: 'dashboard' })).data;
+    assert.equal(oct4Dash.dailyThird, null);
+    assert.equal((await post4('alice', start(3))).status, 400);
+  } finally { await pg4.close(); }
+
+  const { pg, db, post } = await setup('2026-10-05');
   try {
     assert.equal((await post('alice', start(2))).status, 409);
+    assert.equal((await post('alice', start(3))).status, 409);
     const initial = (await post('alice', { action: 'dashboard' })).data;
     assert.equal(initial.dailySecond.unlocked, false);
+    assert.equal(initial.dailyThird.unlocked, false);
     assert.equal((await post('alice', { action: 'start', mode: 'rastgele', examCode: initial.dailySecond.code.toLowerCase() })).status, 409);
-    assert.equal((await post('alice', { ...start(2), dailyNumber: 3 })).status, 400);
+    assert.equal((await post('alice', { action: 'start', mode: 'rastgele', examCode: initial.dailyThird.code.toLowerCase() })).status, 409);
+    assert.equal((await post('alice', { ...start(2), dailyNumber: 4 })).status, 400);
     const [first, bobFirst] = await Promise.all(['alice', 'bob'].map(async user => {
       const response = await post(user, start(1)); assert.equal(response.status, 200, JSON.stringify(response.data)); return response.data;
     }));
     assert.deepEqual(guids(first), guids(bobFirst));
     await finish(db, post, 'alice', first, 40); await finish(db, post, 'bob', bobFirst, 0);
-    assert.equal((await post('alice', { action: 'dashboard' })).data.dailySecond.unlocked, true);
+    const afterFirst = (await post('alice', { action: 'dashboard' })).data;
+    assert.equal(afterFirst.dailySecond.unlocked, true);
+    assert.equal(afterFirst.dailyThird.unlocked, false);
+    assert.equal((await post('alice', start(3))).status, 409);
+
     const second = await post('alice', start(2)); assert.equal(second.status, 200, JSON.stringify(second.data));
     assert.equal(second.data.dailyNumber, 2); assert.equal(second.data.isDaily, true);
     assert.equal(guids(second.data).filter((g: string) => guids(first).includes(g)).length, 0);
@@ -168,17 +182,44 @@ test('daily pair API: gate, disjoint immutable questions, independent scores and
     await finish(db, post, 'bob', bobSecond.data, 20);
     const repeat = await post('alice', start(2)); assert.deepEqual(guids(second.data), guids(repeat.data));
     await finish(db, post, 'alice', repeat.data, 50);
+
+    const afterSecond = (await post('alice', { action: 'dashboard' })).data;
+    assert.equal(afterSecond.dailyThird.unlocked, true);
+
+    const third = await post('alice', start(3)); assert.equal(third.status, 200, JSON.stringify(third.data));
+    assert.equal(third.data.dailyNumber, 3); assert.equal(third.data.isDaily, true);
+    const g1 = new Set(guids(first));
+    const g2 = new Set(guids(second.data));
+    assert.equal(guids(third.data).filter((g: string) => g1.has(g)).length, 0);
+    assert.equal(guids(third.data).filter((g: string) => g2.has(g)).length, 0);
+    assert.equal(guids(second.data).filter((g: string) => g1.has(g)).length, 0);
+    await finish(db, post, 'alice', third.data, 35);
+    const bobThird = await post('bob', { action: 'start', mode: 'rastgele', examCode: third.data.examCode });
+    assert.equal(bobThird.status, 200); assert.deepEqual(guids(third.data), guids(bobThird.data));
+    await finish(db, post, 'bob', bobThird.data, 27);
+    const repeatThird = await post('alice', start(3)); assert.deepEqual(guids(third.data), guids(repeatThird.data));
+    await finish(db, post, 'alice', repeatThird.data, 45);
+
     const dash = (await post('alice', { action: 'dashboard' })).data;
     assert.equal(dash.daily.myCorrect, 40); assert.equal(dash.dailySecond.myCorrect, 30);
+    assert.equal(dash.dailyThird.myCorrect, 35);
     assert.equal(dash.dailySecond.avgCorrect, 30); assert.equal(dash.dailySecond.solvedCount, 2);
-    assert.equal((await post('carol', { action: 'dashboard' })).data.dailySecond.avgCorrect, null);
-    assert.deepEqual((await post('alice', { action: 'history' })).data.attempts.map((a: any) => a.dailyNumber), [2, 2, 1]);
-    assert.deepEqual((await post('admin', { action: 'daily-solvers', dailyNumber: 2 })).data.solvers.map((s: any) => s.correct), [30, 20]);
-    assert.equal((await post('alice', { action: 'daily-solvers', dailyNumber: 2 })).status, 403);
+    assert.equal(dash.dailyThird.avgCorrect, 31); assert.equal(dash.dailyThird.solvedCount, 2);
+    assert.equal((await post('carol', { action: 'dashboard' })).data.dailyThird.avgCorrect, null);
+    assert.deepEqual((await post('alice', { action: 'history' })).data.attempts.map((a: any) => a.dailyNumber), [3, 3, 2, 2, 1]);
+    assert.deepEqual((await post('admin', { action: 'daily-solvers', dailyNumber: 3 })).data.solvers.map((s: any) => s.correct), [35, 27]);
+    assert.equal((await post('alice', { action: 'daily-solvers', dailyNumber: 3 })).status, 403);
+
     for (const [user, attempt] of [['alice', first], ['bob', bobFirst]] as const) assert.equal((await post(user, { action: 'delete', attemptId: attempt.id })).status, 200);
     const recreated = await post('carol', start(1)); assert.equal(recreated.status, 200); assert.deepEqual(guids(recreated.data), guids(first));
+    await finish(db, post, 'carol', recreated.data, 0);
+    const recreatedSecond = await post('carol', start(2)); assert.equal(recreatedSecond.status, 200); assert.deepEqual(guids(recreatedSecond.data), guids(second.data));
+    await finish(db, post, 'carol', recreatedSecond.data, 0);
+    const recreatedThird = await post('carol', { action: 'start', mode: 'rastgele', examCode: third.data.examCode });
+    assert.equal(recreatedThird.status, 200);
+    assert.deepEqual(guids(recreatedThird.data), guids(third.data));
     await mkdir(artifacts, { recursive: true });
-    await writeFile(new URL('api-report.json', artifacts), JSON.stringify({ passed: true, firstCount: 50, secondCount: 50, intersection: 0, firstGuids: guids(first), secondGuids: guids(second.data), dashboard: dash }, null, 2));
+    await writeFile(new URL('api-report.json', artifacts), JSON.stringify({ passed: true, firstCount: 50, secondCount: 50, thirdCount: 50, intersection: 0, firstGuids: guids(first), secondGuids: guids(second.data), thirdGuids: guids(third.data), dashboard: dash }, null, 2));
   } finally { await pg.close(); }
 });
 
@@ -213,16 +254,25 @@ test('after 07:00 an unstarted previous-day second code still enforces its first
   } finally { await pg.close(); }
 });
 
-test('short bank preserves first exam and refuses an overlapping second', async () => {
+test('short bank preserves first exam and refuses an overlapping second or third', async () => {
   const { pg, db, post } = await setup('2026-10-01', 1);
   try {
     const first = await post('alice', start(1)); assert.equal(first.status, 200);
     await finish(db, post, 'alice', first.data, 0); assert.equal((await post('alice', start(2))).status, 503);
   } finally { await pg.close(); }
+
+  const { pg: pg2, db: db2, post: post2 } = await setup('2026-10-05', 2);
+  try {
+    const first = await post2('alice', start(1)); assert.equal(first.status, 200);
+    await finish(db2, post2, 'alice', first.data, 0);
+    const second = await post2('alice', start(2)); assert.equal(second.status, 200);
+    await finish(db2, post2, 'alice', second.data, 0);
+    assert.equal((await post2('alice', start(3))).status, 503);
+  } finally { await pg2.close(); }
 });
 
 test('browser E2E: switch, locked second, first score unlocks second, mobile screenshots', async () => {
-  const { pg, post, handler } = await setup();
+  const { pg, post, handler } = await setup('2026-10-05');
   let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
   const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
   const server = createServer(async (req, res) => {
@@ -246,22 +296,42 @@ test('browser E2E: switch, locked second, first score unlocks second, mobile scr
     const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
     await page.goto(`http://127.0.0.1:${(server.address() as any).port}`);
     await page.locator('[data-action="switch-daily-exam"]').waitFor();
+
+    // 1 -> 2
     await page.locator('[data-action="switch-daily-exam"]').click();
     assert.equal(await page.locator('[data-action="start-daily-exam"]').isEnabled(), false);
     await mkdir(artifacts, { recursive: true });
     await page.screenshot({ path: fileURLToPath(new URL('second-locked.png', artifacts)), fullPage: true });
+
+    // 2 -> 3
     await page.locator('[data-action="switch-daily-exam"]').click();
+    assert.equal(await page.locator('[data-action="start-daily-exam"]').isEnabled(), false);
+    await page.screenshot({ path: fileURLToPath(new URL('third-locked.png', artifacts)), fullPage: true });
+
+    // 3 -> 1
+    await page.locator('[data-action="switch-daily-exam"]').click();
+    assert.equal(await page.locator('[data-action="start-daily-exam"]').isEnabled(), true);
     await page.locator('[data-action="start-daily-exam"]').click();
     await page.locator('[data-action="finish-exam"]').click();
     await page.locator('[data-action="back-menu"]').click();
+
+    // 1 -> 2 (unlocked)
     await page.locator('[data-action="switch-daily-exam"]').click();
     await page.locator('[data-action="start-daily-exam"]:enabled').waitFor();
     await page.screenshot({ path: fileURLToPath(new URL('second-unlocked.png', artifacts)), fullPage: true });
+    await page.locator('[data-action="start-daily-exam"]').click();
+    await page.locator('[data-action="finish-exam"]').click();
+    await page.locator('[data-action="back-menu"]').click();
+
+    // 2 -> 3 (unlocked)
+    await page.locator('[data-action="switch-daily-exam"]').click();
+    await page.locator('[data-action="start-daily-exam"]:enabled').waitFor();
+    await page.screenshot({ path: fileURLToPath(new URL('third-unlocked.png', artifacts)), fullPage: true });
     await page.setViewportSize({ width: 1100, height: 900 });
-    await page.screenshot({ path: fileURLToPath(new URL('second-desktop.png', artifacts)), fullPage: true });
+    await page.screenshot({ path: fileURLToPath(new URL('third-desktop.png', artifacts)), fullPage: true });
     await page.locator('[data-action="start-daily-exam"]').click();
     await page.locator('[data-action="finish-exam"]').waitFor();
-    assert.equal((await post('browser', { action: 'dashboard' })).data.activeAttempt.dailyNumber, 2);
+    assert.equal((await post('browser', { action: 'dashboard' })).data.activeAttempt.dailyNumber, 3);
     assert.deepEqual(errors, []);
     await writeFile(new URL('browser-report.json', artifacts), JSON.stringify({ passed: true, viewport: { width: 390, height: 844 }, pageErrors: errors }, null, 2));
   } finally { await browser?.close(); await new Promise<void>(resolve => server.close(() => resolve())); await pg.close(); }

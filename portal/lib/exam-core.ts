@@ -90,6 +90,11 @@ export function secondDailyExamCode(day: string, secret = process.env.PIN_ENCRYP
   return `UZY-D${day.replaceAll('-', '')}-${seed.toString(36).toUpperCase()}`;
 }
 
+export function thirdDailyExamCode(day: string, secret = process.env.PIN_ENCRYPTION_KEY ?? '') {
+  const seed = createHmac('sha256', secret).update(`gunun-denemesi-3:${day}`).digest().readUInt32BE(0);
+  return `UZY-E${day.replaceAll('-', '')}-${seed.toString(36).toUpperCase()}`;
+}
+
 // AI Günün Denemesi (Yapay Zekâ Kaynakları) resmi denemeden ayrı bir tohum kullanır — aynı gün
 // iki deneme de aynı 50 soruyu seçmesin diye etiket farklı. Resmi denemedeki gerekçe burada da
 // geçerli: repo public, tohum düz tarihten türeseydi yarının soruları önceden hesaplanabilirdi.
@@ -104,14 +109,16 @@ export function aiExamCode(seed: number) {
   return `UZA-${(seed >>> 0).toString(36).toUpperCase()}`;
 }
 
-export function parseExamCode(value: string): { mode: ExamMode; seed: number; fixed?: boolean; dailyDay?: string } | null {
-  const daily = value.trim().toUpperCase().match(/^UZY-D(\d{4})(\d{2})(\d{2})-([0-9A-Z]+)$/);
+export function parseExamCode(value: string): { mode: ExamMode; seed: number; fixed?: boolean; dailyDay?: string; dailyNumber?: 2 | 3 } | null {
+  const daily = value.trim().toUpperCase().match(/^UZY-([DE])(\d{4})(\d{2})(\d{2})-([0-9A-Z]+)$/);
   if (daily) {
-    const day = `${daily[1]}-${daily[2]}-${daily[3]}`;
+    const prefix = daily[1];
+    const day = `${daily[2]}-${daily[3]}-${daily[4]}`;
     const date = new Date(`${day}T12:00:00Z`);
-    const seed = Number.parseInt(daily[4], 36);
+    const seed = Number.parseInt(daily[5], 36);
     if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== day || seed > 0xffffffff) return null;
-    return { mode: 'rastgele', seed, dailyDay: day };
+    const dailyNumber = prefix === 'E' ? 3 : 2;
+    return { mode: 'rastgele', seed, dailyDay: day, dailyNumber };
   }
   const clean = value.trim().toUpperCase().replace(/^UZY-?/, '');
   const modes: Record<string, ExamMode> = { R: 'rastgele', A: 'azgorulen', Y: 'yanlislar', Z: 'zor', S: 'rastgele' };

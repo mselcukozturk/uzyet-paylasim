@@ -175,7 +175,7 @@ export const dailyExams = pgTable('daily_exams', {
   snapshots: jsonb('snapshots').$type<DailyQuestionSnapshot[]>().notNull(),
 }, (table) => [
   unique('daily_exams_day_number_unique').on(table.day, table.number),
-  check('daily_exams_number_check', sql`${table.number} in (1, 2)`),
+  check('daily_exams_number_check', sql`${table.number} in (1, 2, 3)`),
   check('daily_exams_snapshots_check', sql`jsonb_array_length(${table.snapshots}) = 50`),
 ]);
 

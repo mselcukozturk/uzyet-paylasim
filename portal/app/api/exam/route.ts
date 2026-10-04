@@ -9,6 +9,7 @@ import {
   dailyExamCode,
   dailyExamDay,
   secondDailyExamCode,
+  thirdDailyExamCode,
   takvimGunuBaslangici,
   examCode,
   fixedExamCode,
@@ -21,6 +22,7 @@ import {
   type ExamMode,
 } from '@/lib/exam-core';
 import type {
+  DashboardData,
   DailySolversResponse,
   StudyRepeatsResponse,
   ExamApiRequest,
@@ -160,7 +162,8 @@ function publicQuestion(row: AttemptQuestion) {
 function summary(attempt: Attempt, totalCount: number, answeredCount: number) {
   const day = attempt.dailyDay ?? dailyExamDay(attempt.startedAt);
   const dailyNumber = attempt.dailyNumber ?? (attempt.examCode === dailyExamCode(day) ? 1
-    : attempt.examCode === secondDailyExamCode(day) ? 2 : null);
+    : attempt.examCode === secondDailyExamCode(day) ? 2
+    : attempt.examCode === thirdDailyExamCode(day) ? 3 : null);
   return {
     id: attempt.id,
     mode: attempt.mode,
@@ -371,6 +374,24 @@ async function dashboard(userId: string) {
     .orderBy(schema.examAttempts.userId, asc(schema.examAttempts.finishedAt));
   const mySecond = secondRows.find(row => row.userId === userId);
   const secondScores = secondRows.map(row => row.correct ?? 0).filter(correct => correct >= COMMUNITY_AVERAGE_MIN_CORRECT);
+  const thirdCode = thirdDailyExamCode(dailyDay);
+  let dailyThird: (DashboardData['daily'] & { unlocked: boolean }) | null = null;
+  if (dailyDay >= '2026-10-05') {
+    const thirdRows = await db.selectDistinctOn([schema.examAttempts.userId], {
+      userId: schema.examAttempts.userId, correct: schema.examAttempts.correctCount,
+    }).from(schema.examAttempts)
+      .where(and(eq(schema.examAttempts.examCode, thirdCode), eq(schema.examAttempts.status, 'finished')))
+      .orderBy(schema.examAttempts.userId, asc(schema.examAttempts.finishedAt));
+    const myThird = thirdRows.find(row => row.userId === userId);
+    const thirdScores = thirdRows.map(row => row.correct ?? 0).filter(correct => correct >= COMMUNITY_AVERAGE_MIN_CORRECT);
+    dailyThird = {
+      day: dailyDay, code: thirdCode, solvedCount: thirdRows.length,
+      unlocked: !!mySecond && mySecond.correct !== null,
+      myCorrect: myThird ? myThird.correct ?? 0 : null,
+      avgCorrect: myThird && thirdScores.length
+        ? Math.round(thirdScores.reduce((sum, value) => sum + value, 0) / thirdScores.length * 10) / 10 : null,
+    };
+  }
 
   return {
     displayName: profile?.displayName || profile?.username || 'Kullanıcı',
@@ -392,6 +413,7 @@ async function dashboard(userId: string) {
       threeDayCount,
       threeDayAvgCorrect: threeDayCount ? Math.round(Number(threeDayRows[0]?.avgCorrect ?? 0) * 10) / 10 : null,
     } : null,
+    dailyThird,
     dailySecond: {
       day: dailyDay, code: secondCode, solvedCount: secondRows.length,
       unlocked: !!myDaily && myDaily.correct !== null,
@@ -415,16 +437,17 @@ async function dashboard(userId: string) {
 // Yalnız yönetici: bugünün günün denemesini çözenler — kişi başı ilk bitmiş deneme
 // (dashboard'daki solvedCount/ortalama ile aynı kural), puana göre büyükten küçüğe;
 // eşitlikte önce bitiren üstte. Ad olarak yalnız kullanıcı adı (giriş adı) kullanılır.
-async function dailySolvers(dailyNumber: 1 | 2 = 1): Promise<DailySolversResponse> {
+async function dailySolvers(dailyNumber: 1 | 2 | 3 = 1): Promise<DailySolversResponse> {
   const db = getDb();
   const day = dailyExamDay();
+  const code = dailyNumber === 3 ? thirdDailyExamCode(day) : dailyNumber === 2 ? secondDailyExamCode(day) : dailyExamCode(day);
   const rows = await db.selectDistinctOn([schema.examAttempts.userId], {
     username: schema.profiles.username,
     finishedAt: schema.examAttempts.finishedAt,
     correct: schema.examAttempts.correctCount,
   }).from(schema.examAttempts)
     .leftJoin(schema.profiles, eq(schema.examAttempts.userId, schema.profiles.userId))
-    .where(and(eq(schema.examAttempts.examCode, dailyNumber === 2 ? secondDailyExamCode(day) : dailyExamCode(day)), eq(schema.examAttempts.status, 'finished')))
+    .where(and(eq(schema.examAttempts.examCode, code), eq(schema.examAttempts.status, 'finished')))
     .orderBy(schema.examAttempts.userId, asc(schema.examAttempts.finishedAt));
   return {
     day,
@@ -487,21 +510,25 @@ async function codeSnapshot(reader: DbReader, code: string) {
   };
 }
 
-async function startDailyExam(userId: string, day: string, number: 1 | 2) {
+async function startDailyExam(userId: string, day: string, number: 1 | 2 | 3) {
+  if (number === 3 && day < '2026-10-05') return fail('Deneme numarası geçersiz.', 400);
+
   const db = getDb();
   const firstCode = dailyExamCode(day);
   const secondCode = secondDailyExamCode(day);
-  if (number === 2) {
+  const thirdCode = thirdDailyExamCode(day);
+  if (number > 1) {
+    const previousCode = number === 2 ? firstCode : secondCode;
     const [finished] = await db.select({ id: schema.examAttempts.id }).from(schema.examAttempts)
-      .where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.examCode, firstCode),
+      .where(and(eq(schema.examAttempts.userId, userId), eq(schema.examAttempts.examCode, previousCode),
         eq(schema.examAttempts.status, 'finished'), sql`${schema.examAttempts.correctCount} is not null`)).limit(1);
-    if (!finished) return fail('Önce günün 1. denemesini bitir ve puanını gör.', 409);
+    if (!finished) return fail(`Önce günün ${number - 1}. denemesini bitir ve puanını gör.`, 409);
   }
 
   const created = await db.transaction(async tx => {
-    // Both daily selections share one lock. Also coordinate with normal code-sharing starts.
+    // All daily selections share one lock. Also coordinate with normal code-sharing starts.
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${'daily-exams:' + day}))`);
-    for (const code of [firstCode, secondCode].sort()) await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${code}))`);
+    for (const code of [firstCode, secondCode, thirdCode].sort()) await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${code}))`);
     async function generate(code: string, excluded: Set<string>) {
       const [bank] = await tx.select().from(schema.questionBanks).where(eq(schema.questionBanks.isActive, true)).limit(1);
       if (!bank) throw new Error('DAILY_BANK_UNAVAILABLE');
@@ -517,18 +544,34 @@ async function startDailyExam(userId: string, day: string, number: 1 | 2) {
       }) };
     }
     const existingSecond = await codeSnapshot(tx, secondCode);
+    const existingThird = await codeSnapshot(tx, thirdCode);
     const first = await codeSnapshot(tx, firstCode)
-      ?? await generate(firstCode, new Set(existingSecond?.snapshots.map(q => q.questionGuid) ?? []));
+      ?? await generate(firstCode, new Set([
+        ...existingSecond?.snapshots.map(q => q.questionGuid) ?? [],
+        ...existingThird?.snapshots.map(q => q.questionGuid) ?? [],
+      ]));
     await tx.insert(schema.dailyExams).values({ code: firstCode, day, number: 1, ...first }).onConflictDoNothing();
     let selected = first;
-    if (number === 2) {
-      const excluded = new Set(first.snapshots.map(q => q.questionGuid));
-      selected = existingSecond ?? await generate(secondCode, excluded);
-      if (selected.snapshots.some(q => excluded.has(q.questionGuid))) throw new Error('DAILY_OVERLAP');
-      await tx.insert(schema.dailyExams).values({ code: secondCode, day, number: 2, ...selected }).onConflictDoNothing();
+    let selectedCode = firstCode;
+    if (number === 2 || number === 3) {
+      const secondExcluded = new Set(first.snapshots.map(q => q.questionGuid));
+      const second = existingSecond ?? await generate(secondCode, secondExcluded);
+      if (second.snapshots.some(q => secondExcluded.has(q.questionGuid))) throw new Error('DAILY_OVERLAP');
+      await tx.insert(schema.dailyExams).values({ code: secondCode, day, number: 2, ...second }).onConflictDoNothing();
+      if (number === 2) {
+        selected = second;
+        selectedCode = secondCode;
+      } else {
+        const thirdExcluded = new Set([...first.snapshots.map(q => q.questionGuid), ...second.snapshots.map(q => q.questionGuid)]);
+        const third = existingThird ?? await generate(thirdCode, thirdExcluded);
+        if (third.snapshots.some(q => thirdExcluded.has(q.questionGuid))) throw new Error('DAILY_OVERLAP');
+        await tx.insert(schema.dailyExams).values({ code: thirdCode, day, number: 3, ...third }).onConflictDoNothing();
+        selected = third;
+        selectedCode = thirdCode;
+      }
     }
     const [attempt] = await tx.insert(schema.examAttempts).values({
-      userId, bankId: selected.bankId, mode: 'rastgele', examCode: number === 2 ? secondCode : firstCode,
+      userId, bankId: selected.bankId, mode: 'rastgele', examCode: selectedCode,
       dailyDay: day, dailyNumber: number,
     }).returning();
     const questions = await tx.insert(schema.examAttemptQuestions).values(selected.snapshots.map((q, index) => ({
@@ -853,7 +896,7 @@ async function handlePost(request: Request) {
 
     if (body.action === 'daily-solvers') {
       if (!profile.isAdmin && !profile.canViewStatistics) return fail('İstatistik görüntüleme yetkisi gerekli.', 403);
-      if (body.dailyNumber !== undefined && body.dailyNumber !== 1 && body.dailyNumber !== 2) return fail('Deneme numarası geçersiz.', 400);
+      if (body.dailyNumber !== undefined && body.dailyNumber !== 1 && body.dailyNumber !== 2 && body.dailyNumber !== 3) return fail('Deneme numarası geçersiz.', 400);
       return NextResponse.json(await dailySolvers(body.dailyNumber));
     }
 
@@ -978,7 +1021,7 @@ async function handlePost(request: Request) {
     }
 
     if (body.action === 'start') {
-      if (body.dailyNumber !== undefined && body.dailyNumber !== 1 && body.dailyNumber !== 2) return fail('Deneme numarası geçersiz.', 400);
+      if (body.dailyNumber !== undefined && body.dailyNumber !== 1 && body.dailyNumber !== 2 && body.dailyNumber !== 3) return fail('Deneme numarası geçersiz.', 400);
       const [open] = await db.select({ id: schema.examAttempts.id }).from(schema.examAttempts)
         .where(and(eq(schema.examAttempts.userId, user.id), inArray(schema.examAttempts.status, ['active', 'paused']))).limit(1);
       if (open) return fail('Önce yarım kalan sınavı tamamla veya sil.', 409);
@@ -988,7 +1031,7 @@ async function handlePost(request: Request) {
       let fixed = false;
       if (!['rastgele', 'azgorulen', 'yanlislar', 'zor'].includes(mode)) return fail('Sınav modu geçersiz.', 400);
       const day = dailyExamDay();
-      const requestedCode = body.daily ? (body.dailyNumber === 2 ? secondDailyExamCode(day) : dailyExamCode(day)) : body.examCode;
+      const requestedCode = body.daily ? (body.dailyNumber === 3 ? thirdDailyExamCode(day) : body.dailyNumber === 2 ? secondDailyExamCode(day) : dailyExamCode(day)) : body.examCode;
       if (requestedCode) {
         const parsed = parseExamCode(requestedCode);
         if (!parsed) return fail('Deneme kodu geçersiz.', 400);
@@ -996,6 +1039,10 @@ async function handlePost(request: Request) {
         seed = parsed.seed;
         fixed = parsed.fixed === true;
         if (parsed.dailyDay) {
+          if (parsed.dailyNumber === 3) {
+            if (requestedCode.trim().toUpperCase() !== thirdDailyExamCode(parsed.dailyDay)) return fail('Deneme kodu geçersiz.', 400);
+            return await startDailyExam(user.id, parsed.dailyDay, 3);
+          }
           if (requestedCode.trim().toUpperCase() !== secondDailyExamCode(parsed.dailyDay)) return fail('Deneme kodu geçersiz.', 400);
           return await startDailyExam(user.id, parsed.dailyDay, 2);
         }
@@ -1018,8 +1065,9 @@ async function handlePost(request: Request) {
         if (code === 'UZY-R17QNG8G') return await startDailyExam(user.id, '2026-09-30', 2);
         if (code === dailyExamCode(day)) return await startDailyExam(user.id, day, 1);
         if (code === secondDailyExamCode(day)) return await startDailyExam(user.id, day, 2);
+        if (code === thirdDailyExamCode(day)) return await startDailyExam(user.id, day, 3);
         const [daily] = await db.select().from(schema.dailyExams).where(eq(schema.dailyExams.code, code)).limit(1);
-        if (daily) return await startDailyExam(user.id, daily.day, daily.number as 1 | 2);
+        if (daily) return await startDailyExam(user.id, daily.day, daily.number as 1 | 2 | 3);
       }
       const reused = requestedCode ? await codeSnapshot(db, code) : null;
 

@@ -2837,12 +2837,17 @@
   // Puan ve ortalama yalnız çözdükten sonra gelir; menüye her dönüşte dashboard tazelenir.
   var gununDenemesiNumarasi = 1;
   function gununDenemesiHtml() {
-    var g = remoteDash && (gununDenemesiNumarasi === 2 ? remoteDash.dailySecond : remoteDash.daily);
+    var hasThird = !!(remoteDash && remoteDash.dailyThird);
+    if (!hasThird && gununDenemesiNumarasi > 2) gununDenemesiNumarasi = 1;
+    var g = remoteDash && (gununDenemesiNumarasi === 3 ? remoteDash.dailyThird : gununDenemesiNumarasi === 2 ? remoteDash.dailySecond : remoteDash.daily);
     if (!g) return "";
     var tarih = new Date(g.day + "T12:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
-    var kilitli = gununDenemesiNumarasi === 2 && !g.unlocked;
+    var kilitli = (gununDenemesiNumarasi === 2 || gununDenemesiNumarasi === 3) && !g.unlocked;
+    var kilitMesaji = gununDenemesiNumarasi === 3
+      ? "🔒 Önce günün 2. denemesini bitir ve puanını gör."
+      : "🔒 Önce günün 1. denemesini bitir ve puanını gör.";
     var govde = kilitli
-      ? '<div class="muted" style="margin-bottom:10px">🔒 Önce günün 1. denemesini bitir ve puanını gör.</div>' +
+      ? '<div class="muted" style="margin-bottom:10px">' + kilitMesaji + '</div>' +
         '<button class="btn primary" data-action="start-daily-exam" disabled>Başla (60 dk)</button>'
       : g.myCorrect === null
       ? '<div class="muted" style="margin-bottom:10px">Her sabah 07:00\'de yenilenir, herkese aynı 50 soru. ' +
@@ -2850,10 +2855,14 @@
         '<button class="btn primary" data-action="start-daily-exam"' + (remoteBusy ? " disabled" : "") + ">Başla (60 dk)</button>"
       : '<div class="muted">Puanın <b style="color:' + renkEsigi(g.myCorrect * 2) + '">' + g.myCorrect + " / 50</b> · " +
         gununDenemesiOrtalamaHtml(g) + "</div>" + gununCozenlerHtml(g);
+    var sonrakiNumara = hasThird
+      ? (gununDenemesiNumarasi === 1 ? 2 : gununDenemesiNumarasi === 2 ? 3 : 1)
+      : (gununDenemesiNumarasi === 1 ? 2 : 1);
+    var dugmeEtiketi = sonrakiNumara === 1 ? '‹ 1. Deneme' : (sonrakiNumara + '. Deneme ›');
     return '<div class="card" style="margin-bottom:14px">' +
       '<div class="duyuru-bas"><div class="section-title">☀️ Günün ' + gununDenemesiNumarasi + '. Denemesi — ' + tarih + '</div>' +
       '<div class="duyuru-oklar"><button class="btn ghost" data-action="switch-daily-exam" style="font-size:.85rem;white-space:nowrap" aria-label="Günün ' +
-      (gununDenemesiNumarasi === 1 ? '2. denemesine geç">2. Deneme ›' : '1. denemesine geç">‹ 1. Deneme') +
+      sonrakiNumara + '. denemesine geç">' + dugmeEtiketi +
       '</button></div></div>' + govde + "</div>";
   }
   // Yalnız yönetici, çözdükten sonra: kim, ne zaman, kaç puan. Yetkiyi sunucu da zorlar
@@ -5281,7 +5290,8 @@ function pratikEnIyiHtml(konu, modulKey) {
     var sureHtml = typeof r.sureSaniye === "number" ? '<span class="muted" style="font-size:0.86rem">⏱ ' + fmtSure(r.sureSaniye) + " sürede bitti</span>" : "";
 
     var gununSonucu = remoteDash && (remoteDash.daily && r.examCode === remoteDash.daily.code ? remoteDash.daily
-      : remoteDash.dailySecond && r.examCode === remoteDash.dailySecond.code ? remoteDash.dailySecond : null);
+      : remoteDash.dailySecond && r.examCode === remoteDash.dailySecond.code ? remoteDash.dailySecond
+      : remoteDash.dailyThird && r.examCode === remoteDash.dailyThird.code ? remoteDash.dailyThird : null);
     var gozdenGecirKarti = '<div class="card" style="margin-top:16px">' +
       '<div class="section-title">Gözden geçir</div>' +
       sekmeHtml +
@@ -5575,7 +5585,8 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "start-exam") startExam(t.getAttribute("data-mode"));
     else if (action === "start-exam-code") startExamWithCode();
     else if (action === "switch-daily-exam") {
-      gununDenemesiNumarasi = gununDenemesiNumarasi === 1 ? 2 : 1;
+      var maxDaily = (remoteDash && remoteDash.dailyThird) ? 3 : 2;
+      gununDenemesiNumarasi = gununDenemesiNumarasi >= maxDaily ? 1 : (gununDenemesiNumarasi + 1);
       gununCozenler = { acik: false, yukleniyor: false, veri: null, hata: null };
       render();
     }
