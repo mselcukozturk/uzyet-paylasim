@@ -5282,5 +5282,41 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "01 Hukuk/Hukuk Kitap Notları (revize 2026).docx; TCMB Tebliğ 2026/4",
   "tarihISO": "2026-10-03T23:22:14.022743+00:00"
+ },
+ {
+  "id": "gece-20261005-a1fd111155b2",
+  "guid": "a1fd111155b2",
+  "konu": "Kredi",
+  "soru": "Aşağıdaki kredi türlerinden hangisinde müşteriden GNGKS almaya gerek yoktur?\nI. Şirket Kredi Kartı\nII. İşyeri Kredisi\nIII. Taşıt kredisi\nIV. Spot Kredi",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026, s. 159",
+  "tarihISO": "2026-10-04T23:10:21.700421+00:00"
+ },
+ {
+  "id": "gece-20261005-85874b7c340c",
+  "guid": "85874b7c340c",
+  "konu": "Temel İşlemler",
+  "soru": "İlk İmza hesaplarına ilişkin ifadelerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Temel İşlemler s.100 (PDF s.116)",
+  "tarihISO": "2026-10-04T23:10:21.700421+00:00"
+ },
+ {
+  "id": "gece-20261005-0856def4815e",
+  "guid": "0856def4815e",
+  "konu": "Hukuk",
+  "soru": "Aşağıdaki işlemlerden hangisi/hangileri Bankacılık Kanununa göre kredi sayılır?\n1. Varlıkların vadeli satışından doğan alacaklar\n2. Ortaklık payları\n3. Satın alınan tahviller",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "01 Hukuk/Bankacılık Kanunu.pdf (s. 22, m. 48)",
+  "tarihISO": "2026-10-04T23:10:21.700421+00:00"
+ },
+ {
+  "id": "gece-20261005-ae7ab3b9bd5d",
+  "guid": "ae7ab3b9bd5d",
+  "konu": "Genel Ekonomi",
+  "soru": "2025 yılında Türkiye'nin en çok ihracat yaptığı ülke aşağıdakilerden hangisidir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/Genel Ekonomi — Güncelleme Karşılaştırması (Ağu 2026).md, A. Türkiye Makro Göstergeleri, satır 21",
+  "tarihISO": "2026-10-04T23:10:21.700421+00:00"
  }
 ]
