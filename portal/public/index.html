@@ -3573,16 +3573,7 @@
 
   function soruGorulmemisMi(q) {
     var s = STATE.stats[q.guid];
-    return !s || (!s.sonGorulme && !s.gosterim && s.sonSonucDogruMu == null);
-  }
-
-  function kaydetFlashGorulme(q) {
-    if (currentFlash.kaynak !== "bank" || !(currentFlash.konuFiltre || currentFlash.yalnizGorulmemis) || !soruGorulmemisMi(q)) return;
-    var s = STATE.stats[q.guid] || { gosterim: 0, dogru: 0, yanlis: 0, sonSonucDogruMu: null };
-    s.sonGorulme = new Date().toISOString();
-    STATE.stats[q.guid] = s;
-    veriDegisti();
-    remoteQueueStudyAnswer({ action: "study-seen", questionGuid: q.guid }, false);
+    return !s || (!s.gosterim && s.sonSonucDogruMu == null);
   }
 
   function startFlash(kaynak, konuFiltre, yalnizYanlis, yalnizGorulmemis) {
@@ -3692,7 +3683,7 @@
   }
 
   // Boş: cevap açılır; stats, flashOzet, oturum özeti ve sunucu kaydına dokunulmaz.
-  // Konu Konu Bak'ta açılmış soru görülmüştür; boş bırakmak cevap istatistiği yazmaz.
+  // Konu Konu Bak'ta soru cevaplanmadıkça görülmemiş kalır.
   function bosFlash() {
     if (!currentFlash || currentFlash.secilen !== null) return;
     currentFlash.secilen = BOS_CEVAP;
@@ -4876,7 +4867,6 @@
   function renderFlash() {
     var q = flashSoruBul(currentFlash);
     if (!q) return '<div class="card">Bu soru artık havuzda yok. <button class="btn" data-action="next-flash">Sonraki Soru</button></div>';
-    kaydetFlashGorulme(q);
     var pratikMi = currentFlash.kaynak === "practice";
     var konuBakMi = !pratikMi && !!(currentFlash.konuFiltre || currentFlash.yalnizGorulmemis);
     var secilen = currentFlash.secilen;
