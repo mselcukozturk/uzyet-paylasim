@@ -1,5 +1,5 @@
 // Failure paths: 0020 must be repeatable; unanswered/no-clue sync accepted; invalid control,
-// empty answered response rejected; daily excludes unanswered; list hides control from non-admin.
+// empty answered response rejected; daily excludes unanswered; list includes control for every account.
 // Unknown question/mark, user mark leakage, duplicate marks, null deletion, invalid feedback,
 // unauthorized feedback administration, processed feedback, re-sync loss, anonymous actions rejected.
 import assert from 'node:assert/strict';
@@ -309,14 +309,15 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
       assert.equal((await sendSync(JSON.stringify({ questions: [invalid] }))).status, 400);
     }
     const list = await (await sendExam({ action: 'klasik-list' })).json();
-    assert.equal(list.admin, false);
+    assert.ok(!('admin' in list));
     assert.equal(list.questions.length, 16);
     assert.deepEqual(list.questions.map((q: any) => q.no), extended.map(q => q.no));
-    assert.ok(list.questions.every((q: any) => !('kontrol' in q) && !('cevap' in q) && !('ipuclari' in q)));
+    assert.deepEqual(list.questions.map((q: any) => q.kontrol), extended.map(q => q.kontrol));
+    assert.ok(list.questions.every((q: any) => !('cevap' in q) && !('ipuclari' in q)));
     currentProfile.isAdmin = true;
     const adminList = await (await sendExam({ action: 'klasik-list' })).json();
-    assert.equal(adminList.admin, true);
-    assert.ok(adminList.questions.every((q: any) => 'kontrol' in q));
+    assert.ok(!('admin' in adminList));
+    assert.deepEqual(adminList.questions, list.questions);
     currentProfile.isAdmin = false;
     assert.equal((await sendExam({ action: 'klasik-question', no: 'S999' })).status, 400);
     const unanswered = await (await sendExam({ action: 'klasik-question', no: 'S15' })).json();

@@ -976,9 +976,9 @@ async function handlePost(request: Request) {
       const rows = await db.select().from(schema.klasikSorular).orderBy(asc(schema.klasikSorular.sira));
       const marks = await db.select().from(schema.klasikIsaret).where(eq(schema.klasikIsaret.userId, user.id));
       const markMap = new Map(marks.map(r => [r.soruNo, r.isaret]));
-      return NextResponse.json({ admin: !!profile.isAdmin, questions: rows.map(q => ({
+      return NextResponse.json({ questions: rows.map(q => ({
         no: q.no, kategori: q.kategori, konu: q.konu, soru: q.soru, durum: q.durum,
-        isaret: markMap.get(q.no) ?? null, ...(profile.isAdmin ? { kontrol: q.kontrol } : {}),
+        isaret: markMap.get(q.no) ?? null, kontrol: q.kontrol,
       })) });
     }
 

@@ -1,6 +1,6 @@
 // Failure paths: topic/control cards, collapsed categories and counters, study navigation/back,
 // mark persistence/removal/rollback, unanswered/no-clue rendering, freshness note, feedback
-// empty/submission/error preservation, admin grouping, empty daily card, reset and mobile overflow.
+// empty/submission/error preservation, control grouping for every account, empty daily card, reset and mobile overflow.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -181,7 +181,7 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
             data: { day: '2026-10-05', questions: mockDailyQuestions }
           });
         }
-        if (body.action === 'klasik-list') return Promise.resolve({ ok: true, data: { questions: allQuestions, admin: remoteAuth.isAdmin } });
+        if (body.action === 'klasik-list') return Promise.resolve({ ok: true, data: { questions: allQuestions } });
         if (body.action === 'klasik-question') return Promise.resolve({ ok: true, data: Object.assign({}, allQuestions.find(q => q.no === body.no)) });
         if (body.action === 'klasik-mark') return Promise.resolve({ ok: !markFailure, data: {} });
         if (body.action === 'klasik-feedback') { feedbackRequests.push(body); return Promise.resolve({ ok: !feedbackFailure, data: {} }); }
@@ -272,7 +272,7 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       cardEl = document.querySelector('.card');
       check(cardEl && cardEl.textContent.includes('1 / 5 cevap görüldü'), 'Kartta 1 / 5 cevap görüldü yazmalı');
 
-      check(!document.querySelector('[data-action="open-klasik-kontrol"]'), 'Non-admin control hidden');
+      check(document.querySelector('[data-action="open-klasik-kontrol"]'), 'Non-admin control card visible');
       click('[data-action="open-klasik-konular"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       var group = document.querySelector('[data-grup="Hukuk"]');
@@ -322,19 +322,19 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(document.querySelector('.card').textContent.includes('Bildiriminiz alındı.'), 'Feedback confirmation');
       click('[data-action="klasik-geri"]');
       click('[data-action="open-klasik"]');
-      remoteAuth.isAdmin = true; render();
+      check(remoteAuth.isAdmin === false, 'Control opened by non-admin account');
       click('[data-action="open-klasik-kontrol"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       var groups = document.querySelectorAll('[data-action="klasik-grup"]');
-      check(groups.length === 3, 'Three admin sections');
-      check(groups[0].textContent.includes('1 soru') && groups[1].textContent.includes('4 soru') && groups[2].textContent.includes('1 soru'), 'Admin counts');
+      check(groups.length === 3, 'Three control sections');
+      check(groups[0].textContent.includes('1 soru') && groups[1].textContent.includes('4 soru') && groups[2].textContent.includes('1 soru'), 'Control counts');
       click('[data-grup="edilecek"]');
       click('[data-no="S2"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       check(document.querySelector('.card').textContent.includes('⚠ Güncellenecek bilgi'), 'Answered freshness');
       click('[data-action="klasik-sonraki"]');
       await new Promise(resolve => setTimeout(resolve, 0));
-      check(document.querySelector('.card').textContent.includes('Muhasebe'), 'Admin section navigation');
+      check(document.querySelector('.card').textContent.includes('Muhasebe'), 'Control section navigation');
       click('[data-action="klasik-geri"]');
       check(VIEW === 'klasikKontrol', 'Back to control');
       check(document.documentElement.scrollWidth <= innerWidth, 'Control width');
@@ -344,7 +344,7 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(document.querySelectorAll('[data-action="open-klasik-konular"]').length === 1, 'Topic card available without daily answers');
       klasikVerisi = savedDaily; VIEW = 'klasikKontrol';
       bannerMsg = null; render();
-      measureLayout('admin-control');
+      measureLayout('control');
       remoteResetKlasikState();
       check(klasikListe === null && Object.keys(klasikDetaylar).length === 0, 'Account reset');
       // Yatay taşma kontrolü

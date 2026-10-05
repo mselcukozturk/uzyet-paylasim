@@ -4425,7 +4425,6 @@
     var html = '<div class="link-row"><button class="btn ghost" data-action="open-klasik">← Klasik Sorular</button></div><div class="section-title">' + (kontrol ? "Soru Kontrolü" : "Konu konu bak") + '</div>';
     if (klasikListeYukleniyor || (!klasikListe && !klasikListeHata)) return html + '<div class="card" role="status">Yükleniyor…</div>';
     if (klasikListeHata) return html + '<div class="card" role="alert">' + escapeHtml(klasikListeHata) + '<button class="btn" data-action="klasik-liste-tekrar">Tekrar Dene</button></div>';
-    if (kontrol && !remoteAuth.isAdmin) return html + '<div class="card">Yönetici hesabı gerekli.</div>';
     var groups = klasikGruplar(kontrol);
     if (!groups.length) return html + '<div class="card">Henüz soru yok.</div>';
     return html + groups.map(function (grup) {
@@ -4441,7 +4440,7 @@
 
   function klasikMenuKartlari() {
     return '<div class="card" style="margin-top:14px"><div class="section-title">Konu konu bak</div><p class="muted">Tüm klasik sorular, konu konu</p><button class="btn" data-action="open-klasik-konular">Aç</button></div>' +
-      (remoteAuth.isAdmin ? '<div class="card" style="margin-top:14px"><div class="section-title">Soru Kontrolü</div><button class="btn" data-action="open-klasik-kontrol">Aç</button></div>' : '');
+      '<div class="card" style="margin-top:14px"><div class="section-title">Soru Kontrolü</div><button class="btn" data-action="open-klasik-kontrol">Aç</button></div>';
   }
 
   function remoteResetKlasikState() {
@@ -5977,10 +5976,10 @@ function pratikEnIyiHtml(konu, modulKey) {
     }
     else if (action === "open-klasik-konular" || action === "open-klasik-kontrol") {
       var kontrol = action === "open-klasik-kontrol";
-      if (!remoteGirisTamamMi() || (kontrol && !remoteAuth.isAdmin)) return;
+      if (!remoteGirisTamamMi()) return;
       VIEW = kontrol ? "klasikKontrol" : "klasikKonular";
       render();
-      if (!klasikListe || (kontrol && !klasikListe.admin)) remoteLoadKlasikListe();
+      if (!klasikListe) remoteLoadKlasikListe();
     }
     else if (action === "klasik-liste-tekrar") remoteLoadKlasikListe();
     else if (action === "klasik-soru-tekrar") remoteLoadKlasikSoru();
