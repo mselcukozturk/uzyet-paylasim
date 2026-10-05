@@ -338,6 +338,10 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     assert.equal(unanswered.isaret, null);
     const filteredDaily = await (await sendExam({ action: 'klasik-daily' })).json();
     assert.ok(filteredDaily.questions.every((q: any) => q.durum !== 'cevapsiz' && 'konu' in q && 'guncellikNotu' in q && 'isaret' in q));
+    assert.ok(filteredDaily.questions.every((q: any) => q.no !== 'S16'), 'Düşük öncelikli soru günün sorularına girmemeli');
+    assert.equal((await sendSync(JSON.stringify({ questions: extended.map(q => ({ ...q, oncelik: 'dusuk' })) }))).status, 200);
+    assert.equal((await (await sendExam({ action: 'klasik-daily' })).json()).questions.length, 0, 'Tüm sorular düşük öncelikliyken günün soruları boş olmalı');
+    assert.equal((await sendSync(extendedPayload)).status, 200);
     for (const no of ['S999', '']) assert.equal((await sendExam({ action: 'klasik-mark', no, isaret: 'sari' })).status, 400);
     for (const isaret of ['gecersiz', 5, undefined]) assert.equal((await sendExam({ action: 'klasik-mark', no: 'S1', isaret })).status, 400);
     assert.equal((await sendExam({ action: 'klasik-mark', no: 'S1', isaret: 'sari' })).status, 200);

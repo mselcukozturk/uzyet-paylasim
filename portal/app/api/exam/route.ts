@@ -947,7 +947,7 @@ async function handlePost(request: Request) {
       const day = dailyExamDay();
       const seed = klasikDailySeed(day);
       const rows = await db.select().from(schema.klasikSorular)
-        .where(inArray(schema.klasikSorular.durum, ['tam', 'kismi']));
+        .where(and(inArray(schema.klasikSorular.durum, ['tam', 'kismi']), eq(schema.klasikSorular.oncelik, 'normal')));
       const selected = selectKlasikQuestions(rows, seed);
       const seenRows = await db.select({ soruNo: schema.klasikGorulme.soruNo })
         .from(schema.klasikGorulme)
