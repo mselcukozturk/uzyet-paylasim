@@ -3,7 +3,9 @@
 // empty/submission/error preservation, control grouping for every account, empty daily card, reset,
 // standard top bar on all sub-screens, search input isolation to topic view, Turkish uppercase/multi-word
 // search matching, empty search notice, category restoration on clear, search result study navigation,
-// focus preservation across consecutive typing, and mobile overflow.
+// focus preservation across consecutive typing, mobile overflow, mark filter boxes isolation to topic view,
+// mark count reflection, box toggle and category restoration, empty mark notice, combined search and mark filtering,
+// and study navigation within filtered mark list with live mark updates.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -67,6 +69,10 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
     const ssKonu = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
     writeFileSync(new URL('konu-arama.png', output), Buffer.from(ssKonu.data, 'base64'));
 
+    await send('Runtime.evaluate', { expression: 'if (window.__showIsaretKutulari) window.__showIsaretKutulari(); document.getElementById("browser-result").style.display="none";' }, sessionId);
+    const ssIsaret = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
+    writeFileSync(new URL('isaret-kutulari.png', output), Buffer.from(ssIsaret.data, 'base64'));
+
     await send('Runtime.evaluate', { expression: 'if (window.__showSoruUstBar) window.__showSoruUstBar(); document.getElementById("browser-result").style.display="none";' }, sessionId);
     const ssSoru = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
     writeFileSync(new URL('soru-ust-bar.png', output), Buffer.from(ssSoru.data, 'base64'));
@@ -97,6 +103,12 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
 // 15. "Eşleşen soru yok." missing when search produces zero matches, or category groups failing to reappear when search input is cleared.
 // 16. Question opened from search result navigating outside search result set or losing search text on return.
 // 17. Search input losing focus or dropping characters upon consecutive typing.
+// 18. Mark filter boxes ("Öğrendim", "Tekrar bak", "Anlamadım") appearing on screens other than "Konu konu bak" (e.g. Soru Kontrolü, Düşük öncelikli, question view).
+// 19. Mark filter box counters not matching current counts of questions carrying each mark.
+// 20. Clicking a mark filter box failing to list only questions with that mark, failing to restore category groups on second click, or failing to switch list on clicking another box.
+// 21. "Bu işaretle soru yok." missing when a mark filter box with zero questions is selected.
+// 22. Combined search and mark filter failing to list only questions matching both criteria.
+// 23. Question opened from mark-filtered list navigating outside the filtered list, or returning from study view with outdated counts and list after mark change.
 for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`, async () => {
   const chrome = [
     process.env.CHROME_PATH,
@@ -320,6 +332,15 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       checkUstBar('open-klasik', 'Klasik Sorular');
       check(document.querySelector('input[type="search"][data-klasik-arama]'), 'Arama alanı yalnız Konu konu bak ekranında olmalı');
 
+      var isaretKutulari = document.querySelectorAll('[data-action="klasik-filtre-isaret"]');
+      check(isaretKutulari.length === 3, 'Konu konu bak ekranında 3 işaret kutusu bulunmalı');
+      var ogrendimKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="yesil"]');
+      var tekrarKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="sari"]');
+      var anlamadimKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="kirmizi"]');
+      check(ogrendimKutu && ogrendimKutu.textContent.includes('Öğrendim · 0'), 'Öğrendim başlangıçta 0');
+      check(tekrarKutu && tekrarKutu.textContent.includes('Tekrar bak · 0'), 'Tekrar bak başlangıçta 0');
+      check(anlamadimKutu && anlamadimKutu.textContent.includes('Anlamadım · 0'), 'Anlamadım başlangıçta 0');
+
       // Arama testleri:
       // A1. Türkçe büyük harfli arama ("İHRACAT" -> küçük harfli "ihracat" ile eşleşir)
       var aramaInput = document.querySelector('input[type="search"][data-klasik-arama]');
@@ -417,6 +438,120 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(group.querySelector('[data-sayac="sari"]').textContent.includes('1'), 'Yellow count 1');
       check(document.querySelector('[data-no="S1"]').getAttribute('data-isaret') === 'sari', 'Yellow row');
       measureLayout('topic-list');
+
+      // İşaret kutuları testleri:
+      // 1. Kutulardaki sayılar işaretli soru sayılarıyla eşittir
+      ogrendimKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="yesil"]');
+      tekrarKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="sari"]');
+      anlamadimKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="kirmizi"]');
+      check(ogrendimKutu && ogrendimKutu.textContent.includes('Öğrendim · 0'), 'Öğrendim kutusu 0 göstermeli');
+      check(tekrarKutu && tekrarKutu.textContent.includes('Tekrar bak · 1'), 'Tekrar bak kutusu 1 göstermeli');
+      check(anlamadimKutu && anlamadimKutu.textContent.includes('Anlamadım · 0'), 'Anlamadım kutusu 0 göstermeli');
+
+      // 2. Kutuya tıklanınca yalnız o işareti taşıyan sorular listelenir
+      click('[data-action="klasik-filtre-isaret"][data-isaret="sari"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      tekrarKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="sari"]');
+      check(tekrarKutu && tekrarKutu.getAttribute('aria-pressed') === 'true', 'Seçili kutu aria-pressed="true" olmalı');
+      check(!document.querySelector('[data-action="klasik-grup"]'), 'Kutu seçiliyken kategori grupları gizlenmeli');
+      var filtreliSatirlar = document.querySelectorAll('[data-action="klasik-soru-ac"]');
+      check(filtreliSatirlar.length === 1 && filtreliSatirlar[0].getAttribute('data-no') === 'S1', 'Yalnız sari işaretli S1 sorusu listelenmeli');
+      check(document.body.textContent.includes('1 soru bulundu'), '"1 soru bulundu" satırı görünmeli');
+
+      // 3. İkinci tıklamada gruplar geri gelir
+      click('[data-action="klasik-filtre-isaret"][data-isaret="sari"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      tekrarKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="sari"]');
+      check(tekrarKutu && tekrarKutu.getAttribute('aria-pressed') === 'false', 'İkinci tıklamada aria-pressed="false" olmalı');
+      check(document.querySelectorAll('[data-action="klasik-grup"]').length > 0, 'İkinci tıklamada gruplar geri gelmeli');
+
+      // 4. İşaretli soru yokken "Bu işaretle soru yok." görünür
+      click('[data-action="klasik-filtre-isaret"][data-isaret="yesil"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      ogrendimKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="yesil"]');
+      check(ogrendimKutu && ogrendimKutu.getAttribute('aria-pressed') === 'true', 'Öğrendim kutusu seçili olmalı');
+      check(document.body.textContent.includes('Bu işaretle soru yok.'), '"Bu işaretle soru yok." metni görünmeli');
+      check(document.querySelectorAll('[data-action="klasik-soru-ac"]').length === 0, 'İşaretli soru yokken satır olmamalı');
+
+      // 5. Başka kutuya geçişte liste değişir (Öğrendim -> Tekrar bak)
+      click('[data-action="klasik-filtre-isaret"][data-isaret="sari"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      ogrendimKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="yesil"]');
+      tekrarKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="sari"]');
+      check(ogrendimKutu && ogrendimKutu.getAttribute('aria-pressed') === 'false', 'Eski kutu seçimi kalkmalı');
+      check(tekrarKutu && tekrarKutu.getAttribute('aria-pressed') === 'true', 'Yeni kutu seçili olmalı');
+      filtreliSatirlar = document.querySelectorAll('[data-action="klasik-soru-ac"]');
+      check(filtreliSatirlar.length === 1 && filtreliSatirlar[0].getAttribute('data-no') === 'S1', 'Yeni kutunun soruları listelenmeli');
+
+      // 6. Arama ve kutu birlikteyken yalnız iki koşulu da sağlayan sorular listelenir
+      aramaInput = document.querySelector('input[type="search"][data-klasik-arama]');
+      aramaInput.value = 'Ticaret';
+      aramaInput.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 0));
+      filtreliSatirlar = document.querySelectorAll('[data-action="klasik-soru-ac"]');
+      check(filtreliSatirlar.length === 1 && filtreliSatirlar[0].getAttribute('data-no') === 'S1', 'Arama ve kutu uyuşunca S1 listelenmeli');
+
+      aramaInput = document.querySelector('input[type="search"][data-klasik-arama]');
+      aramaInput.value = 'İHRACAT';
+      aramaInput.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelectorAll('[data-action="klasik-soru-ac"]').length === 0, 'Arama kutuyla uyuşmayınca sonuç olmamalı');
+      check(document.body.textContent.includes('Eşleşen soru yok.'), 'Arama filtresi varken eşleşme yoksa "Eşleşen soru yok." görünmeli');
+
+      aramaInput = document.querySelector('input[type="search"][data-klasik-arama]');
+      aramaInput.value = '';
+      aramaInput.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelectorAll('[data-action="klasik-soru-ac"]').length === 1, 'Arama temizlenince sari kutudaki S1 tekrar listelenmeli');
+
+      // 7. Listeden açılan soruda gezinme liste içinde kalır; soru ekranında işaret değiştirilip geri dönülünce sayılar ve liste güncellenmiştir
+      measureLayout('isaret-kutulari');
+
+      click('[data-action="klasik-soru-ac"][data-no="S1"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasikCalisma', 'Filtreli listeden soru açılmalı');
+      check(!document.querySelector('[data-action="klasik-filtre-isaret"]'), 'İşaret filtre kutuları soru ekranında olmamalı');
+      check(document.querySelector('.card').textContent.includes('Soru 1 / 1'), 'Yalnız 1 soru arasında gezinir: Soru 1 / 1');
+      check(document.querySelector('[data-action="klasik-onceki"]').disabled, 'Önceki devre dışı');
+      check(document.querySelector('[data-action="klasik-sonraki"]').disabled, 'Sonraki devre dışı');
+
+      // İşareti sari -> yesil yap
+      click('[data-action="klasik-mark"][data-isaret="yesil"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('[data-isaret="yesil"]').getAttribute('aria-pressed') === 'true', 'Yeşil seçildi');
+
+      // Geri dön
+      click('[data-action="klasik-geri"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasikKonular', 'Geri dönüş Konu konu bak ekranına dönmeli');
+      tekrarKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="sari"]');
+      ogrendimKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="yesil"]');
+      check(tekrarKutu && tekrarKutu.getAttribute('aria-pressed') === 'true', 'Geri dönüşte seçili kutu korunmalı');
+      check(tekrarKutu && tekrarKutu.textContent.includes('Tekrar bak · 0'), 'Sayı güncellenmeli: Tekrar bak 0');
+      check(ogrendimKutu && ogrendimKutu.textContent.includes('Öğrendim · 1'), 'Sayı güncellenmeli: Öğrendim 1');
+      check(document.body.textContent.includes('Bu işaretle soru yok.'), 'Tekrar bak işaretli soru kalmadığı için uyarı görünmeli');
+
+      // Yesil kutuya geç
+      click('[data-action="klasik-filtre-isaret"][data-isaret="yesil"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelectorAll('[data-action="klasik-soru-ac"]').length === 1, 'Yeşil kutuda S1 listelenmeli');
+
+      // S1'i açıp tekrar sari yap (sonraki test adımlarının tutarlı kalması için)
+      click('[data-action="klasik-soru-ac"][data-no="S1"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      click('[data-action="klasik-mark"][data-isaret="sari"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('[data-isaret="sari"]').getAttribute('aria-pressed') === 'true', 'Sari geri seçildi');
+      click('[data-action="klasik-geri"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      // Kutuyu kapatıp kategori gruplarına dön
+      click('[data-action="klasik-filtre-isaret"][data-isaret="yesil"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      group = document.querySelector('[data-grup="Hukuk"]');
+      if (group && group.getAttribute('aria-expanded') !== 'true') click('[data-grup="Hukuk"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+
       click('[data-no="S1"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       markFailure = true;
@@ -454,6 +589,7 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(VIEW === 'klasikKontrol', 'Görünüm klasikKontrol olmalı');
       checkUstBar('open-klasik', 'Klasik Sorular');
       check(!document.querySelector('input[type="search"][data-klasik-arama]'), 'Arama alanı Soru Kontrolü ekranında olmamalı');
+      check(!document.querySelector('[data-action="klasik-filtre-isaret"]'), 'İşaret kutuları Soru Kontrolü ekranında olmamalı');
       var groups = document.querySelectorAll('[data-action="klasik-grup"]');
       check(groups.length === 3, 'Three control sections');
       check(groups[0].textContent.includes('3 soru') && groups[1].textContent.includes('4 soru') && groups[2].textContent.includes('1 soru'), 'Control counts');
@@ -463,6 +599,7 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(VIEW === 'klasikCalisma', 'Kontrol soru ekranı açılmalı');
       checkUstBar('klasik-geri', 'Soru Kontrolü');
       check(!document.querySelector('input[type="search"][data-klasik-arama]'), 'Arama alanı kontrol soru ekranında olmamalı');
+      check(!document.querySelector('[data-action="klasik-filtre-isaret"]'), 'İşaret kutuları kontrol soru ekranında olmamalı');
       check(document.querySelector('.card').textContent.includes('⚠ Güncellenecek bilgi'), 'Answered freshness');
       click('[data-action="klasik-sonraki"]');
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -486,6 +623,7 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(VIEW === 'klasikDusukOncelik', 'Görünüm klasikDusukOncelik olmalı');
       checkUstBar('open-klasik', 'Klasik Sorular');
       check(!document.querySelector('input[type="search"][data-klasik-arama]'), 'Arama alanı Düşük öncelikli ekranında olmamalı');
+      check(!document.querySelector('[data-action="klasik-filtre-isaret"]'), 'İşaret kutuları Düşük öncelikli ekranında olmamalı');
       check(document.querySelector('.section-title').textContent.includes('Düşük öncelikli'), 'Başlık Düşük öncelikli olmalı');
       var dusukGruplar = document.querySelectorAll('[data-action="klasik-grup"]');
       check(dusukGruplar.length === 1, 'Sorusu kalmayan kategori grubu gösterilmez (yalnız Hukuk)');
@@ -501,6 +639,7 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(VIEW === 'klasikCalisma', 'Çalışma ekranı açılmalı');
       checkUstBar('klasik-geri', 'Düşük öncelikli');
       check(!document.querySelector('input[type="search"][data-klasik-arama]'), 'Arama alanı soru ekranında olmamalı');
+      check(!document.querySelector('[data-action="klasik-filtre-isaret"]'), 'İşaret kutuları soru ekranında olmamalı');
       check(document.querySelector('.card').textContent.includes('Soru 1 / 2'), 'Yalnız düşük sorular arasında gezinir (Soru 1 / 2)');
       check(document.querySelector('.card').textContent.includes('Düşük soru 1'), 'S7 soru metni');
       click('[data-action="klasik-sonraki"]');
@@ -515,6 +654,12 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       window.__showKonuArama = function () {
         VIEW = 'klasikKonular';
         klasikArama = 'İHRACAT';
+        render();
+      };
+      window.__showIsaretKutulari = function () {
+        VIEW = 'klasikKonular';
+        klasikSeciliIsaret = 'sari';
+        klasikArama = '';
         render();
       };
       window.__showSoruUstBar = function () {
