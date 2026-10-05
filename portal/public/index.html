@@ -2780,7 +2780,7 @@
     { tarih: "2026-10-05", baslik: "Klasik: Konu konu bak ekranında arama",
       metin: "Konu konu bak ekranına arama alanı eklendi. Soru metni, konusu, kategorisi veya numarasıyla arama yapabilir, doğrudan soruya geçebilirsin." },
     { tarih: "2026-10-05", baslik: "Klasik: Düşük öncelikli sorular ayrı bölümde",
-      metin: "Klasik sekmesinde Düşük öncelikli bölümü açıldı. Önceliği düşük sorular burada listelenir ve Soru Kontrolü ekranına dahil edilmez." },
+      metin: "Klasik sekmesinde Düşük öncelikli bölümü açıldı. Önceliği düşük sorular burada listelenir; Konu konu bak ekranında listelenmez ve Soru Kontrolü ekranına dahil edilmez." },
     { tarih: "2026-10-05", baslik: "Klasik sorulara konu konu bak",
       metin: "Klasik sekmesindeki Konu konu bak ile tüm soruları inceleyebilirsin. Öğrendim, Tekrar bak ve Anlamadım işaretleriyle kendi çalışma durumunu takip edebilir, Cevap güncellenmeli düğmesiyle eklenecek veya çıkarılacak bilgiyi bildirebilirsin." },
     { tarih: "2026-10-05", baslik: "Klasik Sorular ve Günün Klasik Soruları",
@@ -4408,6 +4408,11 @@
     });
   }
 
+  function klasikKonularSorulari() {
+    var questions = (klasikListe && klasikListe.questions) || [];
+    return questions.filter(function (q) { return (q.oncelik || "normal") !== "dusuk"; });
+  }
+
   function klasikGruplar(tur) {
     var questions = (klasikListe && klasikListe.questions) || [];
     if (tur === "kontrol" || tur === true) {
@@ -4424,8 +4429,9 @@
         return { key: ad, ad: ad, questions: dusukSorular.filter(function (q) { return q.kategori === ad; }) };
       });
     }
-    return Array.from(new Set(questions.map(function (q) { return q.kategori; }))).sort(function (a, b) { return a.localeCompare(b, "tr"); }).map(function (ad) {
-      return { key: ad, ad: ad, questions: questions.filter(function (q) { return q.kategori === ad; }) };
+    var konuSorulari = klasikKonularSorulari();
+    return Array.from(new Set(konuSorulari.map(function (q) { return q.kategori; }))).sort(function (a, b) { return a.localeCompare(b, "tr"); }).map(function (ad) {
+      return { key: ad, ad: ad, questions: konuSorulari.filter(function (q) { return q.kategori === ad; }) };
     });
   }
 
@@ -4448,7 +4454,7 @@
 
   function klasikAramaSonuclari() {
     if (!klasikFiltreAktifMi()) return [];
-    var questions = (klasikListe && klasikListe.questions) || [];
+    var questions = klasikKonularSorulari();
     var kelimeler = klasikAramaKelimeleri();
     return questions.filter(function (q) {
       if (klasikSeciliIsaret && q.isaret !== klasikSeciliIsaret) return false;
@@ -4461,7 +4467,7 @@
   }
 
   function klasikIsaretKutulariHtml() {
-    var questions = (klasikListe && klasikListe.questions) || [];
+    var questions = klasikKonularSorulari();
     var kutular = Object.keys(KLASIK_ISARETLER).map(function (isaret) {
       var count = questions.filter(function (q) { return q.isaret === isaret; }).length;
       var secili = klasikSeciliIsaret === isaret;

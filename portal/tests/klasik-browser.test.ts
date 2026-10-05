@@ -5,7 +5,8 @@
 // search matching, empty search notice, category restoration on clear, search result study navigation,
 // focus preservation across consecutive typing, mobile overflow, mark filter boxes isolation to topic view,
 // mark count reflection, box toggle and category restoration, empty mark notice, combined search and mark filtering,
-// and study navigation within filtered mark list with live mark updates.
+// study navigation within filtered mark list with live mark updates, and low-priority question exclusion from
+// topic view category groups, counters, search results, and mark filter boxes while preserving them in low-priority view.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -109,6 +110,9 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
 // 21. "Bu işaretle soru yok." missing when a mark filter box with zero questions is selected.
 // 22. Combined search and mark filter failing to list only questions matching both criteria.
 // 23. Question opened from mark-filtered list navigating outside the filtered list, or returning from study view with outdated counts and list after mark change.
+// 24. Low-priority questions leaking into "Konu konu bak" category groups, inflating category question counts or mark tallies, or rendering question rows.
+// 25. Low-priority questions appearing in "Konu konu bak" search results instead of showing "Eşleşen soru yok.".
+// 26. Marked low-priority questions inflating "Konu konu bak" mark filter box counts or appearing in mark filter lists, or failing to appear with their marks in the "Düşük öncelikli" screen.
 for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`, async () => {
   const chrome = [
     process.env.CHROME_PATH,
@@ -370,6 +374,14 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(document.body.textContent.includes('Eşleşen soru yok.'), '"Eşleşen soru yok." görünmeli');
       check(document.querySelectorAll('[data-action="klasik-soru-ac"]').length === 0, 'Eşleşme yokken satır olmamalı');
 
+      // A3-b. Düşük öncelikli soru metniyle aramada "Eşleşen soru yok." görünür
+      aramaInput = document.querySelector('input[type="search"][data-klasik-arama]');
+      aramaInput.value = 'Düşük soru';
+      aramaInput.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.body.textContent.includes('Eşleşen soru yok.'), 'Düşük öncelikli soru metniyle aramada "Eşleşen soru yok." görünmeli');
+      check(document.querySelectorAll('[data-action="klasik-soru-ac"]').length === 0, 'Düşük öncelikli soru arama sonuçlarında listelenmemeli');
+
       // A4. Arama silinince kategori grupları geri gelir
       aramaInput = document.querySelector('input[type="search"][data-klasik-arama]');
       aramaInput.value = '';
@@ -423,8 +435,12 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
 
       var group = document.querySelector('[data-grup="Hukuk"]');
       check(group && group.getAttribute('aria-expanded') === 'false', 'Category collapsed');
-      check(group.textContent.includes('4 soru'), 'Category count (includes normal and dusuk in topic list)');
+      check(group.textContent.includes('2 soru'), 'Category count (excludes dusuk in topic list: only S1 and S6)');
       click('[data-grup="Hukuk"]');
+      check(document.querySelector('[data-action="klasik-soru-ac"][data-no="S1"]'), 'Konu konu bak grubunda S1 bulunmalı');
+      check(document.querySelector('[data-action="klasik-soru-ac"][data-no="S6"]'), 'Konu konu bak grubunda S6 bulunmalı');
+      check(!document.querySelector('[data-action="klasik-soru-ac"][data-no="S7"]'), 'Konu konu bak grubunda düşük öncelikli S7 satırı olmamalı');
+      check(!document.querySelector('[data-action="klasik-soru-ac"][data-no="S8"]'), 'Konu konu bak grubunda düşük öncelikli S8 satırı olmamalı');
       click('[data-action="klasik-soru-ac"][data-no="S1"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       check(document.querySelector('.klasik-cevap'), 'Shared study state');
@@ -436,17 +452,31 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       group = document.querySelector('[data-grup="Hukuk"]');
       check(group.getAttribute('aria-expanded') === 'true', 'Open category preserved');
       check(group.querySelector('[data-sayac="sari"]').textContent.includes('1'), 'Yellow count 1');
+      check(group.querySelector('[data-sayac="yok"]').textContent.includes('1'), 'Yok count 1 (düşük sorular sayaçta yok)');
       check(document.querySelector('[data-no="S1"]').getAttribute('data-isaret') === 'sari', 'Yellow row');
       measureLayout('topic-list');
 
+      // Düşük öncelikli soru S7 işaretlendiğinde kutu onu saymaz ve kutu listesi onu içermez
+      var s7Soru = allQuestions.find(function (q) { return q.no === 'S7'; });
+      s7Soru.isaret = 'yesil';
+      render();
+
       // İşaret kutuları testleri:
-      // 1. Kutulardaki sayılar işaretli soru sayılarıyla eşittir
+      // 1. Kutulardaki sayılar işaretli soru sayılarıyla eşittir (düşük öncelikli sorular sayılmaz)
       ogrendimKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="yesil"]');
       tekrarKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="sari"]');
       anlamadimKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="kirmizi"]');
-      check(ogrendimKutu && ogrendimKutu.textContent.includes('Öğrendim · 0'), 'Öğrendim kutusu 0 göstermeli');
+      check(ogrendimKutu && ogrendimKutu.textContent.includes('Öğrendim · 0'), 'Düşük öncelikli S7 yeşil işaretliyken Öğrendim kutusu onu saymamalı (0 kalmalı)');
       check(tekrarKutu && tekrarKutu.textContent.includes('Tekrar bak · 1'), 'Tekrar bak kutusu 1 göstermeli');
       check(anlamadimKutu && anlamadimKutu.textContent.includes('Anlamadım · 0'), 'Anlamadım kutusu 0 göstermeli');
+
+      // 1-b. Öğrendim kutusuna basıldığında S7 listelenmemeli ve "Bu işaretle soru yok." görünmeli
+      click('[data-action="klasik-filtre-isaret"][data-isaret="yesil"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.body.textContent.includes('Bu işaretle soru yok.'), 'Düşük soru yeşilken Konu konu bak Öğrendim kutusunda "Bu işaretle soru yok." görünmeli');
+      check(!document.querySelector('[data-action="klasik-soru-ac"][data-no="S7"]'), 'Kutu listesi düşük öncelikli S7 sorusunu içermemeli');
+      click('[data-action="klasik-filtre-isaret"][data-isaret="yesil"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       // 2. Kutuya tıklanınca yalnız o işareti taşıyan sorular listelenir
       click('[data-action="klasik-filtre-isaret"][data-isaret="sari"]');
@@ -629,10 +659,13 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(dusukGruplar.length === 1, 'Sorusu kalmayan kategori grubu gösterilmez (yalnız Hukuk)');
       check(dusukGruplar[0].textContent.includes('2 soru'), 'Düşük öncelikli Hukuk 2 soru');
       check(dusukGruplar[0].querySelector('.klasik-sayaclar'), 'İşaret sayaçları görünmeli');
+      check(dusukGruplar[0].querySelector('[data-sayac="yesil"]').textContent.includes('1'), 'Düşük öncelikli Hukuk grubu yeşil sayacı 1 olmalı');
       click('[data-grup="Hukuk"]');
       var dusukSatirlar = document.querySelectorAll('[data-action="klasik-soru-ac"]');
       check(dusukSatirlar.length === 2, 'Yalnız 2 soru satırı görünmeli');
       check(dusukSatirlar[0].getAttribute('data-no') === 'S7', 'İlk soru S7');
+      check(dusukSatirlar[0].getAttribute('data-isaret') === 'yesil', 'S7 yeşil işaretiyle görünmeli');
+      check(dusukSatirlar[0].textContent.includes('Öğrendim'), 'S7 Öğrendim metnini taşımalı');
       check(dusukSatirlar[1].getAttribute('data-no') === 'S8', 'İkinci soru S8');
       click('[data-action="klasik-soru-ac"][data-no="S7"]');
       await new Promise(resolve => setTimeout(resolve, 0));
