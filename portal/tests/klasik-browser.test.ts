@@ -109,13 +109,13 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
 // 9. Missing warning notice for incomplete questions (durum === 'kismi').
 // 10. Daily card not reflecting updated seen count ("1 / 5 cevap görüldü") upon returning to tab.
 // 11. Horizontal layout overflow in 390px mobile viewport or 1100px desktop viewport.
-// 12. Standard top bar (home, history, logout buttons and username) missing or back button not integrated inside top bar in "Konu konu bak", "Soru Kontrolü", "Düşük öncelikli", or question screens.
-// 13. Search input appearing on screens other than "Konu konu bak" (e.g. Soru Kontrolü, Düşük öncelikli, question view).
+// 12. Standard top bar (home, history, logout buttons and username) missing or back button not integrated inside top bar in "Konu konu bak", "Soru Kontrolü", "Düşük Öncelikli", or question screens.
+// 13. Search input appearing on screens other than "Konu konu bak" (e.g. Soru Kontrolü, Düşük Öncelikli, question view).
 // 14. Turkish uppercase search (e.g. "İHRACAT") not matching lowercase question text, or multi-word search matching questions lacking any of the words.
 // 15. "Eşleşen soru yok." missing when search produces zero matches, or category groups failing to reappear when search input is cleared.
 // 16. Question opened from search result navigating outside search result set or losing search text on return.
 // 17. Search input losing focus or dropping characters upon consecutive typing.
-// 18. Mark filter boxes ("Öğrendim", "Tekrar bak", "Anlamadım") appearing on screens other than "Konu konu bak" (e.g. Soru Kontrolü, Düşük öncelikli, question view).
+// 18. Mark filter boxes ("Öğrendim", "Tekrar bak", "Anlamadım") appearing on screens other than "Konu konu bak" (e.g. Soru Kontrolü, Düşük Öncelikli, question view).
 // 19. Mark filter box counters not matching current counts of questions carrying each mark.
 // 20. Clicking a mark filter box failing to list only questions with that mark, failing to restore category groups on second click, or failing to switch list on clicking another box.
 // 21. "Bu işaretle soru yok." missing when a mark filter box with zero questions is selected.
@@ -123,7 +123,7 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
 // 23. Question opened from mark-filtered list navigating outside the filtered list, or returning from study view with outdated counts and list after mark change.
 // 24. Low-priority questions leaking into "Konu konu bak" category groups, inflating category question counts or mark tallies, or rendering question rows.
 // 25. Low-priority questions appearing in "Konu konu bak" search results instead of showing "Eşleşen soru yok.".
-// 26. Marked low-priority questions inflating "Konu konu bak" mark filter box counts or appearing in mark filter lists, or failing to appear with their marks in the "Düşük öncelikli" screen.
+// 26. Marked low-priority questions inflating "Konu konu bak" mark filter box counts or appearing in mark filter lists, or failing to appear with their marks in the "Düşük Öncelikli" screen.
 // 27. Soru ekranında "🔖 Hatırlatıcı" düğmesi (data-action="klasik-hatirlatici", aria-pressed) eksik, tıklamada iyimser güncelleme yapmıyor veya ağ hatasında önceki duruma geri almıyor.
 // 28. Hatırlatıcılı sorunun liste satırında (klasikSatir) soru no yanında 🔖 (aria-label="Hatırlatıcı") görünmüyor.
 // 29. Konu Konu Bak ekranında dördüncü filtre kutusu "🔖 Hatırlatıcı · N" (data-action="klasik-filtre-hatirlatici", aria-pressed) eksik, sayısı yanlış, renk ve aramayla VE mantığında daraltmıyor veya düşük öncelikli soruları dahil ediyor.
@@ -713,14 +713,14 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
 
       // Düşük öncelikli bölümü testleri
       click('[data-action="open-klasik"]');
-      check(document.querySelector('[data-action="open-klasik-dusuk-oncelik"]'), 'Düşük öncelikli kartı görünmeli');
+      check(document.querySelector('[data-action="open-klasik-dusuk-oncelik"]'), 'Düşük Öncelikli kartı görünmeli');
       click('[data-action="open-klasik-dusuk-oncelik"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       check(VIEW === 'klasikDusukOncelik', 'Görünüm klasikDusukOncelik olmalı');
       checkUstBar('open-klasik', 'Klasik Sorular');
-      check(!document.querySelector('input[type="search"][data-klasik-arama]'), 'Arama alanı Düşük öncelikli ekranında olmamalı');
-      check(!document.querySelector('[data-action="klasik-filtre-isaret"]'), 'İşaret kutuları Düşük öncelikli ekranında olmamalı');
-      check(document.querySelector('.section-title').textContent.includes('Düşük öncelikli'), 'Başlık Düşük öncelikli olmalı');
+      check(!document.querySelector('input[type="search"][data-klasik-arama]'), 'Arama alanı Düşük Öncelikli ekranında olmamalı');
+      check(!document.querySelector('[data-action="klasik-filtre-isaret"]'), 'İşaret kutuları Düşük Öncelikli ekranında olmamalı');
+      check(document.querySelector('.section-title').textContent.includes('Düşük Öncelikli'), 'Başlık Düşük Öncelikli olmalı');
       var dusukGruplar = document.querySelectorAll('[data-action="klasik-grup"]');
       check(dusukGruplar.length === 1, 'Sorusu kalmayan kategori grubu gösterilmez (yalnız Hukuk)');
       check(dusukGruplar[0].textContent.includes('2 soru'), 'Düşük öncelikli Hukuk 2 soru');
@@ -736,7 +736,7 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       click('[data-action="klasik-soru-ac"][data-no="S7"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       check(VIEW === 'klasikCalisma', 'Çalışma ekranı açılmalı');
-      checkUstBar('klasik-geri', 'Düşük öncelikli');
+      checkUstBar('klasik-geri', 'Düşük Öncelikli');
       check(!document.querySelector('input[type="search"][data-klasik-arama]'), 'Arama alanı soru ekranında olmamalı');
       check(!document.querySelector('[data-action="klasik-filtre-isaret"]'), 'İşaret kutuları soru ekranında olmamalı');
       check(document.querySelector('.card').textContent.includes('Soru 1 / 2'), 'Yalnız düşük sorular arasında gezinir (Soru 1 / 2)');
@@ -747,7 +747,7 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(document.querySelector('.card').textContent.includes('Düşük soru 2'), 'S8 soru metni');
       check(document.querySelector('[data-action="klasik-sonraki"]').disabled, 'Düşük soruların sonuncusunda Sonraki devre dışı');
       click('[data-action="klasik-geri"]');
-      check(VIEW === 'klasikDusukOncelik', 'Geri dönüş Düşük öncelikli ekranına döner');
+      check(VIEW === 'klasikDusukOncelik', 'Geri dönüş Düşük Öncelikli ekranına döner');
       measureLayout('dusuk-oncelik');
 
       window.__showKonuArama = function () {

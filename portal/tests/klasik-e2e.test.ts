@@ -1,8 +1,12 @@
-// Failure paths: 0020, 0021 and 0022 must be repeatable; unanswered/no-clue sync accepted; invalid control,
+// Failure paths: 0020, 0021, 0022 and 0023 must be repeatable; unanswered/no-clue sync accepted; invalid control,
 // empty answered response rejected; daily excludes unanswered; list includes control for every account.
 // Unknown question/mark/reminder, user mark leakage, duplicate marks, null deletion with reminder preservation,
 // reminder toggle with mark preservation, invalid feedback, unauthorized feedback administration,
-// processed feedback, re-sync loss, anonymous actions rejected.
+// processed feedback, re-sync loss, anonymous actions rejected;
+// duplicate daily selection on same day, question leakage across priority tiers,
+// low-priority inclusion before normal exhaustion, partial day low-priority completion failure,
+// oldest-shown ordering violation on cycle completion, deleted/unanswered question leakage in daily response,
+// cross-user daily divergence, consecutive day repetition before tier exhaustion.
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
 import test from 'node:test';
@@ -25,32 +29,39 @@ const nodeRequire = createRequire(import.meta.url);
 //    missing kategori/soru, invalid durum (not 'tam'|'kismi'|'cevapsiz'), invalid cevap öğesi türleri, empty clue item -> 400.
 // 4. sync-klasik version calculation and skipping re-insert when the same payload is sent twice.
 // 5. klasik-daily unauthenticated / unapproved access rejected (401 / 403).
-// 6. klasik-daily returns 5 questions from 5 distinct categories, ordered alphabetically by category.
+// 6. klasik-daily selects up to 5 questions randomly across pool without category restriction.
 // 7. klasik-daily deterministic list for the same day across different users.
 // 8. klasik-daily different day produces deterministic result for that day.
 // 9. klasik-seen with non-existent 'no' returns 400.
 // 10. klasik-seen updates seen status only for the requesting user, idempotent on conflict.
 // 11. Re-sync of questions preserves existing klasik_gorulme user progress records.
-// 12. klasik-daily düşük öncelikli soruları seçmez:
-//     - bir kategorinin tüm cevaplı soruları düşükse o kategori günün sorularında yer almaz,
-//     - karışık havuzda en az 60 farklı günde hiçbir düşük soru seçilmez,
-//     - tüm cevaplı sorular düşükse hata vermeden boş soru listesi döner.
+// 12. klasik-daily kalıcı ve öncelikli seçim akışı (uçtan uca):
+//     - (i) ardışık günlerde normal sorular tekrarsız tükenir;
+//     - (ii) normal bitmeden hiçbir günde düşük soru seçilmez;
+//     - (iii) normalden 5'ten az kalan gün düşükle tamamlanır;
+//     - (iv) hepsi bitince en eski gösterilenler gelir;
+//     - (v) aynı gün ikinci istek aynı 5 soruyu aynı sırayla döndürür ve klasik_gunun_secimi tablosunda tek satır vardır;
+//     - (vi) iki farklı kullanıcı aynı seçimi görür;
+//     - (vii) seçimdeki soru silinince veya cevapsız yapılınca yanıtta atlanır ve yeni soru eklenmez.
 // 13. 0022_klasik_hatirlatici migration idempotency and table schema:
 //     - hatirlatici column added as boolean not null default false,
 //     - isaret column allows null so reminder can stay active without color mark,
 //     - re-applying 0022 migration does not fail.
-// 14. klasik-reminder authentication and payload validation:
+// 14. 0023_klasik_gunun_secimi migration idempotency and table schema:
+//     - gun text primary key, sorular text[] not null, olusturma_zamani timestamptz not null default now(),
+//     - re-applying 0023 migration does not fail.
+// 15. klasik-reminder authentication and payload validation:
 //     - anonymous/inactive user rejected with 401/403,
 //     - invalid/missing no or non-existent question rejected with 400,
 //     - non-boolean hatirlatici payload rejected with 400.
-// 15. klasik-reminder state persistence and coexistence with color mark:
+// 16. klasik-reminder state persistence and coexistence with color mark:
 //     - reminder can be set without any color mark (isaret remains null),
 //     - setting reminder does not overwrite existing color mark,
 //     - clearing color mark (isaret: null) preserves active reminder (row not deleted),
 //     - turning off reminder (hatirlatici: false) preserves active color mark,
 //     - row deleted only when both color mark and reminder are cleared,
 //     - question re-sync does not delete reminder state.
-// 16. Response payload enrichment:
+// 17. Response payload enrichment:
 //     - klasik-list, klasik-question, and klasik-daily contain hatirlatici boolean field for every question,
 //     - reminder state is properly scoped to requesting user.
 test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', async () => {
@@ -61,7 +72,7 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     for (const name of sqlFiles) {
       await pg.exec(readFileSync(new URL('../drizzle/' + name, import.meta.url), 'utf8'));
     }
-    // Migration idempotent test: re-apply 0019_klasik_sorular.sql, 0020, 0021, 0022
+    // Migration idempotent test: re-apply 0019_klasik_sorular.sql, 0020, 0021, 0022, 0023
     const migration0019 = new URL('../drizzle/0019_klasik_sorular.sql', import.meta.url);
     assert.ok(existsSync(migration0019), '0019_klasik_sorular.sql migration dosyası mevcut olmalı');
     await pg.exec(readFileSync(migration0019, 'utf8'));
@@ -71,6 +82,9 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     if (existsSync(migration0022)) {
       await pg.exec(readFileSync(migration0022, 'utf8'));
     }
+    const migration0023 = new URL('../drizzle/0023_klasik_gunun_secimi.sql', import.meta.url);
+    assert.ok(existsSync(migration0023), '0023_klasik_gunun_secimi.sql migration dosyası mevcut olmalı');
+    await pg.exec(readFileSync(migration0023, 'utf8'));
 
     await pg.exec(`insert into profiles(user_id,username,is_active,is_admin,disclaimer_accepted_at)
       values ('u1','kullanici1',true,false,now()),
@@ -265,14 +279,6 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     const dailyData1 = await dailyRes1.json();
     assert.equal(dailyData1.questions.length, 5, 'Tam 5 soru dönmeli');
 
-    // 5 farklı kategori denetimi
-    const categories1 = dailyData1.questions.map((q: any) => q.kategori);
-    assert.equal(new Set(categories1).size, 5, '5 farklı kategori olmalı');
-
-    // Alfabetik sıra denetimi: Dönüş sırası seçilen kategorilerin ada göre sırasıdır.
-    const sortedCats = [...categories1].sort((a, b) => a.localeCompare(b, 'tr'));
-    assert.deepEqual(categories1, sortedCats, 'Sorular seçilen kategorilerin ada göre sıralanmış olmalı');
-
     // Hiçbir soru henüz görülmedi
     assert.ok(dailyData1.questions.every((q: any) => q.seen === false), 'Başlangıçta seen false olmalı');
 
@@ -291,13 +297,13 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     const seedDayA = examCore.klasikDailySeed('2026-10-05', 'test-key');
     const seedDayB = examCore.klasikDailySeed('2026-10-06', 'test-key');
     assert.notEqual(seedDayA, seedDayB, 'Farklı günler farklı seed üretmeli');
-    const pickA = examCore.selectKlasikQuestions(dbRows, seedDayA);
-    const pickB = examCore.selectKlasikQuestions(dbRows, seedDayB);
+    const pickA = examCore.selectKlasikQuestions(dbRows, new Map(), seedDayA);
+    const pickB = examCore.selectKlasikQuestions(dbRows, new Map(), seedDayB);
     assert.equal(pickA.length, 5);
     assert.equal(pickB.length, 5);
     // Belirlenimlilik: aynı seed ile tekrar çağırınca birebir aynı
-    const pickARepeat = examCore.selectKlasikQuestions(dbRows, seedDayA);
-    assert.deepEqual(pickA.map(q => q.no), pickARepeat.map(q => q.no), 'Aynı seed her zaman aynı listeyi vermeli');
+    const pickARepeat = examCore.selectKlasikQuestions(dbRows, new Map(), seedDayA);
+    assert.deepEqual(pickA, pickARepeat, 'Aynı seed her zaman aynı listeyi vermeli');
 
     // 9. klasik-seen
     // Bilinmeyen soru numarası -> 400
@@ -369,50 +375,132 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     assert.equal(unanswered.isaret, null);
     const filteredDaily = await (await sendExam({ action: 'klasik-daily' })).json();
     assert.ok(filteredDaily.questions.every((q: any) => q.durum !== 'cevapsiz' && 'konu' in q && 'guncellikNotu' in q && 'isaret' in q));
-    // 12. Düşük öncelikli sorular Günün Soruları havuzuna girmez
-    // 12a. Bir kategorinin tüm cevaplı soruları 'dusuk' iken o kategori günün sorularında hiç yer almaz
-    const hukukTumCevapliDusuk = extended.map(q => q.kategori === 'Hukuk' && q.durum !== 'cevapsiz' ? { ...q, oncelik: 'dusuk' } : q);
-    assert.equal((await sendSync(JSON.stringify({ questions: hukukTumCevapliDusuk }))).status, 200);
-    for (let i = 0; i < 30; i++) {
-      const d = new Date(Date.UTC(2026, 9, 6 + i));
-      currentDay = d.toISOString().slice(0, 10);
-      const res = await (await sendExam({ action: 'klasik-daily' })).json();
-      assert.equal(res.questions.length, 5);
-      assert.ok(
-        res.questions.every((q: any) => q.kategori !== 'Hukuk'),
-        `Tüm cevaplı soruları düşük olan Hukuk kategorisi günün sorularına seçilmemeli (${currentDay})`
-      );
-    }
+    // 12. klasik-daily kalıcı ve öncelikli seçim akışı (uçtan uca)
+    // Temiz bir veri seti: 12 normal soru, 4 düşük soru, 1 cevapsız soru
+    await pg.exec('DELETE FROM klasik_gunun_secimi');
+    const priorityTestQuestions = [
+      ...Array.from({ length: 12 }, (_, i) => ({
+        no: `S10${i + 1}`,
+        kategori: `Kat${(i % 3) + 1}`,
+        konu: `Normal Konu ${i + 1}`,
+        kontrol: 'edildi',
+        guncellikNotu: '',
+        soru: `Normal Soru ${i + 1}`,
+        durum: 'tam',
+        cevap: [{ tur: 'paragraf', metin: `Cevap N${i + 1}` }],
+        ipuclari: [`İpucu N${i + 1}`],
+        oncelik: 'normal',
+      })),
+      ...Array.from({ length: 4 }, (_, i) => ({
+        no: `S20${i + 1}`,
+        kategori: `Kat${(i % 2) + 1}`,
+        konu: `Düşük Konu ${i + 1}`,
+        kontrol: 'edildi',
+        guncellikNotu: '',
+        soru: `Düşük Soru ${i + 1}`,
+        durum: 'tam',
+        cevap: [{ tur: 'paragraf', metin: `Cevap D${i + 1}` }],
+        ipuclari: [`İpucu D${i + 1}`],
+        oncelik: 'dusuk',
+      })),
+      {
+        no: 'S301',
+        kategori: 'Kat1',
+        konu: 'Cevapsız Konu',
+        kontrol: 'edilecek',
+        guncellikNotu: '',
+        soru: 'Cevapsız Soru',
+        durum: 'cevapsiz',
+        cevap: [],
+        ipuclari: [],
+        oncelik: 'normal',
+      },
+    ];
+    assert.equal((await sendSync(JSON.stringify({ questions: priorityTestQuestions }))).status, 200);
 
-    // 12b. Düşük ve normal sorular karışıkken, en az 60 farklı tarih için klasik-daily yanıtında hiçbir 'dusuk' soru bulunmaz
-    const mixedDusukNos = new Set(['S1', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'S16']);
-    const mixedQuestions = extended.map(q => ({
-      ...q,
-      oncelik: mixedDusukNos.has(q.no) ? 'dusuk' : 'normal',
-    }));
-    assert.equal((await sendSync(JSON.stringify({ questions: mixedQuestions }))).status, 200);
-    for (let i = 0; i < 60; i++) {
-      const d = new Date(Date.UTC(2026, 9, 6 + i));
-      currentDay = d.toISOString().slice(0, 10);
-      const res = await (await sendExam({ action: 'klasik-daily' })).json();
-      assert.equal(res.questions.length, 5);
-      for (const q of res.questions) {
-        assert.ok(
-          !mixedDusukNos.has(q.no),
-          `Düşük öncelikli soru ${q.no} günün sorularına seçilmemeli (${currentDay})`
-        );
-      }
-    }
+    // Gün 1: Normal sorulardan 5 tanesi seçilir
+    currentDay = '2026-11-01';
+    currentProfile = { userId: 'u1', username: 'kullanici1', isActive: true };
+    const resDay1 = await (await sendExam({ action: 'klasik-daily' })).json();
+    assert.equal(resDay1.questions.length, 5, 'Gün 1 5 soru dönmeli');
+    const day1Nos = resDay1.questions.map((q: any) => q.no);
+    // (ii) normal bitmeden hiçbir günde düşük soru yok
+    assert.ok(day1Nos.every((no: string) => no.startsWith('S10')), 'Gün 1 sadece normal sorulardan oluşmalı');
 
-    // 12c. Tüm cevaplı sorular 'dusuk' ise yanıt boş soru listesi döner ve hata vermez
-    assert.equal((await sendSync(JSON.stringify({ questions: extended.map(q => ({ ...q, oncelik: 'dusuk' })) }))).status, 200);
-    const allDusukRes = await sendExam({ action: 'klasik-daily' });
-    assert.equal(allDusukRes.status, 200, 'Tüm sorular düşükken istek 200 dönmeli');
-    const allDusukData = await allDusukRes.json();
-    assert.equal(Array.isArray(allDusukData.questions), true);
-    assert.equal(allDusukData.questions.length, 0, 'Tüm sorular düşük öncelikliyken günün soruları boş olmalı');
+    // (v) aynı gün ikinci istek aynı 5 soruyu aynı sırayla döndürür ve tabloda tek satır vardır
+    const resDay1Repeat = await (await sendExam({ action: 'klasik-daily' })).json();
+    assert.deepEqual(resDay1Repeat.questions.map((q: any) => q.no), day1Nos, 'Aynı gün ikinci istek aynı soruları aynı sırayla döndürmeli');
+    const secimRowsDay1 = await db.select().from(schema.klasikGununSecimi).where(orm.eq(schema.klasikGununSecimi.gun, '2026-11-01'));
+    assert.equal(secimRowsDay1.length, 1, 'klasik_gunun_secimi tablosunda gün için tek satır olmalı');
+    assert.deepEqual(secimRowsDay1[0].sorular, day1Nos, 'Tablodaki kayıtlı sorular yanıttakiyle aynı olmalı');
+
+    // (vi) iki farklı kullanıcı aynı seçimi görür
+    currentProfile = { userId: 'u2', username: 'kullanici2', isActive: true };
+    const resDay1U2 = await (await sendExam({ action: 'klasik-daily' })).json();
+    assert.deepEqual(resDay1U2.questions.map((q: any) => q.no), day1Nos, 'Farklı kullanıcı aynı seçimi ve sırayı görmeli');
+    currentProfile = { userId: 'u1', username: 'kullanici1', isActive: true };
+
+    // Gün 2: Kalan 7 normal sorudan 5 tanesi seçilir
+    currentDay = '2026-11-02';
+    const resDay2 = await (await sendExam({ action: 'klasik-daily' })).json();
+    assert.equal(resDay2.questions.length, 5, 'Gün 2 5 soru dönmeli');
+    const day2Nos = resDay2.questions.map((q: any) => q.no);
+    // (i) ardışık günlerde normal sorular tekrarsız tükenir
+    assert.equal(day1Nos.some((no: string) => day2Nos.includes(no)), false, 'Gün 1 ve Gün 2 arasında tekrar eden normal soru olmamalı');
+    // (ii) normal bitmeden hiçbir günde düşük soru yok
+    assert.ok(day2Nos.every((no: string) => no.startsWith('S10')), 'Gün 2 sadece normal sorulardan oluşmalı');
+
+    // Gün 3: Normalde 2 soru kaldı (12 - 5 - 5 = 2). 5'e ulaşmak için 3 düşük soru seçilmeli
+    currentDay = '2026-11-03';
+    const resDay3 = await (await sendExam({ action: 'klasik-daily' })).json();
+    assert.equal(resDay3.questions.length, 5, 'Gün 3 5 soru dönmeli');
+    const day3Nos = resDay3.questions.map((q: any) => q.no);
+    const day3Normal = day3Nos.filter((no: string) => no.startsWith('S10'));
+    const day3Dusuk = day3Nos.filter((no: string) => no.startsWith('S20'));
+    // (i) normal sorular tekrarsız tükenir: toplam 12 normal sorunun hepsi (5 + 5 + 2) seçilmiş olur
+    assert.equal(day3Normal.length, 2, 'Kalan 2 normal soru seçilmiş olmalı');
+    const allNormalUsed = [...day1Nos, ...day2Nos, ...day3Normal];
+    assert.equal(new Set(allNormalUsed).size, 12, '12 normal sorunun tamamı tekrarsız tükenmeli');
+    // (iii) normalden 5'ten az kalan gün düşükle tamamlanır
+    assert.equal(day3Dusuk.length, 3, '5 soruya ulaşmak için kalan 3 soru düşük önceliklilerden tamamlanmalı');
+
+    // Gün 4: Düşük sorulardan 1 tane kalmıştı (4 - 3 = 1). Kalan 4 soru en eski günden (Gün 1) tamamlanmalı
+    currentDay = '2026-11-04';
+    const resDay4 = await (await sendExam({ action: 'klasik-daily' })).json();
+    assert.equal(resDay4.questions.length, 5, 'Gün 4 5 soru dönmeli');
+    const day4Nos = resDay4.questions.map((q: any) => q.no);
+    const day4Dusuk = day4Nos.filter((no: string) => no.startsWith('S20'));
+    assert.equal(day4Dusuk.length, 1, 'Kalan son 1 düşük soru seçilmeli');
+    // (iv) hepsi bitince en eski gösterilenler gelir: kalan 4 soru Gün 1 sorularından gelmeli
+    const day1Set = new Set(day1Nos);
+    const day4Oldest = day4Nos.filter((no: string) => day1Set.has(no));
+    assert.equal(day4Oldest.length, 4, 'Tüm sorular gösterilince en eski gösterilen günün soruları (Gün 1) önce gelmeli');
+
+    // (vii) seçimdeki soru silinince yanıtta atlanır ve yeni soru eklenmez
+    const deletedNo = day4Nos[0];
+    await pg.exec(`DELETE FROM klasik_sorular WHERE no = '${deletedNo}'`);
+    const resAfterDelete = await (await sendExam({ action: 'klasik-daily' })).json();
+    assert.equal(resAfterDelete.questions.length, 4, 'Silinen soru yanıtta atlanmalı, uzunluk 4 olmalı');
+    assert.equal(resAfterDelete.questions.some((q: any) => q.no === deletedNo), false, 'Silinen soru yanıtta bulunmamalı');
+    assert.deepEqual(
+      resAfterDelete.questions.map((q: any) => q.no),
+      day4Nos.filter((no: string) => no !== deletedNo),
+      'Kalan sorular kayıtlı sırayı korumalı ve yeni soru eklenmemeli'
+    );
+
+    // Bir soru da cevapsız duruma getirilince yanıtta atlanır
+    const unansweredNo = day4Nos[1];
+    await pg.exec(`UPDATE klasik_sorular SET durum = 'cevapsiz' WHERE no = '${unansweredNo}'`);
+    const resAfterUnanswered = await (await sendExam({ action: 'klasik-daily' })).json();
+    assert.equal(resAfterUnanswered.questions.length, 3, 'Cevapsız yapılan soru da yanıtta atlanmalı');
+    assert.deepEqual(
+      resAfterUnanswered.questions.map((q: any) => q.no),
+      day4Nos.filter((no: string) => no !== deletedNo && no !== unansweredNo),
+      'Cevapsız kalan soru atlandıktan sonra kalan sorular kayıtlı sırayı korumalı'
+    );
 
     // Durumu geri yükle
+    await pg.exec('DELETE FROM klasik_gunun_secimi');
     assert.equal((await sendSync(extendedPayload)).status, 200);
     currentDay = null;
     for (const no of ['S999', '']) assert.equal((await sendExam({ action: 'klasik-mark', no, isaret: 'sari' })).status, 400);

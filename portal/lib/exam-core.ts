@@ -187,19 +187,60 @@ export function klasikDailySeed(day: string, secret = process.env.PIN_ENCRYPTION
   return createHmac('sha256', secret).update(`gunun-klasik:${day}`).digest().readUInt32BE(0);
 }
 
-export function selectKlasikQuestions<T extends { no: string; sira: number; kategori: string }>(
+export function selectKlasikQuestions<T extends { no: string; oncelik?: string }>(
   questions: T[],
+  lastShownDays: Map<string, string> | Record<string, string>,
   seed: number,
-): T[] {
+): string[] {
+  const getLastDay = (no: string): string | undefined => {
+    if (lastShownDays && typeof (lastShownDays as Map<string, string>).get === 'function') {
+      return (lastShownDays as Map<string, string>).get(no);
+    }
+    return (lastShownDays as Record<string, string>)[no];
+  };
+
   const random = mulberry32(seed);
-  const categories = [...new Set(questions.map((q) => q.kategori))].sort((a, b) => a.localeCompare(b, 'tr'));
-  const pickedCategories = shuffled(categories, random).slice(0, 5);
-  const pickedQuestions = pickedCategories.map((cat) => {
-    const catQuestions = questions
-      .filter((q) => q.kategori === cat)
-      .sort((a, b) => a.sira - b.sira || a.no.localeCompare(b.no));
-    const idx = Math.floor(random() * catQuestions.length);
-    return catQuestions[idx];
-  }).filter((q): q is T => Boolean(q));
-  return pickedQuestions.sort((a, b) => a.kategori.localeCompare(b.kategori, 'tr'));
+  const sorted = [...questions].sort((a, b) => a.no.localeCompare(b.no));
+
+  const unshownNormal = sorted.filter(
+    (q) => (q.oncelik ?? 'normal') !== 'dusuk' && getLastDay(q.no) === undefined,
+  );
+  const shuffledUnshownNormal = shuffled(unshownNormal, random);
+
+  const unshownDusuk = sorted.filter(
+    (q) => q.oncelik === 'dusuk' && getLastDay(q.no) === undefined,
+  );
+  const shuffledUnshownDusuk = shuffled(unshownDusuk, random);
+
+  const shownQuestions = sorted.filter((q) => getLastDay(q.no) !== undefined);
+  const distinctDays = [...new Set(shownQuestions.map((q) => getLastDay(q.no)!))].sort();
+
+  const orderedShown: T[] = [];
+  for (const day of distinctDays) {
+    const dayQuestions = shownQuestions.filter((q) => getLastDay(q.no) === day);
+    orderedShown.push(...shuffled(dayQuestions, random));
+  }
+
+  const selectedNos: string[] = [];
+
+  for (const q of shuffledUnshownNormal) {
+    if (selectedNos.length >= 5) break;
+    selectedNos.push(q.no);
+  }
+
+  if (selectedNos.length < 5) {
+    for (const q of shuffledUnshownDusuk) {
+      if (selectedNos.length >= 5) break;
+      selectedNos.push(q.no);
+    }
+  }
+
+  if (selectedNos.length < 5) {
+    for (const q of orderedShown) {
+      if (selectedNos.length >= 5) break;
+      selectedNos.push(q.no);
+    }
+  }
+
+  return selectedNos;
 }

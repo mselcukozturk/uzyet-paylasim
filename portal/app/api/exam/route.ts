@@ -945,10 +945,50 @@ async function handlePost(request: Request) {
 
     if (body.action === 'klasik-daily') {
       const day = dailyExamDay();
-      const seed = klasikDailySeed(day);
-      const rows = await db.select().from(schema.klasikSorular)
-        .where(and(inArray(schema.klasikSorular.durum, ['tam', 'kismi']), eq(schema.klasikSorular.oncelik, 'normal')));
-      const selected = selectKlasikQuestions(rows, seed);
+      let [selection] = await db.select().from(schema.klasikGununSecimi)
+        .where(eq(schema.klasikGununSecimi.gun, day)).limit(1);
+
+      if (!selection) {
+        const pastSelections = await db.select().from(schema.klasikGununSecimi)
+          .orderBy(asc(schema.klasikGununSecimi.gun));
+        const lastShownDays = new Map<string, string>();
+        for (const past of pastSelections) {
+          for (const soruNo of past.sorular) {
+            lastShownDays.set(soruNo, past.gun);
+          }
+        }
+        const availableQuestions = await db.select({
+          no: schema.klasikSorular.no,
+          oncelik: schema.klasikSorular.oncelik,
+        }).from(schema.klasikSorular)
+          .where(inArray(schema.klasikSorular.durum, ['tam', 'kismi']));
+
+        const seed = klasikDailySeed(day);
+        const pickedNos = selectKlasikQuestions(availableQuestions, lastShownDays, seed);
+
+        await db.insert(schema.klasikGununSecimi).values({
+          gun: day,
+          sorular: pickedNos,
+        }).onConflictDoNothing();
+
+        [selection] = await db.select().from(schema.klasikGununSecimi)
+          .where(eq(schema.klasikGununSecimi.gun, day)).limit(1);
+      }
+
+      const targetNos = selection?.sorular ?? [];
+      const questionRows = targetNos.length > 0
+        ? await db.select().from(schema.klasikSorular)
+            .where(and(
+              inArray(schema.klasikSorular.no, targetNos),
+              inArray(schema.klasikSorular.durum, ['tam', 'kismi']),
+            ))
+        : [];
+
+      const questionMap = new Map(questionRows.map((q) => [q.no, q]));
+      const orderedQuestions = targetNos
+        .map((no) => questionMap.get(no))
+        .filter((q): q is typeof questionRows[number] => Boolean(q));
+
       const seenRows = await db.select({ soruNo: schema.klasikGorulme.soruNo })
         .from(schema.klasikGorulme)
         .where(eq(schema.klasikGorulme.userId, user.id));
@@ -958,7 +998,7 @@ async function handlePost(request: Request) {
       const reminderMap = new Map(marks.map(r => [r.soruNo, r.hatirlatici]));
       return NextResponse.json({
         day,
-        questions: selected.map((q) => ({
+        questions: orderedQuestions.map((q) => ({
           no: q.no,
           kategori: q.kategori,
           konu: q.konu,

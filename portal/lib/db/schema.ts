@@ -276,3 +276,9 @@ export const klasikGeriBildirim = pgTable('klasik_geri_bildirim', {
   durum: text('durum').notNull().default('bekliyor'),
 });
 
+export const klasikGununSecimi = pgTable('klasik_gunun_secimi', {
+  gun: text('gun').primaryKey(),
+  sorular: text('sorular').array().notNull(),
+  olusturmaZamani: timestamp('olusturma_zamani', { withTimezone: true }).notNull().defaultNow(),
+});
+

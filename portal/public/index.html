@@ -2789,14 +2789,16 @@
   // değişiklikleri buraya yazılmaz. ai: true olanlar yalnız Yapay Zekâ Kaynakları açık hesapta görünür.
   // Yalnız son 7 günün kayıtları gösterilir; eskiler arşiv olarak listede kalır. Metinler 1-2 cümle.
   var DUYURULAR = [
+    { tarih: "2026-10-06", baslik: "Günün Klasik Soruları seçimi yenilendi",
+      metin: "Günün Klasik Soruları artık tüm sorulardan rastgele seçiliyor, daha önce gelmemiş sorular öncelikli; düşük öncelikli sorular ancak diğerleri bittikten sonra gelir." },
     { tarih: "2026-10-05", baslik: "Klasik: Hatırlatıcı düğmesi eklendi",
       metin: "Klasik soru ekranına Hatırlatıcı düğmesi eklendi. Hatırlatıcıya aldığın soruları Konu Konu Bak ekranındaki yeni kutuyla filtreleyip listeleyebilirsin." },
     { tarih: "2026-10-05", baslik: "Klasik: işaretlediğin soruları tek tıkla listele",
       metin: "Konu Konu Bak ekranındaki Öğrendim, Tekrar bak ve Anlamadım kutularıyla işaretlediğin soruları tek tıkla listeleyebilir, aramayla birlikte daraltabilirsin." },
     { tarih: "2026-10-05", baslik: "Klasik: Konu Konu Bak ekranında arama",
       metin: "Konu Konu Bak ekranına arama alanı eklendi. Soru metni, konusu, kategorisi veya numarasıyla arama yapabilir, doğrudan soruya geçebilirsin." },
-    { tarih: "2026-10-05", baslik: "Klasik: Düşük öncelikli sorular ayrı bölümde",
-      metin: "Klasik sekmesinde Düşük öncelikli bölümü açıldı. Önceliği düşük sorular burada listelenir; Günün Klasik Soruları'na girmez, Konu Konu Bak ekranında listelenmez ve Soru Kontrolü ekranına dahil edilmez." },
+    { tarih: "2026-10-05", baslik: "Klasik: Düşük Öncelikli sorular ayrı bölümde",
+      metin: "Klasik sekmesinde Düşük Öncelikli bölümü açıldı. Önceliği düşük sorular burada listelenir; Konu Konu Bak ekranında listelenmez ve Soru Kontrolü ekranına dahil edilmez." },
     { tarih: "2026-10-05", baslik: "Klasik sorulara Konu Konu Bak",
       metin: "Klasik sekmesindeki Konu Konu Bak ile tüm soruları inceleyebilirsin. Öğrendim, Tekrar bak ve Anlamadım işaretleriyle kendi çalışma durumunu takip edebilir, Cevap güncellenmeli düğmesiyle eklenecek veya çıkarılacak bilgiyi bildirebilirsin." },
     { tarih: "2026-10-05", baslik: "Klasik Sorular ve Günün Klasik Soruları",
@@ -4518,7 +4520,7 @@
 
   function renderKlasikListe(tur) {
     var kaynak = tur === "kontrol" || tur === true ? "kontrol" : tur === "dusuk" ? "dusuk" : "konular";
-    var baslik = kaynak === "kontrol" ? "Soru Kontrolü" : kaynak === "dusuk" ? "Düşük öncelikli" : "Konu Konu Bak";
+    var baslik = kaynak === "kontrol" ? "Soru Kontrolü" : kaynak === "dusuk" ? "Düşük Öncelikli" : "Konu Konu Bak";
     var geriBtn = '<button class="btn ghost" data-action="open-klasik">← Klasik Sorular</button>';
     var ustBar = STATE.sadeceDeneme ? ustBarHtml(geriBtn) : '<div class="link-row">' + geriBtn + '</div>';
     var isaretKutulariHtml = kaynak === "konular" ? klasikIsaretKutulariHtml() : '';
@@ -4576,7 +4578,7 @@
       '<button class="mode-btn" style="border-left:4px solid var(--seri-5);margin-top:14px" data-action="open-klasik-kontrol">' +
       '<div class="title"><span class="mode-dot" style="background:var(--seri-5)"></span>Soru Kontrolü</div></button>' +
       '<button class="mode-btn" style="border-left:4px solid var(--seri-3);margin-top:14px" data-action="open-klasik-dusuk-oncelik">' +
-      '<div class="title"><span class="mode-dot" style="background:var(--seri-3)"></span>Düşük öncelikli</div></button>';
+      '<div class="title"><span class="mode-dot" style="background:var(--seri-3)"></span>Düşük Öncelikli</div></button>';
   }
 
   function remoteResetKlasikState() {
@@ -4734,7 +4736,7 @@
 
   function renderKlasikCalisma() {
     var geri = klasikKaynak === "daily" ? "open-klasik" : "klasik-geri";
-    var geriBaslik = klasikKaynak === "daily" ? "Klasik Sorular" : klasikKaynak === "kontrol" ? "Soru Kontrolü" : klasikKaynak === "dusuk" ? "Düşük öncelikli" : "Konu Konu Bak";
+    var geriBaslik = klasikKaynak === "daily" ? "Klasik Sorular" : klasikKaynak === "kontrol" ? "Soru Kontrolü" : klasikKaynak === "dusuk" ? "Düşük Öncelikli" : "Konu Konu Bak";
     var geriBtn = '<button class="btn ghost" data-action="' + geri + '">← ' + geriBaslik + '</button>';
     var ustBar = STATE.sadeceDeneme ? ustBarHtml(geriBtn) : '<div class="link-row">' + geriBtn + '</div>';
 
