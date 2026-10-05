@@ -2775,6 +2775,8 @@
   // değişiklikleri buraya yazılmaz. ai: true olanlar yalnız Yapay Zekâ Kaynakları açık hesapta görünür.
   // Yalnız son 7 günün kayıtları gösterilir; eskiler arşiv olarak listede kalır. Metinler 1-2 cümle.
   var DUYURULAR = [
+    { tarih: "2026-10-05", baslik: "Klasik: Konu konu bak ekranında arama",
+      metin: "Konu konu bak ekranına arama alanı eklendi. Soru metni, konusu, kategorisi veya numarasıyla arama yapabilir, doğrudan soruya geçebilirsin." },
     { tarih: "2026-10-05", baslik: "Klasik: Düşük öncelikli sorular ayrı bölümde",
       metin: "Klasik sekmesinde Düşük öncelikli bölümü açıldı. Önceliği düşük sorular burada listelenir ve Soru Kontrolü ekranına dahil edilmez." },
     { tarih: "2026-10-05", baslik: "Klasik sorulara konu konu bak",
@@ -4336,6 +4338,7 @@
   var klasikListe = null;
   var klasikListeYukleniyor = false;
   var klasikListeHata = null;
+  var klasikArama = "";
   var klasikAcikGruplar = { konular: {}, kontrol: {}, dusuk: {} };
   var klasikKaynak = "daily";
   var klasikCalismaNos = [];
@@ -4431,15 +4434,49 @@
       '<span class="muted klasik-isaret-adi">' + (KLASIK_ISARETLER[isaret] || "İşaretsiz") + '</span></button>';
   }
 
+  function klasikAramaKelimeleri() {
+    var metin = (klasikArama || "").trim().toLocaleLowerCase("tr");
+    return metin ? metin.split(/\s+/).filter(Boolean) : [];
+  }
+
+  function klasikAramaSonuclari() {
+    var kelimeler = klasikAramaKelimeleri();
+    if (!kelimeler.length) return [];
+    var questions = (klasikListe && klasikListe.questions) || [];
+    return questions.filter(function (q) {
+      var hedef = [String(q.no || ""), String(q.konu || ""), String(q.kategori || ""), String(q.soru || "")].join(" ").toLocaleLowerCase("tr");
+      return kelimeler.every(function (k) { return hedef.indexOf(k) !== -1; });
+    });
+  }
+
   function renderKlasikListe(tur) {
     var kaynak = tur === "kontrol" || tur === true ? "kontrol" : tur === "dusuk" ? "dusuk" : "konular";
     var baslik = kaynak === "kontrol" ? "Soru Kontrolü" : kaynak === "dusuk" ? "Düşük öncelikli" : "Konu konu bak";
-    var html = '<div class="link-row"><button class="btn ghost" data-action="open-klasik">← Klasik Sorular</button></div><div class="section-title">' + baslik + '</div>';
-    if (klasikListeYukleniyor || (!klasikListe && !klasikListeHata)) return html + '<div class="card" role="status">Yükleniyor…</div>';
-    if (klasikListeHata) return html + '<div class="card" role="alert">' + escapeHtml(klasikListeHata) + '<button class="btn" data-action="klasik-liste-tekrar">Tekrar Dene</button></div>';
+    var geriBtn = '<button class="btn ghost" data-action="open-klasik">← Klasik Sorular</button>';
+    var ustBar = STATE.sadeceDeneme ? ustBarHtml(geriBtn) : '<div class="link-row">' + geriBtn + '</div>';
+    var aramaHtml = kaynak === "konular"
+      ? '<div style="margin:10px 0 14px"><input type="search" id="klasik-arama-input" data-klasik-arama placeholder="Sorularda ara" aria-label="Sorularda ara" autocapitalize="none" autocorrect="off" spellcheck="false" value="' + escapeHtml(klasikArama) + '" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body);font-size:0.95rem"></div>'
+      : '';
+    var ustHtml = ustBar + '<div class="section-title">' + baslik + '</div>' + aramaHtml;
+
+    if (klasikListeYukleniyor || (!klasikListe && !klasikListeHata)) return ustHtml + '<div class="card" role="status">Yükleniyor…</div>';
+    if (klasikListeHata) return ustHtml + '<div class="card" role="alert">' + escapeHtml(klasikListeHata) + '<button class="btn" data-action="klasik-liste-tekrar">Tekrar Dene</button></div>';
+
+    if (kaynak === "konular" && klasikAramaKelimeleri().length > 0) {
+      var sonuclar = klasikAramaSonuclari();
+      if (!sonuclar.length) {
+        return ustHtml + '<div class="card" style="margin-top:14px">Eşleşen soru yok.</div>';
+      }
+      return ustHtml +
+        '<div class="muted" style="margin-top:6px;margin-bottom:6px">' + sonuclar.length + ' soru bulundu</div>' +
+        '<div class="card" style="margin-top:10px"><div class="klasik-satirlar">' +
+        sonuclar.map(function (q) { return klasikSatir(q, "arama"); }).join('') +
+        '</div></div>';
+    }
+
     var groups = klasikGruplar(kaynak);
-    if (!groups.length) return html + '<div class="card">Henüz soru yok.</div>';
-    return html + groups.map(function (grup) {
+    if (!groups.length) return ustHtml + '<div class="card">Henüz soru yok.</div>';
+    return ustHtml + groups.map(function (grup) {
       if (!klasikAcikGruplar[kaynak]) klasikAcikGruplar[kaynak] = {};
       var acik = !!klasikAcikGruplar[kaynak][grup.key];
       var sayaclar = ["yesil", "sari", "kirmizi", "yok"].map(function (isaret) {
@@ -4458,6 +4495,7 @@
   }
 
   function remoteResetKlasikState() {
+    klasikArama = "";
     klasikVerisi = null;
     klasikYukleniyor = false;
     klasikHata = null;
@@ -4609,8 +4647,12 @@
 
   function renderKlasikCalisma() {
     var geri = klasikKaynak === "daily" ? "open-klasik" : "klasik-geri";
+    var geriBaslik = klasikKaynak === "daily" ? "Klasik Sorular" : klasikKaynak === "kontrol" ? "Soru Kontrolü" : klasikKaynak === "dusuk" ? "Düşük öncelikli" : "Konu konu bak";
+    var geriBtn = '<button class="btn ghost" data-action="' + geri + '">← ' + geriBaslik + '</button>';
+    var ustBar = STATE.sadeceDeneme ? ustBarHtml(geriBtn) : '<div class="link-row">' + geriBtn + '</div>';
+
     if (klasikKaynak !== "daily" && (klasikDetayYukleniyor || klasikDetayHata)) {
-      return '<button class="btn ghost" data-action="klasik-geri">← Listeye dön</button><div class="card" role="status">' +
+      return ustBar + '<div class="card" role="status">' +
         (klasikDetayYukleniyor ? 'Yükleniyor…' : escapeHtml(klasikDetayHata) + '<button class="btn" data-action="klasik-soru-tekrar">Tekrar Dene</button>') + '</div>';
     }
     if (!klasikSorular().length) {
@@ -4627,12 +4669,6 @@
       klasikSoruDurumu[soru.no] = { acilanIpuclari: 0, cevapAcik: false, seenSent: false };
     }
     var durum = klasikSoruDurumu[soru.no];
-
-    var geriBaslik = klasikKaynak === "daily" ? "Klasik Sorular" : klasikKaynak === "kontrol" ? "Soru Kontrolü" : klasikKaynak === "dusuk" ? "Düşük öncelikli" : "Konu konu bak";
-    var ustBar = '<div class="ust-bar">' +
-      '<div class="link-row"><button class="btn ghost" data-action="' + geri + '" title="Geri">← ' + geriBaslik + '</button></div>' +
-      (remoteGirisTamamMi() ? '<span class="ust-bar-hesap"><span class="muted">' + escapeHtml(remoteAuth.username) + '</span></span>' : '') +
-      '</div>';
 
     var html = ustBar + '<div class="card" style="margin-top:14px">';
 
@@ -6007,9 +6043,15 @@ function pratikEnIyiHtml(konu, modulKey) {
     }
     else if (action === "klasik-soru-ac") {
       klasikKaynak = VIEW === "klasikKontrol" ? "kontrol" : VIEW === "klasikDusukOncelik" ? "dusuk" : "konular";
-      var grup = klasikGruplar(klasikKaynak).find(function (g) { return g.key === t.getAttribute("data-grup"); });
-      if (!grup) return;
-      klasikCalismaNos = grup.questions.map(function (q) { return q.no; });
+      var dataGrup = t.getAttribute("data-grup");
+      if (dataGrup === "arama") {
+        var sonuclar = klasikAramaSonuclari();
+        klasikCalismaNos = sonuclar.map(function (q) { return q.no; });
+      } else {
+        var grup = klasikGruplar(klasikKaynak).find(function (g) { return g.key === dataGrup; });
+        if (!grup) return;
+        klasikCalismaNos = grup.questions.map(function (q) { return q.no; });
+      }
       klasikSoruIndex = klasikCalismaNos.indexOf(t.getAttribute("data-no"));
       if (klasikSoruIndex < 0) return;
       VIEW = "klasikCalisma";
@@ -6300,6 +6342,19 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "pratik-listeye-don") pratikListeyeDon();
   });
   document.addEventListener("input", function (e) {
+    if (e.target && e.target.matches && e.target.matches("[data-klasik-arama]")) {
+      klasikArama = e.target.value;
+      var selStart = e.target.selectionStart;
+      var selEnd = e.target.selectionEnd;
+      render();
+      var input = document.querySelector("[data-klasik-arama]");
+      if (input) {
+        input.focus();
+        if (typeof selStart === "number" && typeof selEnd === "number") {
+          try { input.setSelectionRange(selStart, selEnd); } catch (_) {}
+        }
+      }
+    }
     if (e.target && e.target.matches && e.target.matches("[data-klasik-feedback]")) {
       var soru = klasikGuncelSoru();
       var d = soru && klasikSoruDurumu[soru.no];
@@ -6314,6 +6369,12 @@ function pratikEnIyiHtml(konu, modulKey) {
     }
     if (e.target && e.target.id === "deneme-username-input") denemeIsimTaslak = e.target.value;
     if (e.target && e.target.id === "deneme-pin-input") denemePinTaslak = e.target.value;
+  });
+  document.addEventListener("search", function (e) {
+    if (e.target && e.target.matches && e.target.matches("[data-klasik-arama]")) {
+      klasikArama = e.target.value;
+      render();
+    }
   });
   document.addEventListener("change", function (e) {
     if (e.target && e.target.id === "excel-file-input" && e.target.files && e.target.files[0]) {

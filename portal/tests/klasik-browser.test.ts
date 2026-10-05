@@ -1,6 +1,9 @@
 // Failure paths: topic/control cards, collapsed categories and counters, study navigation/back,
 // mark persistence/removal/rollback, unanswered/no-clue rendering, freshness note, feedback
-// empty/submission/error preservation, control grouping for every account, empty daily card, reset and mobile overflow.
+// empty/submission/error preservation, control grouping for every account, empty daily card, reset,
+// standard top bar on all sub-screens, search input isolation to topic view, Turkish uppercase/multi-word
+// search matching, empty search notice, category restoration on clear, search result study navigation,
+// focus preservation across consecutive typing, and mobile overflow.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -59,6 +62,15 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
     const screenshot = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
     writeFileSync(new URL('screenshot.png', output), Buffer.from(screenshot.data, 'base64'));
     writeFileSync(new URL('dusuk-oncelik.png', output), Buffer.from(screenshot.data, 'base64'));
+
+    await send('Runtime.evaluate', { expression: 'if (window.__showKonuArama) window.__showKonuArama(); document.getElementById("browser-result").style.display="none";' }, sessionId);
+    const ssKonu = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
+    writeFileSync(new URL('konu-arama.png', output), Buffer.from(ssKonu.data, 'base64'));
+
+    await send('Runtime.evaluate', { expression: 'if (window.__showSoruUstBar) window.__showSoruUstBar(); document.getElementById("browser-result").style.display="none";' }, sessionId);
+    const ssSoru = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
+    writeFileSync(new URL('soru-ust-bar.png', output), Buffer.from(ssSoru.data, 'base64'));
+
     return dom.result.value as string;
   } finally {
     socket?.close();
@@ -79,6 +91,12 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
 // 9. Missing warning notice for incomplete questions (durum === 'kismi').
 // 10. Daily card not reflecting updated seen count ("1 / 5 cevap görüldü") upon returning to tab.
 // 11. Horizontal layout overflow in 390px mobile viewport or 1100px desktop viewport.
+// 12. Standard top bar (home, history, logout buttons and username) missing or back button not integrated inside top bar in "Konu konu bak", "Soru Kontrolü", "Düşük öncelikli", or question screens.
+// 13. Search input appearing on screens other than "Konu konu bak" (e.g. Soru Kontrolü, Düşük öncelikli, question view).
+// 14. Turkish uppercase search (e.g. "İHRACAT") not matching lowercase question text, or multi-word search matching questions lacking any of the words.
+// 15. "Eşleşen soru yok." missing when search produces zero matches, or category groups failing to reappear when search input is cleared.
+// 16. Question opened from search result navigating outside search result set or losing search text on return.
+// 17. Search input losing focus or dropping characters upon consecutive typing.
 for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`, async () => {
   const chrome = [
     process.env.CHROME_PATH,
@@ -107,8 +125,22 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
     try {
       localStorage.clear();
       saveAndPublish = function () { return Promise.resolve(true); };
-      STATE.sadeceDeneme = false;
+      STATE.sadeceDeneme = true;
       remoteAuth = { checked: true, authenticated: true, isActive: true, disclaimerAccepted: true, username: 'klasik_user', isAdmin: false };
+
+      function checkUstBar(geriAction, geriTitle) {
+        var bar = document.querySelector('.ust-bar');
+        check(bar, 'Üst çubuk bulunmalı: ' + geriTitle);
+        check(bar.querySelector('[data-action="go-home"]'), 'Ana sayfa düğmesi bulunmalı: ' + geriTitle);
+        check(bar.querySelector('[data-action="open-history-remote"]'), 'Geçmiş düğmesi bulunmalı: ' + geriTitle);
+        check(bar.querySelector('[data-action="deneme-cikis-yap"]'), 'Çıkış düğmesi bulunmalı: ' + geriTitle);
+        check(bar.textContent.includes('klasik_user'), 'Kullanıcı adı görünmeli: ' + geriTitle);
+        var geriBtn = bar.querySelector('[data-action="' + geriAction + '"]');
+        check(geriBtn, 'Geri düğmesi üst çubukta bulunmalı: ' + geriAction + ' (' + geriTitle + ')');
+        check(geriBtn.textContent.includes('⬅️'), 'Geri düğmesi simgesi ⬅️ olmalı: ' + geriTitle);
+        check(geriBtn.getAttribute('title') === geriTitle, 'Geri düğmesi title ' + geriTitle + ' olmalı: ' + (geriBtn && geriBtn.getAttribute('title')));
+        check(geriBtn.getAttribute('aria-label') === geriTitle, 'Geri düğmesi aria-label ' + geriTitle + ' olmalı: ' + (geriBtn && geriBtn.getAttribute('aria-label')));
+      }
 
       var mockDailyQuestions = [
         {
@@ -174,7 +206,9 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       var allQuestions = mockDailyQuestions.concat([
         { no: 'S6', kategori: 'Hukuk', konu: 'Cevapsız konu', soru: 'Cevapsız soru', durum: 'cevapsiz', kontrol: 'edilecek', guncellikNotu: 'Şimdilik güncel değil', cevap: [], ipuclari: [], seen: false, isaret: null, oncelik: 'normal' },
         { no: 'S7', kategori: 'Hukuk', konu: 'Düşük öncelikli Hukuk 1', soru: 'Düşük soru 1', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Düşük cevap 1' }], ipuclari: [], seen: false, isaret: null, oncelik: 'dusuk' },
-        { no: 'S8', kategori: 'Hukuk', konu: 'Düşük öncelikli Hukuk 2', soru: 'Düşük soru 2', durum: 'tam', kontrol: 'edilecek', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Düşük cevap 2' }], ipuclari: [], seen: false, isaret: null, oncelik: 'dusuk' }
+        { no: 'S8', kategori: 'Hukuk', konu: 'Düşük öncelikli Hukuk 2', soru: 'Düşük soru 2', durum: 'tam', kontrol: 'edilecek', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Düşük cevap 2' }], ipuclari: [], seen: false, isaret: null, oncelik: 'dusuk' },
+        { no: 'S9', kategori: 'Kambiyo', konu: 'İhracat rejim kararı', soru: 'ihracat işlemlerinde kullanılan gümrük beyannamesi şartları nelerdir?', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'İhracat belgeleri' }], ipuclari: [], seen: false, isaret: null, oncelik: 'normal' },
+        { no: 'S10', kategori: 'Kredi', konu: 'İhracat kredi limitleri', soru: 'ihracat reeskont kredisi teminat şartları nelerdir?', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Reeskont kredisi' }], ipuclari: [], seen: false, isaret: null, oncelik: 'normal' }
       ]);
       mockDailyQuestions[1].guncellikNotu = 'Güncellenecek bilgi';
       var feedbackRequests = [], markFailure = false, feedbackFailure = false;
@@ -223,6 +257,8 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       // 3. Başla düğmesine bas
       click('[data-action="start-klasik"]');
       check(VIEW === 'klasikCalisma', 'Çalışma ekranına geçilmeli');
+      checkUstBar('open-klasik', 'Klasik Sorular');
+      check(!document.querySelector('input[type="search"][data-klasik-arama]'), 'Arama alanı soru ekranında olmamalı');
       check(document.querySelector('.card').textContent.includes('Soru 1 / 5'), 'İlk soru "Soru 1 / 5" olmalı');
       check(document.querySelector('.card').textContent.includes('Hukuk'), 'İlk sorunun kategorisi Hukuk olmalı');
       check(document.querySelector('.card').textContent.includes('Ticaret Kanununa göre'), 'İlk sorunun metni görünmeli');
@@ -280,6 +316,90 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(document.querySelector('[data-action="open-klasik-kontrol"]'), 'Non-admin control card visible');
       click('[data-action="open-klasik-konular"]');
       await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasikKonular', 'Görünüm klasikKonular olmalı');
+      checkUstBar('open-klasik', 'Klasik Sorular');
+      check(document.querySelector('input[type="search"][data-klasik-arama]'), 'Arama alanı yalnız Konu konu bak ekranında olmalı');
+
+      // Arama testleri:
+      // A1. Türkçe büyük harfli arama ("İHRACAT" -> küçük harfli "ihracat" ile eşleşir)
+      var aramaInput = document.querySelector('input[type="search"][data-klasik-arama]');
+      check(aramaInput, 'Arama alanı bulunmalı');
+      aramaInput.value = 'İHRACAT';
+      aramaInput.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 0));
+      var sonuclar = document.querySelectorAll('[data-action="klasik-soru-ac"]');
+      check(sonuclar.length === 2, 'İHRACAT araması 2 soru getirmeli (S9 ve S10)');
+      check(document.body.textContent.includes('2 soru bulundu'), '"2 soru bulundu" satırı görünmeli');
+      check(!document.querySelector('[data-action="klasik-grup"]'), 'Arama doluyken kategori grupları gizlenmeli');
+
+      // A2. İki kelimelik arama (yalnız ikisini de içeren listelenir)
+      aramaInput = document.querySelector('input[type="search"][data-klasik-arama]');
+      aramaInput.value = 'İHRACAT BEYANNAME';
+      aramaInput.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 0));
+      sonuclar = document.querySelectorAll('[data-action="klasik-soru-ac"]');
+      check(sonuclar.length === 1 && sonuclar[0].getAttribute('data-no') === 'S9', 'İki kelimelik arama yalnız ikisini de içeren S9 sorusunu getirmeli');
+      check(document.body.textContent.includes('1 soru bulundu'), '"1 soru bulundu" satırı görünmeli');
+
+      // A3. Eşleşme yokken "Eşleşen soru yok." görünür
+      aramaInput = document.querySelector('input[type="search"][data-klasik-arama]');
+      aramaInput.value = 'İHRACAT ENFLASYON';
+      aramaInput.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.body.textContent.includes('Eşleşen soru yok.'), '"Eşleşen soru yok." görünmeli');
+      check(document.querySelectorAll('[data-action="klasik-soru-ac"]').length === 0, 'Eşleşme yokken satır olmamalı');
+
+      // A4. Arama silinince kategori grupları geri gelir
+      aramaInput = document.querySelector('input[type="search"][data-klasik-arama]');
+      aramaInput.value = '';
+      aramaInput.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelectorAll('[data-action="klasik-grup"]').length > 0, 'Arama temizlenince kategori grupları geri gelmeli');
+
+      // A5. Arama sonucundan açılan soruda ileri/geri yalnız sonuçlar arasında gezinir; geri dönüşte arama metni korunur
+      aramaInput = document.querySelector('input[type="search"][data-klasik-arama]');
+      aramaInput.value = 'İHRACAT';
+      aramaInput.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 0));
+      measureLayout('konu-arama');
+      click('[data-action="klasik-soru-ac"][data-no="S9"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasikCalisma', 'Arama sonucundan soru ekranı açılmalı');
+      checkUstBar('klasik-geri', 'Konu konu bak');
+      check(!document.querySelector('input[type="search"][data-klasik-arama]'), 'Soru ekranında arama alanı olmamalı');
+      check(document.querySelector('.card').textContent.includes('Soru 1 / 2'), 'İki arama sonucu arasında gezinir: Soru 1 / 2');
+      check(document.querySelector('[data-action="klasik-onceki"]').disabled, 'İlk sonuçta Önceki devre dışı');
+      click('[data-action="klasik-sonraki"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('.card').textContent.includes('Soru 2 / 2'), 'İkinci sonuca geçer: Soru 2 / 2');
+      check(document.querySelector('[data-action="klasik-sonraki"]').disabled, 'Son sonuçta Sonraki devre dışı');
+      click('[data-action="klasik-geri"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasikKonular', 'Geri dönüş Konu konu bak ekranına dönmeli');
+      aramaInput = document.querySelector('input[type="search"][data-klasik-arama]');
+      check(aramaInput && aramaInput.value === 'İHRACAT', 'Geri dönüşte arama metni korunmalı');
+      check(document.querySelectorAll('[data-action="klasik-soru-ac"]').length === 2, 'Geri dönüşte arama sonuçları korunmalı');
+
+      // A6. İki karakter art arda yazıldığında odak arama alanında kalır ve alanın değeri iki karakterdir
+      aramaInput.focus();
+      aramaInput.value = 'k';
+      aramaInput.setSelectionRange(1, 1);
+      aramaInput.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.activeElement && document.activeElement.matches('[data-klasik-arama]'), 'İlk harften sonra odak arama alanında kalmalı');
+      var activeEl = document.activeElement;
+      activeEl.value = 'kr';
+      activeEl.setSelectionRange(2, 2);
+      activeEl.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.activeElement && document.activeElement.matches('[data-klasik-arama]'), 'İkinci harften sonra odak arama alanında kalmalı');
+      check(document.activeElement.value === 'kr', 'Arama alanının değeri iki karakter ("kr") olmalı');
+
+      // Aramayı sıfırla ve kategori grubuna geç
+      document.activeElement.value = '';
+      document.activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 0));
+
       var group = document.querySelector('[data-grup="Hukuk"]');
       check(group && group.getAttribute('aria-expanded') === 'false', 'Category collapsed');
       check(group.textContent.includes('4 soru'), 'Category count (includes normal and dusuk in topic list)');
@@ -287,6 +407,7 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       click('[data-action="klasik-soru-ac"][data-no="S1"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       check(document.querySelector('.klasik-cevap'), 'Shared study state');
+      checkUstBar('klasik-geri', 'Konu konu bak');
       click('[data-action="klasik-mark"][data-isaret="sari"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       check(document.querySelector('[data-isaret="sari"]').getAttribute('aria-pressed') === 'true', 'Yellow selected');
@@ -330,12 +451,18 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(remoteAuth.isAdmin === false, 'Control opened by non-admin account');
       click('[data-action="open-klasik-kontrol"]');
       await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasikKontrol', 'Görünüm klasikKontrol olmalı');
+      checkUstBar('open-klasik', 'Klasik Sorular');
+      check(!document.querySelector('input[type="search"][data-klasik-arama]'), 'Arama alanı Soru Kontrolü ekranında olmamalı');
       var groups = document.querySelectorAll('[data-action="klasik-grup"]');
       check(groups.length === 3, 'Three control sections');
-      check(groups[0].textContent.includes('1 soru') && groups[1].textContent.includes('4 soru') && groups[2].textContent.includes('1 soru'), 'Control counts');
+      check(groups[0].textContent.includes('3 soru') && groups[1].textContent.includes('4 soru') && groups[2].textContent.includes('1 soru'), 'Control counts');
       click('[data-grup="edilecek"]');
       click('[data-no="S2"]');
       await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasikCalisma', 'Kontrol soru ekranı açılmalı');
+      checkUstBar('klasik-geri', 'Soru Kontrolü');
+      check(!document.querySelector('input[type="search"][data-klasik-arama]'), 'Arama alanı kontrol soru ekranında olmamalı');
       check(document.querySelector('.card').textContent.includes('⚠ Güncellenecek bilgi'), 'Answered freshness');
       click('[data-action="klasik-sonraki"]');
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -357,6 +484,8 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       click('[data-action="open-klasik-dusuk-oncelik"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       check(VIEW === 'klasikDusukOncelik', 'Görünüm klasikDusukOncelik olmalı');
+      checkUstBar('open-klasik', 'Klasik Sorular');
+      check(!document.querySelector('input[type="search"][data-klasik-arama]'), 'Arama alanı Düşük öncelikli ekranında olmamalı');
       check(document.querySelector('.section-title').textContent.includes('Düşük öncelikli'), 'Başlık Düşük öncelikli olmalı');
       var dusukGruplar = document.querySelectorAll('[data-action="klasik-grup"]');
       check(dusukGruplar.length === 1, 'Sorusu kalmayan kategori grubu gösterilmez (yalnız Hukuk)');
@@ -370,6 +499,8 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       click('[data-action="klasik-soru-ac"][data-no="S7"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       check(VIEW === 'klasikCalisma', 'Çalışma ekranı açılmalı');
+      checkUstBar('klasik-geri', 'Düşük öncelikli');
+      check(!document.querySelector('input[type="search"][data-klasik-arama]'), 'Arama alanı soru ekranında olmamalı');
       check(document.querySelector('.card').textContent.includes('Soru 1 / 2'), 'Yalnız düşük sorular arasında gezinir (Soru 1 / 2)');
       check(document.querySelector('.card').textContent.includes('Düşük soru 1'), 'S7 soru metni');
       click('[data-action="klasik-sonraki"]');
@@ -380,6 +511,19 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       click('[data-action="klasik-geri"]');
       check(VIEW === 'klasikDusukOncelik', 'Geri dönüş Düşük öncelikli ekranına döner');
       measureLayout('dusuk-oncelik');
+
+      window.__showKonuArama = function () {
+        VIEW = 'klasikKonular';
+        klasikArama = 'İHRACAT';
+        render();
+      };
+      window.__showSoruUstBar = function () {
+        VIEW = 'klasikCalisma';
+        klasikKaynak = 'konular';
+        klasikSoruIndex = 0;
+        klasikCalismaNos = ['S9', 'S10'];
+        render();
+      };
 
       // Ekran görüntüsü için Düşük öncelikli ekranı açık tutulur
       render();
