@@ -155,7 +155,7 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       remoteBankLoaded = true;
       VIEW = 'menuDeneme'; render();
       var homeTabs = document.querySelector('[role="tablist"][aria-label="Ana sayfa bölümleri"]');
-      check(homeTabs && homeTabs.querySelectorAll('[role="tab"]').length === 2, 'Ana sayfada iki sekme');
+      check(homeTabs && homeTabs.querySelectorAll('[role="tab"]').length === 3, 'Ana sayfada üç sekme');
       check(homeTabs.querySelector('[aria-selected="true"]').textContent === 'Deneme', 'İlk açılış Deneme sekmesi');
       check(!document.querySelector('[data-action="start-flash"]') && !document.querySelector('[data-action="start-yanlis-tekrar-test"]'), 'Genel çalışma seçenekleri Deneme sekmesinden taşındı');
       check(!document.querySelector('[data-action="start-hatirlatici-test"]'), 'Hatırlatıcı kartı Deneme sekmesinden taşındı');
@@ -213,7 +213,7 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       document.querySelector('[role="tab"][aria-selected="true"]').focus();
       document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true}));
       check(VIEW === 'menuDeneme' && document.activeElement.textContent === 'Deneme', 'Klavye ile Deneme sekmesine geçiş ve odak');
-      document.dispatchEvent(new KeyboardEvent('keydown',{key:'End',bubbles:true}));
+      document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));
       check(VIEW === 'denemeKonuSec' && document.activeElement.textContent === 'Konu Konu Bak', 'Klavye ile konu sekmesine geçiş ve odak');
       STATE.sadeceDeneme = true;
       remoteBankLoaded = false;

@@ -231,3 +231,27 @@ export const userSessions = pgTable('user_sessions', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [index('user_sessions_user_idx').on(table.userId)]);
+
+export type KlasikCevapOgesi =
+  | { tur: 'baslik'; metin: string }
+  | { tur: 'paragraf'; metin: string }
+  | { tur: 'madde'; metin: string }
+  | { tur: 'tablo'; satirlar: string[][] };
+
+export const klasikSorular = pgTable('klasik_sorular', {
+  no: text('no').primaryKey(),
+  sira: integer('sira').notNull(),
+  kategori: text('kategori').notNull(),
+  soru: text('soru').notNull(),
+  durum: text('durum').notNull(),
+  cevap: jsonb('cevap').$type<KlasikCevapOgesi[]>().notNull(),
+  ipuclari: jsonb('ipuclari').$type<string[]>().notNull(),
+  version: text('version').notNull(),
+});
+
+export const klasikGorulme = pgTable('klasik_gorulme', {
+  userId: text('user_id').notNull(),
+  soruNo: text('soru_no').notNull(),
+  gorulmeZamani: timestamp('gorulme_zamani', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [unique('klasik_gorulme_user_soru_unique').on(table.userId, table.soruNo)]);
+

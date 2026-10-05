@@ -182,3 +182,24 @@ export function shuffleQuestionOptions(question: BankQuestion, random: () => num
     correctIndex: options.findIndex((item) => item.index === question.correctIndex),
   };
 }
+
+export function klasikDailySeed(day: string, secret = process.env.PIN_ENCRYPTION_KEY ?? '') {
+  return createHmac('sha256', secret).update(`gunun-klasik:${day}`).digest().readUInt32BE(0);
+}
+
+export function selectKlasikQuestions<T extends { no: string; sira: number; kategori: string }>(
+  questions: T[],
+  seed: number,
+): T[] {
+  const random = mulberry32(seed);
+  const categories = [...new Set(questions.map((q) => q.kategori))].sort((a, b) => a.localeCompare(b, 'tr'));
+  const pickedCategories = shuffled(categories, random).slice(0, 5);
+  const pickedQuestions = pickedCategories.map((cat) => {
+    const catQuestions = questions
+      .filter((q) => q.kategori === cat)
+      .sort((a, b) => a.sira - b.sira || a.no.localeCompare(b.no));
+    const idx = Math.floor(random() * catQuestions.length);
+    return catQuestions[idx];
+  }).filter((q): q is T => Boolean(q));
+  return pickedQuestions.sort((a, b) => a.kategori.localeCompare(b.kategori, 'tr'));
+}

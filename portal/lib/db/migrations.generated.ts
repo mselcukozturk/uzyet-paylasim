@@ -81,4 +81,8 @@ export const MIGRATIONS: readonly Migration[] = [
     name: "0018_third_daily_exam.sql",
     content: "ALTER TABLE daily_exams DROP CONSTRAINT IF EXISTS daily_exams_number_check;\nALTER TABLE daily_exams ADD CONSTRAINT daily_exams_number_check CHECK (number IN (1, 2, 3));\n",
   },
+  {
+    name: "0019_klasik_sorular.sql",
+    content: "CREATE TABLE IF NOT EXISTS \"klasik_sorular\" (\n  \"no\" text PRIMARY KEY NOT NULL,\n  \"sira\" integer NOT NULL,\n  \"kategori\" text NOT NULL,\n  \"soru\" text NOT NULL,\n  \"durum\" text NOT NULL,\n  \"cevap\" jsonb NOT NULL,\n  \"ipuclari\" jsonb NOT NULL,\n  \"version\" text NOT NULL\n);--> statement-breakpoint\nCREATE TABLE IF NOT EXISTS \"klasik_gorulme\" (\n  \"user_id\" text NOT NULL,\n  \"soru_no\" text NOT NULL,\n  \"gorulme_zamani\" timestamp with time zone DEFAULT now() NOT NULL,\n  CONSTRAINT \"klasik_gorulme_user_soru_unique\" UNIQUE (\"user_id\", \"soru_no\")\n);\n",
+  },
 ];

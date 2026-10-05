@@ -189,4 +189,6 @@ export type ExamApiRequest =
   | { action: 'wrong-question-answer'; questionGuid: string; selectedAnswer: string }
   | { action: 'flags' }
   | { action: 'bank' }
-  | { action: 'corrections' };
+  | { action: 'corrections' }
+  | { action: 'klasik-daily' }
+  | { action: 'klasik-seen'; no: string };

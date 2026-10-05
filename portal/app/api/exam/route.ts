@@ -18,6 +18,8 @@ import {
   selectExamQuestions,
   shouldApplyAttemptStats,
   shuffleQuestionOptions,
+  klasikDailySeed,
+  selectKlasikQuestions,
   type BankQuestion,
   type ExamMode,
 } from '@/lib/exam-core';
@@ -939,6 +941,42 @@ async function handlePost(request: Request) {
         })),
         stats,
       } satisfies StudyBankResponse);
+    }
+
+    if (body.action === 'klasik-daily') {
+      const day = dailyExamDay();
+      const seed = klasikDailySeed(day);
+      const rows = await db.select().from(schema.klasikSorular);
+      const selected = selectKlasikQuestions(rows, seed);
+      const seenRows = await db.select({ soruNo: schema.klasikGorulme.soruNo })
+        .from(schema.klasikGorulme)
+        .where(eq(schema.klasikGorulme.userId, user.id));
+      const seenSet = new Set(seenRows.map((r) => r.soruNo));
+      return NextResponse.json({
+        day,
+        questions: selected.map((q) => ({
+          no: q.no,
+          kategori: q.kategori,
+          soru: q.soru,
+          durum: q.durum,
+          cevap: q.cevap,
+          ipuclari: q.ipuclari,
+          seen: seenSet.has(q.no),
+        })),
+      });
+    }
+
+    if (body.action === 'klasik-seen') {
+      if (typeof body.no !== 'string' || !body.no.trim()) return fail('Soru no eksik.', 400);
+      const [exists] = await db.select({ no: schema.klasikSorular.no })
+        .from(schema.klasikSorular)
+        .where(eq(schema.klasikSorular.no, body.no)).limit(1);
+      if (!exists) return fail('Soru bulunamadı.', 400);
+      await db.insert(schema.klasikGorulme).values({
+        userId: user.id,
+        soruNo: body.no,
+      }).onConflictDoNothing();
+      return NextResponse.json({ ok: true });
     }
 
     if (body.action === 'study-seen') {
