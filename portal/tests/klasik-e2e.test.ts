@@ -30,6 +30,10 @@ const nodeRequire = createRequire(import.meta.url);
 // 9. klasik-seen with non-existent 'no' returns 400.
 // 10. klasik-seen updates seen status only for the requesting user, idempotent on conflict.
 // 11. Re-sync of questions preserves existing klasik_gorulme user progress records.
+// 12. klasik-daily düşük öncelikli soruları seçmez:
+//     - bir kategorinin tüm cevaplı soruları düşükse o kategori günün sorularında yer almaz,
+//     - karışık havuzda en az 60 farklı günde hiçbir düşük soru seçilmez,
+//     - tüm cevaplı sorular düşükse hata vermeden boş soru listesi döner.
 test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', async () => {
   const pg = new PGlite();
   try {
@@ -52,6 +56,7 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
 
     const db = drizzle(pg);
     let currentProfile: any = null;
+    let currentDay: string | null = null;
 
     const modules: Record<string, unknown> = {
       'next/server': {
@@ -66,7 +71,10 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
       },
       'drizzle-orm': orm,
       '@/lib/db': { getDb: () => db, schema },
-      '@/lib/exam-core': examCore,
+      '@/lib/exam-core': {
+        ...examCore,
+        dailyExamDay: (now?: Date) => currentDay ?? examCore.dailyExamDay(now),
+      },
       '@/lib/practice-core': practiceCore,
       '@/data/bank-corrections.json': [],
       '@/lib/auth/session': {
@@ -338,10 +346,52 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     assert.equal(unanswered.isaret, null);
     const filteredDaily = await (await sendExam({ action: 'klasik-daily' })).json();
     assert.ok(filteredDaily.questions.every((q: any) => q.durum !== 'cevapsiz' && 'konu' in q && 'guncellikNotu' in q && 'isaret' in q));
-    assert.ok(filteredDaily.questions.every((q: any) => q.no !== 'S16'), 'Düşük öncelikli soru günün sorularına girmemeli');
+    // 12. Düşük öncelikli sorular Günün Soruları havuzuna girmez
+    // 12a. Bir kategorinin tüm cevaplı soruları 'dusuk' iken o kategori günün sorularında hiç yer almaz
+    const hukukTumCevapliDusuk = extended.map(q => q.kategori === 'Hukuk' && q.durum !== 'cevapsiz' ? { ...q, oncelik: 'dusuk' } : q);
+    assert.equal((await sendSync(JSON.stringify({ questions: hukukTumCevapliDusuk }))).status, 200);
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(Date.UTC(2026, 9, 6 + i));
+      currentDay = d.toISOString().slice(0, 10);
+      const res = await (await sendExam({ action: 'klasik-daily' })).json();
+      assert.equal(res.questions.length, 5);
+      assert.ok(
+        res.questions.every((q: any) => q.kategori !== 'Hukuk'),
+        `Tüm cevaplı soruları düşük olan Hukuk kategorisi günün sorularına seçilmemeli (${currentDay})`
+      );
+    }
+
+    // 12b. Düşük ve normal sorular karışıkken, en az 60 farklı tarih için klasik-daily yanıtında hiçbir 'dusuk' soru bulunmaz
+    const mixedDusukNos = new Set(['S1', 'S3', 'S5', 'S7', 'S9', 'S11', 'S13', 'S16']);
+    const mixedQuestions = extended.map(q => ({
+      ...q,
+      oncelik: mixedDusukNos.has(q.no) ? 'dusuk' : 'normal',
+    }));
+    assert.equal((await sendSync(JSON.stringify({ questions: mixedQuestions }))).status, 200);
+    for (let i = 0; i < 60; i++) {
+      const d = new Date(Date.UTC(2026, 9, 6 + i));
+      currentDay = d.toISOString().slice(0, 10);
+      const res = await (await sendExam({ action: 'klasik-daily' })).json();
+      assert.equal(res.questions.length, 5);
+      for (const q of res.questions) {
+        assert.ok(
+          !mixedDusukNos.has(q.no),
+          `Düşük öncelikli soru ${q.no} günün sorularına seçilmemeli (${currentDay})`
+        );
+      }
+    }
+
+    // 12c. Tüm cevaplı sorular 'dusuk' ise yanıt boş soru listesi döner ve hata vermez
     assert.equal((await sendSync(JSON.stringify({ questions: extended.map(q => ({ ...q, oncelik: 'dusuk' })) }))).status, 200);
-    assert.equal((await (await sendExam({ action: 'klasik-daily' })).json()).questions.length, 0, 'Tüm sorular düşük öncelikliyken günün soruları boş olmalı');
+    const allDusukRes = await sendExam({ action: 'klasik-daily' });
+    assert.equal(allDusukRes.status, 200, 'Tüm sorular düşükken istek 200 dönmeli');
+    const allDusukData = await allDusukRes.json();
+    assert.equal(Array.isArray(allDusukData.questions), true);
+    assert.equal(allDusukData.questions.length, 0, 'Tüm sorular düşük öncelikliyken günün soruları boş olmalı');
+
+    // Durumu geri yükle
     assert.equal((await sendSync(extendedPayload)).status, 200);
+    currentDay = null;
     for (const no of ['S999', '']) assert.equal((await sendExam({ action: 'klasik-mark', no, isaret: 'sari' })).status, 400);
     for (const isaret of ['gecersiz', 5, undefined]) assert.equal((await sendExam({ action: 'klasik-mark', no: 'S1', isaret })).status, 400);
     assert.equal((await sendExam({ action: 'klasik-mark', no: 'S1', isaret: 'sari' })).status, 200);
