@@ -5318,5 +5318,68 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "07 Diğer Konular/Genel Ekonomi — Güncelleme Karşılaştırması (Ağu 2026).md, A. Türkiye Makro Göstergeleri, satır 21",
   "tarihISO": "2026-10-04T23:10:21.700421+00:00"
+ },
+ {
+  "id": "gece-20261006-f66caffe38a6",
+  "guid": "f66caffe38a6",
+  "konu": "Ürünler",
+  "soru": "Hızlı Refinansman (HIZIR) ile Ödeme için aşağıdakilerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "02 Ürünlerimiz/Ürünlerimiz YYS 2026.pdf s.89-90",
+  "tarihISO": "2026-10-05T23:25:14.960337+00:00"
+ },
+ {
+  "id": "gece-20261006-6cc39889bbf5",
+  "guid": "6cc39889bbf5",
+  "konu": "Kredi",
+  "soru": "Hızlı Ticari Kredi uygulaması kapsamında müşterilere azami ne kadar limitle KTMH tanımlanabilir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026 s.153",
+  "tarihISO": "2026-10-05T23:25:14.960337+00:00"
+ },
+ {
+  "id": "gece-20261006-590665ca19c1",
+  "guid": "590665ca19c1",
+  "konu": "Hukuk",
+  "soru": "Anonim şirketlerde asgari esas sermaye tutarı en az kaç TL olabilir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "01 Hukuk/Hukuk_TKR_2026.pdf s.147",
+  "tarihISO": "2026-10-05T23:25:14.960337+00:00"
+ },
+ {
+  "id": "gece-20261006-ec5ceea5dc61",
+  "guid": "ec5ceea5dc61",
+  "konu": "Genel Ekonomi",
+  "soru": "Aşağıda verilen özür izinleri / gün eşleşmelerinden hangisi/hangileri doğrudur?\n• Evlilik / 7 iş günü\n• Çocuğun evlenmesi / 2 iş günü\n• Eşin doğum yapması / 7 iş günü",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "UZYET İK NOTU s. 2",
+  "tarihISO": "2026-10-05T23:25:14.960337+00:00"
+ },
+ {
+  "id": "gece-20261006-ce534ab1db02",
+  "guid": "ce534ab1db02",
+  "konu": "Genel Ekonomi",
+  "soru": "Aşağıdaki işlemlerden hangisi için Disiplin Kurulu kararına gerek yoktur?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "07 Diğer Konular/UZYET İK NOTU.pdf s.4",
+  "tarihISO": "2026-10-05T23:25:14.960337+00:00"
+ },
+ {
+  "id": "gece-20261006-353cf6bf2626",
+  "guid": "353cf6bf2626",
+  "konu": "Genel Ekonomi",
+  "soru": "2026 yılı Ocak-Haziran döneminde Türkiye'nin toplam ithalatı içindeki payı aşağıdaki ülkelerden hangisinde en düşüktür?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "TÜİK, Dış Ticaret İstatistikleri, Haziran 2026; Anadolu Ajansı, Türkiye'nin ihracatı haziranda geçen yılın aynı ayına göre yüzde 21,7 arttı, 31.07.2026, Almanya ihracatta, Çin ithalatta ilk sırada bölümü; erişim ve kontrol: 06.10.2026.",
+  "tarihISO": "2026-10-05T23:25:14.960337+00:00"
+ },
+ {
+  "id": "gece-20261006-1a8573fc6622",
+  "guid": "1a8573fc6622",
+  "konu": "Genel Ekonomi",
+  "soru": "Ağustos 2026 itibarıyla Türkiye'de yıllık TÜFE artışı kaçtır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "TÜİK Tüketici Fiyat Endeksi, Ağustos 2026 (Milliyet / Uzmanpara, 03.09.2026)",
+  "tarihISO": "2026-10-05T23:25:14.960337+00:00"
  }
 ]
