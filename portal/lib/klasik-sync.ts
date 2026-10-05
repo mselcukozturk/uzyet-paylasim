@@ -42,12 +42,18 @@ export function parseKlasikSync(sourceText: string) {
       throw new Error(`Eksik kategori veya soru: satır ${i + 1}`);
     }
 
+    const konu = text(item.konu);
+    const kontrol = text(item.kontrol);
+    if (!konu) throw new Error(`Eksik konu: satır ${i + 1}`);
+    if (kontrol !== 'edildi' && kontrol !== 'edilecek') throw new Error(`Geçersiz kontrol: satır ${i + 1}`);
+    if (typeof item.guncellikNotu !== 'string') throw new Error(`Geçersiz güncellik notu: satır ${i + 1}`);
+    const guncellikNotu = item.guncellikNotu.trim();
     const durum = text(item.durum);
-    if (durum !== 'tam' && durum !== 'kismi') {
-      throw new Error(`Geçersiz durum: satır ${i + 1} ('tam' veya 'kismi' olmalı)`);
+    if (durum !== 'tam' && durum !== 'kismi' && durum !== 'cevapsiz') {
+      throw new Error(`Geçersiz durum: satır ${i + 1} ('tam', 'kismi' veya 'cevapsiz' olmalı)`);
     }
 
-    if (!Array.isArray(item.cevap) || item.cevap.length === 0) {
+    if (!Array.isArray(item.cevap) || (durum !== 'cevapsiz' && item.cevap.length === 0)) {
       throw new Error(`Boş veya geçersiz cevap: satır ${i + 1}`);
     }
 
@@ -74,7 +80,7 @@ export function parseKlasikSync(sourceText: string) {
       throw new Error(`Bilinmeyen cevap türü (${tur}): soru ${i + 1}, öğe ${ci + 1}`);
     });
 
-    if (!Array.isArray(item.ipuclari) || item.ipuclari.length === 0
+    if (!Array.isArray(item.ipuclari)
       || !item.ipuclari.every(ip => typeof ip === 'string' && ip.trim().length > 0)) {
       throw new Error(`Boş veya geçersiz ipuçları: satır ${i + 1}`);
     }
@@ -84,6 +90,9 @@ export function parseKlasikSync(sourceText: string) {
       no,
       sira: i,
       kategori,
+      konu,
+      kontrol,
+      guncellikNotu,
       soru,
       durum,
       cevap,

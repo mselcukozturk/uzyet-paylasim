@@ -1,3 +1,7 @@
+// Failure paths: 0020 must be repeatable; unanswered/no-clue sync accepted; invalid control,
+// empty answered response rejected; daily excludes unanswered; list hides control from non-admin.
+// Unknown question/mark, user mark leakage, duplicate marks, null deletion, invalid feedback,
+// unauthorized feedback administration, processed feedback, re-sync loss, anonymous actions rejected.
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
 import test from 'node:test';
@@ -17,7 +21,7 @@ const nodeRequire = createRequire(import.meta.url);
 // 1. Migration reapplication causing DDL errors or non-idempotency.
 // 2. sync-klasik unauthorized access (missing/wrong FLAGS_EXPORT_TOKEN -> 401).
 // 3. sync-klasik malformed payloads: non-JSON, empty questions array, duplicate 'no', invalid 'no' format,
-//    missing kategori/soru, invalid durum (not 'tam'|'kismi'), invalid cevap öğesi türleri, empty ipuclari -> 400.
+//    missing kategori/soru, invalid durum (not 'tam'|'kismi'|'cevapsiz'), invalid cevap öğesi türleri, empty clue item -> 400.
 // 4. sync-klasik version calculation and skipping re-insert when the same payload is sent twice.
 // 5. klasik-daily unauthenticated / unapproved access rejected (401 / 403).
 // 6. klasik-daily returns 5 questions from 5 distinct categories, ordered alphabetically by category.
@@ -38,6 +42,7 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     const migration0019 = new URL('../drizzle/0019_klasik_sorular.sql', import.meta.url);
     assert.ok(existsSync(migration0019), '0019_klasik_sorular.sql migration dosyası mevcut olmalı');
     await pg.exec(readFileSync(migration0019, 'utf8'));
+    await pg.exec(readFileSync(new URL('../drizzle/0020_klasik_isaret_ve_geri_bildirim.sql', import.meta.url), 'utf8'));
 
     await pg.exec(`insert into profiles(user_id,username,is_active,is_admin,disclaimer_accepted_at)
       values ('u1','kullanici1',true,false,now()),
@@ -132,37 +137,37 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     assert.equal(malformed2.status, 400, 'Boş questions dizisi 400 dönmeli');
 
     const malformed3 = await sendSync(JSON.stringify({
-      questions: [{ no: 'X1', kategori: 'Hukuk', soru: 'Soru 1', durum: 'tam', cevap: [{ tur: 'paragraf', metin: 'm' }], ipuclari: ['ip1'] }],
+      questions: [{ no: 'X1', kategori: 'Hukuk', konu: 'Konu', kontrol: 'edilecek', guncellikNotu: '', soru: 'Soru 1', durum: 'tam', cevap: [{ tur: 'paragraf', metin: 'm' }], ipuclari: ['ip1'] }],
     }));
     assert.equal(malformed3.status, 400, 'no regex ^S\\d+$ uymazsa 400 dönmeli');
 
     const malformed4 = await sendSync(JSON.stringify({
       questions: [
-        { no: 'S1', kategori: 'Hukuk', soru: 'Soru 1', durum: 'tam', cevap: [{ tur: 'paragraf', metin: 'm' }], ipuclari: ['ip1'] },
-        { no: 'S1', kategori: 'Kredi', soru: 'Soru 2', durum: 'tam', cevap: [{ tur: 'paragraf', metin: 'm' }], ipuclari: ['ip2'] },
+        { no: 'S1', kategori: 'Hukuk', konu: 'Konu', kontrol: 'edilecek', guncellikNotu: '', soru: 'Soru 1', durum: 'tam', cevap: [{ tur: 'paragraf', metin: 'm' }], ipuclari: ['ip1'] },
+        { no: 'S1', kategori: 'Kredi', konu: 'Konu', kontrol: 'edilecek', guncellikNotu: '', soru: 'Soru 2', durum: 'tam', cevap: [{ tur: 'paragraf', metin: 'm' }], ipuclari: ['ip2'] },
       ],
     }));
     assert.equal(malformed4.status, 400, 'Mükerrer soru no 400 dönmeli');
 
     const malformed5 = await sendSync(JSON.stringify({
-      questions: [{ no: 'S1', kategori: 'Hukuk', soru: 'Soru 1', durum: 'bilinmeyen', cevap: [{ tur: 'paragraf', metin: 'm' }], ipuclari: ['ip1'] }],
+      questions: [{ no: 'S1', kategori: 'Hukuk', konu: 'Konu', kontrol: 'edilecek', guncellikNotu: '', soru: 'Soru 1', durum: 'bilinmeyen', cevap: [{ tur: 'paragraf', metin: 'm' }], ipuclari: ['ip1'] }],
     }));
     assert.equal(malformed5.status, 400, 'Geçersiz durum 400 dönmeli');
 
     const malformed6 = await sendSync(JSON.stringify({
-      questions: [{ no: 'S1', kategori: 'Hukuk', soru: 'Soru 1', durum: 'tam', cevap: [], ipuclari: ['ip1'] }],
+      questions: [{ no: 'S1', kategori: 'Hukuk', konu: 'Konu', kontrol: 'edilecek', guncellikNotu: '', soru: 'Soru 1', durum: 'tam', cevap: [], ipuclari: ['ip1'] }],
     }));
     assert.equal(malformed6.status, 400, 'Boş cevap 400 dönmeli');
 
     const malformed7 = await sendSync(JSON.stringify({
-      questions: [{ no: 'S1', kategori: 'Hukuk', soru: 'Soru 1', durum: 'tam', cevap: [{ tur: 'gecersiz', metin: 'm' }], ipuclari: ['ip1'] }],
+      questions: [{ no: 'S1', kategori: 'Hukuk', konu: 'Konu', kontrol: 'edilecek', guncellikNotu: '', soru: 'Soru 1', durum: 'tam', cevap: [{ tur: 'gecersiz', metin: 'm' }], ipuclari: ['ip1'] }],
     }));
     assert.equal(malformed7.status, 400, 'Geçersiz cevap türü 400 dönmeli');
 
     const malformed8 = await sendSync(JSON.stringify({
-      questions: [{ no: 'S1', kategori: 'Hukuk', soru: 'Soru 1', durum: 'tam', cevap: [{ tur: 'paragraf', metin: 'm' }], ipuclari: [] }],
+      questions: [{ no: 'S1', kategori: 'Hukuk', konu: 'Konu', kontrol: 'edilecek', guncellikNotu: '', soru: 'Soru 1', durum: 'tam', cevap: [{ tur: 'paragraf', metin: 'm' }], ipuclari: [''] }],
     }));
-    assert.equal(malformed8.status, 400, 'Boş ipuçları 400 dönmeli');
+    assert.equal(malformed8.status, 400, 'Boş ipucu öğesi 400 dönmeli');
 
     // 3. Geçerli gövde: 7 kategori, kategori başına >= 2 soru, biri kismi, biri tablolu
     const validQuestions = [
@@ -187,7 +192,7 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
       // Kategori 7: Mevzuat
       { no: 'S13', kategori: 'Mevzuat', soru: 'Mevzuat Soru 1', durum: 'tam', cevap: [{ tur: 'paragraf', metin: 'Mev1' }], ipuclari: ['İpucu Mev1'] },
       { no: 'S14', kategori: 'Mevzuat', soru: 'Mevzuat Soru 2', durum: 'tam', cevap: [{ tur: 'paragraf', metin: 'Mev2' }], ipuclari: ['İpucu Mev2'] },
-    ];
+    ].map(q => ({ ...q, konu: q.soru, kontrol: 'edilecek', guncellikNotu: '' }));
     const validPayload = JSON.stringify({ questions: validQuestions });
 
     const syncRes1 = await sendSync(validPayload);
@@ -294,6 +299,71 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     const gorulmeAfterSync = await db.select().from(schema.klasikGorulme);
     assert.equal(gorulmeAfterSync.length, 1, 'Yeniden senkronize olunca klasik_gorulme silinmemeli');
 
+    const extended = [...validQuestions,
+      { no: 'S15', kategori: 'Hukuk', konu: 'Cevapsız konu', soru: 'Cevapsız soru', durum: 'cevapsiz', kontrol: 'edilecek', guncellikNotu: 'Şimdilik güncel değil', cevap: [], ipuclari: [] },
+      { ...validQuestions[0], no: 'S16', kontrol: 'edildi', ipuclari: [], guncellikNotu: 'Güncellenecek bilgi' }];
+    const extendedPayload = JSON.stringify({ questions: extended });
+    assert.equal((await sendSync(extendedPayload)).status, 200);
+    for (const invalid of [{ ...extended[0], cevap: [] }, { ...extended[0], kontrol: 'yanlis' },
+      { ...extended[0], konu: '' }, { ...extended[0], guncellikNotu: 7 }, { ...extended[0], ipuclari: [''] }]) {
+      assert.equal((await sendSync(JSON.stringify({ questions: [invalid] }))).status, 400);
+    }
+    const list = await (await sendExam({ action: 'klasik-list' })).json();
+    assert.equal(list.admin, false);
+    assert.equal(list.questions.length, 16);
+    assert.deepEqual(list.questions.map((q: any) => q.no), extended.map(q => q.no));
+    assert.ok(list.questions.every((q: any) => !('kontrol' in q) && !('cevap' in q) && !('ipuclari' in q)));
+    currentProfile.isAdmin = true;
+    const adminList = await (await sendExam({ action: 'klasik-list' })).json();
+    assert.equal(adminList.admin, true);
+    assert.ok(adminList.questions.every((q: any) => 'kontrol' in q));
+    currentProfile.isAdmin = false;
+    assert.equal((await sendExam({ action: 'klasik-question', no: 'S999' })).status, 400);
+    const unanswered = await (await sendExam({ action: 'klasik-question', no: 'S15' })).json();
+    assert.equal(unanswered.durum, 'cevapsiz');
+    assert.deepEqual(unanswered.cevap, []);
+    assert.deepEqual(unanswered.ipuclari, []);
+    assert.equal(unanswered.guncellikNotu, 'Şimdilik güncel değil');
+    assert.equal(unanswered.isaret, null);
+    const filteredDaily = await (await sendExam({ action: 'klasik-daily' })).json();
+    assert.ok(filteredDaily.questions.every((q: any) => q.durum !== 'cevapsiz' && 'konu' in q && 'guncellikNotu' in q && 'isaret' in q));
+    for (const no of ['S999', '']) assert.equal((await sendExam({ action: 'klasik-mark', no, isaret: 'sari' })).status, 400);
+    for (const isaret of ['gecersiz', 5, undefined]) assert.equal((await sendExam({ action: 'klasik-mark', no: 'S1', isaret })).status, 400);
+    assert.equal((await sendExam({ action: 'klasik-mark', no: 'S1', isaret: 'sari' })).status, 200);
+    assert.equal((await sendExam({ action: 'klasik-mark', no: 'S1', isaret: 'yesil' })).status, 200);
+    assert.equal((await db.select().from(schema.klasikIsaret)).length, 1);
+    currentProfile = { userId: 'u2', username: 'kullanici2', isActive: true };
+    assert.equal((await (await sendExam({ action: 'klasik-question', no: 'S1' })).json()).isaret, null);
+    await sendExam({ action: 'klasik-mark', no: 'S1', isaret: 'kirmizi' });
+    await sendExam({ action: 'klasik-mark', no: 'S1', isaret: null });
+    const remainingMarks = await db.select().from(schema.klasikIsaret);
+    assert.equal(remainingMarks.length, 1);
+    assert.equal(remainingMarks[0].userId, 'u1');
+    for (const metin of ['', '   ', 'x'.repeat(4001), 8]) assert.equal((await sendExam({ action: 'klasik-feedback', no: 'S1', metin })).status, 400);
+    assert.equal((await sendExam({ action: 'klasik-feedback', no: 'S999', metin: 'Bilgi' })).status, 400);
+    assert.equal((await sendExam({ action: 'klasik-feedback', no: 'S1', metin: '  Yeni bilgi  ' })).status, 200);
+    const feedbackRoute = load('../app/api/admin/klasik-feedback/route.ts');
+    const feedbackRequest = (method: string, body?: any, token = 'test-sync-token') => new Request('https://test.invalid/api/admin/klasik-feedback', {
+      method, headers: token ? { authorization: `Bearer ${token}` } : {}, ...(body ? { body: JSON.stringify(body) } : {}),
+    });
+    assert.equal((await feedbackRoute.GET(feedbackRequest('GET', undefined, ''))).status, 401);
+    assert.equal((await feedbackRoute.POST(feedbackRequest('POST', { ids: [] }, ''))).status, 401);
+    const feedbackList = await (await feedbackRoute.GET(feedbackRequest('GET'))).json();
+    assert.equal(feedbackList.items.length, 1);
+    assert.equal(feedbackList.items[0].metin, 'Yeni bilgi');
+    assert.equal(feedbackList.items[0].kullaniciAdi, 'kullanici2');
+    await sendSync(JSON.stringify({ questions: extended.map(q => ({ ...q, soru: q.soru + ' güncel' })) }));
+    assert.equal((await db.select().from(schema.klasikIsaret)).length, 1);
+    assert.equal((await db.select().from(schema.klasikGeriBildirim)).length, 1);
+    assert.equal((await db.select().from(schema.klasikGorulme)).length, 1);
+    const processed = await (await feedbackRoute.POST(feedbackRequest('POST', { ids: [feedbackList.items[0].id] }))).json();
+    assert.deepEqual(processed, { ok: true, updated: 1 });
+    assert.deepEqual((await (await feedbackRoute.GET(feedbackRequest('GET'))).json()).items, []);
+    currentProfile = null;
+    for (const action of ['klasik-list', 'klasik-question', 'klasik-mark', 'klasik-feedback']) {
+      assert.equal((await sendExam({ action, no: 'S1', isaret: 'yesil', metin: 'Bilgi' })).status, 401);
+    }
+
     // Verifiable repeatable artifact
     const outputDir = new URL('../outputs/klasik-e2e/', import.meta.url);
     mkdirSync(outputDir, { recursive: true });
@@ -303,6 +373,12 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
       questionCount: dbRows.length,
       sampleDaily: dailyData1.questions.map((q: any) => ({ no: q.no, kategori: q.kategori })),
       seenRecord: gorulmeRows[0],
+      extendedQuestionCount: extended.length,
+      unansweredQuestion: unanswered,
+      userScopedMark: remainingMarks[0],
+      feedback: feedbackList.items[0],
+      processedFeedback: processed,
+      migration0020Reapplied: true,
     }, null, 2));
 
   } finally {

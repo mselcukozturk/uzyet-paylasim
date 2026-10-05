@@ -242,6 +242,9 @@ export const klasikSorular = pgTable('klasik_sorular', {
   no: text('no').primaryKey(),
   sira: integer('sira').notNull(),
   kategori: text('kategori').notNull(),
+  konu: text('konu').notNull().default(''),
+  kontrol: text('kontrol').notNull().default('edilecek'),
+  guncellikNotu: text('guncellik_notu').notNull().default(''),
   soru: text('soru').notNull(),
   durum: text('durum').notNull(),
   cevap: jsonb('cevap').$type<KlasikCevapOgesi[]>().notNull(),
@@ -254,4 +257,20 @@ export const klasikGorulme = pgTable('klasik_gorulme', {
   soruNo: text('soru_no').notNull(),
   gorulmeZamani: timestamp('gorulme_zamani', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [unique('klasik_gorulme_user_soru_unique').on(table.userId, table.soruNo)]);
+
+export const klasikIsaret = pgTable('klasik_isaret', {
+  userId: text('user_id').notNull(),
+  soruNo: text('soru_no').notNull(),
+  isaret: text('isaret').notNull(),
+  guncellemeZamani: timestamp('guncelleme_zamani', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [unique('klasik_isaret_user_soru_unique').on(table.userId, table.soruNo)]);
+
+export const klasikGeriBildirim = pgTable('klasik_geri_bildirim', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id').notNull(),
+  soruNo: text('soru_no').notNull(),
+  metin: text('metin').notNull(),
+  olusturmaZamani: timestamp('olusturma_zamani', { withTimezone: true }).notNull().defaultNow(),
+  durum: text('durum').notNull().default('bekliyor'),
+});
 

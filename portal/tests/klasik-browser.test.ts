@@ -1,3 +1,6 @@
+// Failure paths: topic/control cards, collapsed categories and counters, study navigation/back,
+// mark persistence/removal/rollback, unanswered/no-clue rendering, freshness note, feedback
+// empty/submission/error preservation, admin grouping, empty daily card, reset and mobile overflow.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -43,6 +46,8 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
     const target = await send('Target.createTarget', { url: 'about:blank' });
     const { sessionId } = await send('Target.attachToTarget', { targetId: target.targetId, flatten: true });
     await send('Emulation.setDeviceMetricsOverride', { width, height: 1000, deviceScaleFactor: 1, mobile: width < 600 }, sessionId);
+    await send('Network.enable', {}, sessionId);
+    await send('Network.setBlockedURLs', { urls: ['http://*', 'https://*'] }, sessionId);
     await send('Page.navigate', { url: pathToFileURL(fileURLToPath(fixture)).href }, sessionId);
     for (let attempt = 0; attempt < 100; attempt++) {
       const value = await send('Runtime.evaluate', { expression: 'Boolean(document.getElementById("browser-result"))', returnByValue: true }, sessionId);
@@ -85,7 +90,12 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
 
   const scenario = `
   (async function () {
-    var checks = [];
+    var checks = [], layoutMeasurements = [];
+    function measureLayout(label) {
+      var scrollWidth = document.documentElement.scrollWidth;
+      layoutMeasurements.push({ screen: label, viewport: innerWidth, scrollWidth: scrollWidth });
+      check(scrollWidth <= innerWidth, 'No horizontal overflow: ' + label);
+    }
     function check(ok, label) { if (!ok) throw new Error(label); checks.push(label); }
     function click(selector) {
       var el = document.querySelector(selector);
@@ -158,6 +168,11 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
         }
       ];
 
+      mockDailyQuestions.forEach(function(q) { q.konu = q.soru; q.isaret = null; q.kontrol = 'edilecek'; q.guncellikNotu = ''; });
+      mockDailyQuestions[0].kontrol = 'edildi';
+      var allQuestions = mockDailyQuestions.concat([{ no: 'S6', kategori: 'Hukuk', konu: 'Cevapsız konu', soru: 'Cevapsız soru', durum: 'cevapsiz', kontrol: 'edilecek', guncellikNotu: 'Şimdilik güncel değil', cevap: [], ipuclari: [], seen: false, isaret: null }]);
+      mockDailyQuestions[1].guncellikNotu = 'Güncellenecek bilgi';
+      var feedbackRequests = [], markFailure = false, feedbackFailure = false;
       var seenRequests = [];
       remoteFetch = function (path, method, body) {
         if (body.action === 'klasik-daily') {
@@ -166,6 +181,10 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
             data: { day: '2026-10-05', questions: mockDailyQuestions }
           });
         }
+        if (body.action === 'klasik-list') return Promise.resolve({ ok: true, data: { questions: allQuestions, admin: remoteAuth.isAdmin } });
+        if (body.action === 'klasik-question') return Promise.resolve({ ok: true, data: Object.assign({}, allQuestions.find(q => q.no === body.no)) });
+        if (body.action === 'klasik-mark') return Promise.resolve({ ok: !markFailure, data: {} });
+        if (body.action === 'klasik-feedback') { feedbackRequests.push(body); return Promise.resolve({ ok: !feedbackFailure, data: {} }); }
         if (body.action === 'klasik-seen') {
           seenRequests.push(body.no);
           return Promise.resolve({ ok: true, data: { ok: true } });
@@ -232,6 +251,7 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(tableEl && tableEl.querySelectorAll('tr').length === 3, 'Tablo ilk satır başlık olmak üzere 3 satır olmalı');
       check(!document.querySelector('[data-action="klasik-cevabi-goster"]'), 'Cevap açılınca düğme yerine cevap durmalı');
 
+      measureLayout('daily-study');
       // 6. Sonraki soruya git (Soru 2)
       click('[data-action="klasik-sonraki"]');
       check(document.querySelector('.card').textContent.includes('Soru 2 / 5'), 'Soru 2 / 5 görünmeli');
@@ -252,12 +272,87 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       cardEl = document.querySelector('.card');
       check(cardEl && cardEl.textContent.includes('1 / 5 cevap görüldü'), 'Kartta 1 / 5 cevap görüldü yazmalı');
 
+      check(!document.querySelector('[data-action="open-klasik-kontrol"]'), 'Non-admin control hidden');
+      click('[data-action="open-klasik-konular"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      var group = document.querySelector('[data-grup="Hukuk"]');
+      check(group && group.getAttribute('aria-expanded') === 'false', 'Category collapsed');
+      check(group.textContent.includes('2 soru'), 'Category count');
+      click('[data-grup="Hukuk"]');
+      click('[data-action="klasik-soru-ac"][data-no="S1"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('.klasik-cevap'), 'Shared study state');
+      click('[data-action="klasik-mark"][data-isaret="sari"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('[data-isaret="sari"]').getAttribute('aria-pressed') === 'true', 'Yellow selected');
+      click('[data-action="klasik-geri"]');
+      group = document.querySelector('[data-grup="Hukuk"]');
+      check(group.getAttribute('aria-expanded') === 'true', 'Open category preserved');
+      check(group.querySelector('[data-sayac="sari"]').textContent.includes('1'), 'Yellow count 1');
+      check(document.querySelector('[data-no="S1"]').getAttribute('data-isaret') === 'sari', 'Yellow row');
+      measureLayout('topic-list');
+      click('[data-no="S1"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      markFailure = true;
+      click('[data-action="klasik-mark"][data-isaret="yesil"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('[data-isaret="sari"]').getAttribute('aria-pressed') === 'true', 'Mark rollback');
+      markFailure = false;
+      click('[data-action="klasik-mark"][data-isaret="sari"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('[data-isaret="sari"]').getAttribute('aria-pressed') === 'false', 'Mark cleared');
+      click('[data-action="klasik-sonraki"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('.card').textContent.includes('Cevap henüz yazılmadı.'), 'Unanswered notice');
+      check(!document.querySelector('[data-action="klasik-ipucu-goster"]'), 'No clue button');
+      check(document.querySelector('.card').textContent.includes('⚠ Şimdilik güncel değil'), 'Unanswered freshness');
+      click('[data-action="klasik-feedback-ac"]');
+      check(document.querySelector('[data-action="klasik-feedback-gonder"]').disabled, 'Empty feedback disabled');
+      var textarea = document.querySelector('[data-klasik-feedback]');
+      textarea.value = 'Yeni bilgi'; textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      feedbackFailure = true;
+      click('[data-action="klasik-feedback-gonder"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('[data-klasik-feedback]').value === 'Yeni bilgi', 'Feedback failure preserves text');
+      measureLayout('feedback');
+      feedbackFailure = false; feedbackRequests = [];
+      click('[data-action="klasik-feedback-gonder"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(feedbackRequests.length === 1, 'Single feedback request');
+      check(document.querySelector('.card').textContent.includes('Bildiriminiz alındı.'), 'Feedback confirmation');
+      click('[data-action="klasik-geri"]');
+      click('[data-action="open-klasik"]');
+      remoteAuth.isAdmin = true; render();
+      click('[data-action="open-klasik-kontrol"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      var groups = document.querySelectorAll('[data-action="klasik-grup"]');
+      check(groups.length === 3, 'Three admin sections');
+      check(groups[0].textContent.includes('1 soru') && groups[1].textContent.includes('4 soru') && groups[2].textContent.includes('1 soru'), 'Admin counts');
+      click('[data-grup="edilecek"]');
+      click('[data-no="S2"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('.card').textContent.includes('⚠ Güncellenecek bilgi'), 'Answered freshness');
+      click('[data-action="klasik-sonraki"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('.card').textContent.includes('Muhasebe'), 'Admin section navigation');
+      click('[data-action="klasik-geri"]');
+      check(VIEW === 'klasikKontrol', 'Back to control');
+      check(document.documentElement.scrollWidth <= innerWidth, 'Control width');
+      var savedDaily = klasikVerisi;
+      klasikVerisi = { day: '2026-10-05', questions: [] }; VIEW = 'klasik'; render();
+      check(document.querySelector('.card').textContent.includes('Günün Klasik Soruları'), 'Empty daily retains title');
+      check(document.querySelectorAll('[data-action="open-klasik-konular"]').length === 1, 'Topic card available without daily answers');
+      klasikVerisi = savedDaily; VIEW = 'klasikKontrol';
+      bannerMsg = null; render();
+      measureLayout('admin-control');
+      remoteResetKlasikState();
+      check(klasikListe === null && Object.keys(klasikDetaylar).length === 0, 'Account reset');
       // Yatay taşma kontrolü
       check(document.documentElement.scrollWidth <= innerWidth, 'Yatay taşma olmamalı');
 
       var result = document.createElement('pre');
       result.id = 'browser-result';
-      result.textContent = JSON.stringify({ ok: true, viewport: innerWidth, checks: checks });
+      result.textContent = JSON.stringify({ ok: true, viewport: innerWidth, layoutMeasurements: layoutMeasurements, checks: checks });
       document.body.appendChild(result);
     } catch (e) {
       var result = document.createElement('pre');

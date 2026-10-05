@@ -946,17 +946,23 @@ async function handlePost(request: Request) {
     if (body.action === 'klasik-daily') {
       const day = dailyExamDay();
       const seed = klasikDailySeed(day);
-      const rows = await db.select().from(schema.klasikSorular);
+      const rows = await db.select().from(schema.klasikSorular)
+        .where(inArray(schema.klasikSorular.durum, ['tam', 'kismi']));
       const selected = selectKlasikQuestions(rows, seed);
       const seenRows = await db.select({ soruNo: schema.klasikGorulme.soruNo })
         .from(schema.klasikGorulme)
         .where(eq(schema.klasikGorulme.userId, user.id));
       const seenSet = new Set(seenRows.map((r) => r.soruNo));
+      const marks = await db.select().from(schema.klasikIsaret).where(eq(schema.klasikIsaret.userId, user.id));
+      const markMap = new Map(marks.map(r => [r.soruNo, r.isaret]));
       return NextResponse.json({
         day,
         questions: selected.map((q) => ({
           no: q.no,
           kategori: q.kategori,
+          konu: q.konu,
+          guncellikNotu: q.guncellikNotu,
+          isaret: markMap.get(q.no) ?? null,
           soru: q.soru,
           durum: q.durum,
           cevap: q.cevap,
@@ -964,6 +970,46 @@ async function handlePost(request: Request) {
           seen: seenSet.has(q.no),
         })),
       });
+    }
+
+    if (body.action === 'klasik-list') {
+      const rows = await db.select().from(schema.klasikSorular).orderBy(asc(schema.klasikSorular.sira));
+      const marks = await db.select().from(schema.klasikIsaret).where(eq(schema.klasikIsaret.userId, user.id));
+      const markMap = new Map(marks.map(r => [r.soruNo, r.isaret]));
+      return NextResponse.json({ admin: !!profile.isAdmin, questions: rows.map(q => ({
+        no: q.no, kategori: q.kategori, konu: q.konu, soru: q.soru, durum: q.durum,
+        isaret: markMap.get(q.no) ?? null, ...(profile.isAdmin ? { kontrol: q.kontrol } : {}),
+      })) });
+    }
+
+    if (body.action === 'klasik-question' || body.action === 'klasik-mark' || body.action === 'klasik-feedback') {
+      if (typeof body.no !== 'string' || !body.no.trim()) return fail('Soru no eksik.', 400);
+      const [question] = await db.select().from(schema.klasikSorular).where(eq(schema.klasikSorular.no, body.no)).limit(1);
+      if (!question) return fail('Soru bulunamadı.', 400);
+      if (body.action === 'klasik-question') {
+        const [seen] = await db.select().from(schema.klasikGorulme)
+          .where(and(eq(schema.klasikGorulme.userId, user.id), eq(schema.klasikGorulme.soruNo, body.no))).limit(1);
+        const [mark] = await db.select().from(schema.klasikIsaret)
+          .where(and(eq(schema.klasikIsaret.userId, user.id), eq(schema.klasikIsaret.soruNo, body.no))).limit(1);
+        return NextResponse.json({ no: question.no, kategori: question.kategori, konu: question.konu,
+          soru: question.soru, durum: question.durum, guncellikNotu: question.guncellikNotu,
+          cevap: question.cevap, ipuclari: question.ipuclari, seen: !!seen, isaret: mark?.isaret ?? null });
+      }
+      if (body.action === 'klasik-mark') {
+        if (body.isaret === null) {
+          await db.delete(schema.klasikIsaret).where(and(eq(schema.klasikIsaret.userId, user.id), eq(schema.klasikIsaret.soruNo, body.no)));
+        } else {
+          if (!['yesil', 'sari', 'kirmizi'].includes(body.isaret)) return fail('Geçersiz işaret.', 400);
+          await db.insert(schema.klasikIsaret).values({ userId: user.id, soruNo: body.no, isaret: body.isaret })
+            .onConflictDoUpdate({ target: [schema.klasikIsaret.userId, schema.klasikIsaret.soruNo],
+              set: { isaret: body.isaret, guncellemeZamani: new Date() } });
+        }
+        return NextResponse.json({ ok: true });
+      }
+      const metin = typeof body.metin === 'string' ? body.metin.trim() : '';
+      if (!metin || metin.length > 4000) return fail('Bildirim 1–4000 karakter olmalı.', 400);
+      await db.insert(schema.klasikGeriBildirim).values({ userId: user.id, soruNo: body.no, metin });
+      return NextResponse.json({ ok: true });
     }
 
     if (body.action === 'klasik-seen') {
