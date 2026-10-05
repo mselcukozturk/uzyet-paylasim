@@ -262,7 +262,8 @@ export const klasikGorulme = pgTable('klasik_gorulme', {
 export const klasikIsaret = pgTable('klasik_isaret', {
   userId: text('user_id').notNull(),
   soruNo: text('soru_no').notNull(),
-  isaret: text('isaret').notNull(),
+  isaret: text('isaret'),
+  hatirlatici: boolean('hatirlatici').notNull().default(false),
   guncellemeZamani: timestamp('guncelleme_zamani', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [unique('klasik_isaret_user_soru_unique').on(table.userId, table.soruNo)]);
 

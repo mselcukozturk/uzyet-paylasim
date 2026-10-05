@@ -955,6 +955,7 @@ async function handlePost(request: Request) {
       const seenSet = new Set(seenRows.map((r) => r.soruNo));
       const marks = await db.select().from(schema.klasikIsaret).where(eq(schema.klasikIsaret.userId, user.id));
       const markMap = new Map(marks.map(r => [r.soruNo, r.isaret]));
+      const reminderMap = new Map(marks.map(r => [r.soruNo, r.hatirlatici]));
       return NextResponse.json({
         day,
         questions: selected.map((q) => ({
@@ -963,6 +964,7 @@ async function handlePost(request: Request) {
           konu: q.konu,
           guncellikNotu: q.guncellikNotu,
           isaret: markMap.get(q.no) ?? null,
+          hatirlatici: reminderMap.get(q.no) ?? false,
           soru: q.soru,
           durum: q.durum,
           cevap: q.cevap,
@@ -976,13 +978,14 @@ async function handlePost(request: Request) {
       const rows = await db.select().from(schema.klasikSorular).orderBy(asc(schema.klasikSorular.sira));
       const marks = await db.select().from(schema.klasikIsaret).where(eq(schema.klasikIsaret.userId, user.id));
       const markMap = new Map(marks.map(r => [r.soruNo, r.isaret]));
+      const reminderMap = new Map(marks.map(r => [r.soruNo, r.hatirlatici]));
       return NextResponse.json({ questions: rows.map(q => ({
         no: q.no, kategori: q.kategori, konu: q.konu, soru: q.soru, durum: q.durum,
-        isaret: markMap.get(q.no) ?? null, kontrol: q.kontrol, oncelik: q.oncelik,
+        isaret: markMap.get(q.no) ?? null, hatirlatici: reminderMap.get(q.no) ?? false, kontrol: q.kontrol, oncelik: q.oncelik,
       })) });
     }
 
-    if (body.action === 'klasik-question' || body.action === 'klasik-mark' || body.action === 'klasik-feedback') {
+    if (body.action === 'klasik-question' || body.action === 'klasik-mark' || body.action === 'klasik-reminder' || body.action === 'klasik-feedback') {
       if (typeof body.no !== 'string' || !body.no.trim()) return fail('Soru no eksik.', 400);
       const [question] = await db.select().from(schema.klasikSorular).where(eq(schema.klasikSorular.no, body.no)).limit(1);
       if (!question) return fail('Soru bulunamadı.', 400);
@@ -993,16 +996,46 @@ async function handlePost(request: Request) {
           .where(and(eq(schema.klasikIsaret.userId, user.id), eq(schema.klasikIsaret.soruNo, body.no))).limit(1);
         return NextResponse.json({ no: question.no, kategori: question.kategori, konu: question.konu,
           soru: question.soru, durum: question.durum, guncellikNotu: question.guncellikNotu,
-          cevap: question.cevap, ipuclari: question.ipuclari, seen: !!seen, isaret: mark?.isaret ?? null });
+          cevap: question.cevap, ipuclari: question.ipuclari, seen: !!seen,
+          isaret: mark?.isaret ?? null, hatirlatici: mark?.hatirlatici ?? false });
       }
       if (body.action === 'klasik-mark') {
+        if (body.isaret !== null && !['yesil', 'sari', 'kirmizi'].includes(body.isaret)) return fail('Geçersiz işaret.', 400);
+        const [existing] = await db.select().from(schema.klasikIsaret)
+          .where(and(eq(schema.klasikIsaret.userId, user.id), eq(schema.klasikIsaret.soruNo, body.no))).limit(1);
         if (body.isaret === null) {
-          await db.delete(schema.klasikIsaret).where(and(eq(schema.klasikIsaret.userId, user.id), eq(schema.klasikIsaret.soruNo, body.no)));
+          if (existing && existing.hatirlatici) {
+            await db.update(schema.klasikIsaret)
+              .set({ isaret: null, guncellemeZamani: new Date() })
+              .where(and(eq(schema.klasikIsaret.userId, user.id), eq(schema.klasikIsaret.soruNo, body.no)));
+          } else {
+            await db.delete(schema.klasikIsaret)
+              .where(and(eq(schema.klasikIsaret.userId, user.id), eq(schema.klasikIsaret.soruNo, body.no)));
+          }
         } else {
-          if (!['yesil', 'sari', 'kirmizi'].includes(body.isaret)) return fail('Geçersiz işaret.', 400);
-          await db.insert(schema.klasikIsaret).values({ userId: user.id, soruNo: body.no, isaret: body.isaret })
+          await db.insert(schema.klasikIsaret).values({ userId: user.id, soruNo: body.no, isaret: body.isaret, hatirlatici: false })
             .onConflictDoUpdate({ target: [schema.klasikIsaret.userId, schema.klasikIsaret.soruNo],
               set: { isaret: body.isaret, guncellemeZamani: new Date() } });
+        }
+        return NextResponse.json({ ok: true });
+      }
+      if (body.action === 'klasik-reminder') {
+        if (typeof body.hatirlatici !== 'boolean') return fail('Geçersiz hatırlatıcı.', 400);
+        const [existing] = await db.select().from(schema.klasikIsaret)
+          .where(and(eq(schema.klasikIsaret.userId, user.id), eq(schema.klasikIsaret.soruNo, body.no))).limit(1);
+        if (!body.hatirlatici) {
+          if (existing && existing.isaret) {
+            await db.update(schema.klasikIsaret)
+              .set({ hatirlatici: false, guncellemeZamani: new Date() })
+              .where(and(eq(schema.klasikIsaret.userId, user.id), eq(schema.klasikIsaret.soruNo, body.no)));
+          } else {
+            await db.delete(schema.klasikIsaret)
+              .where(and(eq(schema.klasikIsaret.userId, user.id), eq(schema.klasikIsaret.soruNo, body.no)));
+          }
+        } else {
+          await db.insert(schema.klasikIsaret).values({ userId: user.id, soruNo: body.no, isaret: null, hatirlatici: true })
+            .onConflictDoUpdate({ target: [schema.klasikIsaret.userId, schema.klasikIsaret.soruNo],
+              set: { hatirlatici: true, guncellemeZamani: new Date() } });
         }
         return NextResponse.json({ ok: true });
       }

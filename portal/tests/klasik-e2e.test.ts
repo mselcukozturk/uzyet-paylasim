@@ -1,7 +1,8 @@
-// Failure paths: 0020 must be repeatable; unanswered/no-clue sync accepted; invalid control,
+// Failure paths: 0020, 0021 and 0022 must be repeatable; unanswered/no-clue sync accepted; invalid control,
 // empty answered response rejected; daily excludes unanswered; list includes control for every account.
-// Unknown question/mark, user mark leakage, duplicate marks, null deletion, invalid feedback,
-// unauthorized feedback administration, processed feedback, re-sync loss, anonymous actions rejected.
+// Unknown question/mark/reminder, user mark leakage, duplicate marks, null deletion with reminder preservation,
+// reminder toggle with mark preservation, invalid feedback, unauthorized feedback administration,
+// processed feedback, re-sync loss, anonymous actions rejected.
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
 import test from 'node:test';
@@ -34,6 +35,24 @@ const nodeRequire = createRequire(import.meta.url);
 //     - bir kategorinin tüm cevaplı soruları düşükse o kategori günün sorularında yer almaz,
 //     - karışık havuzda en az 60 farklı günde hiçbir düşük soru seçilmez,
 //     - tüm cevaplı sorular düşükse hata vermeden boş soru listesi döner.
+// 13. 0022_klasik_hatirlatici migration idempotency and table schema:
+//     - hatirlatici column added as boolean not null default false,
+//     - isaret column allows null so reminder can stay active without color mark,
+//     - re-applying 0022 migration does not fail.
+// 14. klasik-reminder authentication and payload validation:
+//     - anonymous/inactive user rejected with 401/403,
+//     - invalid/missing no or non-existent question rejected with 400,
+//     - non-boolean hatirlatici payload rejected with 400.
+// 15. klasik-reminder state persistence and coexistence with color mark:
+//     - reminder can be set without any color mark (isaret remains null),
+//     - setting reminder does not overwrite existing color mark,
+//     - clearing color mark (isaret: null) preserves active reminder (row not deleted),
+//     - turning off reminder (hatirlatici: false) preserves active color mark,
+//     - row deleted only when both color mark and reminder are cleared,
+//     - question re-sync does not delete reminder state.
+// 16. Response payload enrichment:
+//     - klasik-list, klasik-question, and klasik-daily contain hatirlatici boolean field for every question,
+//     - reminder state is properly scoped to requesting user.
 test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', async () => {
   const pg = new PGlite();
   try {
@@ -42,12 +61,16 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     for (const name of sqlFiles) {
       await pg.exec(readFileSync(new URL('../drizzle/' + name, import.meta.url), 'utf8'));
     }
-    // Migration idempotent test: re-apply 0019_klasik_sorular.sql
+    // Migration idempotent test: re-apply 0019_klasik_sorular.sql, 0020, 0021, 0022
     const migration0019 = new URL('../drizzle/0019_klasik_sorular.sql', import.meta.url);
     assert.ok(existsSync(migration0019), '0019_klasik_sorular.sql migration dosyası mevcut olmalı');
     await pg.exec(readFileSync(migration0019, 'utf8'));
     await pg.exec(readFileSync(new URL('../drizzle/0020_klasik_isaret_ve_geri_bildirim.sql', import.meta.url), 'utf8'));
     await pg.exec(readFileSync(new URL('../drizzle/0021_klasik_oncelik.sql', import.meta.url), 'utf8'));
+    const migration0022 = new URL('../drizzle/0022_klasik_hatirlatici.sql', import.meta.url);
+    if (existsSync(migration0022)) {
+      await pg.exec(readFileSync(migration0022, 'utf8'));
+    }
 
     await pg.exec(`insert into profiles(user_id,username,is_active,is_admin,disclaimer_accepted_at)
       values ('u1','kullanici1',true,false,now()),
@@ -424,9 +447,71 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     const processed = await (await feedbackRoute.POST(feedbackRequest('POST', { ids: [feedbackList.items[0].id] }))).json();
     assert.deepEqual(processed, { ok: true, updated: 1 });
     assert.deepEqual((await (await feedbackRoute.GET(feedbackRequest('GET'))).json()).items, []);
+    // 13. klasik-reminder: yetki, doğrulama, renk işaretiyle bağımsız bir arada yaşama ve kullanıcı izolasyonu
     currentProfile = null;
-    for (const action of ['klasik-list', 'klasik-question', 'klasik-mark', 'klasik-feedback']) {
-      assert.equal((await sendExam({ action, no: 'S1', isaret: 'yesil', metin: 'Bilgi' })).status, 401);
+    assert.equal((await sendExam({ action: 'klasik-reminder', no: 'S1', hatirlatici: true })).status, 401, 'Girişsiz kullanıcı klasik-reminder için 401 almalı');
+    currentProfile = { userId: 'u_inactive', username: 'onaysiz', isActive: false };
+    assert.equal((await sendExam({ action: 'klasik-reminder', no: 'S1', hatirlatici: true })).status, 403, 'Onaysız kullanıcı klasik-reminder için 403 almalı');
+    currentProfile = { userId: 'u1', username: 'kullanici1', isActive: true };
+    for (const no of ['S999', '']) {
+      assert.equal((await sendExam({ action: 'klasik-reminder', no, hatirlatici: true })).status, 400, 'Geçersiz soru no 400 dönmeli');
+    }
+    for (const hatirlatici of ['evet', 1, null, undefined]) {
+      assert.equal((await sendExam({ action: 'klasik-reminder', no: 'S1', hatirlatici })).status, 400, 'Boolean olmayan hatirlatici 400 dönmeli');
+    }
+
+    // u1 için S1 zaten yeşil işaretli; şimdi hatırlatıcıyı açıyoruz
+    assert.equal((await sendExam({ action: 'klasik-reminder', no: 'S1', hatirlatici: true })).status, 200);
+    const q1U1AfterReminder = await (await sendExam({ action: 'klasik-question', no: 'S1' })).json();
+    assert.equal(q1U1AfterReminder.hatirlatici, true, 'Hatırlatıcı true olmalı');
+    assert.equal(q1U1AfterReminder.isaret, 'yesil', 'Mevcut renkli işaret (yesil) hatırlatıcı açılınca silinmemeli');
+
+    // Renk işaretini kaldırıyoruz (isaret: null); hatırlatıcı silinmemeli!
+    assert.equal((await sendExam({ action: 'klasik-mark', no: 'S1', isaret: null })).status, 200);
+    const q1U1ColorCleared = await (await sendExam({ action: 'klasik-question', no: 'S1' })).json();
+    assert.equal(q1U1ColorCleared.isaret, null, 'İşaret null olmalı');
+    assert.equal(q1U1ColorCleared.hatirlatici, true, 'Renk kaldırılınca hatırlatıcı silinmemeli');
+
+    // klasik-list ve klasik-daily yanıtlarında hatirlatici alanı denetimi
+    const listCheck = await (await sendExam({ action: 'klasik-list' })).json();
+    const listS1 = listCheck.questions.find((q: any) => q.no === 'S1');
+    assert.equal(listS1.hatirlatici, true, 'klasik-list yanıtında S1 hatirlatici true olmalı');
+    assert.equal(listS1.isaret, null, 'klasik-list yanıtında S1 isaret null olmalı');
+
+    const dailyCheck = await (await sendExam({ action: 'klasik-daily' })).json();
+    const dailyS1 = dailyCheck.questions.find((q: any) => q.no === 'S1');
+    if (dailyS1) {
+      assert.equal(dailyS1.hatirlatici, true, 'klasik-daily yanıtında S1 hatirlatici true olmalı');
+      assert.equal(dailyS1.isaret, null, 'klasik-daily yanıtında S1 isaret null olmalı');
+    }
+
+    // Kullanıcı 2 için kontrol: u2'de S1 hatırlatıcısı false kalmalı
+    currentProfile = { userId: 'u2', username: 'kullanici2', isActive: true };
+    const q1U2Check = await (await sendExam({ action: 'klasik-question', no: 'S1' })).json();
+    assert.equal(q1U2Check.hatirlatici, false, 'u2 için hatırlatıcı false kalmalı (izolasyon)');
+    const listU2Check = await (await sendExam({ action: 'klasik-list' })).json();
+    assert.equal(listU2Check.questions.find((q: any) => q.no === 'S1').hatirlatici, false);
+
+    // u1'e dönüp hatırlatıcıyı kapatıyoruz; hem işaret hem hatırlatıcı boş olduğu için satır temizlenir
+    currentProfile = { userId: 'u1', username: 'kullanici1', isActive: true };
+    assert.equal((await sendExam({ action: 'klasik-reminder', no: 'S1', hatirlatici: false })).status, 200);
+    const q1U1ReminderOff = await (await sendExam({ action: 'klasik-question', no: 'S1' })).json();
+    assert.equal(q1U1ReminderOff.hatirlatici, false);
+    assert.equal(q1U1ReminderOff.isaret, null);
+    const rowsRemaining = await db.select().from(schema.klasikIsaret).where(orm.eq(schema.klasikIsaret.userId, 'u1'));
+    assert.equal(rowsRemaining.length, 0, 'Hem işaret hem hatırlatıcı yokken u1 kaydı silinmeli');
+
+    // Renk varken hatırlatıcı kapatılınca renk silinmemeli
+    await sendExam({ action: 'klasik-mark', no: 'S1', isaret: 'sari' });
+    await sendExam({ action: 'klasik-reminder', no: 'S1', hatirlatici: true });
+    await sendExam({ action: 'klasik-reminder', no: 'S1', hatirlatici: false });
+    const q1ColorKept = await (await sendExam({ action: 'klasik-question', no: 'S1' })).json();
+    assert.equal(q1ColorKept.isaret, 'sari', 'Hatırlatıcı kapatılınca renkli işaret silinmemeli');
+    assert.equal(q1ColorKept.hatirlatici, false);
+
+    currentProfile = null;
+    for (const action of ['klasik-list', 'klasik-question', 'klasik-mark', 'klasik-reminder', 'klasik-feedback']) {
+      assert.equal((await sendExam({ action, no: 'S1', isaret: 'yesil', hatirlatici: true, metin: 'Bilgi' })).status, 401);
     }
 
     // Verifiable repeatable artifact

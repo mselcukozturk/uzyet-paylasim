@@ -1,12 +1,15 @@
 // Failure paths: topic/control cards, collapsed categories and counters, study navigation/back,
-// mark persistence/removal/rollback, unanswered/no-clue rendering, freshness note, feedback
-// empty/submission/error preservation, control grouping for every account, empty daily card, reset,
-// standard top bar on all sub-screens, search input isolation to topic view, Turkish uppercase/multi-word
-// search matching, empty search notice, category restoration on clear, search result study navigation,
-// focus preservation across consecutive typing, mobile overflow, mark filter boxes isolation to topic view,
-// mark count reflection, box toggle and category restoration, empty mark notice, combined search and mark filtering,
-// study navigation within filtered mark list with live mark updates, and low-priority question exclusion from
-// topic view category groups, counters, search results, and mark filter boxes while preserving them in low-priority view.
+// mark persistence/removal/rollback, reminder toggle/persistence/rollback, unanswered/no-clue rendering,
+// freshness note, feedback empty/submission/error preservation, control grouping for every account,
+// empty daily card, reset, standard top bar on all sub-screens, search input isolation to topic view,
+// Turkish uppercase/multi-word search matching, empty search notice, category restoration on clear,
+// search result study navigation, focus preservation across consecutive typing, mobile overflow,
+// mark and reminder filter boxes isolation to topic view, mark and reminder count reflection,
+// box toggle and category restoration, empty mark/reminder notice, combined search, mark and reminder filtering,
+// study navigation within filtered list with live mark/reminder updates, low-priority question exclusion from
+// topic view category groups, counters, search results, and filter boxes while preserving them in low-priority view,
+// two-row study action button arrangement with clue/answer on row 1 and marks/reminder/feedback on row 2,
+// category single card framing without nested borders, tabular aligned counters, and Turkish title case category formatting.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -78,6 +81,14 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
     const ssSoru = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
     writeFileSync(new URL('soru-ust-bar.png', output), Buffer.from(ssSoru.data, 'base64'));
 
+    await send('Runtime.evaluate', { expression: 'if (window.__showGrupAcik) window.__showGrupAcik(); document.getElementById("browser-result").style.display="none";' }, sessionId);
+    const ssGrup = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
+    writeFileSync(new URL('grup-acik.png', output), Buffer.from(ssGrup.data, 'base64'));
+
+    await send('Runtime.evaluate', { expression: 'if (window.__showSoruDugmeler) window.__showSoruDugmeler(); document.getElementById("browser-result").style.display="none";' }, sessionId);
+    const ssDugme = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
+    writeFileSync(new URL('soru-dugmeler.png', output), Buffer.from(ssDugme.data, 'base64'));
+
     return dom.result.value as string;
   } finally {
     socket?.close();
@@ -113,6 +124,12 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
 // 24. Low-priority questions leaking into "Konu konu bak" category groups, inflating category question counts or mark tallies, or rendering question rows.
 // 25. Low-priority questions appearing in "Konu konu bak" search results instead of showing "Eşleşen soru yok.".
 // 26. Marked low-priority questions inflating "Konu konu bak" mark filter box counts or appearing in mark filter lists, or failing to appear with their marks in the "Düşük öncelikli" screen.
+// 27. Soru ekranında "🔖 Hatırlatıcı" düğmesi (data-action="klasik-hatirlatici", aria-pressed) eksik, tıklamada iyimser güncelleme yapmıyor veya ağ hatasında önceki duruma geri almıyor.
+// 28. Hatırlatıcılı sorunun liste satırında (klasikSatir) soru no yanında 🔖 (aria-label="Hatırlatıcı") görünmüyor.
+// 29. Konu Konu Bak ekranında dördüncü filtre kutusu "🔖 Hatırlatıcı · N" (data-action="klasik-filtre-hatirlatici", aria-pressed) eksik, sayısı yanlış, renk ve aramayla VE mantığında daraltmıyor veya düşük öncelikli soruları dahil ediyor.
+// 30. Soru ekranı düğme düzeni (renderKlasikCalisma): Satır 1 solda ipucu, sağda Cevabı göster; ipucu yokken sağda Cevabı göster; cevap açılınca Cevabı göster butonu yerine cevap; Satır 2 solda 3 renkli düğme, sağda Hatırlatıcı ve Cevap güncellenmeli; geri bildirim açılınca Satır 2'nin altında tam genişlikte.
+// 31. Liste ekranı grupları (renderKlasikListe): dış kart kalırken başlık düğmesinin iç çerçevesi ve arka planı kalkmıyor, açık/kapalı ok simgesi (▸ / ▾) eksik, sayaçlar eşit aralıklı / tabular-nums / sağa dayalı değil, "N soru" sayaçlardan önce sağda değil, kategori adları Türkçe kurallı başlık düzeninde (klasikBaslikDuzeni, 've' küçük) gösterilmiyor, açılan grubun satırları sol dikey kılavuz çizgisi ve girintiyle vurgulanmıyor, açık grup kartı accent kenarlık almıyor.
+// 32. 390px ve 1100px görünümünde grup-acik.png ve soru-dugmeler.png ekran görüntülerinin üretilmemesi.
 for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`, async () => {
   const chrome = [
     process.env.CHROME_PATH,
@@ -217,17 +234,17 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
         }
       ];
 
-      mockDailyQuestions.forEach(function(q) { q.konu = q.soru; q.isaret = null; q.kontrol = 'edilecek'; q.guncellikNotu = ''; q.oncelik = 'normal'; });
+      mockDailyQuestions.forEach(function(q) { q.konu = q.soru; q.isaret = null; q.hatirlatici = false; q.kontrol = 'edilecek'; q.guncellikNotu = ''; q.oncelik = 'normal'; });
       mockDailyQuestions[0].kontrol = 'edildi';
       var allQuestions = mockDailyQuestions.concat([
-        { no: 'S6', kategori: 'Hukuk', konu: 'Cevapsız konu', soru: 'Cevapsız soru', durum: 'cevapsiz', kontrol: 'edilecek', guncellikNotu: 'Şimdilik güncel değil', cevap: [], ipuclari: [], seen: false, isaret: null, oncelik: 'normal' },
-        { no: 'S7', kategori: 'Hukuk', konu: 'Düşük öncelikli Hukuk 1', soru: 'Düşük soru 1', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Düşük cevap 1' }], ipuclari: [], seen: false, isaret: null, oncelik: 'dusuk' },
-        { no: 'S8', kategori: 'Hukuk', konu: 'Düşük öncelikli Hukuk 2', soru: 'Düşük soru 2', durum: 'tam', kontrol: 'edilecek', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Düşük cevap 2' }], ipuclari: [], seen: false, isaret: null, oncelik: 'dusuk' },
-        { no: 'S9', kategori: 'Kambiyo', konu: 'İhracat rejim kararı', soru: 'ihracat işlemlerinde kullanılan gümrük beyannamesi şartları nelerdir?', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'İhracat belgeleri' }], ipuclari: [], seen: false, isaret: null, oncelik: 'normal' },
-        { no: 'S10', kategori: 'Kredi', konu: 'İhracat kredi limitleri', soru: 'ihracat reeskont kredisi teminat şartları nelerdir?', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Reeskont kredisi' }], ipuclari: [], seen: false, isaret: null, oncelik: 'normal' }
+        { no: 'S6', kategori: 'Hukuk', konu: 'Cevapsız konu', soru: 'Cevapsız soru', durum: 'cevapsiz', kontrol: 'edilecek', guncellikNotu: 'Şimdilik güncel değil', cevap: [], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'normal' },
+        { no: 'S7', kategori: 'Hukuk', konu: 'Düşük öncelikli Hukuk 1', soru: 'Düşük soru 1', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Düşük cevap 1' }], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'dusuk' },
+        { no: 'S8', kategori: 'Hukuk', konu: 'Düşük öncelikli Hukuk 2', soru: 'Düşük soru 2', durum: 'tam', kontrol: 'edilecek', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Düşük cevap 2' }], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'dusuk' },
+        { no: 'S9', kategori: 'Kambiyo', konu: 'İhracat rejim kararı', soru: 'ihracat işlemlerinde kullanılan gümrük beyannamesi şartları nelerdir?', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'İhracat belgeleri' }], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'normal' },
+        { no: 'S10', kategori: 'Kredi', konu: 'İhracat kredi limitleri', soru: 'ihracat reeskont kredisi teminat şartları nelerdir?', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Reeskont kredisi' }], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'normal' }
       ]);
       mockDailyQuestions[1].guncellikNotu = 'Güncellenecek bilgi';
-      var feedbackRequests = [], markFailure = false, feedbackFailure = false;
+      var feedbackRequests = [], markFailure = false, feedbackFailure = false, reminderFailure = false;
       var seenRequests = [];
       remoteFetch = function (path, method, body) {
         if (body.action === 'klasik-daily') {
@@ -239,6 +256,7 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
         if (body.action === 'klasik-list') return Promise.resolve({ ok: true, data: { questions: allQuestions } });
         if (body.action === 'klasik-question') return Promise.resolve({ ok: true, data: Object.assign({}, allQuestions.find(q => q.no === body.no)) });
         if (body.action === 'klasik-mark') return Promise.resolve({ ok: !markFailure, data: {} });
+        if (body.action === 'klasik-reminder') return Promise.resolve({ ok: !reminderFailure, data: {} });
         if (body.action === 'klasik-feedback') { feedbackRequests.push(body); return Promise.resolve({ ok: !feedbackFailure, data: {} }); }
         if (body.action === 'klasik-seen') {
           seenRequests.push(body.no);
@@ -278,6 +296,24 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(document.querySelector('.card').textContent.includes('Soru 1 / 5'), 'İlk soru "Soru 1 / 5" olmalı');
       check(document.querySelector('.card').textContent.includes('Hukuk'), 'İlk sorunun kategorisi Hukuk olmalı');
       check(document.querySelector('.card').textContent.includes('Ticaret Kanununa göre'), 'İlk sorunun metni görünmeli');
+
+      // Soru ekranı düğme düzeni kontrolleri
+      var satir1 = document.querySelector('.klasik-aksiyon-satiri-1');
+      var satir2 = document.querySelector('.klasik-aksiyon-satiri-2');
+      check(satir1, 'Satır 1 düğme kapsayıcısı bulunmalı (.klasik-aksiyon-satiri-1)');
+      check(satir2, 'Satır 2 düğme kapsayıcısı bulunmalı (.klasik-aksiyon-satiri-2)');
+      check(satir1.querySelector('[data-action="klasik-ipucu-goster"]'), 'Satır 1 solda ipucu butonu olmalı');
+      check(satir1.querySelector('[data-action="klasik-cevabi-goster"]'), 'Satır 1 sağda Cevabı göster butonu olmalı');
+      check(satir2.querySelectorAll('[data-action="klasik-mark"]').length === 3, 'Satır 2 solda 3 renkli buton olmalı');
+      var hatirlaticiBtn = satir2.querySelector('[data-action="klasik-hatirlatici"]');
+      check(hatirlaticiBtn && hatirlaticiBtn.textContent.includes('Hatırlatıcı'), 'Satır 2 sağda Hatırlatıcı butonu bulunmalı');
+      check(satir2.querySelector('[data-action="klasik-feedback-ac"]'), 'Satır 2 sağda Cevap güncellenmeli butonu bulunmalı');
+      check(hatirlaticiBtn.getAttribute('aria-pressed') === 'false', 'Hatırlatıcı başlangıçta basılı olmamalı');
+
+      // Hatırlatıcı düğmesine bas (S1 için aç)
+      click('[data-action="klasik-hatirlatici"]');
+      hatirlaticiBtn = document.querySelector('[data-action="klasik-hatirlatici"]');
+      check(hatirlaticiBtn && hatirlaticiBtn.getAttribute('aria-pressed') === 'true', 'Hatırlatıcı basılınca aria-pressed true olmalı (iyimser güncelleme)');
 
       // 4. İpucu göster düğmesine bas (2 ipucu var)
       var ipucuBtn = document.querySelector('[data-action="klasik-ipucu-goster"]');
@@ -338,6 +374,9 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
 
       var isaretKutulari = document.querySelectorAll('[data-action="klasik-filtre-isaret"]');
       check(isaretKutulari.length === 3, 'Konu konu bak ekranında 3 işaret kutusu bulunmalı');
+      var hatirlaticiKutu = document.querySelector('[data-action="klasik-filtre-hatirlatici"]');
+      check(hatirlaticiKutu && hatirlaticiKutu.textContent.includes('Hatırlatıcı · 1'), 'Hatırlatıcı kutusu 1 göstermeli');
+      check(hatirlaticiKutu.getAttribute('aria-pressed') === 'false', 'Hatırlatıcı kutusu başlangıçta basılı olmamalı');
       var ogrendimKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="yesil"]');
       var tekrarKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="sari"]');
       var anlamadimKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="kirmizi"]');
@@ -437,10 +476,18 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(group && group.getAttribute('aria-expanded') === 'false', 'Category collapsed');
       check(group.textContent.includes('2 soru'), 'Category count (excludes dusuk in topic list: only S1 and S6)');
       click('[data-grup="Hukuk"]');
-      check(document.querySelector('[data-action="klasik-soru-ac"][data-no="S1"]'), 'Konu konu bak grubunda S1 bulunmalı');
+      group = document.querySelector('[data-grup="Hukuk"]');
+      var s1Row = document.querySelector('[data-action="klasik-soru-ac"][data-no="S1"]');
+      check(s1Row, 'Konu konu bak grubunda S1 bulunmalı');
+      check(s1Row.querySelector('[aria-label="Hatırlatıcı"]'), 'S1 satırında hatırlatıcı rozeti görünmeli');
       check(document.querySelector('[data-action="klasik-soru-ac"][data-no="S6"]'), 'Konu konu bak grubunda S6 bulunmalı');
       check(!document.querySelector('[data-action="klasik-soru-ac"][data-no="S7"]'), 'Konu konu bak grubunda düşük öncelikli S7 satırı olmamalı');
       check(!document.querySelector('[data-action="klasik-soru-ac"][data-no="S8"]'), 'Konu konu bak grubunda düşük öncelikli S8 satırı olmamalı');
+      var groupCard = group.closest('.card');
+      check(groupCard && groupCard.classList.contains('klasik-grup-acik'), 'Açık grup kartı vurgulanmalı (.klasik-grup-acik)');
+      var kilavuz = groupCard.querySelector('.klasik-satirlar-kilavuz');
+      check(kilavuz, 'Açılan grubun satırları sol kılavuz çizgisi taşımalı (.klasik-satirlar-kilavuz)');
+
       click('[data-action="klasik-soru-ac"][data-no="S1"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       check(document.querySelector('.klasik-cevap'), 'Shared study state');
@@ -466,9 +513,11 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       ogrendimKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="yesil"]');
       tekrarKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="sari"]');
       anlamadimKutu = document.querySelector('[data-action="klasik-filtre-isaret"][data-isaret="kirmizi"]');
+      hatirlaticiKutu = document.querySelector('[data-action="klasik-filtre-hatirlatici"]');
       check(ogrendimKutu && ogrendimKutu.textContent.includes('Öğrendim · 0'), 'Düşük öncelikli S7 yeşil işaretliyken Öğrendim kutusu onu saymamalı (0 kalmalı)');
       check(tekrarKutu && tekrarKutu.textContent.includes('Tekrar bak · 1'), 'Tekrar bak kutusu 1 göstermeli');
       check(anlamadimKutu && anlamadimKutu.textContent.includes('Anlamadım · 0'), 'Anlamadım kutusu 0 göstermeli');
+      check(hatirlaticiKutu && hatirlaticiKutu.textContent.includes('Hatırlatıcı · 1'), 'Hatırlatıcı kutusu 1 göstermeli');
 
       // 1-b. Öğrendim kutusuna basıldığında S7 listelenmemeli ve "Bu işaretle soru yok." görünmeli
       click('[data-action="klasik-filtre-isaret"][data-isaret="yesil"]');
@@ -477,6 +526,18 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(!document.querySelector('[data-action="klasik-soru-ac"][data-no="S7"]'), 'Kutu listesi düşük öncelikli S7 sorusunu içermemeli');
       click('[data-action="klasik-filtre-isaret"][data-isaret="yesil"]');
       await new Promise(resolve => setTimeout(resolve, 0));
+
+      // 1-c. Hatırlatıcı kutusuna basıldığında yalnız hatırlatıcılı sorular listelenir
+      click('[data-action="klasik-filtre-hatirlatici"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      hatirlaticiKutu = document.querySelector('[data-action="klasik-filtre-hatirlatici"]');
+      check(hatirlaticiKutu && hatirlaticiKutu.getAttribute('aria-pressed') === 'true', 'Hatırlatıcı kutusu aria-pressed true olmalı');
+      check(!document.querySelector('[data-action="klasik-grup"]'), 'Hatırlatıcı seçiliyken kategori grupları gizlenmeli');
+      var hatirlaticiSatirlari = document.querySelectorAll('[data-action="klasik-soru-ac"]');
+      check(hatirlaticiSatirlari.length === 1 && hatirlaticiSatirlari[0].getAttribute('data-no') === 'S1', 'Yalnız hatırlatıcılı S1 listelenmeli');
+      click('[data-action="klasik-filtre-hatirlatici"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelectorAll('[data-action="klasik-grup"]').length > 0, 'Hatırlatıcı kutusu kapanınca gruplar geri gelmeli');
 
       // 2. Kutuya tıklanınca yalnız o işareti taşıyan sorular listelenir
       click('[data-action="klasik-filtre-isaret"][data-isaret="sari"]');
@@ -589,6 +650,11 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       await new Promise(resolve => setTimeout(resolve, 0));
       check(document.querySelector('[data-isaret="sari"]').getAttribute('aria-pressed') === 'true', 'Mark rollback');
       markFailure = false;
+      reminderFailure = true;
+      click('[data-action="klasik-hatirlatici"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('[data-action="klasik-hatirlatici"]').getAttribute('aria-pressed') === 'true', 'Reminder rollback maintains true state');
+      reminderFailure = false;
       click('[data-action="klasik-mark"][data-isaret="sari"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       check(document.querySelector('[data-isaret="sari"]').getAttribute('aria-pressed') === 'false', 'Mark cleared');
@@ -700,6 +766,22 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
         klasikKaynak = 'konular';
         klasikSoruIndex = 0;
         klasikCalismaNos = ['S9', 'S10'];
+        render();
+      };
+      window.__showGrupAcik = function () {
+        VIEW = 'klasikKonular';
+        klasikArama = '';
+        klasikSeciliIsaret = null;
+        klasikFiltreHatirlatici = false;
+        klasikAcikGruplar = { konular: { 'Hukuk': true }, kontrol: {}, dusuk: {} };
+        render();
+      };
+      window.__showSoruDugmeler = function () {
+        VIEW = 'klasikCalisma';
+        klasikKaynak = 'konular';
+        klasikSoruIndex = 0;
+        klasikCalismaNos = ['S9', 'S10'];
+        klasikSoruDurumu['S9'] = { acilanIpuclari: 0, cevapAcik: false, seenSent: false };
         render();
       };
 

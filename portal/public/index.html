@@ -437,7 +437,18 @@
   }
 
   .klasik-grup { width:100%; display:flex; flex-wrap:wrap; gap:8px 14px; text-align:left; white-space:normal; }
-  .klasik-sayaclar { display:flex; flex-wrap:wrap; gap:12px; }
+  .klasik-grup-kart { padding:10px 14px; margin-top:8px; transition:border-color .15s ease; }
+  .klasik-grup-kart.klasik-grup-acik { border-color:var(--accent); }
+  .klasik-grup-btn { width:100%; display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; text-align:left; background:none; border:none; padding:0; font:inherit; color:inherit; cursor:pointer; }
+  .klasik-grup-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+  .klasik-grup-ok { display:inline-block; width:1.1em; font-size:.85rem; color:var(--muted); flex-shrink:0; }
+  .klasik-grup-baslik { font-weight:700; font-size:.95rem; }
+  .klasik-grup-sag { display:flex; align-items:center; gap:10px; margin-left:auto; flex-wrap:wrap; }
+  .klasik-grup-sayi { min-width:4.8em; text-align:right; font-size:.86rem; color:var(--muted); font-variant-numeric:tabular-nums; flex-shrink:0; }
+  .klasik-sayaclar { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .klasik-sayac-oge { display:inline-flex; align-items:center; justify-content:flex-end; gap:4px; min-width:3.2em; font-variant-numeric:tabular-nums; font-size:.86rem; }
+  .klasik-satirlar-kilavuz { border-left:2px solid var(--accent); margin-left:20px; padding-left:12px; border-top:1px solid var(--border); padding-top:8px; margin-top:8px; }
+  .klasik-satirlar-kilavuz .klasik-satir { margin-top:6px; }
   .klasik-satir { display:block; width:100%; margin-top:10px; text-align:left; white-space:normal; overflow-wrap:anywhere; border-left:4px solid var(--border); }
   .klasik-isaret-adi { display:block; font-size:.82rem; margin-top:4px; }
   .klasik-satir[data-isaret="yesil"] { border-left-color:#15803d; background:rgba(21,128,61,.10); }
@@ -448,6 +459,9 @@
   .klasik-nokta[data-isaret="kirmizi"], .klasik-mark[data-isaret="kirmizi"] { color:#dc2626; }
   .klasik-nokta[data-isaret="yok"] { color:var(--muted); }
   .klasik-mark[aria-pressed="true"] { border:2px solid currentColor; font-weight:700; background:var(--surface-2); }
+  .klasik-aksiyon-satiri-1, .klasik-aksiyon-satiri-2 { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px 12px; margin-top:14px; }
+  .klasik-aksiyon-sol { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .klasik-aksiyon-sag { display:flex; align-items:center; gap:8px; margin-left:auto; flex-wrap:wrap; justify-content:flex-end; }
 </style>
 </head>
 <body>
@@ -2775,6 +2789,8 @@
   // değişiklikleri buraya yazılmaz. ai: true olanlar yalnız Yapay Zekâ Kaynakları açık hesapta görünür.
   // Yalnız son 7 günün kayıtları gösterilir; eskiler arşiv olarak listede kalır. Metinler 1-2 cümle.
   var DUYURULAR = [
+    { tarih: "2026-10-05", baslik: "Klasik: Hatırlatıcı düğmesi eklendi",
+      metin: "Klasik soru ekranına Hatırlatıcı düğmesi eklendi. Hatırlatıcıya aldığın soruları Konu Konu Bak ekranındaki yeni kutuyla filtreleyip listeleyebilirsin." },
     { tarih: "2026-10-05", baslik: "Klasik: işaretlediğin soruları tek tıkla listele",
       metin: "Konu Konu Bak ekranındaki Öğrendim, Tekrar bak ve Anlamadım kutularıyla işaretlediğin soruları tek tıkla listeleyebilir, aramayla birlikte daraltabilirsin." },
     { tarih: "2026-10-05", baslik: "Klasik: Konu Konu Bak ekranında arama",
@@ -4342,6 +4358,7 @@
   var klasikListeHata = null;
   var klasikArama = "";
   var klasikSeciliIsaret = null;
+  var klasikFiltreHatirlatici = false;
   var klasikAcikGruplar = { konular: {}, kontrol: {}, dusuk: {} };
   var klasikKaynak = "daily";
   var klasikCalismaNos = [];
@@ -4364,6 +4381,23 @@
     [klasikListe, klasikVerisi].forEach(function (veri) {
       if (veri) veri.questions.forEach(function (q) { if (q.no === no) q.isaret = isaret; });
     });
+  }
+
+  function klasikHatirlaticiUygula(no, hatirlatici) {
+    if (klasikDetaylar[no]) klasikDetaylar[no].hatirlatici = hatirlatici;
+    [klasikListe, klasikVerisi].forEach(function (veri) {
+      if (veri) veri.questions.forEach(function (q) { if (q.no === no) q.hatirlatici = hatirlatici; });
+    });
+  }
+
+  function klasikBaslikDuzeni(metin) {
+    if (!metin || typeof metin !== "string") return "";
+    return metin.split(" ").map(function (kelime, idx) {
+      if (!kelime) return "";
+      var kucuk = kelime.toLocaleLowerCase("tr");
+      if (kucuk === "ve" && idx > 0) return "ve";
+      return kelime.charAt(0).toLocaleUpperCase("tr") + kelime.slice(1).toLocaleLowerCase("tr");
+    }).join(" ");
   }
 
   function remoteLoadKlasikListe() {
@@ -4437,8 +4471,9 @@
 
   function klasikSatir(q, grup) {
     var isaret = q.isaret || "yok";
+    var hatirlaticiRozet = q.hatirlatici ? ' <span aria-label="Hatırlatıcı">🔖</span>' : '';
     return '<button class="btn klasik-satir" data-action="klasik-soru-ac" data-no="' + escapeHtml(q.no) + '" data-grup="' + escapeHtml(grup) + '" data-isaret="' + isaret + '">' +
-      '<b>' + escapeHtml(q.no) + '</b> · ' + escapeHtml(q.konu) +
+      '<b>' + escapeHtml(q.no) + '</b>' + hatirlaticiRozet + ' · ' + escapeHtml(q.konu) +
       (q.durum === "cevapsiz" ? ' <span class="badge">cevapsız</span>' : '') +
       '<span class="muted klasik-isaret-adi">' + (KLASIK_ISARETLER[isaret] || "İşaretsiz") + '</span></button>';
   }
@@ -4449,7 +4484,7 @@
   }
 
   function klasikFiltreAktifMi() {
-    return klasikAramaKelimeleri().length > 0 || Boolean(klasikSeciliIsaret);
+    return klasikAramaKelimeleri().length > 0 || Boolean(klasikSeciliIsaret) || Boolean(klasikFiltreHatirlatici);
   }
 
   function klasikAramaSonuclari() {
@@ -4457,6 +4492,7 @@
     var questions = klasikKonularSorulari();
     var kelimeler = klasikAramaKelimeleri();
     return questions.filter(function (q) {
+      if (klasikFiltreHatirlatici && !q.hatirlatici) return false;
       if (klasikSeciliIsaret && q.isaret !== klasikSeciliIsaret) return false;
       if (kelimeler.length > 0) {
         var hedef = [String(q.no || ""), String(q.konu || ""), String(q.kategori || ""), String(q.soru || "")].join(" ").toLocaleLowerCase("tr");
@@ -4474,7 +4510,10 @@
       return '<button class="btn klasik-mark" data-action="klasik-filtre-isaret" data-isaret="' + isaret + '" aria-pressed="' + secili + '">' +
         KLASIK_ISARETLER[isaret] + ' · ' + count + '</button>';
     }).join('');
-    return '<div class="link-row" style="margin-top:10px;margin-bottom:10px;flex-wrap:wrap">' + kutular + '</div>';
+    var hatirlaticiCount = questions.filter(function (q) { return Boolean(q.hatirlatici); }).length;
+    var hatirlaticiKutu = '<button class="btn klasik-mark" data-action="klasik-filtre-hatirlatici" aria-pressed="' + Boolean(klasikFiltreHatirlatici) + '">' +
+      '🔖 Hatırlatıcı · ' + hatirlaticiCount + '</button>';
+    return '<div class="link-row" style="margin-top:10px;margin-bottom:10px;flex-wrap:wrap">' + kutular + hatirlaticiKutu + '</div>';
   }
 
   function renderKlasikListe(tur) {
@@ -4509,12 +4548,24 @@
     return ustHtml + groups.map(function (grup) {
       if (!klasikAcikGruplar[kaynak]) klasikAcikGruplar[kaynak] = {};
       var acik = !!klasikAcikGruplar[kaynak][grup.key];
+      var baslikMetin = kaynak !== "kontrol" ? klasikBaslikDuzeni(grup.ad) : grup.ad;
+      var okSimge = '<span class="klasik-grup-ok" aria-hidden="true">' + (acik ? '▾' : '▸') + '</span>';
       var sayaclar = ["yesil", "sari", "kirmizi", "yok"].map(function (isaret) {
         var count = grup.questions.filter(function (q) { return (q.isaret || "yok") === isaret; }).length;
-        return '<span data-sayac="' + isaret + '" aria-label="' + (KLASIK_ISARETLER[isaret] || "İşaretsiz") + ': ' + count + '"><span class="klasik-nokta" data-isaret="' + isaret + '" aria-hidden="true">●</span> ' + count + '</span>';
-      }).join(' ');
-      return '<div class="card" style="margin-top:14px"><button class="btn klasik-grup" data-action="klasik-grup" data-grup="' + escapeHtml(grup.key) + '" aria-expanded="' + acik + '"><b>' + escapeHtml(grup.ad) + '</b><span>' + grup.questions.length + ' soru</span>' + (kaynak !== "kontrol" ? '<span class="klasik-sayaclar">' + sayaclar + '</span>' : '') + '</button>' +
-        (acik ? '<div class="klasik-satirlar">' + grup.questions.map(function (q) { return klasikSatir(q, grup.key); }).join('') + '</div>' : '') + '</div>';
+        return '<span class="klasik-sayac-oge" data-sayac="' + isaret + '" aria-label="' + (KLASIK_ISARETLER[isaret] || "İşaretsiz") + ': ' + count + '">' +
+          '<span class="klasik-nokta" data-isaret="' + isaret + '" aria-hidden="true">●</span>' + count + '</span>';
+      }).join('');
+      return '<div class="card klasik-grup-kart' + (acik ? ' klasik-grup-acik' : '') + '">' +
+        '<button class="klasik-grup-btn" data-action="klasik-grup" data-grup="' + escapeHtml(grup.key) + '" aria-expanded="' + acik + '">' +
+        okSimge +
+        '<span class="klasik-grup-baslik">' + escapeHtml(baslikMetin) + '</span>' +
+        '<span class="klasik-grup-sag">' +
+        '<span class="klasik-grup-sayi">' + grup.questions.length + ' soru</span>' +
+        (kaynak !== "kontrol" ? '<span class="klasik-sayaclar">' + sayaclar + '</span>' : '') +
+        '</span>' +
+        '</button>' +
+        (acik ? '<div class="klasik-satirlar-kilavuz"><div class="klasik-satirlar">' + grup.questions.map(function (q) { return klasikSatir(q, grup.key); }).join('') + '</div></div>' : '') +
+        '</div>';
     }).join('');
   }
 
@@ -4531,6 +4582,7 @@
   function remoteResetKlasikState() {
     klasikArama = "";
     klasikSeciliIsaret = null;
+    klasikFiltreHatirlatici = false;
     klasikVerisi = null;
     klasikYukleniyor = false;
     klasikHata = null;
@@ -4709,7 +4761,7 @@
 
     html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:12px;gap:8px">' +
       '<span style="font-weight:700;font-size:1.05rem">Soru ' + (klasikSoruIndex + 1) + ' / ' + qList.length + '</span>' +
-      '<span class="badge" style="background:var(--surface-2);padding:4px 10px;border-radius:6px;font-weight:600;font-size:0.9rem">' + escapeHtml(soru.kategori) + '</span>' +
+      '<span class="badge" style="background:var(--surface-2);padding:4px 10px;border-radius:6px;font-weight:600;font-size:0.9rem">' + escapeHtml(klasikBaslikDuzeni(soru.kategori)) + '</span>' +
       '</div>';
 
     html += '<div class="muted">' + escapeHtml(soru.no) + " · " + escapeHtml(soru.konu || "") + '</div>';
@@ -4736,27 +4788,42 @@
 
     var hepsiAcildi = acilanSayisi >= toplamIpuclari;
     var ipucuButonMetni = hepsiAcildi ? "İpuçlarının tamamı açıldı" : "İpucu göster (" + acilanSayisi + " / " + toplamIpuclari + ")";
-    if (toplamIpuclari > 0) html += '<div style="margin-bottom:14px">' +
-      '<button class="btn" data-action="klasik-ipucu-goster"' + (hepsiAcildi ? ' disabled' : '') + '>' + escapeHtml(ipucuButonMetni) + '</button>' +
+    var ipucuBtnHtml = toplamIpuclari > 0
+      ? '<button class="btn" data-action="klasik-ipucu-goster"' + (hepsiAcildi ? ' disabled' : '') + '>' + escapeHtml(ipucuButonMetni) + '</button>'
+      : '';
+    var cevabiGosterBtnHtml = (!durum.cevapAcik && soru.durum !== "cevapsiz")
+      ? '<button class="btn primary" data-action="klasik-cevabi-goster">Cevabı göster</button>'
+      : '';
+
+    html += '<div class="klasik-aksiyon-satiri-1">' +
+      '<div class="klasik-aksiyon-sol">' + ipucuBtnHtml + '</div>' +
+      '<div class="klasik-aksiyon-sag">' + cevabiGosterBtnHtml + '</div>' +
       '</div>';
 
     if (soru.durum !== "cevapsiz" && soru.guncellikNotu) html += '<div class="banner warning" style="margin-top:14px">⚠ ' + escapeHtml(soru.guncellikNotu) + '</div>';
     if (soru.durum === "cevapsiz") {
-      html += '<p class="muted">Cevap henüz yazılmadı.</p>';
+      html += '<p class="muted" style="margin-top:14px">Cevap henüz yazılmadı.</p>';
     } else if (durum.cevapAcik) {
       html += klasikCevapCiz(soru.cevap);
-    } else {
-      html += '<div style="margin-top:14px">' +
-        '<button class="btn primary" data-action="klasik-cevabi-goster">Cevabı göster</button>' +
-        '</div>';
     }
 
-    html += '<div class="link-row" style="margin-top:20px;flex-wrap:wrap">' + Object.keys(KLASIK_ISARETLER).map(function (isaret) {
+    var renkDugmeleriHtml = Object.keys(KLASIK_ISARETLER).map(function (isaret) {
       return '<button class="btn klasik-mark" data-action="klasik-mark" data-isaret="' + isaret + '" aria-pressed="' + (soru.isaret === isaret) + '"' + (durum.markBusy ? ' disabled' : '') + '>' + KLASIK_ISARETLER[isaret] + '</button>';
-    }).join('') + '</div>';
-    html += '<div style="margin-top:14px"><button class="btn" data-action="klasik-feedback-ac">Cevap güncellenmeli</button>' +
-      (durum.feedbackAcik ? '<div style="margin-top:10px"><textarea data-klasik-feedback aria-label="Cevap güncelleme bildirimi" maxlength="4000" placeholder="Eklenecek veya çıkarılacak bilgiyi yazın" style="width:100%;box-sizing:border-box;min-height:100px"' + (durum.feedbackBusy ? ' disabled' : '') + '>' + escapeHtml(durum.feedbackMetin || '') + '</textarea><div class="link-row"><button class="btn primary" data-action="klasik-feedback-gonder"' + (!(durum.feedbackMetin || '').trim() || durum.feedbackBusy ? ' disabled' : '') + '>Gönder</button><button class="btn ghost" data-action="klasik-feedback-vazgec"' + (durum.feedbackBusy ? ' disabled' : '') + '>Vazgeç</button></div></div>' : '') +
-      (durum.feedbackAlindi ? '<p role="status">Bildiriminiz alındı.</p>' : '') + '</div>';
+    }).join('');
+    var hatirlaticiBtnHtml = '<button class="btn klasik-mark" data-action="klasik-hatirlatici" aria-pressed="' + Boolean(soru.hatirlatici) + '"' + (durum.reminderBusy ? ' disabled' : '') + '>🔖 Hatırlatıcı</button>';
+    var feedbackBtnHtml = '<button class="btn" data-action="klasik-feedback-ac">Cevap güncellenmeli</button>';
+
+    html += '<div class="klasik-aksiyon-satiri-2">' +
+      '<div class="klasik-aksiyon-sol">' + renkDugmeleriHtml + '</div>' +
+      '<div class="klasik-aksiyon-sag">' + hatirlaticiBtnHtml + feedbackBtnHtml + '</div>' +
+      '</div>';
+
+    if (durum.feedbackAcik) {
+      html += '<div style="margin-top:10px"><textarea data-klasik-feedback aria-label="Cevap güncelleme bildirimi" maxlength="4000" placeholder="Eklenecek veya çıkarılacak bilgiyi yazın" style="width:100%;box-sizing:border-box;min-height:100px"' + (durum.feedbackBusy ? ' disabled' : '') + '>' + escapeHtml(durum.feedbackMetin || '') + '</textarea><div class="link-row"><button class="btn primary" data-action="klasik-feedback-gonder"' + (!(durum.feedbackMetin || '').trim() || durum.feedbackBusy ? ' disabled' : '') + '>Gönder</button><button class="btn ghost" data-action="klasik-feedback-vazgec"' + (durum.feedbackBusy ? ' disabled' : '') + '>Vazgeç</button></div></div>';
+    }
+    if (durum.feedbackAlindi) {
+      html += '<p role="status" style="margin-top:8px">Bildiriminiz alındı.</p>';
+    }
 
     var prevDisabled = klasikSoruIndex <= 0;
     var nextDisabled = klasikSoruIndex >= qList.length - 1;
@@ -6074,6 +6141,10 @@ function pratikEnIyiHtml(konu, modulKey) {
       klasikSeciliIsaret = klasikSeciliIsaret === isaret ? null : isaret;
       render();
     }
+    else if (action === "klasik-filtre-hatirlatici") {
+      klasikFiltreHatirlatici = !klasikFiltreHatirlatici;
+      render();
+    }
     else if (action === "klasik-grup") {
       var kaynak = VIEW === "klasikKontrol" ? "kontrol" : VIEW === "klasikDusukOncelik" ? "dusuk" : "konular";
       var grup = t.getAttribute("data-grup");
@@ -6128,6 +6199,33 @@ function pratikEnIyiHtml(konu, modulKey) {
         d.markBusy = false;
         klasikIsaretUygula(soru.no, previous);
         showBanner("İşaret kaydedilemedi.", true);
+        render();
+      });
+    }
+    else if (action === "klasik-hatirlatici") {
+      var soru = klasikGuncelSoru();
+      if (!soru || !soru.soru) return;
+      var d = klasikSoruDurumu[soru.no];
+      if (!d || d.reminderBusy) return;
+      var generation = klasikGeneration;
+      var previous = Boolean(soru.hatirlatici);
+      var next = !previous;
+      d.reminderBusy = true;
+      klasikHatirlaticiUygula(soru.no, next);
+      render();
+      remoteFetch("/api/exam", "POST", { action: "klasik-reminder", no: soru.no, hatirlatici: next }).then(function (r) {
+        if (generation !== klasikGeneration) return;
+        d.reminderBusy = false;
+        if (!r.ok) {
+          klasikHatirlaticiUygula(soru.no, previous);
+          showBanner((r.data && r.data.error) || "Hatırlatıcı kaydedilemedi.", true);
+        }
+        render();
+      }).catch(function () {
+        if (generation !== klasikGeneration) return;
+        d.reminderBusy = false;
+        klasikHatirlaticiUygula(soru.no, previous);
+        showBanner("Hatırlatıcı kaydedilemedi.", true);
         render();
       });
     }

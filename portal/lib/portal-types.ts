@@ -195,4 +195,5 @@ export type ExamApiRequest =
   | { action: 'klasik-list' }
   | { action: 'klasik-question'; no: string }
   | { action: 'klasik-mark'; no: string; isaret: 'yesil' | 'sari' | 'kirmizi' | null }
+  | { action: 'klasik-reminder'; no: string; hatirlatici: boolean }
   | { action: 'klasik-feedback'; no: string; metin: string };

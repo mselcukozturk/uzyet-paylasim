@@ -93,4 +93,8 @@ export const MIGRATIONS: readonly Migration[] = [
     name: "0021_klasik_oncelik.sql",
     content: "ALTER TABLE \"klasik_sorular\" ADD COLUMN IF NOT EXISTS \"oncelik\" text DEFAULT 'normal' NOT NULL;\n",
   },
+  {
+    name: "0022_klasik_hatirlatici.sql",
+    content: "ALTER TABLE \"klasik_isaret\" ADD COLUMN IF NOT EXISTS \"hatirlatici\" boolean DEFAULT false NOT NULL;--> statement-breakpoint\nALTER TABLE \"klasik_isaret\" ALTER COLUMN \"isaret\" DROP NOT NULL;\n",
+  },
 ];
