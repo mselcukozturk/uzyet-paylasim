@@ -2776,13 +2776,13 @@
   // Yalnız son 7 günün kayıtları gösterilir; eskiler arşiv olarak listede kalır. Metinler 1-2 cümle.
   var DUYURULAR = [
     { tarih: "2026-10-05", baslik: "Klasik: işaretlediğin soruları tek tıkla listele",
-      metin: "Konu konu bak ekranındaki Öğrendim, Tekrar bak ve Anlamadım kutularıyla işaretlediğin soruları tek tıkla listeleyebilir, aramayla birlikte daraltabilirsin." },
-    { tarih: "2026-10-05", baslik: "Klasik: Konu konu bak ekranında arama",
-      metin: "Konu konu bak ekranına arama alanı eklendi. Soru metni, konusu, kategorisi veya numarasıyla arama yapabilir, doğrudan soruya geçebilirsin." },
+      metin: "Konu Konu Bak ekranındaki Öğrendim, Tekrar bak ve Anlamadım kutularıyla işaretlediğin soruları tek tıkla listeleyebilir, aramayla birlikte daraltabilirsin." },
+    { tarih: "2026-10-05", baslik: "Klasik: Konu Konu Bak ekranında arama",
+      metin: "Konu Konu Bak ekranına arama alanı eklendi. Soru metni, konusu, kategorisi veya numarasıyla arama yapabilir, doğrudan soruya geçebilirsin." },
     { tarih: "2026-10-05", baslik: "Klasik: Düşük öncelikli sorular ayrı bölümde",
-      metin: "Klasik sekmesinde Düşük öncelikli bölümü açıldı. Önceliği düşük sorular burada listelenir; Günün Klasik Soruları'na girmez, Konu konu bak ekranında listelenmez ve Soru Kontrolü ekranına dahil edilmez." },
-    { tarih: "2026-10-05", baslik: "Klasik sorulara konu konu bak",
-      metin: "Klasik sekmesindeki Konu konu bak ile tüm soruları inceleyebilirsin. Öğrendim, Tekrar bak ve Anlamadım işaretleriyle kendi çalışma durumunu takip edebilir, Cevap güncellenmeli düğmesiyle eklenecek veya çıkarılacak bilgiyi bildirebilirsin." },
+      metin: "Klasik sekmesinde Düşük öncelikli bölümü açıldı. Önceliği düşük sorular burada listelenir; Günün Klasik Soruları'na girmez, Konu Konu Bak ekranında listelenmez ve Soru Kontrolü ekranına dahil edilmez." },
+    { tarih: "2026-10-05", baslik: "Klasik sorulara Konu Konu Bak",
+      metin: "Klasik sekmesindeki Konu Konu Bak ile tüm soruları inceleyebilirsin. Öğrendim, Tekrar bak ve Anlamadım işaretleriyle kendi çalışma durumunu takip edebilir, Cevap güncellenmeli düğmesiyle eklenecek veya çıkarılacak bilgiyi bildirebilirsin." },
     { tarih: "2026-10-05", baslik: "Klasik Sorular ve Günün Klasik Soruları",
       metin: "Yazılı sınava hazırlık için yeni Klasik sekmesi açıldı. Her gün 5 klasik soru çözebilir, cevabını kâğıda yazarken takıldığında ipuçlarını tek tek açabilir, sonunda yazılı cevapla karşılaştırabilirsin." },
     { tarih: "2026-09-30", baslik: "Günün 2. Denemesi",
@@ -4479,7 +4479,7 @@
 
   function renderKlasikListe(tur) {
     var kaynak = tur === "kontrol" || tur === true ? "kontrol" : tur === "dusuk" ? "dusuk" : "konular";
-    var baslik = kaynak === "kontrol" ? "Soru Kontrolü" : kaynak === "dusuk" ? "Düşük öncelikli" : "Konu konu bak";
+    var baslik = kaynak === "kontrol" ? "Soru Kontrolü" : kaynak === "dusuk" ? "Düşük öncelikli" : "Konu Konu Bak";
     var geriBtn = '<button class="btn ghost" data-action="open-klasik">← Klasik Sorular</button>';
     var ustBar = STATE.sadeceDeneme ? ustBarHtml(geriBtn) : '<div class="link-row">' + geriBtn + '</div>';
     var isaretKutulariHtml = kaynak === "konular" ? klasikIsaretKutulariHtml() : '';
@@ -4519,9 +4519,13 @@
   }
 
   function klasikMenuKartlari() {
-    return '<div class="card" style="margin-top:14px"><div class="section-title">Konu konu bak</div><p class="muted">Tüm klasik sorular, konu konu</p><button class="btn" data-action="open-klasik-konular">Aç</button></div>' +
-      '<div class="card" style="margin-top:14px"><div class="section-title">Soru Kontrolü</div><button class="btn" data-action="open-klasik-kontrol">Aç</button></div>' +
-      '<div class="card" style="margin-top:14px"><div class="section-title">Düşük öncelikli</div><button class="btn" data-action="open-klasik-dusuk-oncelik">Aç</button></div>';
+    return '<button class="mode-btn" style="border-left:4px solid var(--seri-6);margin-top:14px" data-action="open-klasik-konular">' +
+      '<div class="title"><span class="mode-dot" style="background:var(--seri-6)"></span>Konu Konu Bak</div>' +
+      '<div class="desc">Tüm klasik sorular, konu konu</div></button>' +
+      '<button class="mode-btn" style="border-left:4px solid var(--seri-5);margin-top:14px" data-action="open-klasik-kontrol">' +
+      '<div class="title"><span class="mode-dot" style="background:var(--seri-5)"></span>Soru Kontrolü</div></button>' +
+      '<button class="mode-btn" style="border-left:4px solid var(--seri-3);margin-top:14px" data-action="open-klasik-dusuk-oncelik">' +
+      '<div class="title"><span class="mode-dot" style="background:var(--seri-3)"></span>Düşük öncelikli</div></button>';
   }
 
   function remoteResetKlasikState() {
@@ -4678,7 +4682,7 @@
 
   function renderKlasikCalisma() {
     var geri = klasikKaynak === "daily" ? "open-klasik" : "klasik-geri";
-    var geriBaslik = klasikKaynak === "daily" ? "Klasik Sorular" : klasikKaynak === "kontrol" ? "Soru Kontrolü" : klasikKaynak === "dusuk" ? "Düşük öncelikli" : "Konu konu bak";
+    var geriBaslik = klasikKaynak === "daily" ? "Klasik Sorular" : klasikKaynak === "kontrol" ? "Soru Kontrolü" : klasikKaynak === "dusuk" ? "Düşük öncelikli" : "Konu Konu Bak";
     var geriBtn = '<button class="btn ghost" data-action="' + geri + '">← ' + geriBaslik + '</button>';
     var ustBar = STATE.sadeceDeneme ? ustBarHtml(geriBtn) : '<div class="link-row">' + geriBtn + '</div>';
 

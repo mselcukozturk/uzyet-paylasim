@@ -398,7 +398,7 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       click('[data-action="klasik-soru-ac"][data-no="S9"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       check(VIEW === 'klasikCalisma', 'Arama sonucundan soru ekranı açılmalı');
-      checkUstBar('klasik-geri', 'Konu konu bak');
+      checkUstBar('klasik-geri', 'Konu Konu Bak');
       check(!document.querySelector('input[type="search"][data-klasik-arama]'), 'Soru ekranında arama alanı olmamalı');
       check(document.querySelector('.card').textContent.includes('Soru 1 / 2'), 'İki arama sonucu arasında gezinir: Soru 1 / 2');
       check(document.querySelector('[data-action="klasik-onceki"]').disabled, 'İlk sonuçta Önceki devre dışı');
@@ -444,7 +444,7 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       click('[data-action="klasik-soru-ac"][data-no="S1"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       check(document.querySelector('.klasik-cevap'), 'Shared study state');
-      checkUstBar('klasik-geri', 'Konu konu bak');
+      checkUstBar('klasik-geri', 'Konu Konu Bak');
       click('[data-action="klasik-mark"][data-isaret="sari"]');
       await new Promise(resolve => setTimeout(resolve, 0));
       check(document.querySelector('[data-isaret="sari"]').getAttribute('aria-pressed') === 'true', 'Yellow selected');
