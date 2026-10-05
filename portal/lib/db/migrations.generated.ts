@@ -89,4 +89,8 @@ export const MIGRATIONS: readonly Migration[] = [
     name: "0020_klasik_isaret_ve_geri_bildirim.sql",
     content: "ALTER TABLE \"klasik_sorular\" ADD COLUMN IF NOT EXISTS \"konu\" text DEFAULT '' NOT NULL;--> statement-breakpoint\nALTER TABLE \"klasik_sorular\" ADD COLUMN IF NOT EXISTS \"kontrol\" text DEFAULT 'edilecek' NOT NULL;--> statement-breakpoint\nALTER TABLE \"klasik_sorular\" ADD COLUMN IF NOT EXISTS \"guncellik_notu\" text DEFAULT '' NOT NULL;--> statement-breakpoint\nCREATE TABLE IF NOT EXISTS \"klasik_isaret\" (\n  \"user_id\" text NOT NULL,\n  \"soru_no\" text NOT NULL,\n  \"isaret\" text NOT NULL,\n  \"guncelleme_zamani\" timestamp with time zone DEFAULT now() NOT NULL,\n  CONSTRAINT \"klasik_isaret_user_soru_unique\" UNIQUE (\"user_id\", \"soru_no\")\n);--> statement-breakpoint\nCREATE TABLE IF NOT EXISTS \"klasik_geri_bildirim\" (\n  \"id\" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,\n  \"user_id\" text NOT NULL,\n  \"soru_no\" text NOT NULL,\n  \"metin\" text NOT NULL,\n  \"olusturma_zamani\" timestamp with time zone DEFAULT now() NOT NULL,\n  \"durum\" text DEFAULT 'bekliyor' NOT NULL\n);\n",
   },
+  {
+    name: "0021_klasik_oncelik.sql",
+    content: "ALTER TABLE \"klasik_sorular\" ADD COLUMN IF NOT EXISTS \"oncelik\" text DEFAULT 'normal' NOT NULL;\n",
+  },
 ];

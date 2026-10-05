@@ -53,6 +53,12 @@ export function parseKlasikSync(sourceText: string) {
       throw new Error(`Geçersiz durum: satır ${i + 1} ('tam', 'kismi' veya 'cevapsiz' olmalı)`);
     }
 
+    const oncelikRaw = item.oncelik === undefined || item.oncelik === null ? 'normal' : text(item.oncelik);
+    if (oncelikRaw !== 'normal' && oncelikRaw !== 'dusuk') {
+      throw new Error(`Geçersiz oncelik: satır ${i + 1} ('normal' veya 'dusuk' olmalı)`);
+    }
+    const oncelik = oncelikRaw;
+
     if (!Array.isArray(item.cevap) || (durum !== 'cevapsiz' && item.cevap.length === 0)) {
       throw new Error(`Boş veya geçersiz cevap: satır ${i + 1}`);
     }
@@ -97,6 +103,7 @@ export function parseKlasikSync(sourceText: string) {
       durum,
       cevap,
       ipuclari,
+      oncelik,
       version,
     };
   });

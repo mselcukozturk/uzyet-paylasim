@@ -2775,6 +2775,8 @@
   // değişiklikleri buraya yazılmaz. ai: true olanlar yalnız Yapay Zekâ Kaynakları açık hesapta görünür.
   // Yalnız son 7 günün kayıtları gösterilir; eskiler arşiv olarak listede kalır. Metinler 1-2 cümle.
   var DUYURULAR = [
+    { tarih: "2026-10-05", baslik: "Klasik: Düşük öncelikli sorular ayrı bölümde",
+      metin: "Klasik sekmesinde Düşük öncelikli bölümü açıldı. Önceliği düşük sorular burada listelenir ve Soru Kontrolü ekranına dahil edilmez." },
     { tarih: "2026-10-05", baslik: "Klasik sorulara konu konu bak",
       metin: "Klasik sekmesindeki Konu konu bak ile tüm soruları inceleyebilirsin. Öğrendim, Tekrar bak ve Anlamadım işaretleriyle kendi çalışma durumunu takip edebilir, Cevap güncellenmeli düğmesiyle eklenecek veya çıkarılacak bilgiyi bildirebilirsin." },
     { tarih: "2026-10-05", baslik: "Klasik Sorular ve Günün Klasik Soruları",
@@ -4334,7 +4336,7 @@
   var klasikListe = null;
   var klasikListeYukleniyor = false;
   var klasikListeHata = null;
-  var klasikAcikGruplar = { konular: {}, kontrol: {} };
+  var klasikAcikGruplar = { konular: {}, kontrol: {}, dusuk: {} };
   var klasikKaynak = "daily";
   var klasikCalismaNos = [];
   var klasikDetaylar = {};
@@ -4400,13 +4402,22 @@
     });
   }
 
-  function klasikGruplar(kontrol) {
+  function klasikGruplar(tur) {
     var questions = (klasikListe && klasikListe.questions) || [];
-    if (kontrol) return [
-      { key: "edildi", ad: "Cevabı kontrol edilmiş", questions: questions.filter(function (q) { return q.durum !== "cevapsiz" && q.kontrol === "edildi"; }) },
-      { key: "edilecek", ad: "Kontrol edilecek", questions: questions.filter(function (q) { return q.durum !== "cevapsiz" && q.kontrol === "edilecek"; }) },
-      { key: "cevapsiz", ad: "Cevapsız", questions: questions.filter(function (q) { return q.durum === "cevapsiz"; }) }
-    ];
+    if (tur === "kontrol" || tur === true) {
+      var aktifSorular = questions.filter(function (q) { return (q.oncelik || "normal") !== "dusuk"; });
+      return [
+        { key: "edildi", ad: "Cevabı kontrol edilmiş", questions: aktifSorular.filter(function (q) { return q.durum !== "cevapsiz" && q.kontrol === "edildi"; }) },
+        { key: "edilecek", ad: "Kontrol edilecek", questions: aktifSorular.filter(function (q) { return q.durum !== "cevapsiz" && q.kontrol === "edilecek"; }) },
+        { key: "cevapsiz", ad: "Cevapsız", questions: aktifSorular.filter(function (q) { return q.durum === "cevapsiz"; }) }
+      ];
+    }
+    if (tur === "dusuk") {
+      var dusukSorular = questions.filter(function (q) { return q.oncelik === "dusuk"; });
+      return Array.from(new Set(dusukSorular.map(function (q) { return q.kategori; }))).sort(function (a, b) { return a.localeCompare(b, "tr"); }).map(function (ad) {
+        return { key: ad, ad: ad, questions: dusukSorular.filter(function (q) { return q.kategori === ad; }) };
+      });
+    }
     return Array.from(new Set(questions.map(function (q) { return q.kategori; }))).sort(function (a, b) { return a.localeCompare(b, "tr"); }).map(function (ad) {
       return { key: ad, ad: ad, questions: questions.filter(function (q) { return q.kategori === ad; }) };
     });
@@ -4420,27 +4431,30 @@
       '<span class="muted klasik-isaret-adi">' + (KLASIK_ISARETLER[isaret] || "İşaretsiz") + '</span></button>';
   }
 
-  function renderKlasikListe(kontrol) {
-    var kaynak = kontrol ? "kontrol" : "konular";
-    var html = '<div class="link-row"><button class="btn ghost" data-action="open-klasik">← Klasik Sorular</button></div><div class="section-title">' + (kontrol ? "Soru Kontrolü" : "Konu konu bak") + '</div>';
+  function renderKlasikListe(tur) {
+    var kaynak = tur === "kontrol" || tur === true ? "kontrol" : tur === "dusuk" ? "dusuk" : "konular";
+    var baslik = kaynak === "kontrol" ? "Soru Kontrolü" : kaynak === "dusuk" ? "Düşük öncelikli" : "Konu konu bak";
+    var html = '<div class="link-row"><button class="btn ghost" data-action="open-klasik">← Klasik Sorular</button></div><div class="section-title">' + baslik + '</div>';
     if (klasikListeYukleniyor || (!klasikListe && !klasikListeHata)) return html + '<div class="card" role="status">Yükleniyor…</div>';
     if (klasikListeHata) return html + '<div class="card" role="alert">' + escapeHtml(klasikListeHata) + '<button class="btn" data-action="klasik-liste-tekrar">Tekrar Dene</button></div>';
-    var groups = klasikGruplar(kontrol);
+    var groups = klasikGruplar(kaynak);
     if (!groups.length) return html + '<div class="card">Henüz soru yok.</div>';
     return html + groups.map(function (grup) {
+      if (!klasikAcikGruplar[kaynak]) klasikAcikGruplar[kaynak] = {};
       var acik = !!klasikAcikGruplar[kaynak][grup.key];
       var sayaclar = ["yesil", "sari", "kirmizi", "yok"].map(function (isaret) {
         var count = grup.questions.filter(function (q) { return (q.isaret || "yok") === isaret; }).length;
         return '<span data-sayac="' + isaret + '" aria-label="' + (KLASIK_ISARETLER[isaret] || "İşaretsiz") + ': ' + count + '"><span class="klasik-nokta" data-isaret="' + isaret + '" aria-hidden="true">●</span> ' + count + '</span>';
       }).join(' ');
-      return '<div class="card" style="margin-top:14px"><button class="btn klasik-grup" data-action="klasik-grup" data-grup="' + escapeHtml(grup.key) + '" aria-expanded="' + acik + '"><b>' + escapeHtml(grup.ad) + '</b><span>' + grup.questions.length + ' soru</span>' + (!kontrol ? '<span class="klasik-sayaclar">' + sayaclar + '</span>' : '') + '</button>' +
+      return '<div class="card" style="margin-top:14px"><button class="btn klasik-grup" data-action="klasik-grup" data-grup="' + escapeHtml(grup.key) + '" aria-expanded="' + acik + '"><b>' + escapeHtml(grup.ad) + '</b><span>' + grup.questions.length + ' soru</span>' + (kaynak !== "kontrol" ? '<span class="klasik-sayaclar">' + sayaclar + '</span>' : '') + '</button>' +
         (acik ? '<div class="klasik-satirlar">' + grup.questions.map(function (q) { return klasikSatir(q, grup.key); }).join('') + '</div>' : '') + '</div>';
     }).join('');
   }
 
   function klasikMenuKartlari() {
     return '<div class="card" style="margin-top:14px"><div class="section-title">Konu konu bak</div><p class="muted">Tüm klasik sorular, konu konu</p><button class="btn" data-action="open-klasik-konular">Aç</button></div>' +
-      '<div class="card" style="margin-top:14px"><div class="section-title">Soru Kontrolü</div><button class="btn" data-action="open-klasik-kontrol">Aç</button></div>';
+      '<div class="card" style="margin-top:14px"><div class="section-title">Soru Kontrolü</div><button class="btn" data-action="open-klasik-kontrol">Aç</button></div>' +
+      '<div class="card" style="margin-top:14px"><div class="section-title">Düşük öncelikli</div><button class="btn" data-action="open-klasik-dusuk-oncelik">Aç</button></div>';
   }
 
   function remoteResetKlasikState() {
@@ -4452,7 +4466,7 @@
     klasikListe = null;
     klasikListeYukleniyor = false;
     klasikListeHata = null;
-    klasikAcikGruplar = { konular: {}, kontrol: {} };
+    klasikAcikGruplar = { konular: {}, kontrol: {}, dusuk: {} };
     klasikKaynak = "daily";
     klasikCalismaNos = [];
     klasikDetaylar = {};
@@ -4614,8 +4628,9 @@
     }
     var durum = klasikSoruDurumu[soru.no];
 
+    var geriBaslik = klasikKaynak === "daily" ? "Klasik Sorular" : klasikKaynak === "kontrol" ? "Soru Kontrolü" : klasikKaynak === "dusuk" ? "Düşük öncelikli" : "Konu konu bak";
     var ustBar = '<div class="ust-bar">' +
-      '<div class="link-row"><button class="btn ghost" data-action="' + geri + '" title="Geri">← ' + (klasikKaynak === "daily" ? "Klasik Sorular" : klasikKaynak === "kontrol" ? "Soru Kontrolü" : "Konu konu bak") + '</button></div>' +
+      '<div class="link-row"><button class="btn ghost" data-action="' + geri + '" title="Geri">← ' + geriBaslik + '</button></div>' +
       (remoteGirisTamamMi() ? '<span class="ust-bar-hesap"><span class="muted">' + escapeHtml(remoteAuth.username) + '</span></span>' : '') +
       '</div>';
 
@@ -5857,13 +5872,14 @@ function pratikEnIyiHtml(konu, modulKey) {
     if (STATE.sadeceDeneme && !aiModu && (VIEW === "menu" || VIEW === "menuTest" || VIEW === "pratikModul" || VIEW === "pratikSoru" ||
       VIEW === "checkpointListe" || VIEW === "checkpointDetay" || VIEW === "checkpointSoru" || VIEW === "checkpointHatirlatici" || VIEW === "settings" || VIEW === "import")) VIEW = "menuDeneme";
     if (STATE.sadeceDeneme && (VIEW === "settings" || VIEW === "import")) VIEW = aiModu ? "menuTest" : "menuDeneme";
-    if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult" || VIEW === "gecmisUzak" || VIEW === "tekrarTest" || VIEW === "tekrarSonuc" || VIEW === "klasik" || VIEW === "klasikCalisma")) VIEW = "menuDeneme";
+    if (STATE.sadeceDeneme && !remoteGirisTamamMi() && (VIEW === "flash" || VIEW === "denemeKonuSec" || VIEW === "flashResult" || VIEW === "gecmisUzak" || VIEW === "tekrarTest" || VIEW === "tekrarSonuc" || VIEW === "klasik" || VIEW === "klasikCalisma" || VIEW === "klasikKonular" || VIEW === "klasikKontrol" || VIEW === "klasikDusukOncelik")) VIEW = "menuDeneme";
     if (VIEW === "menu") html = renderMenu();
     else if (VIEW === "menuDeneme") html = renderMenuDeneme();
     else if (VIEW === "denemeKonuSec") html = renderDenemeKonuSec();
     else if (VIEW === "klasik") html = renderKlasik();
-    else if (VIEW === "klasikKonular") html = renderKlasikListe(false);
-    else if (VIEW === "klasikKontrol") html = renderKlasikListe(true);
+    else if (VIEW === "klasikKonular") html = renderKlasikListe("konular");
+    else if (VIEW === "klasikKontrol") html = renderKlasikListe("kontrol");
+    else if (VIEW === "klasikDusukOncelik") html = renderKlasikListe("dusuk");
     else if (VIEW === "klasikCalisma") html = renderKlasikCalisma();
     else if (VIEW === "menuTest") html = renderMenuTest();
     else if (VIEW === "exam") html = renderExam();
@@ -5974,24 +5990,24 @@ function pratikEnIyiHtml(konu, modulKey) {
         remoteLoadKlasik();
       }
     }
-    else if (action === "open-klasik-konular" || action === "open-klasik-kontrol") {
-      var kontrol = action === "open-klasik-kontrol";
+    else if (action === "open-klasik-konular" || action === "open-klasik-kontrol" || action === "open-klasik-dusuk-oncelik") {
       if (!remoteGirisTamamMi()) return;
-      VIEW = kontrol ? "klasikKontrol" : "klasikKonular";
+      VIEW = action === "open-klasik-kontrol" ? "klasikKontrol" : action === "open-klasik-dusuk-oncelik" ? "klasikDusukOncelik" : "klasikKonular";
       render();
       if (!klasikListe) remoteLoadKlasikListe();
     }
     else if (action === "klasik-liste-tekrar") remoteLoadKlasikListe();
     else if (action === "klasik-soru-tekrar") remoteLoadKlasikSoru();
     else if (action === "klasik-grup") {
-      var kaynak = VIEW === "klasikKontrol" ? "kontrol" : "konular";
+      var kaynak = VIEW === "klasikKontrol" ? "kontrol" : VIEW === "klasikDusukOncelik" ? "dusuk" : "konular";
       var grup = t.getAttribute("data-grup");
+      if (!klasikAcikGruplar[kaynak]) klasikAcikGruplar[kaynak] = {};
       klasikAcikGruplar[kaynak][grup] = !klasikAcikGruplar[kaynak][grup];
       render();
     }
     else if (action === "klasik-soru-ac") {
-      klasikKaynak = VIEW === "klasikKontrol" ? "kontrol" : "konular";
-      var grup = klasikGruplar(klasikKaynak === "kontrol").find(function (g) { return g.key === t.getAttribute("data-grup"); });
+      klasikKaynak = VIEW === "klasikKontrol" ? "kontrol" : VIEW === "klasikDusukOncelik" ? "dusuk" : "konular";
+      var grup = klasikGruplar(klasikKaynak).find(function (g) { return g.key === t.getAttribute("data-grup"); });
       if (!grup) return;
       klasikCalismaNos = grup.questions.map(function (q) { return q.no; });
       klasikSoruIndex = klasikCalismaNos.indexOf(t.getAttribute("data-no"));
@@ -6002,7 +6018,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "klasik-geri") {
       klasikDetayIstek++;
       klasikDetayYukleniyor = false;
-      VIEW = klasikKaynak === "kontrol" ? "klasikKontrol" : "klasikKonular";
+      VIEW = klasikKaynak === "kontrol" ? "klasikKontrol" : klasikKaynak === "dusuk" ? "klasikDusukOncelik" : "klasikKonular";
       render();
     }
     else if (action === "klasik-mark") {

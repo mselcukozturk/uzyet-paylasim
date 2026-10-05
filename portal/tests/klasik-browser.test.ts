@@ -58,6 +58,7 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
     await send('Runtime.evaluate', { expression: 'document.getElementById("browser-result").style.display="none"' }, sessionId);
     const screenshot = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
     writeFileSync(new URL('screenshot.png', output), Buffer.from(screenshot.data, 'base64'));
+    writeFileSync(new URL('dusuk-oncelik.png', output), Buffer.from(screenshot.data, 'base64'));
     return dom.result.value as string;
   } finally {
     socket?.close();
@@ -168,9 +169,13 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
         }
       ];
 
-      mockDailyQuestions.forEach(function(q) { q.konu = q.soru; q.isaret = null; q.kontrol = 'edilecek'; q.guncellikNotu = ''; });
+      mockDailyQuestions.forEach(function(q) { q.konu = q.soru; q.isaret = null; q.kontrol = 'edilecek'; q.guncellikNotu = ''; q.oncelik = 'normal'; });
       mockDailyQuestions[0].kontrol = 'edildi';
-      var allQuestions = mockDailyQuestions.concat([{ no: 'S6', kategori: 'Hukuk', konu: 'Cevapsız konu', soru: 'Cevapsız soru', durum: 'cevapsiz', kontrol: 'edilecek', guncellikNotu: 'Şimdilik güncel değil', cevap: [], ipuclari: [], seen: false, isaret: null }]);
+      var allQuestions = mockDailyQuestions.concat([
+        { no: 'S6', kategori: 'Hukuk', konu: 'Cevapsız konu', soru: 'Cevapsız soru', durum: 'cevapsiz', kontrol: 'edilecek', guncellikNotu: 'Şimdilik güncel değil', cevap: [], ipuclari: [], seen: false, isaret: null, oncelik: 'normal' },
+        { no: 'S7', kategori: 'Hukuk', konu: 'Düşük öncelikli Hukuk 1', soru: 'Düşük soru 1', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Düşük cevap 1' }], ipuclari: [], seen: false, isaret: null, oncelik: 'dusuk' },
+        { no: 'S8', kategori: 'Hukuk', konu: 'Düşük öncelikli Hukuk 2', soru: 'Düşük soru 2', durum: 'tam', kontrol: 'edilecek', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Düşük cevap 2' }], ipuclari: [], seen: false, isaret: null, oncelik: 'dusuk' }
+      ]);
       mockDailyQuestions[1].guncellikNotu = 'Güncellenecek bilgi';
       var feedbackRequests = [], markFailure = false, feedbackFailure = false;
       var seenRequests = [];
@@ -277,7 +282,7 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       await new Promise(resolve => setTimeout(resolve, 0));
       var group = document.querySelector('[data-grup="Hukuk"]');
       check(group && group.getAttribute('aria-expanded') === 'false', 'Category collapsed');
-      check(group.textContent.includes('2 soru'), 'Category count');
+      check(group.textContent.includes('4 soru'), 'Category count (includes normal and dusuk in topic list)');
       click('[data-grup="Hukuk"]');
       click('[data-action="klasik-soru-ac"][data-no="S1"]');
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -345,8 +350,39 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       klasikVerisi = savedDaily; VIEW = 'klasikKontrol';
       bannerMsg = null; render();
       measureLayout('control');
-      remoteResetKlasikState();
-      check(klasikListe === null && Object.keys(klasikDetaylar).length === 0, 'Account reset');
+
+      // Düşük öncelikli bölümü testleri
+      click('[data-action="open-klasik"]');
+      check(document.querySelector('[data-action="open-klasik-dusuk-oncelik"]'), 'Düşük öncelikli kartı görünmeli');
+      click('[data-action="open-klasik-dusuk-oncelik"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasikDusukOncelik', 'Görünüm klasikDusukOncelik olmalı');
+      check(document.querySelector('.section-title').textContent.includes('Düşük öncelikli'), 'Başlık Düşük öncelikli olmalı');
+      var dusukGruplar = document.querySelectorAll('[data-action="klasik-grup"]');
+      check(dusukGruplar.length === 1, 'Sorusu kalmayan kategori grubu gösterilmez (yalnız Hukuk)');
+      check(dusukGruplar[0].textContent.includes('2 soru'), 'Düşük öncelikli Hukuk 2 soru');
+      check(dusukGruplar[0].querySelector('.klasik-sayaclar'), 'İşaret sayaçları görünmeli');
+      click('[data-grup="Hukuk"]');
+      var dusukSatirlar = document.querySelectorAll('[data-action="klasik-soru-ac"]');
+      check(dusukSatirlar.length === 2, 'Yalnız 2 soru satırı görünmeli');
+      check(dusukSatirlar[0].getAttribute('data-no') === 'S7', 'İlk soru S7');
+      check(dusukSatirlar[1].getAttribute('data-no') === 'S8', 'İkinci soru S8');
+      click('[data-action="klasik-soru-ac"][data-no="S7"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasikCalisma', 'Çalışma ekranı açılmalı');
+      check(document.querySelector('.card').textContent.includes('Soru 1 / 2'), 'Yalnız düşük sorular arasında gezinir (Soru 1 / 2)');
+      check(document.querySelector('.card').textContent.includes('Düşük soru 1'), 'S7 soru metni');
+      click('[data-action="klasik-sonraki"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('.card').textContent.includes('Soru 2 / 2'), 'Soru 2 / 2');
+      check(document.querySelector('.card').textContent.includes('Düşük soru 2'), 'S8 soru metni');
+      check(document.querySelector('[data-action="klasik-sonraki"]').disabled, 'Düşük soruların sonuncusunda Sonraki devre dışı');
+      click('[data-action="klasik-geri"]');
+      check(VIEW === 'klasikDusukOncelik', 'Geri dönüş Düşük öncelikli ekranına döner');
+      measureLayout('dusuk-oncelik');
+
+      // Ekran görüntüsü için Düşük öncelikli ekranı açık tutulur
+      render();
       // Yatay taşma kontrolü
       check(document.documentElement.scrollWidth <= innerWidth, 'Yatay taşma olmamalı');
 

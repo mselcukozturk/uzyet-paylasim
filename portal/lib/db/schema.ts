@@ -249,6 +249,7 @@ export const klasikSorular = pgTable('klasik_sorular', {
   durum: text('durum').notNull(),
   cevap: jsonb('cevap').$type<KlasikCevapOgesi[]>().notNull(),
   ipuclari: jsonb('ipuclari').$type<string[]>().notNull(),
+  oncelik: text('oncelik').notNull().default('normal'),
   version: text('version').notNull(),
 });
 

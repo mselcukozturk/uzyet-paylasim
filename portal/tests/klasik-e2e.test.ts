@@ -43,6 +43,7 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     assert.ok(existsSync(migration0019), '0019_klasik_sorular.sql migration dosyası mevcut olmalı');
     await pg.exec(readFileSync(migration0019, 'utf8'));
     await pg.exec(readFileSync(new URL('../drizzle/0020_klasik_isaret_ve_geri_bildirim.sql', import.meta.url), 'utf8'));
+    await pg.exec(readFileSync(new URL('../drizzle/0021_klasik_oncelik.sql', import.meta.url), 'utf8'));
 
     await pg.exec(`insert into profiles(user_id,username,is_active,is_admin,disclaimer_accepted_at)
       values ('u1','kullanici1',true,false,now()),
@@ -169,6 +170,11 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     }));
     assert.equal(malformed8.status, 400, 'Boş ipucu öğesi 400 dönmeli');
 
+    const malformedOncelik = await sendSync(JSON.stringify({
+      questions: [{ no: 'S1', kategori: 'Hukuk', konu: 'Konu', kontrol: 'edilecek', guncellikNotu: '', soru: 'Soru 1', durum: 'tam', cevap: [{ tur: 'paragraf', metin: 'm' }], ipuclari: ['ip1'], oncelik: 'gecersiz' }],
+    }));
+    assert.equal(malformedOncelik.status, 400, 'Geçersiz oncelik değeri 400 dönmeli');
+
     // 3. Geçerli gövde: 7 kategori, kategori başına >= 2 soru, biri kismi, biri tablolu
     const validQuestions = [
       // Kategori 1: Hukuk
@@ -210,6 +216,7 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
 
     const dbRows = await db.select().from(schema.klasikSorular);
     assert.equal(dbRows.length, 14, 'Tabloda tam 14 soru olmalı');
+    assert.ok(dbRows.every((r: any) => r.oncelik === 'normal'), 'oncelik alanı olmayan gövde senkronlanınca tüm sorular normal olmalı');
 
     // 5. klasik-daily: Girişsiz ve onaysız kullanıcı
     currentProfile = null;
@@ -301,7 +308,7 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
 
     const extended = [...validQuestions,
       { no: 'S15', kategori: 'Hukuk', konu: 'Cevapsız konu', soru: 'Cevapsız soru', durum: 'cevapsiz', kontrol: 'edilecek', guncellikNotu: 'Şimdilik güncel değil', cevap: [], ipuclari: [] },
-      { ...validQuestions[0], no: 'S16', kontrol: 'edildi', ipuclari: [], guncellikNotu: 'Güncellenecek bilgi' }];
+      { ...validQuestions[0], no: 'S16', kontrol: 'edildi', oncelik: 'dusuk', ipuclari: [], guncellikNotu: 'Güncellenecek bilgi' }];
     const extendedPayload = JSON.stringify({ questions: extended });
     assert.equal((await sendSync(extendedPayload)).status, 200);
     for (const invalid of [{ ...extended[0], cevap: [] }, { ...extended[0], kontrol: 'yanlis' },
@@ -313,6 +320,9 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     assert.equal(list.questions.length, 16);
     assert.deepEqual(list.questions.map((q: any) => q.no), extended.map(q => q.no));
     assert.deepEqual(list.questions.map((q: any) => q.kontrol), extended.map(q => q.kontrol));
+    assert.deepEqual(list.questions.map((q: any) => q.oncelik), extended.map((q: any) => q.oncelik ?? 'normal'));
+    assert.equal(list.questions.find((q: any) => q.no === 'S16')?.oncelik, 'dusuk');
+    assert.equal(list.questions.find((q: any) => q.no === 'S1')?.oncelik, 'normal');
     assert.ok(list.questions.every((q: any) => !('cevap' in q) && !('ipuclari' in q)));
     currentProfile.isAdmin = true;
     const adminList = await (await sendExam({ action: 'klasik-list' })).json();

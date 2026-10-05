@@ -978,7 +978,7 @@ async function handlePost(request: Request) {
       const markMap = new Map(marks.map(r => [r.soruNo, r.isaret]));
       return NextResponse.json({ questions: rows.map(q => ({
         no: q.no, kategori: q.kategori, konu: q.konu, soru: q.soru, durum: q.durum,
-        isaret: markMap.get(q.no) ?? null, kontrol: q.kontrol,
+        isaret: markMap.get(q.no) ?? null, kontrol: q.kontrol, oncelik: q.oncelik,
       })) });
     }
 
