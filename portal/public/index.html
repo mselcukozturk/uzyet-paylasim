@@ -462,11 +462,16 @@
   .klasik-aksiyon-satiri-1, .klasik-aksiyon-satiri-2 { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px 12px; margin-top:14px; }
   .klasik-aksiyon-sol { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
   .klasik-aksiyon-sag { display:flex; align-items:center; gap:8px; margin-left:auto; flex-wrap:wrap; justify-content:flex-end; }
+  .klasik-aksiyon-satiri-2 [data-action="klasik-feedback-ac"] .klasik-aksiyon-simge { display:none; }
   @media (max-width: 480px) {
-    .klasik-aksiyon-satiri-1, .klasik-aksiyon-satiri-2 { justify-content:center; }
+    .klasik-aksiyon-satiri-1 { justify-content:center; }
     .klasik-aksiyon-sag { margin-left:0; }
-    .klasik-aksiyon-satiri-2 .klasik-aksiyon-sol, .klasik-aksiyon-satiri-2 .klasik-aksiyon-sag { width:100%; justify-content:center; flex-wrap:nowrap; gap:6px; }
-    .klasik-aksiyon-satiri-2 .btn { padding:8px 8px; font-size:.84rem; white-space:nowrap; }
+    .klasik-aksiyon-satiri-2 { justify-content:center; flex-wrap:nowrap; gap:4px; }
+    .klasik-aksiyon-satiri-2 .klasik-aksiyon-sol, .klasik-aksiyon-satiri-2 .klasik-aksiyon-sag { display:contents; }
+    .klasik-aksiyon-satiri-2 .btn { padding:6px 4px; font-size:.78rem; white-space:nowrap; }
+    .klasik-aksiyon-satiri-2 [data-action="klasik-hatirlatici"], .klasik-aksiyon-satiri-2 [data-action="klasik-feedback-ac"] { min-width:36px; padding:6px 0; text-align:center; justify-content:center; }
+    .klasik-aksiyon-satiri-2 .klasik-aksiyon-metin { display:none; }
+    .klasik-aksiyon-satiri-2 [data-action="klasik-feedback-ac"] .klasik-aksiyon-simge { display:inline; }
   }
 </style>
 </head>
@@ -4818,8 +4823,8 @@
     var renkDugmeleriHtml = Object.keys(KLASIK_ISARETLER).map(function (isaret) {
       return '<button class="btn klasik-mark" data-action="klasik-mark" data-isaret="' + isaret + '" aria-pressed="' + (soru.isaret === isaret) + '"' + (durum.markBusy ? ' disabled' : '') + '>' + KLASIK_ISARETLER[isaret] + '</button>';
     }).join('');
-    var hatirlaticiBtnHtml = '<button class="btn klasik-mark" data-action="klasik-hatirlatici" aria-pressed="' + Boolean(soru.hatirlatici) + '"' + (durum.reminderBusy ? ' disabled' : '') + '>🔖 Hatırlatıcı</button>';
-    var feedbackBtnHtml = '<button class="btn" data-action="klasik-feedback-ac">Cevap güncellenmeli</button>';
+    var hatirlaticiBtnHtml = '<button class="btn klasik-mark" data-action="klasik-hatirlatici" aria-label="Hatırlatıcı" aria-pressed="' + Boolean(soru.hatirlatici) + '"' + (durum.reminderBusy ? ' disabled' : '') + '><span class="klasik-aksiyon-simge">🔖</span><span class="klasik-aksiyon-metin"> Hatırlatıcı</span></button>';
+    var feedbackBtnHtml = '<button class="btn" data-action="klasik-feedback-ac" aria-label="Cevap güncellenmeli"><span class="klasik-aksiyon-simge">✏️</span><span class="klasik-aksiyon-metin">Cevap güncellenmeli</span></button>';
 
     html += '<div class="klasik-aksiyon-satiri-2">' +
       '<div class="klasik-aksiyon-sol">' + renkDugmeleriHtml + '</div>' +

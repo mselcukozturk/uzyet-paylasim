@@ -130,7 +130,7 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
 // 30. Soru ekranı düğme düzeni (renderKlasikCalisma): Satır 1 solda ipucu, sağda Cevabı göster; ipucu yokken sağda Cevabı göster; cevap açılınca Cevabı göster butonu yerine cevap; Satır 2 solda 3 renkli düğme, sağda Hatırlatıcı ve Cevap güncellenmeli; geri bildirim açılınca Satır 2'nin altında tam genişlikte.
 // 31. Liste ekranı grupları (renderKlasikListe): dış kart kalırken başlık düğmesinin iç çerçevesi ve arka planı kalkmıyor, açık/kapalı ok simgesi (▸ / ▾) eksik, sayaçlar eşit aralıklı / tabular-nums / sağa dayalı değil, "N soru" sayaçlardan önce sağda değil, kategori adları Türkçe kurallı başlık düzeninde (klasikBaslikDuzeni, 've' küçük) gösterilmiyor, açılan grubun satırları sol dikey kılavuz çizgisi ve girintiyle vurgulanmıyor, açık grup kartı accent kenarlık almıyor.
 // 32. 390px ve 1100px görünümünde grup-acik.png ve soru-dugmeler.png ekran görüntülerinin üretilmemesi.
-// 33. 390 px'te satır 1 ve satır 2 düğme gruplarının yatayda ortalanmaması veya satır 2'nin ikiden fazla satıra yayılması; 1100 px'te sol/sağ düzeninin bozulması.
+// 33. 390 px'te satır 2'nin beş düğmesinin tek satırda olmaması, ortalanmaması, karttan taşması; Hatırlatıcı/Cevap güncellenmeli yazısının telefonda görünmesi veya 🔖/✏️ simgesinin görünmemesi; 1100 px'te yazıların görünmemesi, ✏️ simgesinin görünmesi veya sol/sağ düzenin bozulması.
 for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`, async () => {
   const chrome = [
     process.env.CHROME_PATH,
@@ -327,39 +327,36 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
 
         var s2Btns = Array.from(satir2.querySelectorAll('button'));
         check(s2Btns.length === 5, 'Satır 2 beş düğme içermeli');
-        var distinctTops = [];
-        s2Btns.forEach(function (btn) {
-          var top = btn.getBoundingClientRect().top;
-          if (!distinctTops.some(function (t) { return Math.abs(t - top) <= 2; })) {
-            distinctTops.push(top);
-          }
-        });
-        check(distinctTops.length === 2, 'Satır 2 beş düğmenin top değerleri tam iki farklı satır oluşturmalı (2 px tolerans): bulunan satır sayısı ' + distinctTops.length);
-
-        var s2SolBtns = Array.from(satir2.querySelectorAll('.klasik-aksiyon-sol button'));
-        var s2SagBtns = Array.from(satir2.querySelectorAll('.klasik-aksiyon-sag button'));
-        check(s2SolBtns.length === 3, 'Satır 2 sol grupta 3 düğme olmalı');
-        check(s2SagBtns.length === 2, 'Satır 2 sağ grupta 2 düğme olmalı');
-        var solTops = s2SolBtns.map(function (b) { return b.getBoundingClientRect().top; });
-        var sagTops = s2SagBtns.map(function (b) { return b.getBoundingClientRect().top; });
-        check(Math.max.apply(null, solTops) - Math.min.apply(null, solTops) <= 2, 'Satır 2 sol grup düğmeleri aynı satırda olmalı');
-        check(Math.max.apply(null, sagTops) - Math.min.apply(null, sagTops) <= 2, 'Satır 2 sağ grup düğmeleri aynı satırda olmalı');
-        check(Math.abs(solTops[0] - sagTops[0]) > 2, 'Satır 2 iki grup farklı satırlarda olmalı');
+        var s2Tops = s2Btns.map(function (b) { return b.getBoundingClientRect().top; });
+        check(Math.max.apply(null, s2Tops) - Math.min.apply(null, s2Tops) <= 2, 'Satır 2 beş düğmenin top değerleri tek satır olmalı (2 px tolerans)');
 
         var s2Rect = satir2.getBoundingClientRect();
         var s2InnerLeft = s2Rect.left + satir2.clientLeft;
         var s2InnerRight = s2InnerLeft + satir2.clientWidth;
-        var s2SolLeft = Math.min.apply(null, s2SolBtns.map(function (b) { return b.getBoundingClientRect().left; }));
-        var s2SolRight = Math.max.apply(null, s2SolBtns.map(function (b) { return b.getBoundingClientRect().right; }));
-        var s2SolBosluk1 = s2SolLeft - s2InnerLeft;
-        var s2SagBosluk1 = s2InnerRight - s2SolRight;
-        check(Math.abs(s2SolBosluk1 - s2SagBosluk1) <= 2, 'Satır 2 ilk düğme satırı (renk düğmeleri) yatayda ortalanmalı (sol: ' + s2SolBosluk1 + ', sağ: ' + s2SagBosluk1 + ')');
+        var s2Left = Math.min.apply(null, s2Btns.map(function (b) { return b.getBoundingClientRect().left; }));
+        var s2Right = Math.max.apply(null, s2Btns.map(function (b) { return b.getBoundingClientRect().right; }));
+        var s2SolBosluk = s2Left - s2InnerLeft;
+        var s2SagBosluk = s2InnerRight - s2Right;
+        check(Math.abs(s2SolBosluk - s2SagBosluk) <= 2, 'Satır 2 beşli grubun sol ve sağ boşluğu en fazla 2 px farklı olmalı (sol: ' + s2SolBosluk + ', sağ: ' + s2SagBosluk + ')');
 
-        var s2SagLeft = Math.min.apply(null, s2SagBtns.map(function (b) { return b.getBoundingClientRect().left; }));
-        var s2SagRight = Math.max.apply(null, s2SagBtns.map(function (b) { return b.getBoundingClientRect().right; }));
-        var s2SolBosluk2 = s2SagLeft - s2InnerLeft;
-        var s2SagBosluk2 = s2InnerRight - s2SagRight;
-        check(Math.abs(s2SolBosluk2 - s2SagBosluk2) <= 2, 'Satır 2 ikinci düğme satırı (hatırlatıcı ve bildirim) yatayda ortalanmalı (sol: ' + s2SolBosluk2 + ', sağ: ' + s2SagBosluk2 + ')');
+        s2Btns.forEach(function (btn) {
+          var rect = btn.getBoundingClientRect();
+          check(rect.left >= s2InnerLeft - 0.5 && rect.right <= s2InnerRight + 0.5, 'Hiçbir düğme .klasik-aksiyon-satiri-2 kutusunun dışına çıkmamalı: ' + btn.textContent.trim());
+        });
+
+        var feedbackBtnMob = satir2.querySelector('[data-action="klasik-feedback-ac"]');
+        var hatirlaticiMetin = hatirlaticiBtn.querySelector('.klasik-aksiyon-metin');
+        var hatirlaticiSimge = hatirlaticiBtn.querySelector('.klasik-aksiyon-simge');
+        var feedbackMetin = feedbackBtnMob ? feedbackBtnMob.querySelector('.klasik-aksiyon-metin') : null;
+        var feedbackSimge = feedbackBtnMob ? feedbackBtnMob.querySelector('.klasik-aksiyon-simge') : null;
+
+        check(hatirlaticiMetin && window.getComputedStyle(hatirlaticiMetin).display === 'none', 'Hatırlatıcı yazı öğesi getComputedStyle(...).display === "none" olmalı');
+        check(hatirlaticiSimge && window.getComputedStyle(hatirlaticiSimge).display !== 'none', 'Hatırlatıcı simgesi görünür olmalı');
+        check(feedbackMetin && window.getComputedStyle(feedbackMetin).display === 'none', 'Cevap güncellenmeli yazı öğesi getComputedStyle(...).display === "none" olmalı');
+        check(feedbackSimge && window.getComputedStyle(feedbackSimge).display !== 'none', 'Cevap güncellenmeli ✏️ simgesi görünür olmalı');
+
+        check(hatirlaticiBtn.getBoundingClientRect().width >= 36, 'Hatırlatıcı simge düğmesi genişliği ≥ 36 olmalı: ' + hatirlaticiBtn.getBoundingClientRect().width);
+        check(feedbackBtnMob && feedbackBtnMob.getBoundingClientRect().width >= 36, 'Cevap güncellenmeli simge düğmesi genişliği ≥ 36 olmalı: ' + (feedbackBtnMob ? feedbackBtnMob.getBoundingClientRect().width : 0));
       } else {
         var s2RectWide = satir2.getBoundingClientRect();
         var s2InnerLeftWide = s2RectWide.left + satir2.clientLeft;
@@ -370,6 +367,15 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
         var feedbackBtn = satir2.querySelector('[data-action="klasik-feedback-ac"]');
         check(feedbackBtn, 'Cevap güncellenmeli düğmesi bulunmalı');
         check(Math.abs(s2InnerRightWide - feedbackBtn.getBoundingClientRect().right) <= 2, 'Geniş ekranda Cevap güncellenmeli düğmesi kapsayıcının sağına dayalı olmalı: sağ farkı ' + (s2InnerRightWide - feedbackBtn.getBoundingClientRect().right));
+
+        var hatirlaticiMetinG = hatirlaticiBtn.querySelector('.klasik-aksiyon-metin');
+        var hatirlaticiSimgeG = hatirlaticiBtn.querySelector('.klasik-aksiyon-simge');
+        var feedbackMetinG = feedbackBtn ? feedbackBtn.querySelector('.klasik-aksiyon-metin') : null;
+        var feedbackSimgeG = feedbackBtn ? feedbackBtn.querySelector('.klasik-aksiyon-simge') : null;
+        check(hatirlaticiMetinG && window.getComputedStyle(hatirlaticiMetinG).display !== 'none', 'Geniş ekranda Hatırlatıcı yazısı görünmeli');
+        check(hatirlaticiSimgeG && window.getComputedStyle(hatirlaticiSimgeG).display !== 'none', 'Geniş ekranda Hatırlatıcı simgesi görünmeli');
+        check(feedbackMetinG && window.getComputedStyle(feedbackMetinG).display !== 'none', 'Geniş ekranda Cevap güncellenmeli yazısı görünmeli');
+        check(feedbackSimgeG && window.getComputedStyle(feedbackSimgeG).display === 'none', 'Geniş ekranda ✏️ simgesi display:none olmalı');
       }
 
       // Hatırlatıcı düğmesine bas (S1 için aç)
