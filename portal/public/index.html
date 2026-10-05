@@ -463,7 +463,9 @@
   .klasik-aksiyon-sol { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
   .klasik-aksiyon-sag { display:flex; align-items:center; gap:8px; margin-left:auto; flex-wrap:wrap; justify-content:flex-end; }
   @media (max-width: 480px) {
-    .klasik-aksiyon-satiri-2 .klasik-aksiyon-sol, .klasik-aksiyon-satiri-2 .klasik-aksiyon-sag { flex-wrap:nowrap; gap:6px; }
+    .klasik-aksiyon-satiri-1, .klasik-aksiyon-satiri-2 { justify-content:center; }
+    .klasik-aksiyon-sag { margin-left:0; }
+    .klasik-aksiyon-satiri-2 .klasik-aksiyon-sol, .klasik-aksiyon-satiri-2 .klasik-aksiyon-sag { width:100%; justify-content:center; flex-wrap:nowrap; gap:6px; }
     .klasik-aksiyon-satiri-2 .btn { padding:8px 8px; font-size:.84rem; white-space:nowrap; }
   }
 </style>

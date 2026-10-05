@@ -130,6 +130,7 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
 // 30. Soru ekranı düğme düzeni (renderKlasikCalisma): Satır 1 solda ipucu, sağda Cevabı göster; ipucu yokken sağda Cevabı göster; cevap açılınca Cevabı göster butonu yerine cevap; Satır 2 solda 3 renkli düğme, sağda Hatırlatıcı ve Cevap güncellenmeli; geri bildirim açılınca Satır 2'nin altında tam genişlikte.
 // 31. Liste ekranı grupları (renderKlasikListe): dış kart kalırken başlık düğmesinin iç çerçevesi ve arka planı kalkmıyor, açık/kapalı ok simgesi (▸ / ▾) eksik, sayaçlar eşit aralıklı / tabular-nums / sağa dayalı değil, "N soru" sayaçlardan önce sağda değil, kategori adları Türkçe kurallı başlık düzeninde (klasikBaslikDuzeni, 've' küçük) gösterilmiyor, açılan grubun satırları sol dikey kılavuz çizgisi ve girintiyle vurgulanmıyor, açık grup kartı accent kenarlık almıyor.
 // 32. 390px ve 1100px görünümünde grup-acik.png ve soru-dugmeler.png ekran görüntülerinin üretilmemesi.
+// 33. 390 px'te satır 1 ve satır 2 düğme gruplarının yatayda ortalanmaması veya satır 2'nin ikiden fazla satıra yayılması; 1100 px'te sol/sağ düzeninin bozulması.
 for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`, async () => {
   const chrome = [
     process.env.CHROME_PATH,
@@ -309,6 +310,67 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(hatirlaticiBtn && hatirlaticiBtn.textContent.includes('Hatırlatıcı'), 'Satır 2 sağda Hatırlatıcı butonu bulunmalı');
       check(satir2.querySelector('[data-action="klasik-feedback-ac"]'), 'Satır 2 sağda Cevap güncellenmeli butonu bulunmalı');
       check(hatirlaticiBtn.getAttribute('aria-pressed') === 'false', 'Hatırlatıcı başlangıçta basılı olmamalı');
+
+      if (innerWidth <= 480) {
+        var s1Btns = Array.from(satir1.querySelectorAll('button'));
+        check(s1Btns.length === 2, 'Satır 1 iki düğme içermeli');
+        check(Math.abs(s1Btns[0].getBoundingClientRect().top - s1Btns[1].getBoundingClientRect().top) <= 2, 'Satır 1 düğmeleri tek satırda olmalı');
+        var s1Rect = satir1.getBoundingClientRect();
+        var s1InnerLeft = s1Rect.left + satir1.clientLeft;
+        var s1InnerRight = s1InnerLeft + satir1.clientWidth;
+        var s1Left = Math.min.apply(null, s1Btns.map(function (b) { return b.getBoundingClientRect().left; }));
+        var s1Right = Math.max.apply(null, s1Btns.map(function (b) { return b.getBoundingClientRect().right; }));
+        var s1SolBosluk = s1Left - s1InnerLeft;
+        var s1SagBosluk = s1InnerRight - s1Right;
+        check(Math.abs(s1SolBosluk - s1SagBosluk) <= 2, 'Satır 1 düğme satırı yatayda ortalanmalı (sol: ' + s1SolBosluk + ', sağ: ' + s1SagBosluk + ')');
+        check(s1SolBosluk > 2, 'Satır 1 düğmeleri kenara dayalı değil, ortada toplanmış olmalı (sol boşluk: ' + s1SolBosluk + ')');
+
+        var s2Btns = Array.from(satir2.querySelectorAll('button'));
+        check(s2Btns.length === 5, 'Satır 2 beş düğme içermeli');
+        var distinctTops = [];
+        s2Btns.forEach(function (btn) {
+          var top = btn.getBoundingClientRect().top;
+          if (!distinctTops.some(function (t) { return Math.abs(t - top) <= 2; })) {
+            distinctTops.push(top);
+          }
+        });
+        check(distinctTops.length === 2, 'Satır 2 beş düğmenin top değerleri tam iki farklı satır oluşturmalı (2 px tolerans): bulunan satır sayısı ' + distinctTops.length);
+
+        var s2SolBtns = Array.from(satir2.querySelectorAll('.klasik-aksiyon-sol button'));
+        var s2SagBtns = Array.from(satir2.querySelectorAll('.klasik-aksiyon-sag button'));
+        check(s2SolBtns.length === 3, 'Satır 2 sol grupta 3 düğme olmalı');
+        check(s2SagBtns.length === 2, 'Satır 2 sağ grupta 2 düğme olmalı');
+        var solTops = s2SolBtns.map(function (b) { return b.getBoundingClientRect().top; });
+        var sagTops = s2SagBtns.map(function (b) { return b.getBoundingClientRect().top; });
+        check(Math.max.apply(null, solTops) - Math.min.apply(null, solTops) <= 2, 'Satır 2 sol grup düğmeleri aynı satırda olmalı');
+        check(Math.max.apply(null, sagTops) - Math.min.apply(null, sagTops) <= 2, 'Satır 2 sağ grup düğmeleri aynı satırda olmalı');
+        check(Math.abs(solTops[0] - sagTops[0]) > 2, 'Satır 2 iki grup farklı satırlarda olmalı');
+
+        var s2Rect = satir2.getBoundingClientRect();
+        var s2InnerLeft = s2Rect.left + satir2.clientLeft;
+        var s2InnerRight = s2InnerLeft + satir2.clientWidth;
+        var s2SolLeft = Math.min.apply(null, s2SolBtns.map(function (b) { return b.getBoundingClientRect().left; }));
+        var s2SolRight = Math.max.apply(null, s2SolBtns.map(function (b) { return b.getBoundingClientRect().right; }));
+        var s2SolBosluk1 = s2SolLeft - s2InnerLeft;
+        var s2SagBosluk1 = s2InnerRight - s2SolRight;
+        check(Math.abs(s2SolBosluk1 - s2SagBosluk1) <= 2, 'Satır 2 ilk düğme satırı (renk düğmeleri) yatayda ortalanmalı (sol: ' + s2SolBosluk1 + ', sağ: ' + s2SagBosluk1 + ')');
+
+        var s2SagLeft = Math.min.apply(null, s2SagBtns.map(function (b) { return b.getBoundingClientRect().left; }));
+        var s2SagRight = Math.max.apply(null, s2SagBtns.map(function (b) { return b.getBoundingClientRect().right; }));
+        var s2SolBosluk2 = s2SagLeft - s2InnerLeft;
+        var s2SagBosluk2 = s2InnerRight - s2SagRight;
+        check(Math.abs(s2SolBosluk2 - s2SagBosluk2) <= 2, 'Satır 2 ikinci düğme satırı (hatırlatıcı ve bildirim) yatayda ortalanmalı (sol: ' + s2SolBosluk2 + ', sağ: ' + s2SagBosluk2 + ')');
+      } else {
+        var s2RectWide = satir2.getBoundingClientRect();
+        var s2InnerLeftWide = s2RectWide.left + satir2.clientLeft;
+        var s2InnerRightWide = s2InnerLeftWide + satir2.clientWidth;
+        var ilkRenkBtn = satir2.querySelector('[data-action="klasik-mark"]');
+        check(ilkRenkBtn, 'İlk renk düğmesi bulunmalı');
+        check(Math.abs(ilkRenkBtn.getBoundingClientRect().left - s2InnerLeftWide) <= 2, 'Geniş ekranda ilk renk düğmesi kapsayıcının soluna dayalı olmalı: sol farkı ' + (ilkRenkBtn.getBoundingClientRect().left - s2InnerLeftWide));
+        var feedbackBtn = satir2.querySelector('[data-action="klasik-feedback-ac"]');
+        check(feedbackBtn, 'Cevap güncellenmeli düğmesi bulunmalı');
+        check(Math.abs(s2InnerRightWide - feedbackBtn.getBoundingClientRect().right) <= 2, 'Geniş ekranda Cevap güncellenmeli düğmesi kapsayıcının sağına dayalı olmalı: sağ farkı ' + (s2InnerRightWide - feedbackBtn.getBoundingClientRect().right));
+      }
 
       // Hatırlatıcı düğmesine bas (S1 için aç)
       click('[data-action="klasik-hatirlatici"]');
