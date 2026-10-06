@@ -5381,5 +5381,32 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "TÜİK Tüketici Fiyat Endeksi, Ağustos 2026 (Milliyet / Uzmanpara, 03.09.2026)",
   "tarihISO": "2026-10-05T23:25:14.960337+00:00"
+ },
+ {
+  "id": "gece-20261007-04d775b749e6",
+  "guid": "04d775b749e6",
+  "konu": "Temel İşlemler",
+  "soru": "Euro cinsinden vadeli hesap açılışı alt limiti ne kadardır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Temel Islemler_YYS_2026 s.136",
+  "tarihISO": "2026-10-06T23:09:49.880644+00:00"
+ },
+ {
+  "id": "gece-20261007-f838113515bb",
+  "guid": "f838113515bb",
+  "konu": "Kredi",
+  "soru": "Alışveriş kredisi için hangileri yanlıştır?\nI) Üründen cayılması veya ürünün iade edilmesi durumunda kredi otomatik kapanır.\nII) Alışverişin bir kısmı kredi kartıyla ödenebilir.\nIII) Diğer banka müşterileri kullanabilir.",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026 s. 205",
+  "tarihISO": "2026-10-06T23:09:49.880644+00:00"
+ },
+ {
+  "id": "gece-20261007-e10c72585b46",
+  "guid": "e10c72585b46",
+  "konu": "Ürünler",
+  "soru": "Hisse senedi yoğun fonlarda hisselerin ağırlığı … olmalıdır, bu fonlara uygulanan stopaj … oranındadır.",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026 s.124, 133",
+  "tarihISO": "2026-10-06T23:09:49.880644+00:00"
  }
 ]
