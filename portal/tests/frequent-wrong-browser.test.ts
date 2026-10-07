@@ -1,5 +1,5 @@
 // Failure cases:
-// 1. Question with 4 wrong answers incorrectly included in frequent wrong list (must require wrong_count >= 5).
+// 1. Question with 2 wrong answers incorrectly included in frequent wrong list (must require wrong_count >= 3).
 // 2. Question in inactive question bank included in frequent wrong list (must only include questions from active bank).
 // 3. Question belonging to another user included (must be strictly isolated to the authenticated user's stats).
 // 4. General button or per-lesson button enabled when there are no eligible questions (must be disabled if list is empty).
@@ -48,8 +48,8 @@ test('Çok Yanlış Yapılanlar sunucu API ve veritabanı uçtan uca doğrulamas
     }).returning();
 
     await db.insert(schema.questions).values([
-      { bankId: activeBank.id, guid: 'q_4wrong', topic: 'Kredi', prompt: 'Soru 4', options: ['A', 'B'], correctIndex: 0 },
-      { bankId: activeBank.id, guid: 'q_5wrong', topic: 'Kredi', prompt: 'Soru 5', options: ['A', 'B'], correctIndex: 0 },
+      { bankId: activeBank.id, guid: 'q_2wrong', topic: 'Kredi', prompt: 'Soru 4', options: ['A', 'B'], correctIndex: 0 },
+      { bankId: activeBank.id, guid: 'q_3wrong', topic: 'Kredi', prompt: 'Soru 5', options: ['A', 'B'], correctIndex: 0 },
       { bankId: activeBank.id, guid: 'q_resolved', topic: 'Hukuk', prompt: 'Soru R', options: ['A', 'B'], correctIndex: 0 },
       { bankId: activeBank.id, guid: 'q_other_user', topic: 'Kredi', prompt: 'Soru O', options: ['A', 'B'], correctIndex: 0 },
       { bankId: inactiveBank.id, guid: 'q_inactive', topic: 'Kredi', prompt: 'Soru I', options: ['A', 'B'], correctIndex: 0 },
@@ -57,8 +57,8 @@ test('Çok Yanlış Yapılanlar sunucu API ve veritabanı uçtan uca doğrulamas
 
     const now = new Date();
     await db.insert(schema.questionStats).values([
-      { userId: 'u1', questionGuid: 'q_4wrong', shownCount: 4, wrongCount: 4, correctCount: 0, lastResult: false, lastSeenAt: now, frequentWrongRemoved: false },
-      { userId: 'u1', questionGuid: 'q_5wrong', shownCount: 5, wrongCount: 5, correctCount: 0, lastResult: false, lastSeenAt: now, frequentWrongRemoved: false },
+      { userId: 'u1', questionGuid: 'q_2wrong', shownCount: 2, wrongCount: 2, correctCount: 0, lastResult: false, lastSeenAt: now, frequentWrongRemoved: false },
+      { userId: 'u1', questionGuid: 'q_3wrong', shownCount: 3, wrongCount: 3, correctCount: 0, lastResult: false, lastSeenAt: now, frequentWrongRemoved: false },
       { userId: 'u1', questionGuid: 'q_resolved', shownCount: 6, wrongCount: 5, correctCount: 1, lastResult: true, lastSeenAt: now, frequentWrongRemoved: false },
       { userId: 'u1', questionGuid: 'q_inactive', shownCount: 10, wrongCount: 10, correctCount: 0, lastResult: false, lastSeenAt: now, frequentWrongRemoved: false },
       { userId: 'u2', questionGuid: 'q_other_user', shownCount: 8, wrongCount: 8, correctCount: 0, lastResult: false, lastSeenAt: now, frequentWrongRemoved: false },
@@ -93,10 +93,10 @@ test('Çok Yanlış Yapılanlar sunucu API ve veritabanı uçtan uca doğrulamas
     // 1. 4 yanlışlı soru listede yok, 5 yanlışlı var; doğru cevaplanmış soru da listede kalır; pasif banka ve başka kullanıcı hariçtir.
     const initialList = await callApi({ action: 'frequent-wrong-questions' });
     assert.equal(initialList.status, 200);
-    assert.deepEqual(initialList.data.guids.sort(), ['q_5wrong', 'q_resolved'].sort());
+    assert.deepEqual(initialList.data.guids.sort(), ['q_3wrong', 'q_resolved'].sort());
 
     // 2. "Listeden çıkar" action'ı soruyu listeden çıkarır.
-    const removeRes = await callApi({ action: 'frequent-wrong-remove', questionGuid: 'q_5wrong' });
+    const removeRes = await callApi({ action: 'frequent-wrong-remove', questionGuid: 'q_3wrong' });
     assert.equal(removeRes.status, 200);
     assert.equal(removeRes.data.ok, true);
     assert.deepEqual(removeRes.data.guids, ['q_resolved']);
@@ -108,7 +108,7 @@ test('Çok Yanlış Yapılanlar sunucu API ve veritabanı uçtan uca doğrulamas
     // 3. Çıkarılan soru doğru cevaplandığında (study-answer) listeye geri girmez.
     await callApi({
       action: 'study-answer',
-      questionGuid: 'q_5wrong',
+      questionGuid: 'q_3wrong',
       selectedAnswer: 'A', // doğru cevap
     });
     const afterCorrectStudy = await callApi({ action: 'frequent-wrong-questions' });
@@ -117,11 +117,11 @@ test('Çok Yanlış Yapılanlar sunucu API ve veritabanı uçtan uca doğrulamas
     // 4. Çıkarılan soru ilk YANLIŞ cevapta hemen listeye geri girer.
     await callApi({
       action: 'study-answer',
-      questionGuid: 'q_5wrong',
+      questionGuid: 'q_3wrong',
       selectedAnswer: 'B', // yanlış cevap
     });
     const afterWrongStudy = await callApi({ action: 'frequent-wrong-questions' });
-    assert.deepEqual(afterWrongStudy.data.guids.sort(), ['q_5wrong', 'q_resolved'].sort());
+    assert.deepEqual(afterWrongStudy.data.guids.sort(), ['q_3wrong', 'q_resolved'].sort());
   } finally {
     await pg.close();
   }
@@ -218,7 +218,7 @@ for (const width of [390, 1100]) {
           { guid: 'u4', konu: 'Kredi', soru: 'Soru 4', siklar: ['A', 'B'], cevapIdx: 0, cevapMetni: 'A', aciklama: 'Açık 4' }
         ];
         STATE.stats = {
-          u1: { gosterim: 4, dogru: 0, yanlis: 4, sonSonucDogruMu: false, sonGorulme: '2026-10-01' },
+          u1: { gosterim: 2, dogru: 0, yanlis: 2, sonSonucDogruMu: false, sonGorulme: '2026-10-01' },
           u2: { gosterim: 5, dogru: 0, yanlis: 5, sonSonucDogruMu: false, sonGorulme: '2026-10-01' },
           u3: { gosterim: 6, dogru: 1, yanlis: 5, sonSonucDogruMu: true, sonGorulme: '2026-10-01' },
           u4: { gosterim: 5, dogru: 0, yanlis: 5, sonSonucDogruMu: false, sonGorulme: '2026-10-01' }

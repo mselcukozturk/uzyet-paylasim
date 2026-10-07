@@ -608,7 +608,7 @@ async function frequentWrongQuestionGuids(userId: string) {
     .innerJoin(schema.questionBanks, eq(schema.questions.bankId, schema.questionBanks.id))
     .where(and(
       eq(schema.questionStats.userId, userId),
-      gte(schema.questionStats.wrongCount, 5),
+      gte(schema.questionStats.wrongCount, 3),
       eq(schema.questionStats.frequentWrongRemoved, false),
       eq(schema.questionBanks.isActive, true),
     ))
