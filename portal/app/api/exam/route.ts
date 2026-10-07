@@ -600,6 +600,22 @@ async function wrongQuestionGuids(userId: string) {
   return rows.map((row) => row.questionGuid);
 }
 
+async function frequentWrongQuestionGuids(userId: string) {
+  const db = getDb();
+  const rows = await db.select({ questionGuid: schema.questionStats.questionGuid })
+    .from(schema.questionStats)
+    .innerJoin(schema.questions, eq(schema.questionStats.questionGuid, schema.questions.guid))
+    .innerJoin(schema.questionBanks, eq(schema.questions.bankId, schema.questionBanks.id))
+    .where(and(
+      eq(schema.questionStats.userId, userId),
+      gte(schema.questionStats.wrongCount, 5),
+      eq(schema.questionStats.frequentWrongRemoved, false),
+      eq(schema.questionBanks.isActive, true),
+    ))
+    .orderBy(desc(schema.questionStats.lastSeenAt));
+  return rows.map((row) => row.questionGuid);
+}
+
 export async function OPTIONS() {
   return corsPreflight();
 }
@@ -1158,6 +1174,7 @@ async function handlePost(request: Request) {
             wrongCount: sql`${schema.questionStats.wrongCount} + ${correct ? 0 : 1}`,
             lastResult: correct,
             lastSeenAt: now,
+            ...(correct ? {} : { frequentWrongRemoved: false }),
           },
         }).returning();
         const result: StudyAnswerResponse = {
@@ -1391,6 +1408,20 @@ async function handlePost(request: Request) {
       return NextResponse.json({ ok: true, correct: isCorrect, guids: await wrongQuestionGuids(user.id) });
     }
 
+    if (body.action === 'frequent-wrong-questions') {
+      return NextResponse.json({ guids: await frequentWrongQuestionGuids(user.id) });
+    }
+
+    if (body.action === 'frequent-wrong-remove') {
+      if (!body.questionGuid || typeof body.questionGuid !== 'string') return fail('Soru geçersiz.', 400);
+      await db.update(schema.questionStats).set({ frequentWrongRemoved: true })
+        .where(and(
+          eq(schema.questionStats.userId, user.id),
+          eq(schema.questionStats.questionGuid, body.questionGuid),
+        ));
+      return NextResponse.json({ ok: true, guids: await frequentWrongQuestionGuids(user.id) });
+    }
+
     if (body.action === 'flags') {
       // İşaretler yalnız tarayıcı localStorage'ında (STATE.flags) tutuluyordu —
       // başka bir cihaz/tarayıcıdan devam edince sunucudaki kayıt hâlâ dururken
@@ -1601,6 +1632,7 @@ async function handlePost(request: Request) {
                 wrongCount: sql`${schema.questionStats.wrongCount} + excluded.wrong_count`,
                 lastResult: sql`excluded.last_result`,
                 lastSeenAt: sql`excluded.last_seen_at`,
+                frequentWrongRemoved: sql`case when excluded.wrong_count > 0 then false else ${schema.questionStats.frequentWrongRemoved} end`,
               },
             });
           }

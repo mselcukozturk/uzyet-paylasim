@@ -169,8 +169,8 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       check(!document.querySelector('.shell').textContent.includes('Bir ders seç, ardından') && !document.querySelector('[data-action="export-hatirlatici-word"]'), 'Açıklama ve Word düğmesi bu ekranda yok');
       check(typeof exportHatirlaticiWord === 'function' && typeof hatirlaticiDocxOlustur === 'function', 'Word aktarım özelliği korunur');
       var generalButtons = Array.from(document.querySelector('[data-tum-banka]').querySelectorAll('button'));
-      check(generalButtons.length === 4, 'Tüm banka için dört çalışma düğmesi');
-      check(generalButtons.map(function(b){return b.textContent;}).join('|') === '🎲 Rastgele Sorular|❌ Mevcut Yanlışlar|📖 Hiç Görülmemiş Sorular|🔖 Hatırlatıcı İşaretli Sorular', 'Genel çalışma düğmeleri istenen sırada');
+      check(generalButtons.length === 5, 'Tüm banka için beş çalışma düğmesi');
+      check(generalButtons.map(function(b){return b.textContent;}).join('|') === '🎲 Rastgele Sorular|❌ Mevcut Yanlışlar|📖 Hiç Görülmemiş Sorular|🔖 Hatırlatıcı İşaretli Sorular|⚠️ Çok Yanlış Yapılanlar', 'Genel çalışma düğmeleri istenen sırada');
       var buttonTops = generalButtons.map(function(b){return b.getBoundingClientRect().top;});
       check(Math.max.apply(null,buttonTops)-Math.min.apply(null,buttonTops)<1, 'Dört genel düğme yan yana');
       var statsBeforeGeneralOpen = JSON.stringify(STATE.stats);
@@ -269,7 +269,7 @@ for (const width of [390, 1100]) test(`Konu çalışma tarayıcı akışı (${wi
       check(document.querySelector('[data-toplam="1"] [data-count="wrong"]').textContent === '1', 'Açık sayı üst blok yanlış: 1');
       check(document.querySelector('[data-toplam="1"] [data-count="unseen"]').textContent === '2', 'Açık sayı üst blok görülmemiş: 2');
       checkCounterLayout();
-      check(lesson().querySelectorAll('button').length === 4, 'Ders için dört seçenek');
+      check(lesson().querySelectorAll('button').length === 5, 'Ders için beş seçenek');
       check(!lesson().querySelector('[data-action="start-deneme-konu-yanlis"]').textContent.match(/\\d/), 'Yanlış düğmesinde sayı yok');
       counters(4,2,1,2);
       var statsBeforeUnseenOpen = JSON.stringify(STATE.stats);

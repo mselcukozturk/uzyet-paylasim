@@ -417,7 +417,7 @@
   .konu-calisma .konu-sayaclar { gap:8px; }
   .konu-calisma .konu-sayaclar > div { background:var(--surface-2); border:0; border-radius:8px; padding:10px 12px; }
   .konu-calisma .konu-sayaclar strong { font-size:1.3rem; }
-  .konu-secenekler { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:22px; }
+  .konu-secenekler { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; margin-bottom:22px; }
   .konu-calisma .konu-secenekler { margin-bottom:8px; }
   .konu-calisma .konu-secenekler .btn { font-size:.84rem; }
   .konu-secenekler .btn { min-width:0; white-space:normal; overflow-wrap:anywhere; padding:10px 6px; }
@@ -430,9 +430,9 @@
     .konu-sayaclar { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
     .konu-sayaclar > div { padding:10px 12px; }
     .konu-sayaclar span { font-size:.66rem; letter-spacing:.04em; }
-    .konu-secenekler { gap:6px; }
-    .konu-secenekler .btn, .konu-calisma .konu-secenekler .btn { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:.68rem; line-height:1.2; padding:6px 3px; }
-    .konu-secenek-simge { font-size:.95rem; line-height:1; }
+    .konu-secenekler { gap:4px; }
+    .konu-secenekler .btn, .konu-calisma .konu-secenekler .btn { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:.62rem; line-height:1.15; padding:6px 2px; }
+    .konu-secenek-simge { font-size:.9rem; line-height:1; }
     .konu-calisma { padding:8px 12px; }
   }
 
@@ -1673,6 +1673,7 @@
         STATE.stats[entry.body.questionGuid] = remoteCloneStudyStat(r.data.stat);
         remotePendingStudyStats(entry.body.questionGuid);
         bumpRev(); lsKaydet();
+        if (!entry.correct) remoteLoadFrequentWrongQuestions();
       }
       return true;
     }).catch(function () {
@@ -2007,6 +2008,14 @@
     }).catch(function () {}).then(function () { if (cb) cb(); });
   }
 
+  var remoteFrequentWrongGuids = null;
+  function remoteLoadFrequentWrongQuestions(cb) {
+    if (!STATE.sadeceDeneme || !remoteGirisTamamMi()) { if (cb) cb(); return; }
+    remoteFetch("/api/exam", "POST", { action: "frequent-wrong-questions" }).then(function (r) {
+      if (r.ok && r.data && r.data.guids) remoteFrequentWrongGuids = r.data.guids;
+    }).catch(function () {}).then(function () { if (cb) cb(); });
+  }
+
   // STATE.flags (🔖 Hatırlatıcı, 🚩 hatalı+kategori, not) yalnız bu tarayıcının
   // localStorage'ında tutuluyordu — başka bir cihaz/tarayıcıdan devam edilince
   // sunucudaki kayıt dururken yerelde hiç görünmüyordu ("Denemeden çıkıp geri
@@ -2043,6 +2052,7 @@
     if (remoteGirisTamamMi() && !remoteBankLoaded) { pending++; remoteLoadBankIfNeeded(finish); }
     if (remoteGirisTamamMi() && remoteReminderGuids === null) { pending++; remoteLoadReminders(finish); }
     if (remoteGirisTamamMi() && remoteWrongGuids === null) { pending++; remoteLoadWrongQuestions(finish); }
+    if (remoteGirisTamamMi() && remoteFrequentWrongGuids === null) { pending++; remoteLoadFrequentWrongQuestions(finish); }
     if (remoteGirisTamamMi() && !remoteFlagsLoaded) { pending++; remoteLoadFlagsIfNeeded(finish); }
     if (pending === 0 && cb) cb();
   }
@@ -2173,6 +2183,7 @@
     remoteBankLoaded = false;
     remoteReminderGuids = null;
     remoteWrongGuids = null;
+    remoteFrequentWrongGuids = null;
     remoteFlagsLoaded = false;
     denemeTurSecimiAcik = false;
     render();
@@ -2425,6 +2436,8 @@
       remoteRefreshDashboard(function () { if (VIEW === "result") render(); });
       remoteWrongGuids = null;
       remoteLoadWrongQuestions();
+      remoteFrequentWrongGuids = null;
+      remoteLoadFrequentWrongQuestions();
       sonucSekmesi = "yanlislar";
       VIEW = "result";
       render();
@@ -3239,6 +3252,10 @@
   function yanlisGuidListesi(havuz) {
     return havuz === "ai" ? aiYanlisGuidListesi() : denemeYanlisGuidListesi();
   }
+  function denemeCokYanlisGuidListesi() { return guidBirlestir(remoteFrequentWrongGuids, []); }
+  function cokYanlisGuidListesi(havuz) {
+    return havuz === "ai" ? [] : denemeCokYanlisGuidListesi();
+  }
   var TEKRAR_TUR = {
     hatirlatici: {
       etiket: "🔖 Hatırlatıcı", ozetBaslik: "Hatırlatıcı testi", yeniOturum: "Yeni Hatırlatıcı Oturumu",
@@ -3249,6 +3266,11 @@
       etiket: "❌ Yanlış Soru", ozetBaslik: "Yanlış soru testi", yeniOturum: "Kalanları Çöz",
       bosMesaj: "Tekrar edilecek yanlış soru bulunamadı.", kaydeder: true,
       guidler: yanlisGuidListesi
+    },
+    cokYanlis: {
+      etiket: "⚠️ Çok Yanlış Yapılanlar", ozetBaslik: "Çok yanlış yapılanlar testi", yeniOturum: "Yeni Oturum",
+      bosMesaj: "Çok yanlış yapılan soru bulunamadı.", kaydeder: false,
+      guidler: cokYanlisGuidListesi
     }
   };
   // {tur, kuyruk:[guid...], konum, kayitlar:[{guid,secilen,dogru,kayit,kayitHatasi}]}
@@ -3361,6 +3383,20 @@
     lastTekrarSonuc = null;
     VIEW = donusEkrani || (aiModu ? "menuTest" : "menuDeneme");
     render();
+  }
+  function removeFrequentWrong(guid) {
+    if (!remoteGirisTamamMi() || !guid) return;
+    remoteFetch("/api/exam", "POST", { action: "frequent-wrong-remove", questionGuid: guid }).then(function (r) {
+      if (!r.ok) {
+        showBanner((r.data && r.data.error) || "Listeden çıkarılamadı.", true);
+        return;
+      }
+      if (r.data && r.data.guids) remoteFrequentWrongGuids = r.data.guids;
+      showBanner("Soru listeden çıkarıldı.");
+      render();
+    }).catch(function () {
+      showBanner("Bağlantı hatası — soru listeden çıkarılamadı.", true);
+    });
   }
 
   // Gerçek .docx üretimi — "docx" kütüphanesi (OOXML) yalnız butona basılınca CDN'den
@@ -4103,11 +4139,13 @@
     var gorulmemis = STATE.bank.filter(soruGorulmemisMi).length;
     var yanlis = yanlisGuidListesi("deneme").length;
     var hatirlatici = hatirlaticiGuidListesi("deneme").length;
+    var cokYanlis = cokYanlisGuidListesi("deneme").length;
     return '<div class="konu-secenekler" data-tum-banka>' +
       '<button class="btn" data-action="start-flash"' + (STATE.bank.length ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">🎲</span> Rastgele Sorular</button>' +
       '<button class="btn" data-action="start-yanlis-tekrar-test" data-havuz="deneme"' + (yanlis ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">❌</span> Mevcut Yanlışlar</button>' +
       '<button class="btn" data-action="start-deneme-konu-gorulmemis"' + (gorulmemis ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">📖</span> Hiç Görülmemiş Sorular</button>' +
-      '<button class="btn" data-action="start-hatirlatici-test" data-havuz="deneme"' + (hatirlatici ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">🔖</span> Hatırlatıcı İşaretli Sorular</button></div>';
+      '<button class="btn" data-action="start-hatirlatici-test" data-havuz="deneme"' + (hatirlatici ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">🔖</span> Hatırlatıcı İşaretli Sorular</button>' +
+      '<button class="btn" data-action="start-cok-yanlis-test" data-havuz="deneme"' + (cokYanlis ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">⚠️</span> Çok Yanlış Yapılanlar</button></div>';
   }
 
   function renderMenuDeneme() {
@@ -4216,6 +4254,9 @@
       // Cevaplamadan da görünür (renderExam gibi, Rastgele Soru'dan farklı): hatırlatıcı
       // turu salt gözden geçirmedir — soruyu çözmeden 🔖 işaretini kaldırabilmek gerekir.
       flagBarHtml(kayit.guid) +
+      (currentTekrar.tur === "cokYanlis"
+        ? '<div class="flag-bar" style="margin-top:6px"><button class="btn ghost" data-action="remove-frequent-wrong" data-guid="' + kayit.guid + '"' + ((remoteFrequentWrongGuids && remoteFrequentWrongGuids.indexOf(kayit.guid) === -1) ? ' disabled>Listeden çıkarıldı' : '>Listeden çıkar') + '</button></div>'
+        : '') +
       navHtml +
       "</div>";
   }
@@ -4245,7 +4286,9 @@
     }).length;
     var kalanEtiket = lastTekrarSonuc.tur === "yanlis"
       ? "Havuzda " + kalan + " yanlış soru kaldı."
-      : "İşaretli " + kalan + " soru var.";
+      : (lastTekrarSonuc.tur === "cokYanlis"
+          ? "Listede " + kalan + " soru var."
+          : "İşaretli " + kalan + " soru var.");
     return '<div class="card">' +
       '<div class="section-title">' + cfg.etiket + " — oturum özeti</div>" +
       '<div class="score-hero"><span class="big">' + dogru + " / " + toplam + "</span>" +
@@ -4322,11 +4365,13 @@
     }
     var toplamSoru = 0, toplamTekrar = 0, toplamYanlis = 0, toplamGorulmemis = 0;
     var hatirlaticilar = hatirlaticiGuidListesi("deneme");
+    var cokYanlislar = cokYanlisGuidListesi("deneme");
     var tiles = KONU_SIRA.map(function (konu) {
       var havuz = STATE.bank.filter(function (q) { return q.konu === konu; });
       var yanlis = havuz.filter(function (q) { return STATE.stats[q.guid] && STATE.stats[q.guid].sonSonucDogruMu === false; }).length;
       var gorulmemis = havuz.filter(soruGorulmemisMi).length;
       var hatirlatici = havuz.filter(function (q) { return hatirlaticilar.indexOf(q.guid) !== -1; }).length;
+      var cokYanlis = havuz.filter(function (q) { return cokYanlislar.indexOf(q.guid) !== -1; }).length;
       var tekrar = havuz.reduce(function (toplam, q) {
         return toplam + ((STATE.stats[q.guid] && STATE.stats[q.guid].gosterim) || 0);
       }, 0);
@@ -4344,6 +4389,7 @@
         '<button class="btn" data-action="start-deneme-konu-yanlis"' + konuAttr + (yanlis ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">❌</span> Mevcut Yanlışlar</button>' +
         '<button class="btn" data-action="start-deneme-konu-gorulmemis"' + konuAttr + (gorulmemis ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">📖</span> Hiç Görülmemiş Sorular</button>' +
         '<button class="btn" data-action="start-hatirlatici-test" data-havuz="deneme"' + konuAttr + (hatirlatici ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">🔖</span> Hatırlatıcı İşaretli Sorular</button>' +
+        '<button class="btn" data-action="start-cok-yanlis-test" data-havuz="deneme"' + konuAttr + (cokYanlis ? '' : ' disabled') + '><span class="konu-secenek-simge" aria-hidden="true">⚠️</span> Çok Yanlış Yapılanlar</button>' +
         '</div></details>';
     }).join("");
 
@@ -6427,7 +6473,9 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "set-flag-kategori") setFlagKategori(t.getAttribute("data-guid"), t.getAttribute("data-kategori"));
     else if (action === "start-hatirlatici-test") startTekrarTest("hatirlatici", t.getAttribute("data-havuz"), t.getAttribute("data-konu"));
     else if (action === "start-yanlis-tekrar-test") startTekrarTest("yanlis", t.getAttribute("data-havuz"));
+    else if (action === "start-cok-yanlis-test") startTekrarTest("cokYanlis", t.getAttribute("data-havuz"), t.getAttribute("data-konu"));
     else if (action === "start-tekrar-again") startTekrarTest(t.getAttribute("data-tur"), t.getAttribute("data-havuz"), t.getAttribute("data-konu"));
+    else if (action === "remove-frequent-wrong") removeFrequentWrong(t.getAttribute("data-guid"));
     else if (action === "select-tekrar-option") selectTekrarOption(parseInt(t.getAttribute("data-idx"), 10));
     else if (action === "bos-tekrar") bosTekrar();
     else if (action === "next-tekrar-soru") nextTekrarSoru();

@@ -101,4 +101,8 @@ export const MIGRATIONS: readonly Migration[] = [
     name: "0023_klasik_gunun_secimi.sql",
     content: "CREATE TABLE IF NOT EXISTS \"klasik_gunun_secimi\" (\n\t\"gun\" text PRIMARY KEY NOT NULL,\n\t\"sorular\" text[] NOT NULL,\n\t\"olusturma_zamani\" timestamp with time zone DEFAULT now() NOT NULL\n);\n",
   },
+  {
+    name: "0024_frequent_wrong_removed.sql",
+    content: "ALTER TABLE \"question_stats\" ADD COLUMN IF NOT EXISTS \"frequent_wrong_removed\" boolean DEFAULT false NOT NULL;\n",
+  },
 ];

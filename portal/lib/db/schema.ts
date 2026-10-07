@@ -211,6 +211,7 @@ export const questionStats = pgTable('question_stats', {
   wrongCount: integer('wrong_count').notNull().default(0),
   lastResult: boolean('last_result'),
   lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
+  frequentWrongRemoved: boolean('frequent_wrong_removed').notNull().default(false),
 }, (table) => [unique('question_stats_user_guid_unique').on(table.userId, table.questionGuid)]);
 
 export const questionFlags = pgTable('question_flags', {

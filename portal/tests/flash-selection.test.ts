@@ -345,6 +345,7 @@ void test('renderDenemeKonuSec: ders seçenekleri korunur, yanlış yoksa ilgili
     anaSayfaSekmeleriHtml: () => '',
     tumBankaCalismaHtml: () => '',
     hatirlaticiGuidListesi: () => [],
+    cokYanlisGuidListesi: () => [],
     konuTekrarDugmesiHtml: () => '',
     remoteAuth: { isAdmin: false },
     KONU_SIRA: ['Kredi', 'Hukuk'],

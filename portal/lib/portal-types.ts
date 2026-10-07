@@ -187,6 +187,8 @@ export type ExamApiRequest =
   | { action: 'reminders' }
   | { action: 'wrong-questions' }
   | { action: 'wrong-question-answer'; questionGuid: string; selectedAnswer: string }
+  | { action: 'frequent-wrong-questions' }
+  | { action: 'frequent-wrong-remove'; questionGuid: string }
   | { action: 'flags' }
   | { action: 'bank' }
   | { action: 'corrections' }
