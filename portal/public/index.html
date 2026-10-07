@@ -459,6 +459,8 @@
   .klasik-nokta[data-isaret="kirmizi"], .klasik-mark[data-isaret="kirmizi"] { color:#dc2626; }
   .klasik-nokta[data-isaret="yok"] { color:var(--muted); }
   .klasik-mark[aria-pressed="true"] { border:2px solid currentColor; font-weight:700; background:var(--surface-2); }
+  .klasik-ses-kapsayici { display:flex; align-items:center; }
+  .klasik-ses-btn { font-size:0.9rem; padding:6px 12px; }
   .klasik-aksiyon-satiri-1, .klasik-aksiyon-satiri-2 { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px 12px; margin-top:14px; }
   .klasik-aksiyon-sol { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
   .klasik-aksiyon-sag { display:flex; align-items:center; gap:8px; margin-left:auto; flex-wrap:wrap; justify-content:flex-end; }
@@ -2813,6 +2815,8 @@
   // değişiklikleri buraya yazılmaz. ai: true olanlar yalnız Yapay Zekâ Kaynakları açık hesapta görünür.
   // Yalnız son 7 günün kayıtları gösterilir; eskiler arşiv olarak listede kalır. Metinler 1-2 cümle.
   var DUYURULAR = [
+    { tarih: "2026-10-07", baslik: "Klasik: soruları ve cevapları sesli dinleme",
+      metin: "Klasik sorularda soru metnini ve yazılı cevabı artık sesli dinleyebilirsin. Sesler yapay zekâ ile üretilmiştir. Soru ekranındaki dinleme düğmelerini kullanarak çalışırken dinleyebilirsin." },
     { tarih: "2026-10-06", baslik: "Günün Klasik Soruları seçimi yenilendi",
       metin: "Günün Klasik Soruları artık tüm sorulardan rastgele seçiliyor, daha önce gelmemiş sorular öncelikli; düşük öncelikli sorular ancak diğerleri bittikten sonra gelir." },
     { tarih: "2026-10-05", baslik: "Klasik: Hatırlatıcı düğmesi eklendi",
@@ -4428,6 +4432,146 @@
   var klasikDetayIstek = 0;
   var KLASIK_ISARETLER = { yesil: "Öğrendim", sari: "Tekrar bak", kirmizi: "Anlamadım" };
 
+  var klasikSesDurumu = {
+    no: null,
+    tur: null,
+    surum: null,
+    state: "idle",
+    audio: null,
+    objectUrl: null,
+  };
+
+  function klasikSesDurdur() {
+    if (klasikSesDurumu.audio) {
+      try {
+        klasikSesDurumu.audio.pause();
+        klasikSesDurumu.audio.currentTime = 0;
+        klasikSesDurumu.audio.onended = null;
+        klasikSesDurumu.audio.onerror = null;
+      } catch (e) {}
+      klasikSesDurumu.audio = null;
+    }
+    if (klasikSesDurumu.objectUrl) {
+      try { URL.revokeObjectURL(klasikSesDurumu.objectUrl); } catch (e) {}
+      klasikSesDurumu.objectUrl = null;
+    }
+    klasikSesDurumu.no = null;
+    klasikSesDurumu.tur = null;
+    klasikSesDurumu.surum = null;
+    klasikSesDurumu.state = "idle";
+  }
+
+  function klasikSesTikla(no, tur, surum) {
+    if (!no || !tur || !surum) return;
+
+    if (klasikSesDurumu.no === no && klasikSesDurumu.tur === tur && klasikSesDurumu.state === "playing") {
+      if (klasikSesDurumu.audio) {
+        try { klasikSesDurumu.audio.pause(); } catch (e) {}
+      }
+      klasikSesDurumu.state = "paused";
+      render();
+      return;
+    }
+
+    if (klasikSesDurumu.no === no && klasikSesDurumu.tur === tur && klasikSesDurumu.state === "paused") {
+      if (klasikSesDurumu.audio) {
+        var playPromise = klasikSesDurumu.audio.play();
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(function (err) {
+            if (err && err.name === "AbortError") return;
+            klasikSesDurdur();
+            showBanner("Ses oynatılamadı.", true);
+            render();
+          });
+        }
+      }
+      klasikSesDurumu.state = "playing";
+      render();
+      return;
+    }
+
+    klasikSesDurdur();
+
+    klasikSesDurumu.no = no;
+    klasikSesDurumu.tur = tur;
+    klasikSesDurumu.surum = surum;
+    klasikSesDurumu.state = "loading";
+    render();
+
+    var url = (typeof REMOTE_API !== "undefined" ? REMOTE_API : "") +
+      "/api/klasik-ses?no=" + encodeURIComponent(no) +
+      "&tur=" + encodeURIComponent(tur) +
+      "&v=" + encodeURIComponent(surum);
+    var headers = {};
+    var tok = remoteToken();
+    if (tok) headers["Authorization"] = "Bearer " + tok;
+
+    fetch(url, { headers: headers })
+      .then(function (res) {
+        if (!res.ok) throw new Error("Ses alınamadı (" + res.status + ")");
+        return res.blob();
+      })
+      .then(function (blob) {
+        if (klasikSesDurumu.no !== no || klasikSesDurumu.tur !== tur || klasikSesDurumu.state !== "loading") {
+          return;
+        }
+        var objectUrl = URL.createObjectURL(blob);
+        var audio = new Audio(objectUrl);
+        klasikSesDurumu.audio = audio;
+        klasikSesDurumu.objectUrl = objectUrl;
+        klasikSesDurumu.state = "playing";
+
+        audio.onended = function () {
+          klasikSesDurdur();
+          render();
+        };
+        audio.onerror = function () {
+          klasikSesDurdur();
+          showBanner("Ses çalınamadı.", true);
+          render();
+        };
+
+        var playPromise = audio.play();
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(function (err) {
+            if (err && err.name === "AbortError") return;
+            // Yükleme uzun sürerse tarayıcı otomatik çalmayı reddeder; ses hazır bekler, sonraki basış çalar.
+            if (err && err.name === "NotAllowedError") { klasikSesDurumu.state = "paused"; render(); return; }
+            klasikSesDurdur();
+            showBanner("Ses oynatılamadı.", true);
+            render();
+          });
+        }
+        render();
+      })
+      .catch(function (err) {
+        if (klasikSesDurumu.no === no && klasikSesDurumu.tur === tur) {
+          klasikSesDurdur();
+          showBanner((err && err.message) || "Ses yüklenemedi.", true);
+          render();
+        }
+      });
+  }
+
+  function klasikSesButonHtml(no, tur, surum, varsayilanMetin) {
+    var aktif = (klasikSesDurumu.no === no && klasikSesDurumu.tur === tur);
+    var metin = varsayilanMetin;
+    var disabled = false;
+    var ariaPressed = false;
+    if (aktif) {
+      if (klasikSesDurumu.state === "loading") {
+        metin = "Yükleniyor…";
+        disabled = true;
+      } else if (klasikSesDurumu.state === "playing") {
+        metin = "⏸ Durdur";
+        ariaPressed = true;
+      } else if (klasikSesDurumu.state === "paused") {
+        metin = "▶ Devam et";
+      }
+    }
+    return '<button class="btn klasik-ses-btn" data-action="klasik-ses-cal" data-no="' + escapeHtml(no) + '" data-tur="' + escapeHtml(tur) + '" data-surum="' + escapeHtml(surum) + '" aria-pressed="' + ariaPressed + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(metin) + '</button>';
+  }
+
   function klasikSorular() {
     return klasikKaynak === "daily" ? ((klasikVerisi && klasikVerisi.questions) || [])
       : klasikCalismaNos.map(function (no) { return klasikDetaylar[no] || { no: no }; });
@@ -4639,6 +4783,7 @@
   }
 
   function remoteResetKlasikState() {
+    klasikSesDurdur();
     klasikArama = "";
     klasikSeciliIsaret = null;
     klasikFiltreHatirlatici = false;
@@ -4823,6 +4968,9 @@
     if (klasikSoruIndex >= qList.length) klasikSoruIndex = qList.length - 1;
 
     var soru = qList[klasikSoruIndex];
+    if (klasikSesDurumu.no && soru && klasikSesDurumu.no !== soru.no) {
+      klasikSesDurdur();
+    }
     if (!klasikSoruDurumu[soru.no]) {
       klasikSoruDurumu[soru.no] = { acilanIpuclari: 0, cevapAcik: false, seenSent: false };
     }
@@ -4837,6 +4985,12 @@
 
     html += '<div class="muted">' + escapeHtml(soru.no) + " · " + escapeHtml(soru.konu || "") + '</div>';
     html += '<div class="soru-metin" style="font-size:1.05rem;line-height:1.5;margin-bottom:14px;white-space:pre-wrap">' + escapeHtml(soru.soru) + '</div>';
+
+    if (soru.ses && soru.ses.soru) {
+      html += '<div class="klasik-ses-kapsayici" style="margin-bottom:14px">' +
+        klasikSesButonHtml(soru.no, "soru", soru.ses.soru, "🔊 Soruyu dinle") +
+        '</div>';
+    }
 
     if (soru.durum === "cevapsiz" && soru.guncellikNotu) {
       html += '<div class="banner warning" style="margin-bottom:14px">⚠ ' + escapeHtml(soru.guncellikNotu) + '</div>';
@@ -4875,6 +5029,11 @@
     if (soru.durum === "cevapsiz") {
       html += '<p class="muted" style="margin-top:14px">Cevap henüz yazılmadı.</p>';
     } else if (durum.cevapAcik) {
+      if (soru.ses && soru.ses.cevap) {
+        html += '<div class="klasik-ses-kapsayici" style="margin-top:14px;margin-bottom:10px">' +
+          klasikSesButonHtml(soru.no, "cevap", soru.ses.cevap, "🔊 Cevabı dinle") +
+          '</div>';
+      }
       html += klasikCevapCiz(soru.cevap);
     }
 
@@ -6076,6 +6235,9 @@ function pratikEnIyiHtml(konu, modulKey) {
   function render() {
     var html = "";
     ekAnlikBildirimHtml = "";
+    if (VIEW !== "klasikCalisma" && (klasikSesDurumu.state !== "idle" || klasikSesDurumu.audio)) {
+      klasikSesDurdur();
+    }
     if (aiModu && (!remoteGirisTamamMi() || remoteAuth.canSeeAiSources !== true)) { aiModu = false; VIEW = "menuDeneme"; }
     if (aiModu && VIEW === "menu") VIEW = "menuTest";
     if (STATE.sadeceDeneme && !aiModu && (VIEW === "menu" || VIEW === "menuTest" || VIEW === "pratikModul" || VIEW === "pratikSoru" ||
@@ -6192,6 +6354,7 @@ function pratikEnIyiHtml(konu, modulKey) {
       });
     }
     else if (action === "open-klasik") {
+      klasikSesDurdur();
       if (STATE.sadeceDeneme && !remoteGirisTamamMi()) return;
       VIEW = "klasik";
       remoteLoadKlasikIfNeeded();
@@ -6234,10 +6397,12 @@ function pratikEnIyiHtml(konu, modulKey) {
       }
       klasikSoruIndex = klasikCalismaNos.indexOf(t.getAttribute("data-no"));
       if (klasikSoruIndex < 0) return;
+      klasikSesDurdur();
       VIEW = "klasikCalisma";
       remoteLoadKlasikSoru();
     }
     else if (action === "klasik-geri") {
+      klasikSesDurdur();
       klasikDetayIstek++;
       klasikDetayYukleniyor = false;
       VIEW = klasikKaynak === "kontrol" ? "klasikKontrol" : klasikKaynak === "dusuk" ? "klasikDusukOncelik" : "klasikKonular";
@@ -6330,6 +6495,7 @@ function pratikEnIyiHtml(konu, modulKey) {
     }
     else if (action === "start-klasik") {
       if (!klasikVerisi || !klasikVerisi.questions || !klasikVerisi.questions.length) return;
+      klasikSesDurdur();
       klasikKaynak = "daily";
       klasikSoruIndex = 0;
       VIEW = "klasikCalisma";
@@ -6337,15 +6503,23 @@ function pratikEnIyiHtml(konu, modulKey) {
     }
     else if (action === "klasik-onceki") {
       if (klasikSoruIndex > 0) {
+        klasikSesDurdur();
         klasikSoruIndex--;
         if (klasikKaynak !== "daily") remoteLoadKlasikSoru(); else render();
       }
     }
     else if (action === "klasik-sonraki") {
       if (klasikSoruIndex < klasikSorular().length - 1) {
+        klasikSesDurdur();
         klasikSoruIndex++;
         if (klasikKaynak !== "daily") remoteLoadKlasikSoru(); else render();
       }
+    }
+    else if (action === "klasik-ses-cal") {
+      var sesNo = t.getAttribute("data-no");
+      var sesTur = t.getAttribute("data-tur");
+      var sesSurum = t.getAttribute("data-surum");
+      klasikSesTikla(sesNo, sesTur, sesSurum);
     }
     else if (action === "klasik-ipucu-goster") {
       var soru = klasikGuncelSoru();
