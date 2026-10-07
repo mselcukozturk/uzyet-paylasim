@@ -10,7 +10,10 @@
 // topic view category groups, counters, search results, and filter boxes while preserving them in low-priority view,
 // two-row study action button arrangement with clue/answer on row 1 and marks/reminder/feedback on row 2,
 // category single card framing without nested borders, tabular aligned counters, Turkish title case category formatting,
-// and 07:00 daily question expiration and refresh.
+// 07:00 daily question expiration and refresh, audio button presence for questions without audio,
+// "Soruyu dinle" button presence/missing for questions with audio, "Cevabı dinle" button premature appearance before answer reveal,
+// "Cevabı dinle" button missing after answer reveal, audio fetch duplication, button label/aria-pressed transition during play ("⏸ Durdur")
+// and pause ("▶ Devam et"), concurrent audio interruption when clicking other button, and audio stoppage on navigating to next question.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -19,7 +22,7 @@ import test from 'node:test';
 
 async function runBrowser(chrome: string, fixture: URL, output: URL, width: number) {
   const browser = spawn(chrome, ['--headless=new', '--no-sandbox', '--disable-gpu', '--no-first-run',
-    '--disable-background-networking', '--remote-debugging-port=0',
+    '--disable-background-networking', '--autoplay-policy=no-user-gesture-required', '--remote-debugging-port=0',
     `--user-data-dir=${fileURLToPath(new URL('profile/', output))}`, 'about:blank'], { windowsHide: true });
   let socket: WebSocket | undefined;
   try {
@@ -135,6 +138,12 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
 // 34. Stale daily klasik questions (klasikVerisi.day from yesterday) not re-fetching upon opening Klasik tab after 07:00.
 // 35. Fresh daily klasik questions re-fetching redundantly when opening Klasik tab.
 // 36. Daily klasik questions mistakenly treated as stale between 00:00 and 06:59 Istanbul time.
+// 37. Question without audio showing listen button, or question with audio missing "Soruyu dinle" button.
+// 38. "Cevabı dinle" button appearing before answer is revealed, or missing when answer is revealed for question with audio.
+// 39. Clicking listen button failing to request /api/klasik-ses with question number, type and version or duplicating requests.
+// 40. Listen button failing to transition to "⏸ Durdur" with aria-pressed="true", or pause click failing to transition to "▶ Devam et" with aria-pressed="false".
+// 41. Playing one audio failing to stop and revert previously playing audio button.
+// 42. Navigating to another question failing to stop audio and revoke object URL.
 for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`, async () => {
   const chrome = [
     process.env.CHROME_PATH,
@@ -241,18 +250,37 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
         }
       ];
 
-      mockDailyQuestions.forEach(function(q) { q.konu = q.soru; q.isaret = null; q.hatirlatici = false; q.kontrol = 'edilecek'; q.guncellikNotu = ''; q.oncelik = 'normal'; });
+      mockDailyQuestions.forEach(function(q) { q.konu = q.soru; q.isaret = null; q.hatirlatici = false; q.kontrol = 'edilecek'; q.guncellikNotu = ''; q.oncelik = 'normal'; q.ses = { soru: null, cevap: null }; });
       mockDailyQuestions[0].kontrol = 'edildi';
+      mockDailyQuestions[0].ses = { soru: '0123456789abcdef', cevap: 'fedcba9876543210' };
       var allQuestions = mockDailyQuestions.concat([
-        { no: 'S6', kategori: 'Hukuk', konu: 'Cevapsız konu', soru: 'Cevapsız soru', durum: 'cevapsiz', kontrol: 'edilecek', guncellikNotu: 'Şimdilik güncel değil', cevap: [], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'normal' },
-        { no: 'S7', kategori: 'Hukuk', konu: 'Düşük öncelikli Hukuk 1', soru: 'Düşük soru 1', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Düşük cevap 1' }], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'dusuk' },
-        { no: 'S8', kategori: 'Hukuk', konu: 'Düşük öncelikli Hukuk 2', soru: 'Düşük soru 2', durum: 'tam', kontrol: 'edilecek', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Düşük cevap 2' }], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'dusuk' },
-        { no: 'S9', kategori: 'Kambiyo', konu: 'İhracat rejim kararı', soru: 'ihracat işlemlerinde kullanılan gümrük beyannamesi şartları nelerdir?', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'İhracat belgeleri' }], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'normal' },
-        { no: 'S10', kategori: 'Kredi', konu: 'İhracat kredi limitleri', soru: 'ihracat reeskont kredisi teminat şartları nelerdir?', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Reeskont kredisi' }], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'normal' }
+        { no: 'S6', kategori: 'Hukuk', konu: 'Cevapsız konu', soru: 'Cevapsız soru', durum: 'cevapsiz', kontrol: 'edilecek', guncellikNotu: 'Şimdilik güncel değil', cevap: [], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'normal', ses: { soru: null, cevap: null } },
+        { no: 'S7', kategori: 'Hukuk', konu: 'Düşük öncelikli Hukuk 1', soru: 'Düşük soru 1', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Düşük cevap 1' }], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'dusuk', ses: { soru: null, cevap: null } },
+        { no: 'S8', kategori: 'Hukuk', konu: 'Düşük öncelikli Hukuk 2', soru: 'Düşük soru 2', durum: 'tam', kontrol: 'edilecek', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Düşük cevap 2' }], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'dusuk', ses: { soru: null, cevap: null } },
+        { no: 'S9', kategori: 'Kambiyo', konu: 'İhracat rejim kararı', soru: 'ihracat işlemlerinde kullanılan gümrük beyannamesi şartları nelerdir?', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'İhracat belgeleri' }], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'normal', ses: { soru: null, cevap: null } },
+        { no: 'S10', kategori: 'Kredi', konu: 'İhracat kredi limitleri', soru: 'ihracat reeskont kredisi teminat şartları nelerdir?', durum: 'tam', kontrol: 'edildi', guncellikNotu: '', cevap: [{ tur: 'paragraf', metin: 'Reeskont kredisi' }], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'normal', ses: { soru: null, cevap: null } }
       ]);
       mockDailyQuestions[1].guncellikNotu = 'Güncellenecek bilgi';
       var feedbackRequests = [], markFailure = false, feedbackFailure = false, reminderFailure = false;
       var seenRequests = [];
+      var sesRequests = [];
+      var validMp3Base64 = 'SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYyLjEyLjEwMQAAAAAAAAAAAAAA//OEwAAAAAAAAAAAAEluZm8AAAAPAAAAagAAKIAACQsOEBIVFxocHiEjJSgqLTE0Njg7PUBCREdJS05QUlVXXF5hY2Voam1vcXR2eHt9gISHiYuOkJKVl5qcnqGjpaiqr7G0tri7vcDCxMfJy87Q0tXa3N7h4+Xo6u3v8fT2+Pv9AAAAAExhdmM2Mi4yOAAAAAAAAAAAAAAAACQDwAAAAAAAACiAoVWv9gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//NExAASQDp0FUYQABW/ABgMBgNNgQAAABhZNOwfB8EAQBAEATB8HwfB8EAQDBQBg+D5/KHIDD+kEAQDEBg+/8uH/4DB8HwfNggCGn3AgGP//iA4UBAD5WSSAiZmUsEy//NExAoUwqJwy5ooALOHTGm4m1KBChaXDOiIM8rO35opuCJwweAwqxBOylKhxr6bmUqffbd7N+309P//K9Nf//8yl6ZU////MlSmMaYBRYScwto1X5SJxOSSCQSSSSQQ//NExAoTyt7qX48QA0YiAATYk1qzqNk8XbjA+ocGncjWbkbSX6MS8tfLbJqvdt3D7eh2OtmSlv/WdSNt/8+fnfe8l1d1//Wp3OjTnVyfpI6iuarC5uq+u4/1sAYLczNu//NExA0USRrXH89QAGhiCQbNXBb4q7NFwkOP3jtpbDgdw4JoEhrI40ZpouJPfoW2FUCQb7nmNy76k4ZEIpQ/+2pxVl/xaitez//s8K0tjDaE1bC0uOmrixtYYEgqzU2B//NExA4VySLLHMMWFJgSD1Lw0vjg2QoQWiOCSMRWMKrcGvFugsnew169CeuHxsKg8l8Ttr+d1bTU0Av6svKHFCjmaiCyBcLk1fP+n/+2Ljlhc0KA+fUqhIaXiakLpZY6//NExAkT0dcTHlmEHgDMN5YIaaWxFZAIHwRzNcmGZoLvc0w3WCd//5DP/3fnP/+lEbSdyE6nfSqJ1PCMDAWBAEz8aFzhRYPoCL3S//9AuTeXMYQqg3l3h4gLY20qFmfH//NExAwVOvcHHnjEr+vljp0OOMrn98YYmSEwVELIM5SXKqe//Xdm/3p5Ws96//UwhQASwsx+qZXiGAz3dQgxykkTP13T+n/01//p7ImU5Q5htFnmB83V/37fWQmUuwu3//NExAoR2NLyWsJKii/AL38+fpgAUMHD2eyVHU0RmbDvtCdBr6stnJdDB0IjwWNM6oUCgTQ+75Y8v6KzrjgfB+r0///+bN3kHlkKpcs320sZQlivsPBL/pCoTR94iEnm//NExBUSIvLiWkjEvwIMlT2b2atn6kv1b1V//b4qrGYMKi1Svr/0Nb//rylmf/o3y//19PX1eb/+X7IBYwU3WKqq353cI/9jZgo2NRCB7RJQFpl8ktHTPXxmYz//0kMn//NExB8SUR7Wf0gYAqk6ufDjfGLbvQoBESh4d/Nh1iO5ZZp4YSUeeFXTVr42Jbrlf/U0eWK8m6pTUyUFgDgcDjbXWyWJIAEON1lZPKyNraxv7MqAY/CdksMB/gSZSJQc//NExCgcIlr2/4tpIv/5saBVx5q/tZah7lOXze1mqV65omnWnJRB1WMDM3RPUDdF3ZqZotM0W5ohpVJL11uiplOlSUit0EGLgnCIOculb/xYl0JDAEqSSKSSOSSSQNBJ//NExAoUUuLqXYkoAsAAAJd0TwghXixA00lVMKEgdciwGFiperMePmdbMmhWkFipGq3X9ZWUOpp/8rMrFZV0rm9+tljxUpbFIJ/////rINqRv/xVartVof0QNWhqlcIC//NExAsUwWa8AY9oAMLw5weiDEiRhoJgiKgSsQYAVzIwPKSGO5MTEwciFNBB8wLqK6ikpX+1qrXppofdE0tWbzEYN9Ke84z/+t7v62F3domKu+kNltZjrhALBggf/FlM//NExAsSUgrRn89oAo//';
+      var originalFetch = window.fetch;
+      window.fetch = function (input, init) {
+        var u = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+        if (u.indexOf('/api/klasik-ses') !== -1) {
+          sesRequests.push(u);
+          var bin = atob(validMp3Base64);
+          var bytes = new Uint8Array(bin.length);
+          for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          var blob = new Blob([bytes], { type: 'audio/mpeg' });
+          return Promise.resolve(new Response(blob, {
+            status: 200,
+            headers: { 'Content-Type': 'audio/mpeg' }
+          }));
+        }
+        return originalFetch ? originalFetch.apply(this, arguments) : Promise.reject(new Error('unmocked fetch'));
+      };
       var klasikDailyRequests = 0, mockKlasikDailyDay = '2026-10-05', mockKlasikDailyQuestions = mockDailyQuestions;
       remoteFetch = function (path, method, body) {
         if (body.action === 'klasik-daily') {
@@ -391,6 +419,33 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       hatirlaticiBtn = document.querySelector('[data-action="klasik-hatirlatici"]');
       check(hatirlaticiBtn && hatirlaticiBtn.getAttribute('aria-pressed') === 'true', 'Hatırlatıcı basılınca aria-pressed true olmalı (iyimser güncelleme)');
 
+      // Sesli dinleme kontrolleri (S1)
+      var soruSesBtn = document.querySelector('[data-action="klasik-ses-cal"][data-tur="soru"]');
+      check(soruSesBtn, 'S1 soruyu dinle düğmesi bulunmalı');
+      check(soruSesBtn.textContent.includes('Soruyu dinle'), 'Soru dinleme düğmesi metni "Soruyu dinle" içermeli');
+      check(soruSesBtn.getAttribute('aria-pressed') === 'false', 'Başlangıçta aria-pressed false olmalı');
+      check(!document.querySelector('[data-action="klasik-ses-cal"][data-tur="cevap"]'), 'Cevap açılmadan cevabı dinle düğmesi olmamalı');
+
+      click('[data-action="klasik-ses-cal"][data-tur="soru"]');
+      await new Promise(resolve => setTimeout(resolve, 50));
+      check(sesRequests.length === 1, '/api/klasik-ses isteği bir kez gönderilmeli');
+      check(sesRequests[0].includes('no=S1') && sesRequests[0].includes('tur=soru') && sesRequests[0].includes('v=0123456789abcdef'), 'İstek parametreleri doğru olmalı');
+      soruSesBtn = document.querySelector('[data-action="klasik-ses-cal"][data-tur="soru"]');
+      check(soruSesBtn && soruSesBtn.textContent.includes('Durdur'), 'Çalarken etiket "⏸ Durdur" olmalı');
+      check(soruSesBtn.getAttribute('aria-pressed') === 'true', 'Çalarken aria-pressed true olmalı');
+
+      click('[data-action="klasik-ses-cal"][data-tur="soru"]');
+      await new Promise(resolve => setTimeout(resolve, 50));
+      soruSesBtn = document.querySelector('[data-action="klasik-ses-cal"][data-tur="soru"]');
+      check(soruSesBtn && soruSesBtn.textContent.includes('Devam et'), 'Duraklatılınca etiket "▶ Devam et" olmalı');
+      check(soruSesBtn.getAttribute('aria-pressed') === 'false', 'Duraklatılınca aria-pressed false olmalı');
+
+      click('[data-action="klasik-ses-cal"][data-tur="soru"]');
+      await new Promise(resolve => setTimeout(resolve, 50));
+      soruSesBtn = document.querySelector('[data-action="klasik-ses-cal"][data-tur="soru"]');
+      check(soruSesBtn && soruSesBtn.textContent.includes('Durdur'), 'Tekrar basınca etiket "⏸ Durdur" olmalı');
+      check(soruSesBtn.getAttribute('aria-pressed') === 'true', 'Tekrar basınca aria-pressed true olmalı');
+
       // 4. İpucu göster düğmesine bas (2 ipucu var)
       var ipucuBtn = document.querySelector('[data-action="klasik-ipucu-goster"]');
       check(ipucuBtn && ipucuBtn.textContent.includes('0 / 2'), 'İpucu butonu başlangıçta 0 / 2 olmalı');
@@ -420,9 +475,29 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(tableEl && tableEl.querySelectorAll('tr').length === 3, 'Tablo ilk satır başlık olmak üzere 3 satır olmalı');
       check(!document.querySelector('[data-action="klasik-cevabi-goster"]'), 'Cevap açılınca düğme yerine cevap durmalı');
 
+      check(document.querySelector('[data-action="klasik-ses-cal"][data-tur="cevap"]'), 'Cevap açılınca ve ses.cevap doluysa cevabın üstünde cevabı dinle düğmesi bulunmalı');
+      var cevapSesBtn = document.querySelector('[data-action="klasik-ses-cal"][data-tur="cevap"]');
+      check(cevapSesBtn.textContent.includes('Cevabı dinle'), 'Cevap dinleme başlangıç metni "Cevabı dinle" olmalı');
+      check(cevapSesBtn.getAttribute('aria-pressed') === 'false', 'Cevap dinleme başlangıçta aria-pressed false olmalı');
+
+      click('[data-action="klasik-ses-cal"][data-tur="cevap"]');
+      await new Promise(resolve => setTimeout(resolve, 50));
+      check(sesRequests.length === 2, 'Cevap sesi için ikinci bir istek gönderilmeli');
+      check(sesRequests[1].includes('tur=cevap') && sesRequests[1].includes('v=fedcba9876543210'), 'Cevap sesi parametreleri doğru olmalı');
+      cevapSesBtn = document.querySelector('[data-action="klasik-ses-cal"][data-tur="cevap"]');
+      check(cevapSesBtn && cevapSesBtn.textContent.includes('Durdur'), 'Cevap çalarken etiket "⏸ Durdur" olmalı');
+      check(cevapSesBtn.getAttribute('aria-pressed') === 'true', 'Cevap çalarken aria-pressed true olmalı');
+
+      soruSesBtn = document.querySelector('[data-action="klasik-ses-cal"][data-tur="soru"]');
+      check(soruSesBtn && soruSesBtn.textContent.includes('Soruyu dinle'), 'Diğer düğmeye basınca ilk düğme ilk etiketine dönmeli');
+      check(soruSesBtn.getAttribute('aria-pressed') === 'false', 'İlk düğme aria-pressed false olmalı');
+
       measureLayout('daily-study');
       // 6. Sonraki soruya git (Soru 2)
       click('[data-action="klasik-sonraki"]');
+      await new Promise(resolve => setTimeout(resolve, 50));
+      check(!document.querySelector('[data-action="klasik-ses-cal"]'), 'Sesi olmayan S2 sorusunda dinleme düğmesi olmamalı');
+      check(klasikSesDurumu.state === 'idle', 'Sonraki soruya geçince ses durmalı');
       check(document.querySelector('.card').textContent.includes('Soru 2 / 5'), 'Soru 2 / 5 görünmeli');
       check(document.querySelector('.card').textContent.includes('Kredi'), 'Kategori Kredi olmalı');
 
