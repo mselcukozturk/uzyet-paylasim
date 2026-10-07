@@ -224,20 +224,20 @@ export function selectKlasikQuestions<T extends { no: string; oncelik?: string }
   const selectedNos: string[] = [];
 
   for (const q of shuffledUnshownNormal) {
-    if (selectedNos.length >= 5) break;
+    if (selectedNos.length >= 7) break;
     selectedNos.push(q.no);
   }
 
-  if (selectedNos.length < 5) {
+  if (selectedNos.length < 7) {
     for (const q of shuffledUnshownDusuk) {
-      if (selectedNos.length >= 5) break;
+      if (selectedNos.length >= 7) break;
       selectedNos.push(q.no);
     }
   }
 
-  if (selectedNos.length < 5) {
+  if (selectedNos.length < 7) {
     for (const q of orderedShown) {
-      if (selectedNos.length >= 5) break;
+      if (selectedNos.length >= 7) break;
       selectedNos.push(q.no);
     }
   }
