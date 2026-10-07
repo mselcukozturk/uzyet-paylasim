@@ -9,7 +9,8 @@
 // study navigation within filtered list with live mark/reminder updates, low-priority question exclusion from
 // topic view category groups, counters, search results, and filter boxes while preserving them in low-priority view,
 // two-row study action button arrangement with clue/answer on row 1 and marks/reminder/feedback on row 2,
-// category single card framing without nested borders, tabular aligned counters, and Turkish title case category formatting.
+// category single card framing without nested borders, tabular aligned counters, Turkish title case category formatting,
+// and 07:00 daily question expiration and refresh.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -131,6 +132,9 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
 // 31. Liste ekranı grupları (renderKlasikListe): dış kart kalırken başlık düğmesinin iç çerçevesi ve arka planı kalkmıyor, açık/kapalı ok simgesi (▸ / ▾) eksik, sayaçlar eşit aralıklı / tabular-nums / sağa dayalı değil, "N soru" sayaçlardan önce sağda değil, kategori adları Türkçe kurallı başlık düzeninde (klasikBaslikDuzeni, 've' küçük) gösterilmiyor, açılan grubun satırları sol dikey kılavuz çizgisi ve girintiyle vurgulanmıyor, açık grup kartı accent kenarlık almıyor.
 // 32. 390px ve 1100px görünümünde grup-acik.png ve soru-dugmeler.png ekran görüntülerinin üretilmemesi.
 // 33. 390 px'te satır 2'nin beş düğmesinin tek satırda olmaması, ortalanmaması, karttan taşması; Hatırlatıcı/Cevap güncellenmeli yazısının telefonda görünmesi veya 🔖/✏️ simgesinin görünmemesi; 1100 px'te yazıların görünmemesi, ✏️ simgesinin görünmesi veya sol/sağ düzenin bozulması.
+// 34. Stale daily klasik questions (klasikVerisi.day from yesterday) not re-fetching upon opening Klasik tab after 07:00.
+// 35. Fresh daily klasik questions re-fetching redundantly when opening Klasik tab.
+// 36. Daily klasik questions mistakenly treated as stale between 00:00 and 06:59 Istanbul time.
 for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`, async () => {
   const chrome = [
     process.env.CHROME_PATH,
@@ -156,7 +160,9 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       el.click();
     }
 
+    var realDateNow = Date.now;
     try {
+      Date.now = function () { return Date.parse('2026-10-05T07:00:00Z'); };
       localStorage.clear();
       saveAndPublish = function () { return Promise.resolve(true); };
       STATE.sadeceDeneme = true;
@@ -247,11 +253,13 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       mockDailyQuestions[1].guncellikNotu = 'Güncellenecek bilgi';
       var feedbackRequests = [], markFailure = false, feedbackFailure = false, reminderFailure = false;
       var seenRequests = [];
+      var klasikDailyRequests = 0, mockKlasikDailyDay = '2026-10-05', mockKlasikDailyQuestions = mockDailyQuestions;
       remoteFetch = function (path, method, body) {
         if (body.action === 'klasik-daily') {
+          klasikDailyRequests++;
           return Promise.resolve({
             ok: true,
-            data: { day: '2026-10-05', questions: mockDailyQuestions }
+            data: { day: mockKlasikDailyDay, questions: mockKlasikDailyQuestions }
           });
         }
         if (body.action === 'klasik-list') return Promise.resolve({ ok: true, data: { questions: allQuestions } });
@@ -817,6 +825,47 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       click('[data-action="klasik-geri"]');
       check(VIEW === 'klasikDusukOncelik', 'Geri dönüş Düşük Öncelikli ekranına döner');
       measureLayout('dusuk-oncelik');
+
+      // 07:00 Günün Klasik Soruları yenilenme denetimleri
+      // Bozulma Yolu 1: klasikVerisi.day dünün günü iken Klasik sekmesi açılınca yeni klasik-daily isteği gitmiyor ve eski sorular görünüyor.
+      click('[data-action="go-home"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      Date.now = function () { return Date.parse('2026-10-06T07:00:00Z'); };
+      mockKlasikDailyDay = '2026-10-06';
+      mockKlasikDailyQuestions = [{ no: 'S201', kategori: 'Hukuk', konu: 'Yeni gün sorusu', soru: '6 Ekim yeni sorusu', durum: 'tam', cevap: [{ tur: 'paragraf', metin: 'Yeni cevap' }], ipuclari: [], seen: false, isaret: null, hatirlatici: false, oncelik: 'normal' }];
+      klasikVerisi = { day: '2026-10-05', questions: mockDailyQuestions };
+      var reqCountBeforeFresh = klasikDailyRequests;
+      click('[data-action="open-klasik"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(klasikDailyRequests === reqCountBeforeFresh + 1, 'Dünün günü kalan klasik verisi open-klasik ile yenilenmeli');
+      check(document.querySelector('.card').textContent.includes('6 Ekim'), 'Yenilenen günün tarihi kartta görünmeli');
+      check(klasikVerisi && klasikVerisi.day === '2026-10-06', 'Günün verisi 6 Ekim olmalı');
+      click('[data-action="start-klasik"]');
+      check(document.querySelector('.card').textContent.includes('6 Ekim yeni sorusu'), 'Yenilenen günün sorusu ekranda görünmeli');
+      check(!document.querySelector('.card').textContent.includes('Ticaret Kanununa göre'), 'Eski sorular ekranda kalmamalı');
+      click('[data-action="open-klasik"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      // Bozulma Yolu 2: klasikVerisi.day bugünün günü iken Klasik sekmesi her açılışta gereksiz yere yeniden istek atıyor (atmamalı).
+      var reqCountToday = klasikDailyRequests;
+      click('[data-action="open-menu-deneme"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      click('[data-action="open-klasik"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(klasikDailyRequests === reqCountToday, 'Bugünün verisi tazeyken open-klasik gereksiz istek atmamalı');
+
+      // Bozulma Yolu 3: Saat İstanbul 00:00–06:59 arasında iken (gün anahtarı hâlâ dünün tarihi) veri yanlışlıkla bayat sayılıyor (sayılmamalı).
+      Date.now = function () { return Date.parse('2026-10-07T01:00:00Z'); };
+      var reqCountEarly = klasikDailyRequests;
+      click('[data-action="open-menu-deneme"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      click('[data-action="open-klasik"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(klasikDailyRequests === reqCountEarly, 'İstanbul 00:00-06:59 arasında dün tarihli gün anahtarı bayat sayılmamalı');
+
+      Date.now = realDateNow;
+      VIEW = 'klasikDusukOncelik';
+      render();
 
       window.__showKonuArama = function () {
         VIEW = 'klasikKonular';

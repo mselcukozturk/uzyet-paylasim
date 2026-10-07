@@ -4646,6 +4646,18 @@
     });
   }
 
+  // Sunucudaki gün anahtarıyla aynı; 07:00 İstanbul.
+  function dailyExamDay() {
+    return new Date(Date.now() - 4 * 3600 * 1000).toISOString().slice(0, 10);
+  }
+
+  function remoteLoadKlasikIfNeeded() {
+    if (!klasikYukleniyor && (!klasikVerisi || klasikVerisi.day !== dailyExamDay())) {
+      klasikVerisi = null;
+      remoteLoadKlasik();
+    }
+  }
+
   function formatKlasikTarih(dayStr) {
     if (!dayStr) return "";
     var parts = dayStr.split("-");
@@ -6136,10 +6148,8 @@ function pratikEnIyiHtml(konu, modulKey) {
     else if (action === "open-klasik") {
       if (STATE.sadeceDeneme && !remoteGirisTamamMi()) return;
       VIEW = "klasik";
+      remoteLoadKlasikIfNeeded();
       render();
-      if (!klasikVerisi && !klasikYukleniyor) {
-        remoteLoadKlasik();
-      }
     }
     else if (action === "open-klasik-konular" || action === "open-klasik-kontrol" || action === "open-klasik-dusuk-oncelik") {
       if (!remoteGirisTamamMi()) return;
