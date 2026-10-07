@@ -1,4 +1,4 @@
-// Failure paths: 0020, 0021, 0022, 0023, 0025 must be repeatable; unanswered/no-clue sync accepted; invalid control,
+// Failure paths: 0020, 0021, 0022 and 0023 must be repeatable; unanswered/no-clue sync accepted; invalid control,
 // empty answered response rejected; daily excludes unanswered; list includes control for every account.
 // Unknown question/mark/reminder, user mark leakage, duplicate marks, null deletion with reminder preservation,
 // reminder toggle with mark preservation, invalid feedback, unauthorized feedback administration,
@@ -6,11 +6,7 @@
 // duplicate daily selection on same day, question leakage across priority tiers,
 // low-priority inclusion before normal exhaustion, partial day low-priority completion failure,
 // oldest-shown ordering violation on cycle completion, deleted/unanswered question leakage in daily response,
-// cross-user daily divergence, consecutive day repetition before tier exhaustion,
-// admin ses unauthorized access, admin ses invalid parameters and payload size limits,
-// duplicate ses overwrite failure, admin ses delete leakage, user ses unauthorized/unapproved, missing ses 404,
-// audio content-type/cache-control header mismatch, payload byte corruption, exam route missing ses field,
-// and question re-sync ses deletion.
+// cross-user daily divergence, consecutive day repetition before tier exhaustion.
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
 import test from 'node:test';
@@ -68,23 +64,6 @@ const nodeRequire = createRequire(import.meta.url);
 // 17. Response payload enrichment:
 //     - klasik-list, klasik-question, and klasik-daily contain hatirlatici boolean field for every question,
 //     - reminder state is properly scoped to requesting user.
-// 18. 0025_klasik_ses migration idempotency and table schema:
-//     - re-applying 0025 migration twice does not fail.
-// 19. Admin klasik-ses endpoint:
-//     - missing or wrong token rejected with 401,
-//     - PUT with invalid no, tur, surum, empty body, or body exceeding 4,000,000 bytes rejected with 400,
-//     - valid PUT inserts record and returns {ok:true},
-//     - GET returns list without reading veri column,
-//     - PUT on existing (no, tur) updates surum and veri without creating duplicate rows,
-//     - DELETE removes record from GET listing.
-// 20. User klasik-ses endpoint:
-//     - anonymous request rejected with 401,
-//     - unapproved user rejected with 403,
-//     - non-existent question audio returns 404,
-//     - approved user receives audio/mpeg bytes with immutable cache header matching uploaded data.
-// 21. Exam route ses integration:
-//     - klasik-daily and klasik-question return ses: {soru, cevap} object with surum or null,
-//     - question re-sync via sync-klasik does not delete klasik_ses rows.
 test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', async () => {
   const pg = new PGlite();
   try {
@@ -107,11 +86,6 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     assert.ok(existsSync(migration0023), '0023_klasik_gunun_secimi.sql migration dosyası mevcut olmalı');
     await pg.exec(readFileSync(migration0023, 'utf8'));
 
-    const migration0025 = new URL('../drizzle/0025_klasik_ses.sql', import.meta.url);
-    assert.ok(existsSync(migration0025), '0025_klasik_ses.sql migration dosyası mevcut olmalı');
-    await pg.exec(readFileSync(migration0025, 'utf8'));
-    await pg.exec(readFileSync(migration0025, 'utf8'));
-
     await pg.exec(`insert into profiles(user_id,username,is_active,is_admin,disclaimer_accepted_at)
       values ('u1','kullanici1',true,false,now()),
              ('u2','kullanici2',true,false,now()),
@@ -121,18 +95,16 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     let currentProfile: any = null;
     let currentDay: string | null = null;
 
-    class MockNextResponse extends Response {
-      static json(data: unknown, init?: ResponseInit) {
-        const body = JSON.stringify(data);
-        const headers = new Headers(init?.headers);
-        headers.set('content-type', 'application/json');
-        return new MockNextResponse(body, { ...init, headers });
-      }
-    }
-
     const modules: Record<string, unknown> = {
       'next/server': {
-        NextResponse: MockNextResponse,
+        NextResponse: {
+          json: (data: unknown, init?: ResponseInit) => {
+            const body = JSON.stringify(data);
+            const headers = new Headers(init?.headers);
+            headers.set('content-type', 'application/json');
+            return new Response(body, { ...init, headers });
+          },
+        },
       },
       'drizzle-orm': orm,
       '@/lib/db': { getDb: () => db, schema },
@@ -169,10 +141,6 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
         },
         console,
         Buffer,
-        URL,
-        Response,
-        Request,
-        Headers,
         process: {
           env: {
             FLAGS_EXPORT_TOKEN: 'test-sync-token',
@@ -185,8 +153,6 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
 
     const syncKlasikRoute = load('../app/api/admin/sync-klasik/route.ts');
     const examRoute = load('../app/api/exam/route.ts');
-    const adminSesRoute = load('../app/api/admin/klasik-ses/route.ts');
-    const userSesRoute = load('../app/api/klasik-ses/route.ts');
 
     const sendSync = (body: string, token = 'test-sync-token') =>
       syncKlasikRoute.POST(new Request('https://test.invalid/api/admin/sync-klasik', {
@@ -201,22 +167,6 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(body),
       }));
-
-    const sendAdminSes = (method: string, query = '', body?: any, token = 'test-sync-token') => {
-      const url = `https://test.invalid/api/admin/klasik-ses${query ? '?' + query : ''}`;
-      const headers: Record<string, string> = {};
-      if (token) headers['authorization'] = `Bearer ${token}`;
-      return adminSesRoute[method](new Request(url, {
-        method,
-        headers,
-        body: body !== undefined ? body : undefined,
-      }));
-    };
-
-    const sendUserSes = (query = '') => {
-      const url = `https://test.invalid/api/klasik-ses${query ? '?' + query : ''}`;
-      return userSesRoute.GET(new Request(url, { method: 'GET' }));
-    };
 
     // 1. Senkron: tokensiz 401
     const unauthSync = await sendSync('{"questions":[]}', '');
@@ -651,100 +601,6 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     for (const action of ['klasik-list', 'klasik-question', 'klasik-mark', 'klasik-reminder', 'klasik-feedback']) {
       assert.equal((await sendExam({ action, no: 'S1', isaret: 'yesil', hatirlatici: true, metin: 'Bilgi' })).status, 401);
     }
-
-    // 14. Klasik Ses: Yönetim ucu yetki ve doğrulama denetimleri
-    assert.equal((await sendAdminSes('GET', '', undefined, '')).status, 401, 'Admin ses tokensiz istek 401 dönmeli');
-    assert.equal((await sendAdminSes('GET', '', undefined, 'wrong-token')).status, 401, 'Admin ses yanlış token 401 dönmeli');
-    assert.equal((await sendAdminSes('PUT', 'no=S1&tur=soru&surum=0123456789abcdef', Buffer.from('x'), '')).status, 401);
-    assert.equal((await sendAdminSes('DELETE', 'no=S1&tur=soru', undefined, '')).status, 401);
-
-    // PUT doğrulama hataları (400)
-    assert.equal((await sendAdminSes('PUT', 'no=bad&tur=soru&surum=0123456789abcdef', Buffer.from('x'))).status, 400, 'Geçersiz no 400 dönmeli');
-    assert.equal((await sendAdminSes('PUT', 'no=&tur=soru&surum=0123456789abcdef', Buffer.from('x'))).status, 400, 'Boş no 400 dönmeli');
-    assert.equal((await sendAdminSes('PUT', 'no=S1&tur=diger&surum=0123456789abcdef', Buffer.from('x'))).status, 400, 'Geçersiz tur 400 dönmeli');
-    assert.equal((await sendAdminSes('PUT', 'no=S1&tur=soru&surum=xyz', Buffer.from('x'))).status, 400, 'Kısa surum 400 dönmeli');
-    assert.equal((await sendAdminSes('PUT', 'no=S1&tur=soru&surum=0123456789abcdef0', Buffer.from('x'))).status, 400, 'Uzun surum 400 dönmeli');
-    assert.equal((await sendAdminSes('PUT', 'no=S1&tur=soru&surum=0123456789abcdef', Buffer.alloc(0))).status, 400, 'Boş gövde 400 dönmeli');
-    assert.equal((await sendAdminSes('PUT', 'no=S1&tur=soru&surum=0123456789abcdef', Buffer.alloc(4_000_001))).status, 400, '4MB aşan gövde 400 dönmeli');
-
-    // Geçerli PUT ve GET listesi
-    const sampleAudio1 = Buffer.from('mp3-soru-s1-test-bytes');
-    const putRes1 = await sendAdminSes('PUT', 'no=S1&tur=soru&surum=0123456789abcdef', sampleAudio1);
-    assert.equal(putRes1.status, 200);
-    assert.deepEqual(await putRes1.json(), { ok: true });
-
-    const getRes1 = await sendAdminSes('GET');
-    assert.equal(getRes1.status, 200);
-    const getData1 = await getRes1.json();
-    assert.equal(getData1.items.length, 1);
-    assert.deepEqual(getData1.items[0], { no: 'S1', tur: 'soru', surum: '0123456789abcdef' });
-    assert.ok(!('veri' in getData1.items[0]), 'GET listesinde veri sütunu yer almamalı');
-
-    // Aynı anahtara ikinci PUT satır çoğaltmaz, sürümü ve veriyi günceller
-    const sampleAudio1V2 = Buffer.from('mp3-soru-s1-v2-test-bytes');
-    const putRes2 = await sendAdminSes('PUT', 'no=S1&tur=soru&surum=fedcba9876543210', sampleAudio1V2);
-    assert.equal(putRes2.status, 200);
-
-    const getData2 = await (await sendAdminSes('GET')).json();
-    assert.equal(getData2.items.length, 1, 'Mükerrer satır oluşmamalı');
-    assert.deepEqual(getData2.items[0], { no: 'S1', tur: 'soru', surum: 'fedcba9876543210' });
-
-    // Cevap kaydı da ekle
-    const sampleAudio1Cevap = Buffer.from('mp3-cevap-s1-test-bytes');
-    await sendAdminSes('PUT', 'no=S1&tur=cevap&surum=1122334455667788', sampleAudio1Cevap);
-    const getData3 = await (await sendAdminSes('GET')).json();
-    assert.equal(getData3.items.length, 2);
-
-    // DELETE işlemi
-    const delRes = await sendAdminSes('DELETE', 'no=S1&tur=soru');
-    assert.equal(delRes.status, 200);
-    assert.deepEqual(await delRes.json(), { ok: true });
-
-    const getDataAfterDel = await (await sendAdminSes('GET')).json();
-    assert.equal(getDataAfterDel.items.length, 1);
-    assert.deepEqual(getDataAfterDel.items[0], { no: 'S1', tur: 'cevap', surum: '1122334455667788' });
-
-    // S1 soru kaydını tekrar yükle
-    await sendAdminSes('PUT', 'no=S1&tur=soru&surum=fedcba9876543210', sampleAudio1V2);
-
-    // 15. Kullanıcı ucu /api/klasik-ses yetki, 404 ve bayt doğrulaması
-    currentProfile = null;
-    assert.equal((await sendUserSes('no=S1&tur=soru')).status, 401, 'Girişsiz kullanıcıya 401 dönmeli');
-    currentProfile = { userId: 'u_inactive', username: 'onaysiz', isActive: false };
-    assert.equal((await sendUserSes('no=S1&tur=soru')).status, 403, 'Onaysız hesaba 403 dönmeli');
-
-    currentProfile = { userId: 'u1', username: 'kullanici1', isActive: true };
-    assert.equal((await sendUserSes('no=S999&tur=soru')).status, 404, 'Olmayan soruya 404 dönmeli');
-    assert.equal((await sendUserSes('no=S2&tur=soru')).status, 404, 'Ses kaydı olmayan soruya 404 dönmeli');
-
-    const userSesRes = await sendUserSes('no=S1&tur=soru');
-    assert.equal(userSesRes.status, 200);
-    assert.equal(userSesRes.headers.get('content-type'), 'audio/mpeg');
-    assert.equal(userSesRes.headers.get('cache-control'), 'private, max-age=31536000, immutable');
-    const returnedBytes = Buffer.from(await userSesRes.arrayBuffer());
-    assert.deepEqual(returnedBytes, sampleAudio1V2, 'Yüklenen baytlar aynen dönmeli');
-
-    // 16. klasik-question ve klasik-daily yanıtlarında ses alanı
-    const q1AudioResponse = await (await sendExam({ action: 'klasik-question', no: 'S1' })).json();
-    assert.deepEqual(q1AudioResponse.ses, { soru: 'fedcba9876543210', cevap: '1122334455667788' });
-
-    const q2AudioResponse = await (await sendExam({ action: 'klasik-question', no: 'S2' })).json();
-    assert.deepEqual(q2AudioResponse.ses, { soru: null, cevap: null });
-
-    const dailyAudioResponse = await (await sendExam({ action: 'klasik-daily' })).json();
-    const dailyS1Audio = dailyAudioResponse.questions.find((q: any) => q.no === 'S1');
-    if (dailyS1Audio) {
-      assert.deepEqual(dailyS1Audio.ses, { soru: 'fedcba9876543210', cevap: '1122334455667788' });
-    }
-    const dailyOtherAudio = dailyAudioResponse.questions.find((q: any) => q.no !== 'S1');
-    if (dailyOtherAudio) {
-      assert.deepEqual(dailyOtherAudio.ses, { soru: null, cevap: null });
-    }
-
-    // 17. Yeniden sync-klasik ses kayıtlarını silmemeli
-    await sendSync(extendedPayload);
-    const sesRowsAfterSync = await db.select().from(schema.klasikSes);
-    assert.equal(sesRowsAfterSync.length, 2, 'Yeniden sync-klasik ses kayıtlarını silmemeli');
 
     // Verifiable repeatable artifact
     const outputDir = new URL('../outputs/klasik-e2e/', import.meta.url);

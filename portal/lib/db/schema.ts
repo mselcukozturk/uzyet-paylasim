@@ -1,13 +1,11 @@
 import {
   boolean,
   check,
-  customType,
   index,
   integer,
   jsonb,
   pgEnum,
   pgTable,
-  primaryKey,
   smallint,
   text,
   timestamp,
@@ -284,28 +282,4 @@ export const klasikGununSecimi = pgTable('klasik_gunun_secimi', {
   sorular: text('sorular').array().notNull(),
   olusturmaZamani: timestamp('olusturma_zamani', { withTimezone: true }).notNull().defaultNow(),
 });
-
-export const bytea = customType<{ data: Buffer; driverData: Buffer | Uint8Array }>({
-  dataType() {
-    return 'bytea';
-  },
-  toDriver(val: Buffer): Buffer {
-    return val;
-  },
-  fromDriver(val: unknown): Buffer {
-    if (Buffer.isBuffer(val)) return val;
-    return Buffer.from(val as Uint8Array);
-  },
-});
-
-export const klasikSes = pgTable('klasik_ses', {
-  soruNo: text('soru_no').notNull(),
-  tur: text('tur').$type<'soru' | 'cevap'>().notNull(),
-  surum: text('surum').notNull(),
-  veri: bytea('veri').notNull(),
-  guncellemeZamani: timestamp('guncelleme_zamani', { withTimezone: true }).notNull().defaultNow(),
-}, (table) => [
-  primaryKey({ columns: [table.soruNo, table.tur] }),
-]);
-
 

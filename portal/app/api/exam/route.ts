@@ -1012,24 +1012,6 @@ async function handlePost(request: Request) {
       const marks = await db.select().from(schema.klasikIsaret).where(eq(schema.klasikIsaret.userId, user.id));
       const markMap = new Map(marks.map(r => [r.soruNo, r.isaret]));
       const reminderMap = new Map(marks.map(r => [r.soruNo, r.hatirlatici]));
-      const sesRows = targetNos.length > 0
-        ? await db.select({
-            soruNo: schema.klasikSes.soruNo,
-            tur: schema.klasikSes.tur,
-            surum: schema.klasikSes.surum,
-          }).from(schema.klasikSes)
-            .where(inArray(schema.klasikSes.soruNo, targetNos))
-        : [];
-      const sesMap = new Map<string, { soru: string | null; cevap: string | null }>();
-      for (const row of sesRows) {
-        let entry = sesMap.get(row.soruNo);
-        if (!entry) {
-          entry = { soru: null, cevap: null };
-          sesMap.set(row.soruNo, entry);
-        }
-        if (row.tur === 'soru') entry.soru = row.surum;
-        else if (row.tur === 'cevap') entry.cevap = row.surum;
-      }
       return NextResponse.json({
         day,
         questions: orderedQuestions.map((q) => ({
@@ -1044,7 +1026,6 @@ async function handlePost(request: Request) {
           cevap: q.cevap,
           ipuclari: q.ipuclari,
           seen: seenSet.has(q.no),
-          ses: sesMap.get(q.no) ?? { soru: null, cevap: null },
         })),
       });
     }
@@ -1069,20 +1050,10 @@ async function handlePost(request: Request) {
           .where(and(eq(schema.klasikGorulme.userId, user.id), eq(schema.klasikGorulme.soruNo, body.no))).limit(1);
         const [mark] = await db.select().from(schema.klasikIsaret)
           .where(and(eq(schema.klasikIsaret.userId, user.id), eq(schema.klasikIsaret.soruNo, body.no))).limit(1);
-        const sesRows = await db.select({
-          tur: schema.klasikSes.tur,
-          surum: schema.klasikSes.surum,
-        }).from(schema.klasikSes)
-          .where(eq(schema.klasikSes.soruNo, body.no));
-        const ses = { soru: null as string | null, cevap: null as string | null };
-        for (const row of sesRows) {
-          if (row.tur === 'soru') ses.soru = row.surum;
-          else if (row.tur === 'cevap') ses.cevap = row.surum;
-        }
         return NextResponse.json({ no: question.no, kategori: question.kategori, konu: question.konu,
           soru: question.soru, durum: question.durum, guncellikNotu: question.guncellikNotu,
           cevap: question.cevap, ipuclari: question.ipuclari, seen: !!seen,
-          isaret: mark?.isaret ?? null, hatirlatici: mark?.hatirlatici ?? false, ses });
+          isaret: mark?.isaret ?? null, hatirlatici: mark?.hatirlatici ?? false });
       }
       if (body.action === 'klasik-mark') {
         if (body.isaret !== null && !['yesil', 'sari', 'kirmizi'].includes(body.isaret)) return fail('Geçersiz işaret.', 400);
