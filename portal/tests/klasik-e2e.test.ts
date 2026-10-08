@@ -11,6 +11,8 @@
 // duplicate ses overwrite failure, admin ses delete leakage, user ses unauthorized/unapproved, missing ses 404,
 // audio content-type/cache-control header mismatch, payload byte corruption, exam route missing ses field,
 // and question re-sync ses deletion.
+// Chunked ses: interrupted upload exposure, out-of-order/duplicate/version-mismatched chunks,
+// invalid chunk parameters, total above 32,000,000 bytes, restart failure, streamed byte corruption.
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
 import test from 'node:test';
@@ -173,6 +175,7 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
         Response,
         Request,
         Headers,
+        ReadableStream,
         process: {
           env: {
             FLAGS_EXPORT_TOKEN: 'test-sync-token',
@@ -746,6 +749,54 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
     const sesRowsAfterSync = await db.select().from(schema.klasikSes);
     assert.equal(sesRowsAfterSync.length, 2, 'Yeniden sync-klasik ses kayıtlarını silmemeli');
 
+    const largeAudio = Buffer.alloc(7_772_877);
+    for (let i = 0; i < largeAudio.length; i++) largeAudio[i] = i % 251;
+    const audioQuery = 'no=S999&tur=cevap&surum=0011223344556677';
+    for (const suffix of ['parca=0', 'son=1', 'parca=-1&son=0', 'parca=8&son=1', 'parca=1.5&son=0', 'parca=0&son=true']) {
+      assert.equal((await sendAdminSes('PUT', `${audioQuery}&${suffix}`, Buffer.from('audio'))).status, 400);
+    }
+    assert.equal((await sendAdminSes('PUT', `${audioQuery}&parca=0&son=0`, Buffer.from('audio'))).status, 400);
+    const firstChunk = largeAudio.subarray(0, 4_000_000);
+    const lastChunk = largeAudio.subarray(4_000_000);
+    assert.equal((await sendAdminSes('PUT', `${audioQuery}&parca=1&son=1`, lastChunk)).status, 409);
+    assert.equal((await sendAdminSes('PUT', `${audioQuery}&parca=0&son=0`, firstChunk)).status, 200);
+    const partialList = await (await sendAdminSes('GET')).json();
+    assert.notEqual(partialList.items.find((item: any) => item.no === 'S999').surum, '0011223344556677');
+    assert.equal((await sendUserSes('no=S999&tur=cevap')).status, 404);
+    assert.equal((await sendAdminSes('PUT', `${audioQuery}&parca=2&son=1`, lastChunk)).status, 409);
+    assert.equal((await sendAdminSes('PUT', 'no=S999&tur=cevap&surum=ffeeddccbbaa9988&parca=1&son=1', lastChunk)).status, 409);
+    // Kesilen dosya sonraki gönderimde sıfırıncı parçadan yeniden başlar.
+    assert.equal((await sendAdminSes('PUT', `${audioQuery}&parca=0&son=0`, firstChunk)).status, 200);
+    assert.equal((await sendAdminSes('PUT', `${audioQuery}&parca=1&son=1`, lastChunk)).status, 200);
+    assert.equal((await sendAdminSes('PUT', `${audioQuery}&parca=1&son=1`, lastChunk)).status, 409);
+    const completedList = await (await sendAdminSes('GET')).json();
+    assert.equal(completedList.items.find((item: any) => item.no === 'S999').surum, '0011223344556677');
+    const largeResponse = await sendUserSes('no=S999&tur=cevap');
+    assert.equal(largeResponse.status, 200);
+    assert.equal(largeResponse.headers.get('content-type'), 'audio/mpeg');
+    assert.equal(largeResponse.headers.get('cache-control'), 'private, max-age=31536000, immutable');
+    const reader = largeResponse.body!.getReader();
+    const returnedChunks: Buffer[] = [];
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      returnedChunks.push(Buffer.from(value));
+    }
+    assert.ok(returnedChunks.length > 1, 'Büyük yanıt birden çok akış parçasıyla dönmeli');
+    assert.deepEqual(Buffer.concat(returnedChunks), largeAudio, 'Parçalı yüklenen ses bayt bayt aynı dönmeli');
+    // Yeni yükleme eski tamamlanmış kaydın üzerine başlayınca da yarım ses sunulmaz.
+    assert.equal((await sendAdminSes('PUT', `${audioQuery}&parca=0&son=0`, firstChunk)).status, 200);
+    assert.equal((await sendUserSes('no=S999&tur=cevap')).status, 404);
+    for (let parca = 1; parca < 7; parca++) {
+      assert.equal((await sendAdminSes('PUT', `${audioQuery}&parca=${parca}&son=0`, firstChunk)).status, 200);
+    }
+    assert.equal((await sendAdminSes('PUT', `${audioQuery}&parca=7&son=0`, firstChunk)).status, 400);
+    assert.equal((await sendAdminSes('PUT', `${audioQuery}&parca=7&son=1`, firstChunk)).status, 200);
+    const [maximumAudio] = await db.select({ size: orm.sql<number>`octet_length(${schema.klasikSes.veri})` })
+      .from(schema.klasikSes).where(orm.eq(schema.klasikSes.soruNo, 'S999'));
+    assert.equal(maximumAudio.size, 32_000_000);
+    await sendAdminSes('DELETE', 'no=S999&tur=cevap');
+
     // Verifiable repeatable artifact
     const outputDir = new URL('../outputs/klasik-e2e/', import.meta.url);
     mkdirSync(outputDir, { recursive: true });
@@ -761,6 +812,9 @@ test('klasik e2e: senkron, gunun sorulari secimi, gorulme kaydi ve izolasyon', a
       feedback: feedbackList.items[0],
       processedFeedback: processed,
       migration0020Reapplied: true,
+      chunkedAudio: { uploadedBytes: largeAudio.length, returnedBytes: Buffer.concat(returnedChunks).length,
+        streamChunks: returnedChunks.length, byteEquality: true, partialUploadHidden: true,
+        restartVerified: true, invalidOrderRejected: true, maximumBytes: maximumAudio.size },
     }, null, 2));
 
   } finally {

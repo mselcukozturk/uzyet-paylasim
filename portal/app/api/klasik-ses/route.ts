@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, notLike } from 'drizzle-orm';
 import { getSessionProfile } from '@/lib/auth/session';
 import { withCors, corsPreflight } from '@/lib/cors';
 import { getDb, schema } from '@/lib/db';
@@ -28,15 +28,26 @@ export async function GET(req: Request) {
   const [record] = await db
     .select({ veri: schema.klasikSes.veri })
     .from(schema.klasikSes)
-    .where(and(eq(schema.klasikSes.soruNo, no), eq(schema.klasikSes.tur, tur)))
+    .where(and(eq(schema.klasikSes.soruNo, no), eq(schema.klasikSes.tur, tur), notLike(schema.klasikSes.surum, 'yukleniyor:%')))
     .limit(1);
 
   if (!record) {
     return withCors(NextResponse.json({ error: 'Ses kaydı bulunamadı.' }, { status: 404 }));
   }
 
+  let konum = 0;
+  const stream = new ReadableStream<Uint8Array>({
+    pull(controller) {
+      if (konum >= record.veri.length) {
+        controller.close();
+        return;
+      }
+      controller.enqueue(new Uint8Array(record.veri.subarray(konum, konum + 64_000)));
+      konum += 64_000;
+    },
+  });
   return withCors(
-    new NextResponse(new Uint8Array(record.veri), {
+    new NextResponse(stream, {
       status: 200,
       headers: {
         'Content-Type': 'audio/mpeg',
