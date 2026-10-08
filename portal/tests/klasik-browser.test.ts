@@ -18,7 +18,9 @@
 // counter not reflecting "1 / N" with normal-priority answered question count, low-priority or unanswered questions entering random pool,
 // duplicate questions in random pool, question order not shuffled via Fisher-Yates or failing to follow expected pseudo-random sequence,
 // Next/Prev navigation not traversing shuffled sequence in order, back button not labeled "← Klasik Sorular" or failing to return to Klasik home screen,
-// and horizontal layout overflow on mobile viewport.
+// "Cevabı gizle" button missing when answer revealed or not reverting to "Cevabı göster" on hide, hidden answer or audio button remaining in DOM after hiding,
+// redundant klasik-seen requests on show-hide-show cycle, seen count decrement on hide, answer audio continuing after hide or question audio interrupted on hide,
+// clue state loss across hide/reveal, "Cevabı gizle" button rendered for unanswered questions, and horizontal layout overflow on mobile viewport.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -106,6 +108,10 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
     const ssRastgeleSoru = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
     writeFileSync(new URL('rastgele-soru.png', output), Buffer.from(ssRastgeleSoru.data, 'base64'));
 
+    await send('Runtime.evaluate', { expression: 'if (window.__showCevabiGizle) window.__showCevabiGizle(); document.getElementById("browser-result").style.display="none";' }, sessionId);
+    const ssCevabiGizle = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
+    writeFileSync(new URL('cevabi-gizle.png', output), Buffer.from(ssCevabiGizle.data, 'base64'));
+
     return dom.result.value as string;
   } finally {
     socket?.close();
@@ -164,6 +170,10 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
 // 47. Next/previous navigation failing to traverse shuffled sequence in order.
 // 48. Back button failing to display "← Klasik Sorular" or failing to return to Klasik home screen.
 // 49. Random card or study screen causing horizontal layout overflow at 390px.
+// 50. Answer reveal failing to replace "Cevabı göster" with "Cevabı gizle" button (btn, non-primary), or hiding failing to remove structured answer and "Cevabı dinle" button while restoring "Cevabı göster".
+// 51. Answer hiding causing redundant "klasik-seen" API network requests on subsequent reveal, or decrementing seen question counter on Klasik home screen.
+// 52. Answer hiding failing to stop active answer audio while leaving question audio unaffected, or altering revealed clue count.
+// 53. Unanswered question displaying "Cevabı göster" or "Cevabı gizle" button, or study screen with "Cevabı gizle" causing horizontal layout overflow at 390px.
 for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`, async () => {
   const chrome = [
     process.env.CHROME_PATH,
@@ -493,7 +503,12 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(ulList && ulList.querySelectorAll('li').length === 3, 'Madde listesi 3 maddeli ul olmalı');
       var tableEl = document.querySelector('.klasik-cevap table');
       check(tableEl && tableEl.querySelectorAll('tr').length === 3, 'Tablo ilk satır başlık olmak üzere 3 satır olmalı');
-      check(!document.querySelector('[data-action="klasik-cevabi-goster"]'), 'Cevap açılınca düğme yerine cevap durmalı');
+      check(!document.querySelector('[data-action="klasik-cevabi-goster"]'), 'Cevap açılınca Cevabı göster düğmesi kaybolmalı');
+      var cevabiGizleBtn = document.querySelector('[data-action="klasik-cevabi-gizle"]');
+      check(cevabiGizleBtn, 'Cevap açılınca Cevabı gizle düğmesi görünmeli');
+      check(!cevabiGizleBtn.classList.contains('primary') && cevabiGizleBtn.classList.contains('btn'), 'Cevabı gizle düğmesi btn sınıfında olmalı, primary olmamalı');
+      check(cevabiGizleBtn.textContent.trim() === 'Cevabı gizle', 'Cevabı gizle düğmesi metni "Cevabı gizle" olmalı');
+      measureLayout('cevabi-gizle');
 
       check(document.querySelector('[data-action="klasik-ses-cal"][data-tur="cevap"]'), 'Cevap açılınca ve ses.cevap doluysa cevabın üstünde cevabı dinle düğmesi bulunmalı');
       var cevapSesBtn = document.querySelector('[data-action="klasik-ses-cal"][data-tur="cevap"]');
@@ -511,6 +526,47 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       soruSesBtn = document.querySelector('[data-action="klasik-ses-cal"][data-tur="soru"]');
       check(soruSesBtn && soruSesBtn.textContent.includes('Soruyu dinle'), 'Diğer düğmeye basınca ilk düğme ilk etiketine dönmeli');
       check(soruSesBtn.getAttribute('aria-pressed') === 'false', 'İlk düğme aria-pressed false olmalı');
+
+      // Cevap sesi çalarken "Cevabı gizle" düğmesine bas
+      click('[data-action="klasik-cevabi-gizle"]');
+      check(klasikSesDurumu.state === 'idle' && !klasikSesDurumu.audio, 'Cevap sesi çalarken gizlemek sesi durdurmalı');
+      check(!document.querySelector('.klasik-cevap'), "Gizleyince yazılı cevap DOM'da olmamalı");
+      check(!document.querySelector('.card').textContent.includes('TTK uyarınca ticaret şirketleri'), 'Gizleyince cevap metni kaybolmalı');
+      check(!document.querySelector('[data-action="klasik-ses-cal"][data-tur="cevap"]'), "Gizleyince Cevabı dinle düğmesi DOM'da olmamalı");
+      check(!document.querySelector('[data-action="klasik-cevabi-gizle"]'), 'Gizleyince Cevabı gizle butonu kaybolmalı');
+      check(document.querySelector('[data-action="klasik-cevabi-goster"]'), 'Gizleyince Cevabı göster butonu geri gelmeli');
+      ipucuBtn = document.querySelector('[data-action="klasik-ipucu-goster"]');
+      check(ipucuBtn && ipucuBtn.disabled, 'Açılmış ipucu durumu gizlemeden sonra korunmalı');
+      check(document.querySelector('.klasik-ipuclari ol') && document.querySelector('.klasik-ipuclari ol').children.length === 2, 'Açılmış ipucu sayısı gizlemeden sonra aynı kalmalı');
+
+      // Gizledikten sonra ana ekrana dön: sayaç azalmamalı
+      click('[data-action="open-klasik"]');
+      check(VIEW === 'klasik', 'Klasik ana ekrana dönüldü');
+      cardEl = document.querySelector('.card');
+      check(cardEl && cardEl.textContent.includes('1 / 5 cevap görüldü'), 'Gizledikten sonra ana ekrandaki sayaç 1 / 5 olarak kalmalı');
+
+      // Tekrar çalışmaya dön: cevap gizli kalmalı
+      click('[data-action="start-klasik"]');
+      check(!document.querySelector('.klasik-cevap'), 'Çalışmaya dönünce cevap gizli kalmalı');
+      check(document.querySelector('[data-action="klasik-cevabi-goster"]'), 'Cevabı göster butonu görünmeli');
+
+      // Soru sesi çalarken gizle basılınca soru sesi etkilenmemeli:
+      click('[data-action="klasik-ses-cal"][data-tur="soru"]');
+      await new Promise(resolve => setTimeout(resolve, 50));
+      check(klasikSesDurumu.tur === 'soru' && (klasikSesDurumu.state === 'playing' || Boolean(klasikSesDurumu.audio)), 'Soru sesi çalıyor olmalı');
+      click('[data-action="klasik-cevabi-goster"]');
+      check(seenRequests.length === 1, 'Tekrar göster basıldığında klasik-seen isteği yinelenmemeli (tam bir kez)');
+      check(document.querySelector('.klasik-cevap'), 'Cevap tekrar görünmeli');
+      check(document.querySelector('[data-action="klasik-cevabi-gizle"]'), 'Cevabı gizle butonu tekrar görünmeli');
+      check(!document.querySelector('[data-action="klasik-cevabi-goster"]'), 'Cevabı göster butonu gizlenmeli');
+      click('[data-action="klasik-cevabi-gizle"]');
+      check(klasikSesDurumu.tur === 'soru', 'Cevabı gizle basılınca soru sesi etkilenmemeli');
+      klasikSesDurdur();
+
+      // Son olarak cevabı tekrar açarak sonraki adıma hazırla:
+      click('[data-action="klasik-cevabi-goster"]');
+      check(seenRequests.length === 1, 'Üçüncü gösterimde de klasik-seen tek istek kalmalı');
+      check(document.querySelector('.klasik-cevap'), 'Cevap tekrar görünmeli');
 
       measureLayout('daily-study');
       // 6. Sonraki soruya git (Soru 2)
@@ -658,6 +714,17 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(groupCard && groupCard.classList.contains('klasik-grup-acik'), 'Açık grup kartı vurgulanmalı (.klasik-grup-acik)');
       var kilavuz = groupCard.querySelector('.klasik-satirlar-kilavuz');
       check(kilavuz, 'Açılan grubun satırları sol kılavuz çizgisi taşımalı (.klasik-satirlar-kilavuz)');
+
+      // Cevapsız soru S6 kontrolü: iki düğme de olmamalı
+      click('[data-action="klasik-soru-ac"][data-no="S6"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasikCalisma', 'Cevapsız S6 soru ekranı açılmalı');
+      check(!document.querySelector('[data-action="klasik-cevabi-goster"]'), 'Cevapsız soruda Cevabı göster düğmesi olmamalı');
+      check(!document.querySelector('[data-action="klasik-cevabi-gizle"]'), 'Cevapsız soruda Cevabı gizle düğmesi olmamalı');
+      check(document.querySelector('.card').textContent.includes('Cevap henüz yazılmadı'), 'Cevapsız soru uyarısı görünmeli');
+      click('[data-action="klasik-geri"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasikKonular', 'Geri dönüşte Konu Konu Bak ekranında olmalı');
 
       click('[data-action="klasik-soru-ac"][data-no="S1"]');
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -1098,6 +1165,17 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
         klasikDetayYukleniyor = false;
         klasikDetayHata = null;
         if (!klasikSoruDurumu['S3']) klasikSoruDurumu['S3'] = { acilanIpuclari: 0, cevapAcik: false, seenSent: false };
+        render();
+      };
+      window.__showCevabiGizle = function () {
+        VIEW = 'klasikCalisma';
+        klasikKaynak = 'konular';
+        klasikSoruIndex = 0;
+        klasikCalismaNos = ['S9', 'S10'];
+        if (!klasikDetaylar['S9']) klasikDetaylar['S9'] = allQuestions.find(function (q) { return q.no === 'S9'; });
+        klasikDetayYukleniyor = false;
+        klasikDetayHata = null;
+        klasikSoruDurumu['S9'] = { acilanIpuclari: 0, cevapAcik: true, seenSent: true };
         render();
       };
 

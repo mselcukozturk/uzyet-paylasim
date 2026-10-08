@@ -5055,9 +5055,11 @@
     var ipucuBtnHtml = toplamIpuclari > 0
       ? '<button class="btn" data-action="klasik-ipucu-goster"' + (hepsiAcildi ? ' disabled' : '') + '>' + escapeHtml(ipucuButonMetni) + '</button>'
       : '';
-    var cevabiGosterBtnHtml = (!durum.cevapAcik && soru.durum !== "cevapsiz")
-      ? '<button class="btn primary" data-action="klasik-cevabi-goster">Cevabı göster</button>'
-      : '';
+    var cevabiGosterBtnHtml = soru.durum === "cevapsiz"
+      ? ""
+      : (durum.cevapAcik
+        ? '<button class="btn" data-action="klasik-cevabi-gizle">Cevabı gizle</button>'
+        : '<button class="btn primary" data-action="klasik-cevabi-goster">Cevabı göster</button>');
 
     html += '<div class="klasik-aksiyon-satiri-1">' +
       '<div class="klasik-aksiyon-sol">' + ipucuBtnHtml + '</div>' +
@@ -6616,6 +6618,19 @@ function pratikEnIyiHtml(konu, modulKey) {
           showBanner("Soru görüldü bilgisi kaydedilemedi.", true);
         });
       }
+    }
+    else if (action === "klasik-cevabi-gizle") {
+      var soru = klasikGuncelSoru();
+      if (!soru || !soru.soru) return;
+      if (!klasikSoruDurumu[soru.no]) {
+        klasikSoruDurumu[soru.no] = { acilanIpuclari: 0, cevapAcik: false, seenSent: false };
+      }
+      var d = klasikSoruDurumu[soru.no];
+      d.cevapAcik = false;
+      if (klasikSesDurumu.no === soru.no && klasikSesDurumu.tur === "cevap") {
+        klasikSesDurdur();
+      }
+      render();
     }
     else if (action === "start-deneme-konu-flash") startFlash("bank", t.getAttribute("data-konu"));
     else if (action === "start-deneme-konu-yanlis") startFlash("bank", t.getAttribute("data-konu"), true);
