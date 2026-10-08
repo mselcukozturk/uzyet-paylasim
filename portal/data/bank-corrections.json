@@ -5426,5 +5426,50 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "Kredi YYS 2026 s.224",
   "tarihISO": "2026-10-07T23:15:38.904899+00:00"
+ },
+ {
+  "id": "gece-20261009-f379caeb8439",
+  "guid": "f379caeb8439",
+  "konu": "Ürünler",
+  "soru": "Aşağıdakilerden hangisi Bankam Benimle (MASEM Koruma) Programı kapsamına alınacak müşterilere, ürünlerimizi kullandıklarında sağlanacak avantajlardan değildir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, s. 247",
+  "tarihISO": "2026-10-08T23:46:06.265666+00:00"
+ },
+ {
+  "id": "gece-20261009-f475adf43a48",
+  "guid": "f475adf43a48",
+  "konu": "Kredi",
+  "soru": "Verilen teminat mektubu ile yüklenilen yükümlülükler aşağıdakilerin hangisinin/hangilerinin gerçekleşmesiyle sona erer?\n1. Muhatap tarafından bankanın ibrası\n2. Muhatabın ibrası veya iptal işlemi olmaksızın teminat mektubunun yalnızca bankaya iade edilmesi\n3. Teminat mektubunun resen iptali\n4. Geçerli bir tazmin talebinin karşılanması",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026.pdf, kitap s.223–224 (PDF s.240–241), Teminat Mektubuna İlişkin Yükümlülüğün Sona Ermesi / Teminat Mektubunun İade Edilmesi; kontrol: 09.10.2026",
+  "tarihISO": "2026-10-08T23:46:06.265666+00:00"
+ },
+ {
+  "id": "gece-20261009-bc360914d008",
+  "guid": "bc360914d008",
+  "konu": "Ürünler",
+  "soru": "Bankam Benimle programıyla ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, basılı s.245–246 (PDF s.262–263), Bankam Benimle Programı; kontrol: 09.10.2026",
+  "tarihISO": "2026-10-08T23:46:06.265666+00:00"
+ },
+ {
+  "id": "gece-20261009-5eb365b780a8",
+  "guid": "5eb365b780a8",
+  "konu": "Ürünler",
+  "soru": "286 – Altın biriktiren talimatla ilgili aşağıda verilenlerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Ürünlerimiz YYS 2026, s. 138 (PDF s. 155)",
+  "tarihISO": "2026-10-08T23:46:06.265666+00:00"
+ },
+ {
+  "id": "gece-20261009-3c9659590309",
+  "guid": "3c9659590309",
+  "konu": "Genel Ekonomi",
+  "soru": "Sırasıyla 2025 yıl sonu ve 2026 Ağustos (2026/8) yıllık TÜFE oranları aşağıdakilerden hangisidir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "TÜİK Tüketici Fiyat Endeksi Haber Bültenleri (Aralık 2025 ve Ağustos 2026)",
+  "tarihISO": "2026-10-08T23:46:06.265666+00:00"
  }
 ]
