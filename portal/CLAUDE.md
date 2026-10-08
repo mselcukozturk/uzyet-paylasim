@@ -122,6 +122,7 @@ dışında uygulanmış, kaydı yokken sütun vardı).
 
 - `GET /api/admin/export-bank` — aktif soru bankasını Excel'de açılan CSV olarak döner.
 - `GET/POST /api/admin/flagged-questions` — açık işaretleri döner / çözüldü işaretler.
+- `GET /api/admin/exam-attempts` — bitmiş tüm denemeleri (kod, kullanıcı adı, doğru/yanlış/boş, puan) ve sabit deneme adlarını döner; salt okunur.
 - `POST /api/admin/activate-user` — `{"email","username","admin":true}`. Tek fark:
   `FLAGS_EXPORT_TOKEN` değil ayrı bir **`ADMIN_SETUP_TOKEN`** ister; o değişken tanımlı
   değilse uç 404 döner. Akış: Vercel'de değişkeni geçici tanımla → isteği at → **sil**.
