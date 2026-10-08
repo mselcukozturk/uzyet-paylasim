@@ -2815,6 +2815,8 @@
   // değişiklikleri buraya yazılmaz. ai: true olanlar yalnız Yapay Zekâ Kaynakları açık hesapta görünür.
   // Yalnız son 7 günün kayıtları gösterilir; eskiler arşiv olarak listede kalır. Metinler 1-2 cümle.
   var DUYURULAR = [
+    { tarih: "2026-10-08", baslik: "Klasik: Rastgele Sorular",
+      metin: "Klasik sekmesine Rastgele Sorular kartı eklendi. Cevabı olan tüm klasik soruları karışık sırayla, tekrarsız çalışabilirsin; her açılışta sıra yeniden karışır." },
     { tarih: "2026-10-07", baslik: "Klasik: soruları ve cevapları sesli dinleme",
       metin: "Klasik sorularda soru metnini ve yazılı cevabı artık sesli dinleyebilirsin. Sesler yapay zekâ ile üretilmiştir. Soru ekranındaki dinleme düğmelerini kullanarak çalışırken dinleyebilirsin." },
     { tarih: "2026-10-06", baslik: "Günün Klasik Soruları seçimi yenilendi",
@@ -4419,6 +4421,8 @@
   var klasikListe = null;
   var klasikListeYukleniyor = false;
   var klasikListeHata = null;
+  var klasikListePromise = null;
+  var klasikRastgeleBekliyor = false;
   var klasikArama = "";
   var klasikSeciliIsaret = null;
   var klasikFiltreHatirlatici = false;
@@ -4604,23 +4608,32 @@
   }
 
   function remoteLoadKlasikListe() {
-    if (!remoteGirisTamamMi()) return;
+    if (!remoteGirisTamamMi()) return Promise.resolve(false);
+    if (klasikListeYukleniyor && klasikListePromise) return klasikListePromise;
     var generation = klasikGeneration;
     klasikListeYukleniyor = true;
     klasikListeHata = null;
     render();
-    return remoteFetch("/api/exam", "POST", { action: "klasik-list" }).then(function (r) {
-      if (generation !== klasikGeneration) return;
+    klasikListePromise = remoteFetch("/api/exam", "POST", { action: "klasik-list" }).then(function (r) {
+      if (generation !== klasikGeneration) return false;
       klasikListeYukleniyor = false;
-      if (r.ok) klasikListe = r.data;
-      else klasikListeHata = (r.data && r.data.error) || "Sorular yüklenemedi.";
+      klasikListePromise = null;
+      if (r.ok) {
+        klasikListe = r.data;
+      } else {
+        klasikListeHata = (r.data && r.data.error) || "Sorular yüklenemedi.";
+      }
       render();
+      return Boolean(r.ok);
     }).catch(function () {
-      if (generation !== klasikGeneration) return;
+      if (generation !== klasikGeneration) return false;
       klasikListeYukleniyor = false;
+      klasikListePromise = null;
       klasikListeHata = "Bağlantı hatası; sorular yüklenemedi.";
       render();
+      return false;
     });
+    return klasikListePromise;
   }
 
   function remoteLoadKlasikSoru() {
@@ -4648,6 +4661,27 @@
   function klasikKonularSorulari() {
     var questions = (klasikListe && klasikListe.questions) || [];
     return questions.filter(function (q) { return (q.oncelik || "normal") !== "dusuk"; });
+  }
+
+  function klasikRastgeleBaslat() {
+    var havuz = klasikKonularSorulari().filter(function (q) { return q.durum !== "cevapsiz"; });
+    if (!havuz.length) {
+      showBanner("Henüz cevaplı soru yok.", true);
+      return;
+    }
+    var sirali = havuz.slice();
+    for (var i = sirali.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = sirali[i];
+      sirali[i] = sirali[j];
+      sirali[j] = temp;
+    }
+    klasikCalismaNos = sirali.map(function (q) { return q.no; });
+    klasikKaynak = "rastgele";
+    klasikSoruIndex = 0;
+    klasikSesDurdur();
+    VIEW = "klasikCalisma";
+    remoteLoadKlasikSoru();
   }
 
   function klasikGruplar(tur) {
@@ -4773,7 +4807,10 @@
   }
 
   function klasikMenuKartlari() {
-    return '<button class="mode-btn" style="border-left:4px solid var(--seri-6);margin-top:14px" data-action="open-klasik-konular">' +
+    return '<button class="mode-btn" style="border-left:4px solid var(--seri-1);margin-top:14px" data-action="open-klasik-rastgele">' +
+      '<div class="title"><span class="mode-dot" style="background:var(--seri-1)"></span>Rastgele Sorular</div>' +
+      '<div class="desc">Tüm klasik sorular, karışık sırayla</div></button>' +
+      '<button class="mode-btn" style="border-left:4px solid var(--seri-6);margin-top:14px" data-action="open-klasik-konular">' +
       '<div class="title"><span class="mode-dot" style="background:var(--seri-6)"></span>Konu Konu Bak</div>' +
       '<div class="desc">Tüm klasik sorular, konu konu</div></button>' +
       '<button class="mode-btn" style="border-left:4px solid var(--seri-5);margin-top:14px" data-action="open-klasik-kontrol">' +
@@ -4795,6 +4832,8 @@
     klasikListe = null;
     klasikListeYukleniyor = false;
     klasikListeHata = null;
+    klasikListePromise = null;
+    klasikRastgeleBekliyor = false;
     klasikAcikGruplar = { konular: {}, kontrol: {}, dusuk: {} };
     klasikKaynak = "daily";
     klasikCalismaNos = [];
@@ -4950,7 +4989,7 @@
 
   function renderKlasikCalisma() {
     var geri = klasikKaynak === "daily" ? "open-klasik" : "klasik-geri";
-    var geriBaslik = klasikKaynak === "daily" ? "Klasik Sorular" : klasikKaynak === "kontrol" ? "Soru Kontrolü" : klasikKaynak === "dusuk" ? "Düşük Öncelikli" : "Konu Konu Bak";
+    var geriBaslik = (klasikKaynak === "daily" || klasikKaynak === "rastgele") ? "Klasik Sorular" : klasikKaynak === "kontrol" ? "Soru Kontrolü" : klasikKaynak === "dusuk" ? "Düşük Öncelikli" : "Konu Konu Bak";
     var geriBtn = '<button class="btn ghost" data-action="' + geri + '">← ' + geriBaslik + '</button>';
     var ustBar = STATE.sadeceDeneme ? ustBarHtml(geriBtn) : '<div class="link-row">' + geriBtn + '</div>';
 
@@ -6360,6 +6399,29 @@ function pratikEnIyiHtml(konu, modulKey) {
       remoteLoadKlasikIfNeeded();
       render();
     }
+    else if (action === "open-klasik-rastgele") {
+      if (!remoteGirisTamamMi()) return;
+      if (klasikListe) {
+        klasikRastgeleBaslat();
+      } else {
+        if (klasikRastgeleBekliyor) return;
+        klasikRastgeleBekliyor = true;
+        var generation = klasikGeneration;
+        var req = remoteLoadKlasikListe();
+        if (req && typeof req.then === "function") {
+          req.then(function (ok) {
+            if (generation !== klasikGeneration) return;
+            klasikRastgeleBekliyor = false;
+            if (VIEW !== "klasik") return;
+            if (ok && klasikListe) {
+              klasikRastgeleBaslat();
+            } else {
+              showBanner(klasikListeHata || "Sorular yüklenemedi.", true);
+            }
+          });
+        }
+      }
+    }
     else if (action === "open-klasik-konular" || action === "open-klasik-kontrol" || action === "open-klasik-dusuk-oncelik") {
       if (!remoteGirisTamamMi()) return;
       VIEW = action === "open-klasik-kontrol" ? "klasikKontrol" : action === "open-klasik-dusuk-oncelik" ? "klasikDusukOncelik" : "klasikKonular";
@@ -6405,7 +6467,7 @@ function pratikEnIyiHtml(konu, modulKey) {
       klasikSesDurdur();
       klasikDetayIstek++;
       klasikDetayYukleniyor = false;
-      VIEW = klasikKaynak === "kontrol" ? "klasikKontrol" : klasikKaynak === "dusuk" ? "klasikDusukOncelik" : "klasikKonular";
+      VIEW = klasikKaynak === "rastgele" ? "klasik" : klasikKaynak === "kontrol" ? "klasikKontrol" : klasikKaynak === "dusuk" ? "klasikDusukOncelik" : "klasikKonular";
       render();
     }
     else if (action === "klasik-mark") {

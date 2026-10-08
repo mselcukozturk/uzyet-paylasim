@@ -13,7 +13,12 @@
 // 07:00 daily question expiration and refresh, audio button presence for questions without audio,
 // "Soruyu dinle" button presence/missing for questions with audio, "Cevabı dinle" button premature appearance before answer reveal,
 // "Cevabı dinle" button missing after answer reveal, audio fetch duplication, button label/aria-pressed transition during play ("⏸ Durdur")
-// and pause ("▶ Devam et"), concurrent audio interruption when clicking other button, and audio stoppage on navigating to next question.
+// and pause ("▶ Devam et"), concurrent audio interruption when clicking other button, audio stoppage on navigating to next question,
+// random question card missing on Klasik home screen or positioned below "Konu Konu Bak", clicking random questions card failing to start study view,
+// counter not reflecting "1 / N" with normal-priority answered question count, low-priority or unanswered questions entering random pool,
+// duplicate questions in random pool, question order not shuffled via Fisher-Yates or failing to follow expected pseudo-random sequence,
+// Next/Prev navigation not traversing shuffled sequence in order, back button not labeled "← Klasik Sorular" or failing to return to Klasik home screen,
+// and horizontal layout overflow on mobile viewport.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -93,6 +98,14 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
     const ssDugme = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
     writeFileSync(new URL('soru-dugmeler.png', output), Buffer.from(ssDugme.data, 'base64'));
 
+    await send('Runtime.evaluate', { expression: 'if (window.__showRastgeleKart) window.__showRastgeleKart(); document.getElementById("browser-result").style.display="none";' }, sessionId);
+    const ssRastgeleKart = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
+    writeFileSync(new URL('rastgele-kart.png', output), Buffer.from(ssRastgeleKart.data, 'base64'));
+
+    await send('Runtime.evaluate', { expression: 'if (window.__showRastgeleSoru) window.__showRastgeleSoru(); document.getElementById("browser-result").style.display="none";' }, sessionId);
+    const ssRastgeleSoru = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
+    writeFileSync(new URL('rastgele-soru.png', output), Buffer.from(ssRastgeleSoru.data, 'base64'));
+
     return dom.result.value as string;
   } finally {
     socket?.close();
@@ -144,6 +157,13 @@ async function runBrowser(chrome: string, fixture: URL, output: URL, width: numb
 // 40. Listen button failing to transition to "⏸ Durdur" with aria-pressed="true", or pause click failing to transition to "▶ Devam et" with aria-pressed="false".
 // 41. Playing one audio failing to stop and revert previously playing audio button.
 // 42. Navigating to another question failing to stop audio and revoke object URL.
+// 43. Random questions card missing on Klasik home screen or positioned below "Konu Konu Bak".
+// 44. Clicking random questions card failing to start study session with counter "1 / N" matching normal answered questions.
+// 45. Low-priority or unanswered questions leaking into random sequence, or duplicate questions in sequence.
+// 46. Question order matching un-shuffled list order instead of pseudo-random Fisher-Yates permutation.
+// 47. Next/previous navigation failing to traverse shuffled sequence in order.
+// 48. Back button failing to display "← Klasik Sorular" or failing to return to Klasik home screen.
+// 49. Random card or study screen causing horizontal layout overflow at 390px.
 for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`, async () => {
   const chrome = [
     process.env.CHROME_PATH,
@@ -939,6 +959,94 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
       check(klasikDailyRequests === reqCountEarly, 'İstanbul 00:00-06:59 arasında dün tarihli gün anahtarı bayat sayılmamalı');
 
       Date.now = realDateNow;
+
+      // Rastgele Sorular testleri
+      click('[data-action="open-klasik"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasik', 'Görünüm klasik olmalı');
+
+      var modeButtons = Array.from(document.querySelectorAll('.mode-btn'));
+      var rastgeleCard = document.querySelector('[data-action="open-klasik-rastgele"]');
+      var konuCard = document.querySelector('[data-action="open-klasik-konular"]');
+      check(rastgeleCard, 'Rastgele Sorular kartı görünmeli');
+      check(konuCard, 'Konu Konu Bak kartı görünmeli');
+      var rastgeleIdx = modeButtons.indexOf(rastgeleCard);
+      var konuIdx = modeButtons.indexOf(konuCard);
+      check(rastgeleIdx !== -1 && rastgeleIdx < konuIdx, 'Rastgele Sorular kartı Konu Konu Bak kartının üstünde olmalı');
+      check(rastgeleCard.textContent.includes('Rastgele Sorular'), 'Rastgele Sorular başlığı bulunmalı');
+      check(rastgeleCard.textContent.includes('Tüm klasik sorular, karışık sırayla'), 'Rastgele Sorular açıklaması bulunmalı');
+      measureLayout('rastgele-kart');
+
+      // Boş havuzda çalışma başlamamalı ve bildirim gösterilmeli
+      var savedListe = klasikListe;
+      klasikListe = { questions: [{ no: 'S99', kategori: 'Hukuk', konu: 'X', durum: 'cevapsiz', oncelik: 'normal' }] };
+      click('[data-action="open-klasik-rastgele"]');
+      check(VIEW === 'klasik', 'Boş havuzda çalışma ekranına geçilmemeli');
+      check(bannerMsg === 'Henüz cevaplı soru yok.', 'Boş havuzda "Henüz cevaplı soru yok." bildirimi gösterilmeli');
+      bannerMsg = null;
+      klasikListe = savedListe;
+
+      // Liste yüklenmemişken basılınca yüklenip çalışma başlamalı
+      klasikListe = null;
+      click('[data-action="open-klasik-rastgele"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasikCalisma', 'Liste yüklendikten sonra çalışma ekranı açılmalı');
+      check(klasikKaynak === 'rastgele', 'Kaynak rastgele olmalı');
+      click('[data-action="klasik-geri"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasik', 'Geri düğmesi Klasik ana ekranına dönmeli');
+
+      // Karışık sıra ve gezinme testi (Math.random mock ile)
+      var originalRandom = Math.random;
+      var randomSeq = [0.1, 0.5, 0.2, 0.8, 0.3, 0.9];
+      var randomCallIdx = 0;
+      Math.random = function () {
+        return randomSeq[randomCallIdx++ % randomSeq.length];
+      };
+
+      click('[data-action="open-klasik-rastgele"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasikCalisma', 'Rastgele Sorular çalışma ekranı açılmalı');
+      check(klasikKaynak === 'rastgele', 'Kaynak rastgele olmalı');
+
+      // Normal öncelikli cevaplı soru sayısı: S1, S2, S3, S4, S5, S9, S10 = 7
+      check(klasikCalismaNos.length === 7, 'Sıra uzunluğu normal cevaplı soru sayısı olmalı (7)');
+      check(!klasikCalismaNos.includes('S6'), 'Cevapsız soru sıraya girmemeli');
+      check(!klasikCalismaNos.includes('S7') && !klasikCalismaNos.includes('S8'), 'Düşük öncelikli soru sıraya girmemeli');
+      check(new Set(klasikCalismaNos).size === klasikCalismaNos.length, 'Sırada tekrar olmamalı');
+
+      var expectedOrder = ['S3', 'S5', 'S10', 'S9', 'S2', 'S4', 'S1'];
+      check(JSON.stringify(klasikCalismaNos) === JSON.stringify(expectedOrder), 'Sıra beklenen karışık sırada olmalı: ' + JSON.stringify(klasikCalismaNos));
+      check(JSON.stringify(klasikCalismaNos) !== JSON.stringify(['S1', 'S2', 'S3', 'S4', 'S5', 'S9', 'S10']), 'Sıra liste sırasından farklı olmalı');
+
+      checkUstBar('klasik-geri', 'Klasik Sorular');
+      check(document.querySelector('.card').textContent.includes('Soru 1 / 7'), 'Sayaç "Soru 1 / 7" olmalı');
+      check(document.querySelector('.card').textContent.includes('Bilanço ve gelir tablosu'), 'İlk soru S3 olmalı');
+      measureLayout('rastgele-calisma');
+
+      // Sonraki / Önceki karışık sırayı izlemeli
+      click('[data-action="klasik-sonraki"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('.card').textContent.includes('Soru 2 / 7'), 'İkinci soru "Soru 2 / 7" olmalı');
+      check(document.querySelector('.card').textContent.includes('Mevduat türleri'), 'İkinci soru S5 olmalı');
+
+      click('[data-action="klasik-sonraki"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('.card').textContent.includes('Soru 3 / 7'), 'Üçüncü soru "Soru 3 / 7" olmalı');
+      check(document.querySelector('.card').textContent.includes('ihracat reeskont kredisi'), 'Üçüncü soru S10 olmalı');
+
+      click('[data-action="klasik-onceki"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(document.querySelector('.card').textContent.includes('Soru 2 / 7'), 'Önceki ile dönülen soru "Soru 2 / 7" olmalı');
+      check(document.querySelector('.card').textContent.includes('Mevduat türleri'), 'Dönülen soru S5 olmalı');
+
+      // Geri düğmesi kontrolü
+      click('[data-action="klasik-geri"]');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      check(VIEW === 'klasik', 'Geri düğmesine basılınca Klasik ana ekranına dönülmeli');
+
+      Math.random = originalRandom;
+
       VIEW = 'klasikDusukOncelik';
       render();
 
@@ -974,6 +1082,22 @@ for (const width of [390, 1100]) test(`Klasik tarayıcı akışı (${width}px)`,
         klasikSoruIndex = 0;
         klasikCalismaNos = ['S9', 'S10'];
         klasikSoruDurumu['S9'] = { acilanIpuclari: 0, cevapAcik: false, seenSent: false };
+        render();
+      };
+      window.__showRastgeleKart = function () {
+        VIEW = 'klasik';
+        bannerMsg = null;
+        render();
+      };
+      window.__showRastgeleSoru = function () {
+        VIEW = 'klasikCalisma';
+        klasikKaynak = 'rastgele';
+        klasikSoruIndex = 0;
+        klasikCalismaNos = ['S3', 'S5', 'S10', 'S9', 'S2', 'S4', 'S1'];
+        klasikDetaylar['S3'] = allQuestions.find(function (q) { return q.no === 'S3'; });
+        klasikDetayYukleniyor = false;
+        klasikDetayHata = null;
+        if (!klasikSoruDurumu['S3']) klasikSoruDurumu['S3'] = { acilanIpuclari: 0, cevapAcik: false, seenSent: false };
         render();
       };
 
