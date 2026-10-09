@@ -5462,5 +5462,23 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "TÜİK Tüketici Fiyat Endeksi Haber Bültenleri (Aralık 2025 ve Ağustos 2026)",
   "tarihISO": "2026-10-08T23:46:06.265666+00:00"
+ },
+ {
+  "id": "gece-20261010-9bd751e952de",
+  "guid": "9bd751e952de",
+  "konu": "Temel İşlemler",
+  "soru": "Zorunlu karşılıklar ile ilgili hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "06 Döviz Temel İşlemler/Doviz_TKR_2026.pdf s. 41",
+  "tarihISO": "2026-10-09T23:08:26.516566+00:00"
+ },
+ {
+  "id": "gece-20261010-bfd5a1207d91",
+  "guid": "bfd5a1207d91",
+  "konu": "Kredi",
+  "soru": "Verilen teminat mektubu ile yüklenilen yükümlülükler aşağıdakilerin hangisinin/hangilerinin gerçekleşmesiyle sona erer?\n1. Muhatap tarafından bankanın ibrası\n2. Teminat mektubunun iadesi\n3. Teminat mektubunun resen iptali\n4. Geçerli bir tazmin talebinin karşılanması",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Kredi YYS 2026 s.223 (PDF s.240)",
+  "tarihISO": "2026-10-09T23:08:26.516566+00:00"
  }
 ]
