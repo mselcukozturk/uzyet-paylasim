@@ -392,14 +392,6 @@
   "tarihISO": "2026-09-06T12:36:37.176481+00:00"
  },
  {
-  "id": "aciklama-20260905-1d2c74f0e2ef-75cbfd58ec",
-  "guid": "1d2c74f0e2ef",
-  "konu": "Ürünler",
-  "soru": "I. En az 1 adet Maximum özellikli kredi kartı (Maximum Kart, Maximiles, Mercedes Card) sahipliği\nII. Kişisel Verilerin Korunması Kanunu (KVKK) izninin “Evet” olması\nIII. En az bir maaşı ya da geriye dönük 4 aylık ortalama maaş tutarının asgari ücret düzeyinde olması\nIV. Maaş ödemelerinin Bankamız maaş sistemi aracılığıyla ve “MA” koduyla yapılmış olması\nBankam Benimle programından yararlanabilmek için yukarıdaki koşullardan hangilerinin sağlanması gerekmektedir?",
-  "not": "Kaynak kontrolü sonrası soru veya doğru cevap düzeltildi. Bu sorunun deneme istatistiği sıfırlandı; geçmiş sınavlar korundu.",
-  "tarihISO": "2026-09-06T12:36:37.176481+00:00"
- },
- {
   "id": "aciklama-20260905-d2a93a45be9f-a97ad73177",
   "guid": "d2a93a45be9f",
   "konu": "Ürünler",
@@ -5437,15 +5429,6 @@
   "tarihISO": "2026-10-08T23:46:06.265666+00:00"
  },
  {
-  "id": "gece-20261009-bc360914d008",
-  "guid": "bc360914d008",
-  "konu": "Ürünler",
-  "soru": "Bankam Benimle programıyla ilgili aşağıda verilenlerden hangisi yanlıştır?",
-  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
-  "kaynak_atif": "Ürünlerimiz YYS 2026, basılı s.245–246 (PDF s.262–263), Bankam Benimle Programı; kontrol: 09.10.2026",
-  "tarihISO": "2026-10-08T23:46:06.265666+00:00"
- },
- {
   "id": "gece-20261009-5eb365b780a8",
   "guid": "5eb365b780a8",
   "konu": "Ürünler",
@@ -5480,5 +5463,32 @@
   "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
   "kaynak_atif": "Kredi YYS 2026 s.223 (PDF s.240)",
   "tarihISO": "2026-10-09T23:08:26.516566+00:00"
+ },
+ {
+  "id": "gece-20261011-5ad2c73fa9b4",
+  "guid": "5ad2c73fa9b4",
+  "konu": "Temel İşlemler",
+  "soru": "Altın Havalesi'ne ilişkin verilen ifadelerden hangisi yanlıştır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Temel İşlemler YYS 2026 s.121 (PDF s.138)",
+  "tarihISO": "2026-10-10T23:10:17.904206+00:00"
+ },
+ {
+  "id": "gece-20261011-f297b48cae6d",
+  "guid": "f297b48cae6d",
+  "konu": "Temel İşlemler",
+  "soru": "Mevduat hesaplarına tahakkuk eden faiz üzerinden kesilen MSİGV ödeme işlemleri hangi bölüm tarafından yapılır?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Temel Islemler_YYS_2026.pdf, s. 65",
+  "tarihISO": "2026-10-10T23:10:17.904206+00:00"
+ },
+ {
+  "id": "gece-20261011-8ad966c99eba",
+  "guid": "8ad966c99eba",
+  "konu": "Genel Ekonomi",
+  "soru": "2026/6 (1H2026) Yatırımcı Sunumu'na göre Bankamızın POS cirosu (üye işyeri) pazar payı aşağıdakilerden hangisinde doğru verilmiştir?",
+  "not": "Gece otomatik incelemesi: kaynak doğrulaması sonrası güncellendi.",
+  "kaynak_atif": "Yatırımcı Sunumu 1H2026 sl.4",
+  "tarihISO": "2026-10-10T23:10:17.904206+00:00"
  }
 ]
